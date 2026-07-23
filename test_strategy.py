@@ -1,0 +1,429 @@
+"""
+Synthetic regression tests for strategy.py
+--------------------------------------------
+No network access, no pytest dependency (kept dependency-free, matching
+requirements.txt) -- just hand-built pandas DataFrames with known
+expected outcomes, run directly with `py test_strategy.py`.
+
+This is the "every change gets tested with synthetic/engineered data
+before being called done" standard from CLAUDE.md, made runnable and
+kept in the repo so future changes can be checked the same way instead
+of re-deriving verification from scratch each time.
+
+NOTE: trading_bot.py's live-only logic (batched Alpaca calls, the news
+filter, MAX_CONCURRENT_POSITIONS, the daily loss circuit breaker) needs
+a live/mocked Alpaca connection to exercise and is NOT covered here --
+this file only covers the pure calculation logic in strategy.py, which
+is everything that can be tested without network access.
+"""
+
+import numpy as np
+import pandas as pd
+
+import strategy as strat
+
+FAILURES = []
+
+
+def check(name: str, condition: bool, detail: str = "") -> None:
+    status = "PASS" if condition else "FAIL"
+    print(f"  [{status}] {name}" + (f" -- {detail}" if detail and not condition else ""))
+    if not condition:
+        FAILURES.append(name)
+
+
+def ts_range(day: str, start_time: str, n: int, bar_minutes: int = 5) -> list:
+    start = pd.Timestamp(f"{day} {start_time}", tz="America/New_York")
+    return [(start + pd.Timedelta(minutes=bar_minutes * i)).tz_convert("UTC") for i in range(n)]
+
+
+def build_df(timestamps: list, opens, highs, lows, closes, volumes) -> pd.DataFrame:
+    return pd.DataFrame({
+        "timestamp": timestamps,
+        "open": opens,
+        "high": highs,
+        "low": lows,
+        "close": closes,
+        "volume": volumes,
+    })
+
+
+def flat_bars(timestamps: list, closes, volumes=None) -> pd.DataFrame:
+    """Doji-style bars where open == high == low == close, for clean pivot/level tests."""
+    closes = list(closes)
+    n = len(closes)
+    if volumes is None:
+        volumes = [1000] * n
+    return build_df(timestamps, closes, closes, closes, closes, volumes)
+
+
+# ---------------------------------------------------------------------------
+# 1. Indicator precompute regression: computing once over the full history
+#    must match recomputing the same indicator on a growing window slice
+#    (the OLD approach) -- this is the core claim behind the speed fix.
+# ---------------------------------------------------------------------------
+
+def test_indicator_precompute_matches_growing_window():
+    rng = np.random.default_rng(42)
+    n = 300
+    ts = ts_range("2024-01-02", "09:30", n)
+    # Random walk with no missing bars, single continuous session block
+    # (session-day boundaries don't matter for EMA/RSI/ADX, only for
+    # VWAP/ORB/gap, which aren't under test here).
+    steps = rng.normal(0, 0.3, n)
+    closes = 100 + np.cumsum(steps)
+    highs = closes + np.abs(rng.normal(0.2, 0.1, n))
+    lows = closes - np.abs(rng.normal(0.2, 0.1, n))
+    opens = closes + rng.normal(0, 0.1, n)
+    volumes = rng.integers(800, 1200, n)
+
+    df = build_df(ts, opens, highs, lows, closes, volumes)
+    enriched = strat.add_indicators(df)
+
+    for i in [50, 120, 200, 299]:
+        window = df.iloc[:i + 1]
+        old_ema_fast = strat.compute_ema(window["close"], strat.FAST_MA).iloc[-1]
+        old_rsi = strat.compute_rsi(window["close"], strat.RSI_PERIOD).iloc[-1]
+        old_adx = strat.compute_adx(window, strat.ADX_PERIOD).iloc[-1]
+
+        new_ema_fast = enriched["ema_fast"].iat[i]
+        new_rsi = enriched["rsi"].iat[i]
+        new_adx = enriched["adx"].iat[i]
+
+        check(f"ema_fast matches growing-window recompute @ i={i}",
+              np.isclose(old_ema_fast, new_ema_fast))
+        check(f"rsi matches growing-window recompute @ i={i}",
+              (pd.isna(old_rsi) and pd.isna(new_rsi)) or np.isclose(old_rsi, new_rsi))
+        check(f"adx matches growing-window recompute @ i={i}",
+              (pd.isna(old_adx) and pd.isna(new_adx)) or np.isclose(old_adx, new_adx))
+
+
+# ---------------------------------------------------------------------------
+# 2. Breakout (existing strategy, should still work post-refactor)
+# ---------------------------------------------------------------------------
+
+def test_breakout():
+    # 21 flat bars, then an initial breakout bar (should NOT fire yet --
+    # no confirmation), then a confirmation bar that still pushes higher
+    # on continued volume (should fire).
+    n = 23
+    ts = ts_range("2024-01-02", "09:30", n)
+    closes = [100.0] * 21 + [110.0, 115.0]
+    volumes = [1000] * 21 + [3000, 3500]
+    df = flat_bars(ts, closes, volumes)
+    enriched = strat.add_indicators(df)
+    check("breakout does NOT fire on the initial (unconfirmed) breakout bar",
+          not strat.breakout_at(enriched, 21))
+    check("breakout fires on the confirmation bar (still pushing higher, volume held up)",
+          strat.breakout_at(enriched, 22))
+
+    volumes_no_spike = [1000] * 23
+    df2 = flat_bars(ts, closes, volumes_no_spike)
+    enriched2 = strat.add_indicators(df2)
+    check("breakout does NOT fire without a volume spike", not strat.breakout_at(enriched2, 22))
+
+
+# ---------------------------------------------------------------------------
+# 3. Smash Day
+# ---------------------------------------------------------------------------
+
+def test_smash_day():
+    ts = ts_range("2024-01-02", "09:30", 3)
+    df = build_df(
+        ts,
+        opens=[95.5, 94.5, 94.0],
+        highs=[96.0, 94.2, 94.5],
+        lows=[95.0, 93.0, 93.5],
+        closes=[95.5, 94.0, 94.3],
+        volumes=[1000, 1000, 1000],
+    )
+    enriched = strat.add_indicators(df)
+    check("smash day fires (setup + break above smash bar's high)", strat.smash_day_at(enriched, 2))
+
+    df2 = df.copy()
+    df2.loc[2, "high"] = 94.0  # no longer breaks above bar 1's high (94.2)
+    df2.loc[2, "close"] = 93.9
+    enriched2 = strat.add_indicators(df2)
+    check("smash day does NOT fire without breaking the smash bar's high", not strat.smash_day_at(enriched2, 2))
+
+
+# ---------------------------------------------------------------------------
+# 4. Gap Pattern (Type A)
+# ---------------------------------------------------------------------------
+
+def test_gap_continuation():
+    day1_ts = ts_range("2024-01-02", "09:30", 5)
+    day2_ts = ts_range("2024-01-03", "09:30", 2)
+
+    def make(day2_open, day2_bar1_high, day2_bar1_close, day2_bar2_close):
+        ts = day1_ts + day2_ts
+        closes = [99.0, 99.5, 100.0, 100.2, 100.0] + [day2_bar1_close, day2_bar2_close]
+        opens = [98.5, 99.0, 99.5, 100.0, 100.1] + [day2_open, day2_bar1_close]
+        highs = [99.5, 100.0, 100.5, 100.5, 100.3] + [day2_bar1_high, max(day2_bar2_close, day2_bar1_high + 0.1)]
+        lows = [98.0, 99.0, 99.3, 100.0, 99.8] + [min(day2_open, day2_bar1_close) - 0.2, day2_bar1_close - 0.1]
+        volumes = [1000] * 7
+        return build_df(ts, opens, highs, lows, closes, volumes)
+
+    # Day 1 closes at 100.0. Day 2 gaps up 4% to 104, first bar high 105,
+    # second bar closes at 106 -- breaks above the first bar's high.
+    df = make(day2_open=104.0, day2_bar1_high=105.0, day2_bar1_close=104.5, day2_bar2_close=106.0)
+    enriched = strat.add_indicators(df)
+    check("gap continuation fires on a qualifying gap + follow-through", strat.gap_continuation_at(enriched, 6))
+
+    # Same shape but only a 0.5% gap -- below GAP_MIN_PCT (2%).
+    df2 = make(day2_open=100.5, day2_bar1_high=101.5, day2_bar1_close=101.0, day2_bar2_close=103.0)
+    enriched2 = strat.add_indicators(df2)
+    check("gap continuation does NOT fire on a sub-threshold gap", not strat.gap_continuation_at(enriched2, 6))
+
+
+# ---------------------------------------------------------------------------
+# 5. Ross Hook
+# ---------------------------------------------------------------------------
+
+def _ross_hook_series(final_close: float):
+    seg1 = list(np.linspace(100, 90, 11))       # idx0-10: descent to point 1 (low=90 @ idx10)
+    seg2 = list(np.linspace(90, 100, 7))[1:]     # idx11-16: rally to point 2 (high=100 @ idx16)
+    seg3 = list(np.linspace(100, 93, 7))[1:]     # idx17-22: pullback to point 3 (low=93 @ idx22)
+    seg4 = [93.0, 93.0, 93.0]                    # idx23-25: hold (confirms point 3, no new extreme)
+    seg5 = [final_close]                         # idx26: hook trigger bar
+    closes = seg1 + seg2 + seg3 + seg4 + seg5
+    n = len(closes)
+    ts = ts_range("2024-01-02", "09:30", n)
+    return flat_bars(ts, closes)
+
+
+def test_ross_hook():
+    df = _ross_hook_series(final_close=96.0)  # breaks above point 3's high (93)
+    enriched = strat.add_indicators(df)
+    check("Ross Hook fires on a valid 1-2-3 + breakout above point 3's high",
+          strat.ross_hook_at(enriched, len(df) - 1))
+
+    df2 = _ross_hook_series(final_close=92.5)  # stays below 93 -- no breakout yet
+    enriched2 = strat.add_indicators(df2)
+    check("Ross Hook does NOT fire before price breaks point 3's high",
+          not strat.ross_hook_at(enriched2, len(df2) - 1))
+
+
+# ---------------------------------------------------------------------------
+# 6. Opening Range Breakout
+# ---------------------------------------------------------------------------
+
+def test_orb():
+    ts = ts_range("2024-01-02", "09:30", 6)  # 09:30 .. 09:55
+    df = build_df(
+        ts,
+        opens=[100.0, 100.5, 101.5, 101.2, 100.0, 103.0],
+        highs=[101.0, 102.0, 101.8, 101.5, 103.2, 105.5],
+        lows=[99.0, 100.0, 101.0, 100.8, 100.0, 102.8],
+        closes=[100.5, 101.5, 101.2, 100.0, 103.0, 105.0],
+        volumes=[1000] * 6,
+    )
+    enriched = strat.add_indicators(df)
+    # Opening range (first 15 min = bars 0,1,2) high = 102. Bar 3 (09:45,
+    # exactly 15 min in) hasn't broken out yet. Bar 4 (09:50) is the
+    # FIRST bar to break above 102 -- should NOT fire yet (unconfirmed).
+    # Bar 5 (09:55) confirms by still pushing higher -- should fire.
+    check("ORB does NOT fire while still below the opening range high", not strat.orb_at(enriched, 3))
+    check("ORB does NOT fire on the initial (unconfirmed) breakout bar", not strat.orb_at(enriched, 4))
+    check("ORB fires on the confirmation bar (still pushing higher)", strat.orb_at(enriched, 5))
+
+
+# ---------------------------------------------------------------------------
+# 7. VWAP mean-reversion
+# ---------------------------------------------------------------------------
+
+def test_vwap_reversion():
+    ts = ts_range("2024-01-02", "09:30", 11)
+    closes = [100.0] * 9 + [96.0, 96.5]
+    df = flat_bars(ts, closes)
+    enriched = strat.add_indicators(df)
+    check("VWAP reversion does NOT fire on the initial drop (not turning up yet)",
+          not strat.vwap_reversion_at(enriched, 9))
+    check("VWAP reversion fires once price is stretched below VWAP AND turns up",
+          strat.vwap_reversion_at(enriched, 10))
+
+    closes_no_turn = [100.0] * 9 + [96.0, 95.5]  # still falling
+    df2 = flat_bars(ts, closes_no_turn)
+    enriched2 = strat.add_indicators(df2)
+    check("VWAP reversion does NOT fire if price keeps falling", not strat.vwap_reversion_at(enriched2, 10))
+
+
+# ---------------------------------------------------------------------------
+# 8. Relative volume spike
+# ---------------------------------------------------------------------------
+
+def test_rvol_spike():
+    ts = ts_range("2024-01-02", "09:30", 21)
+    closes = [100.0] * 20 + [101.0]
+    opens = [100.0] * 20 + [100.0]
+    volumes = [1000] * 20 + [5000]
+    df = build_df(ts, opens, closes, closes, closes, volumes)
+    enriched = strat.add_indicators(df)
+    check("RVOL spike fires on a green bar with unusual volume", strat.rvol_spike_at(enriched, 20))
+
+    closes_red = [100.0] * 20 + [99.0]
+    df2 = build_df(ts, [100.0] * 21, closes_red, closes_red, closes_red, volumes)
+    enriched2 = strat.add_indicators(df2)
+    check("RVOL spike does NOT fire on a red bar even with volume spike", not strat.rvol_spike_at(enriched2, 20))
+
+    # Green, volume-spiking, but closes weakly (near the LOW of its own
+    # range) -- should NOT fire, that's exactly the false-start pattern
+    # RVOL_MIN_CLOSE_STRENGTH was added to filter out.
+    opens_weak = [100.0] * 20 + [100.0]
+    highs_weak = [100.0] * 20 + [103.0]
+    lows_weak = [100.0] * 20 + [99.5]
+    closes_weak = [100.0] * 20 + [100.2]  # green (100.2 > 100) but near the low of [99.5, 103]
+    df3 = build_df(ts, opens_weak, highs_weak, lows_weak, closes_weak, volumes)
+    enriched3 = strat.add_indicators(df3)
+    check("RVOL spike does NOT fire on a weak close even when green with volume",
+          not strat.rvol_spike_at(enriched3, 20))
+
+
+# ---------------------------------------------------------------------------
+# 9. decide_signal / decide_signal_at agree, and the live-bot entry point
+#    (which computes indicators internally) matches the backtester's
+#    precompute-then-decide path.
+# ---------------------------------------------------------------------------
+
+def test_decide_signal_entry_points_agree():
+    # Needs >= min_bars_needed (max(SLOW_MA, RSI_PERIOD, ADX_PERIOD,
+    # BREAKOUT_LOOKBACK) + 5 = 26) for decide_signal_at's overall warmup
+    # gate, even though breakout_at itself only needs BREAKOUT_LOOKBACK.
+    # First 3 bars (the opening range) are set to 115 so ORB -- which
+    # outranks breakout in priority -- doesn't ALSO fire once the final
+    # bars push up near that level. breakout now requires a confirmation
+    # bar (see breakout_at), so the last TWO bars are the breakout
+    # attempt (110, unconfirmed) then the confirmation (114, still below
+    # the 115 ORB level so ORB stays out of it).
+    n = 31
+    ts = ts_range("2024-01-02", "09:30", n)
+    closes = [115.0] * 3 + [100.0] * (n - 5) + [110.0, 114.0]
+    volumes = [1000] * (n - 2) + [3000, 3500]
+    df = flat_bars(ts, closes, volumes)
+
+    live_signal, live_reason = strat.decide_signal(df)
+    enriched = strat.add_indicators(df)
+    bt_signal, bt_reason_key, bt_reason = strat.decide_signal_at(enriched, len(df) - 1)
+
+    check("decide_signal (live) and decide_signal_at (backtest) agree on signal", live_signal == bt_signal)
+    check("decide_signal (live) and decide_signal_at (backtest) agree on reason text", live_reason == bt_reason)
+    check("breakout wins priority and reports the right reason_key", bt_reason_key == "breakout")
+
+
+# ---------------------------------------------------------------------------
+# 10. Stop/target sizing: fixed % (default) vs. ATR-based (opt-in)
+# ---------------------------------------------------------------------------
+
+def test_compute_stop_and_target():
+    # Explicitly forces USE_ATR_STOPS both ways rather than relying on
+    # whatever the module-level default currently is, so this stays
+    # correct even if that default changes again later.
+    entry = 100.0
+    original = strat.USE_ATR_STOPS
+
+    try:
+        strat.USE_ATR_STOPS = False
+        stop, target = strat.compute_stop_and_target(entry, atr_value=2.5)
+        expected_stop = entry * (1 - strat.STOP_LOSS_PCT / 100)
+        expected_target = entry * (1 + strat.TAKE_PROFIT_PCT / 100)
+        check("fixed-%% stops used when USE_ATR_STOPS=false even with an ATR value available",
+              np.isclose(stop, expected_stop) and np.isclose(target, expected_target))
+
+        strat.USE_ATR_STOPS = True
+        stop_atr, target_atr = strat.compute_stop_and_target(entry, atr_value=2.5)
+        expected_stop_atr = entry - strat.ATR_STOP_MULTIPLIER * 2.5
+        expected_target_atr = entry + strat.ATR_TARGET_MULTIPLIER * 2.5
+        check("ATR-based stops used when USE_ATR_STOPS=true and ATR is available",
+              np.isclose(stop_atr, expected_stop_atr) and np.isclose(target_atr, expected_target_atr))
+
+        stop_fallback, target_fallback = strat.compute_stop_and_target(entry, atr_value=None)
+        check("falls back to fixed %% when USE_ATR_STOPS=true but no ATR value was passed",
+              np.isclose(stop_fallback, expected_stop) and np.isclose(target_fallback, expected_target))
+
+        stop_nan, target_nan = strat.compute_stop_and_target(entry, atr_value=float("nan"))
+        check("falls back to fixed %% when the ATR value is NaN (not warmed up yet)",
+              np.isclose(stop_nan, expected_stop) and np.isclose(target_nan, expected_target))
+    finally:
+        strat.USE_ATR_STOPS = original
+
+
+# ---------------------------------------------------------------------------
+# 11. Risk-based position sizing
+# ---------------------------------------------------------------------------
+
+def test_compute_position_size():
+    # $10,000 equity, 1% risk per trade (default) = $100 at risk.
+    # Entry $50, stop $48 -> $2/share risk -> 50 shares by risk.
+    # MAX_POSITION_PCT_OF_EQUITY (25%) cap = $2500 notional / $50 = 50 shares.
+    # Risk-based and cap agree here by construction of the example.
+    qty = strat.compute_position_size(equity=10000, entry_price=50, stop_price=48)
+    check("position size matches risk_amount / risk_per_share", qty == 50, f"got {qty}")
+
+    # Same equity/risk, but a much wider stop (volatile stock) -> fewer shares.
+    qty_wide_stop = strat.compute_position_size(equity=10000, entry_price=50, stop_price=40)
+    check("wider stop (more volatile) produces a smaller position",
+          qty_wide_stop < qty, f"got {qty_wide_stop} vs {qty}")
+
+    # A very tight stop should hit the MAX_POSITION_PCT_OF_EQUITY cap
+    # instead of implying an absurdly large position (risk alone would
+    # suggest 1000 shares here: $100 risk / $0.10 per share).
+    qty_tight_stop = strat.compute_position_size(equity=10000, entry_price=50, stop_price=49.9)
+    expected_capped_qty = int(10000 * strat.MAX_POSITION_PCT_OF_EQUITY / 100 / 50)
+    check("very tight stop is capped by MAX_POSITION_PCT_OF_EQUITY, not risk alone",
+          qty_tight_stop == expected_capped_qty, f"got {qty_tight_stop}, expected {expected_capped_qty}")
+
+    check("invalid stop (>= entry) returns 0, not a negative/nonsense size",
+          strat.compute_position_size(equity=10000, entry_price=50, stop_price=50) == 0)
+    check("zero/negative equity returns 0",
+          strat.compute_position_size(equity=0, entry_price=50, stop_price=48) == 0)
+
+
+# ---------------------------------------------------------------------------
+# 12. mean_reversion's new "must be turning up" entry confirmation
+# ---------------------------------------------------------------------------
+
+def test_mean_reversion_turning_confirmation():
+    ts = ts_range("2024-01-02", "09:30", 20)
+    # A long, steady decline keeps RSI oversold but price is STILL falling
+    # on the final bar -- should NOT buy (no confirmation of a turn).
+    closes_still_falling = list(np.linspace(110, 90, 19)) + [89.5]
+    df_falling = flat_bars(ts, closes_still_falling)
+    enriched_falling = strat.add_indicators(df_falling)
+    check("mean_reversion does NOT buy while still falling, even if oversold",
+          strat.mean_reversion_at(enriched_falling, len(df_falling) - 1) != "BUY")
+
+    # Same decline, but the final bar ticks up -- should buy.
+    closes_turning_up = list(np.linspace(110, 90, 19)) + [90.5]
+    df_turning = flat_bars(ts, closes_turning_up)
+    enriched_turning = strat.add_indicators(df_turning)
+    check("mean_reversion buys once oversold AND turning back up",
+          strat.mean_reversion_at(enriched_turning, len(df_turning) - 1) == "BUY")
+
+
+if __name__ == "__main__":
+    tests = [
+        test_indicator_precompute_matches_growing_window,
+        test_breakout,
+        test_smash_day,
+        test_gap_continuation,
+        test_ross_hook,
+        test_orb,
+        test_vwap_reversion,
+        test_rvol_spike,
+        test_decide_signal_entry_points_agree,
+        test_compute_stop_and_target,
+        test_compute_position_size,
+        test_mean_reversion_turning_confirmation,
+    ]
+    for t in tests:
+        print(f"\n{t.__name__}")
+        t()
+
+    print("\n" + "=" * 60)
+    if FAILURES:
+        print(f"{len(FAILURES)} FAILURE(S):")
+        for f in FAILURES:
+            print(f"  - {f}")
+        raise SystemExit(1)
+    else:
+        print("All tests passed.")

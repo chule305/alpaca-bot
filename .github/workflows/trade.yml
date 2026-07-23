@@ -1,0 +1,111 @@
+name: Trading bot check cycle
+
+# Runs the bot's single-cycle mode (trading_bot.py --once) on a schedule
+# instead of one continuous local process, since nothing is available to
+# leave running locally or on paid/home infrastructure. Each run is a
+# fresh, isolated checkout -- state that needs to survive between runs
+# (the scanner's watchlist, the daily loss circuit breaker's state) is
+# committed back to the repo at the end of every run, so the NEXT run
+# picks up exactly where this one left off. See CLAUDE.md / Findings.md
+# in the TradingJournal vault for why this exists.
+
+on:
+  schedule:
+    # Every 5 minutes, weekdays, 13:00-21:15 UTC. Deliberately wider than
+    # NYSE's actual 9:30am-4pm ET session (13:30-20:00 UTC in EDT,
+    # 14:30-21:00 UTC in EST) so it covers both daylight-saving offsets
+    # without needing seasonal updates -- ticks outside the real session
+    # just hit the market-closed check inside the script and exit almost
+    # immediately (cheap; no cost concern on a public repo either way).
+    - cron: "*/5 13-21 * * 1-5"
+  # Lets you trigger a run manually from the Actions tab, e.g. to verify
+  # the setup works before waiting for the next scheduled tick.
+  workflow_dispatch:
+
+# Prevents two runs overlapping (e.g. if one run is unusually slow) --
+# overlapping runs could both try to commit state changes and race each
+# other. Runs queue instead of running concurrently.
+concurrency:
+  group: trading-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write  # needed to commit the updated state files back
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8  # a single cycle should be fast; guards against a hung run blocking the next one
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run one check cycle
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          # --- Mirrors the tuned settings from .env -- see CLAUDE.md for
+          # why each of these has the value it does. Kept explicit here
+          # (not left to code defaults) so a future code change to a
+          # default can't silently change what the live bot does. ---
+          SYMBOLS: "TSLA,NVDA,COIN,AMD,PLTR"
+          USE_RISK_BASED_SIZING: "false"
+          RISK_PER_TRADE_PCT: "1.0"
+          MAX_POSITION_PCT_OF_EQUITY: "25"
+          TRADE_AMOUNT_USD: "500"
+          MAX_CONCURRENT_POSITIONS: "5"
+          MAX_PORTFOLIO_RISK_PCT: "5.0"
+          MAX_DAILY_LOSS_PCT: "3"
+          CHECK_INTERVAL_MINUTES: "5"
+          BAR_MINUTES: "5"
+          USE_SCANNER: "true"
+          SCANNER_WATCHLIST_SIZE: "12"
+          SCANNER_MIN_PRICE: "10"
+          SCANNER_REFRESH_HOURS: "0.5"
+          SCANNER_MAX_EXTENSION_PCT: "50"
+          USE_NEWS_FILTER: "true"
+          NEWS_LOOKBACK_HOURS: "24"
+          MIN_NEWS_ITEMS: "1"
+          EXCLUDE_LEVERAGED_ETFS: "true"
+          FAST_MA: "9"
+          SLOW_MA: "21"
+          RSI_PERIOD: "14"
+          RSI_OVERSOLD: "25"
+          RSI_OVERBOUGHT: "75"
+          BREAKOUT_LOOKBACK: "20"
+          BREAKOUT_VOLUME_MULTIPLIER: "2.0"
+          USE_BREAKOUT: "true"
+          USE_GAP_PATTERN: "true"
+          USE_SMASH_DAY_PATTERN: "false"
+          USE_ROSS_HOOK: "false"
+          USE_ORB: "true"
+          USE_RVOL_SPIKE: "false"
+          USE_VWAP_REVERSION: "true"
+          ADX_PERIOD: "14"
+          ADX_TREND_THRESHOLD: "25"
+          STOP_LOSS_PCT: "5"
+          TAKE_PROFIT_PCT: "10"
+          USE_ATR_STOPS: "false"
+          FLATTEN_BEFORE_CLOSE: "true"
+          FLATTEN_MINUTES_BEFORE_CLOSE: "10"
+          STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE: "90"
+          ENTRY_BLACKOUT_START_MINUTES: "210"
+          ENTRY_BLACKOUT_END_MINUTES: "270"
+          LOCAL_TIMEZONE: "Europe/Zagreb"
+        run: python trading_bot.py --once
+
+      - name: Commit updated state, if any
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add watchlist_state.json daily_risk_state.json
+          git diff --cached --quiet || git commit -m "Update bot state [skip ci]"
+          git push

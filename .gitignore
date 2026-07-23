@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+trading_log.txt
+backtest_trades*.csv
+orders_export.csv
+equity_history_export.csv
+
+# watchlist_state.json and daily_risk_state.json are DELIBERATELY
+# tracked (not ignored) -- the GitHub Actions workflow commits them
+# back after every run so state survives between the fresh checkouts
+# each scheduled run gets. See .github/workflows/trade.yml.
