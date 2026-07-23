@@ -82,7 +82,11 @@ USE_SCANNER = os.getenv("USE_SCANNER", "true").strip().lower() in ("1", "true", 
 # much bigger watchlist every cycle cheap on API calls, so the scanner can
 # now afford to look harder and more often.
 SCANNER_WATCHLIST_SIZE = int(os.getenv("SCANNER_WATCHLIST_SIZE", 12))
-SCANNER_CANDIDATE_POOL = int(os.getenv("SCANNER_CANDIDATE_POOL", 100))
+# Alpaca's screener endpoints hard-cap the "top" parameter at 50 server-side
+# ("invalid top: should not be larger than 50") -- found live on 2026-07-23
+# when this was set to 100. Clamped here (not just defaulted lower) so a
+# misconfigured env var can't reintroduce the same failure.
+SCANNER_CANDIDATE_POOL = min(int(os.getenv("SCANNER_CANDIDATE_POOL", 50)), 50)
 SCANNER_MIN_PRICE = float(os.getenv("SCANNER_MIN_PRICE", 10.0))
 SCANNER_REFRESH_HOURS = float(os.getenv("SCANNER_REFRESH_HOURS", 0.5))
 EXCLUDE_LEVERAGED_ETFS = os.getenv("EXCLUDE_LEVERAGED_ETFS", "true").strip().lower() in ("1", "true", "yes")
