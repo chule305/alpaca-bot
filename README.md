@@ -98,6 +98,33 @@ you want to isolate one for testing.
 To stop it, press `Ctrl+C`. Your PC needs to stay on and awake while it
 runs (screen can turn off, just not full sleep).
 
+## Running unattended (no PC required): GitHub Actions
+
+`.github/workflows/trade.yml` runs the bot on a schedule in GitHub's cloud
+instead of a continuous local process — nothing needs to stay on at
+home. `trading_bot.py --once` runs a single check cycle and exits;
+GitHub's scheduler re-invokes it every 5 minutes during market hours.
+State that needs to survive between runs (`watchlist_state.json`,
+`daily_risk_state.json`) is committed back to the repo at the end of
+every run, so the next run picks up where the last one left off — this
+is why those two files are tracked in git rather than ignored.
+
+Setup (one-time):
+1. Create a GitHub repo and push this project to it.
+2. Repo Settings → Actions → General → Workflow permissions → **Read and
+   write permissions** (needed so the workflow can commit state back).
+3. Repo Settings → Secrets and variables → Actions → New repository
+   secret: add `ALPACA_API_KEY` and `ALPACA_SECRET_KEY` with your real
+   paper keys. These are encrypted and never appear in code or logs.
+4. That's it — it starts running on the next scheduled tick. Trigger a
+   run immediately from the repo's Actions tab (`workflow_dispatch`) to
+   verify it works without waiting.
+
+The workflow's `env:` block mirrors this project's `.env` tuning
+explicitly (not left to code defaults) specifically so a future code
+change can't silently change what the unattended bot does — if you
+retune something locally and want it live, update both places.
+
 ## Risk management
 
 ### Position sizing: risk-based, not a flat dollar amount
