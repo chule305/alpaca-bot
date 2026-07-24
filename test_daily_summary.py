@@ -117,6 +117,40 @@ def test_build_email_body_totals():
           "No trades today" in body_empty)
 
 
+def test_open_position_counts_as_a_trade():
+    """
+    Regression for 2026-07-24: one TSLA share was bought and never sold,
+    and the summary went out saying "0 trades" -- reading as "the bot did
+    nothing" when it had actually put $311 to work. A position opened
+    today is a trade whether or not it closed today.
+    """
+    orders = [make_order("TSLA", "buy", 1, 311.67, "vwap_reversion-1000", minute=0)]
+    completed, still_open = ds.pair_round_trip_trades(orders)
+    subject, body = ds.build_email_body(
+        completed, still_open, "2026-07-24",
+        open_positions={"TSLA": {"current_price": 313.30, "qty": 1.0}},
+    )
+    check("an open position counts as 1 trade, not 0", "1 trade" in subject)
+    check("the subject does NOT claim zero trades", "0 trade" not in subject)
+    check("the subject flags that it is still open", "still open" in subject.lower())
+    check("the body names the symbol", "TSLA" in body)
+    check("the body attributes the strategy", "vwap_reversion" in body)
+    check("the body reports the amount invested", "311.67" in body)
+    check("unrealized P&L is marked to market", "+1.63" in body)
+    check("the body warns the position was left open", "WARNING" in body)
+
+
+def test_open_position_without_live_price_still_reported():
+    """If the positions lookup fails, the trade must still be reported --
+    just without a mark-to-market number."""
+    orders = [make_order("TSLA", "buy", 1, 311.67, "orb-1000", minute=0)]
+    completed, still_open = ds.pair_round_trip_trades(orders)
+    subject, body = ds.build_email_body(completed, still_open, "2026-07-24", open_positions={})
+    check("still counted as a trade with no live price", "1 trade" in subject)
+    check("invested amount still reported", "311.67" in body)
+    check("P&L shown as n/a rather than a fabricated 0", "n/a" in body)
+
+
 if __name__ == "__main__":
     tests = [
         test_extract_strategy,
@@ -125,6 +159,8 @@ if __name__ == "__main__":
         test_pair_round_trip_trades_still_open,
         test_pair_round_trip_trades_sell_with_no_prior_buy_is_skipped,
         test_build_email_body_totals,
+        test_open_position_counts_as_a_trade,
+        test_open_position_without_live_price_still_reported,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

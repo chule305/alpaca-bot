@@ -84,6 +84,23 @@ def fetch_todays_filled_orders() -> list:
     return [o for o in orders if o.filled_at is not None and o.filled_qty and float(o.filled_qty) > 0]
 
 
+def fetch_open_positions() -> dict[str, dict]:
+    """
+    Live data for anything still held, so a position opened today but not
+    yet closed can be reported with a real current value instead of being
+    treated as a non-event. Returns {} on failure -- the summary still
+    goes out, just without live marks.
+    """
+    try:
+        return {
+            p.symbol: {"current_price": float(p.current_price), "qty": float(p.qty)}
+            for p in trading_client.get_all_positions()
+        }
+    except Exception as e:
+        print(f"(Could not fetch open positions -- reporting entry prices only: {e})")
+        return {}
+
+
 def extract_strategy(client_order_id: str | None) -> str:
     """client_order_id is "{reason_key}-{unix_timestamp}" (see place_buy_order) -- pull the reason_key back out."""
     if not client_order_id or "-" not in client_order_id:
@@ -147,44 +164,91 @@ def pair_round_trip_trades(orders: list) -> tuple[list[dict], list[dict]]:
     return completed, still_open
 
 
-def build_email_body(completed: list[dict], still_open: list[dict], today_str: str) -> tuple[str, str]:
-    total_invested = sum(t["invested"] for t in completed)
-    total_pnl = sum(t["pnl"] for t in completed)
+def build_email_body(completed: list[dict], still_open: list[dict], today_str: str,
+                      open_positions: dict[str, dict] | None = None) -> tuple[str, str]:
+    """
+    A position opened today counts as a trade whether or not it closed
+    today. The first version of this counted only completed BUY->SELL
+    round trips, so 2026-07-24 -- one TSLA share bought and still held --
+    went out with the subject "0 trades", which read as "the bot did
+    nothing" when it had in fact put money to work.
+    """
+    open_positions = open_positions or {}
+
+    # Mark still-open positions to market so they can be reported with a
+    # real number rather than just an entry price.
+    open_rows = []
+    for t in still_open:
+        live = open_positions.get(t["symbol"])
+        invested = t["qty"] * t["entry_price"]
+        row = {**t, "invested": invested, "pnl": None, "pnl_pct": None}
+        if live:
+            # Computed from OUR entry and qty rather than read off the
+            # position's own unrealized_pl, which covers the whole
+            # position and could include shares from another day.
+            row["pnl"] = (live["current_price"] - t["entry_price"]) * t["qty"]
+            row["pnl_pct"] = (live["current_price"] / t["entry_price"] - 1) * 100
+            row["current_price"] = live["current_price"]
+        open_rows.append(row)
+
+    realized_pnl = sum(t["pnl"] for t in completed)
+    unrealized_pnl = sum(r["pnl"] for r in open_rows if r["pnl"] is not None)
+    total_pnl = realized_pnl + unrealized_pnl
+    total_invested = sum(t["invested"] for t in completed) + sum(r["invested"] for r in open_rows)
+    trade_count = len(completed) + len(open_rows)
+
     wins = [t for t in completed if t["pnl"] > 0]
     win_rate = (len(wins) / len(completed) * 100) if completed else 0.0
 
     sign = "+" if total_pnl >= 0 else ""
-    subject = f"[PAPER] Trading bot -- {today_str}: {sign}${total_pnl:,.2f} ({len(completed)} trades)"
+    noun = "trade" if trade_count == 1 else "trades"
+    still_held = f", {len(open_rows)} still open" if open_rows else ""
+    subject = (f"[PAPER] Trading bot -- {today_str}: {sign}${total_pnl:,.2f} "
+                f"({trade_count} {noun}{still_held})")
 
     lines = [
         f"Daily trading summary for {today_str} (PAPER account -- no real money)",
-        "=" * 62,
+        "=" * 68,
         "",
     ]
 
-    if not completed and not still_open:
+    if not trade_count:
         lines.append("No trades today.")
     else:
-        if completed:
-            lines.append(f"{'Symbol':<8}{'Strategy':<18}{'Invested':>12}{'P&L':>12}{'P&L %':>10}")
-            lines.append("-" * 62)
-            for t in completed:
+        lines.append(f"{'Symbol':<8}{'Strategy':<18}{'Invested':>12}{'P&L':>12}{'P&L %':>9}  Status")
+        lines.append("-" * 68)
+        for t in completed:
+            lines.append(
+                f"{t['symbol']:<8}{t['strategy']:<18}${t['invested']:>10,.2f}"
+                f"  {t['pnl']:>+9,.2f}  {t['pnl_pct']:>+6.2f}%  closed"
+            )
+        for r in open_rows:
+            if r["pnl"] is None:
                 lines.append(
-                    f"{t['symbol']:<8}{t['strategy']:<18}${t['invested']:>10,.2f}"
-                    f"  {t['pnl']:>+9,.2f}  {t['pnl_pct']:>+7.2f}%"
+                    f"{r['symbol']:<8}{r['strategy']:<18}${r['invested']:>10,.2f}"
+                    f"  {'n/a':>9}  {'n/a':>7}  STILL OPEN"
                 )
-            lines.append("-" * 62)
-            lines.append(f"{'TOTAL':<26}${total_invested:>10,.2f}  {total_pnl:>+9,.2f}")
+            else:
+                lines.append(
+                    f"{r['symbol']:<8}{r['strategy']:<18}${r['invested']:>10,.2f}"
+                    f"  {r['pnl']:>+9,.2f}  {r['pnl_pct']:>+6.2f}%  STILL OPEN"
+                )
+        lines.append("-" * 68)
+        lines.append(f"{'TOTAL':<26}${total_invested:>10,.2f}  {total_pnl:>+9,.2f}")
+        lines.append("")
+        lines.append(f"Trades: {trade_count} | Total invested: ${total_invested:,.2f} | "
+                      f"Total P&L: ${total_pnl:+,.2f}")
+        if completed:
+            lines.append(f"Closed: {len(completed)} | Win rate: {win_rate:.0f}% | "
+                          f"Realized P&L: ${realized_pnl:+,.2f}")
+        if open_rows:
+            lines.append(f"Open:   {len(open_rows)} | Unrealized P&L: ${unrealized_pnl:+,.2f} "
+                          f"(marked at the price when this email was sent, not a final result)")
             lines.append("")
-            lines.append(f"Trades: {len(completed)} | Win rate: {win_rate:.0f}% | "
-                          f"Total invested: ${total_invested:,.2f} | Total P&L: ${total_pnl:+,.2f}")
-
-        if still_open:
-            lines.append("")
-            lines.append(f"NOTE: {len(still_open)} position(s) still open (no matching exit found today) -- "
-                          f"unexpected given the end-of-day flatten; worth checking:")
-            for t in still_open:
-                lines.append(f"  {t['symbol']} ({t['strategy']}) -- {t['qty']:.0f} sh @ ${t['entry_price']:.2f}")
+            lines.append(f"WARNING: {len(open_rows)} position(s) were left open overnight. "
+                          f"FLATTEN_BEFORE_CLOSE is meant to close everything ~10 min before the "
+                          f"bell, so this means the bot was not running during that window -- "
+                          f"worth checking the Actions tab.")
 
     lines.append("")
     lines.append("-- Sent automatically by the trading bot's daily_summary.py")
@@ -207,7 +271,8 @@ if __name__ == "__main__":
     today_str = datetime.now(MARKET_TZ).strftime("%Y-%m-%d")
     orders = fetch_todays_filled_orders()
     completed, still_open = pair_round_trip_trades(orders)
-    subject, body = build_email_body(completed, still_open, today_str)
+    open_positions = fetch_open_positions() if still_open else {}
+    subject, body = build_email_body(completed, still_open, today_str, open_positions)
     print(body)
     send_email(subject, body)
     print(f"\nEmail sent to {EMAIL_TO}.")
