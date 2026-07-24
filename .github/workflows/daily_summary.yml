@@ -9,10 +9,11 @@ name: Daily trade summary email
 
 on:
   schedule:
-    # 21:30 UTC, weekdays -- after NYSE close in BOTH EDT (20:00 UTC)
-    # and EST (21:00 UTC), with buffer for the end-of-day flatten's
-    # fills to register. Doesn't need to be precise to the minute.
-    - cron: "30 21 * * 1-5"
+    # 21:15 UTC, weekdays -- after NYSE close in BOTH EDT (20:00 UTC)
+    # and EST (21:00 UTC), with a 15-min buffer (worst case, EST) for
+    # the end-of-day flatten's fills to register. Kept tight since the
+    # user wants the email as soon as possible after close.
+    - cron: "15 21 * * 1-5"
   workflow_dispatch:  # lets you trigger it manually to test, from the Actions tab
 
 jobs:
