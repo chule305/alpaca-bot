@@ -978,6 +978,43 @@ def market_done_for_day() -> bool:
     return seconds_until(clock.next_open, clock.timestamp) > SESSION_OVER_GAP_SECONDS
 
 
+def run_for_duration(duration_minutes: float) -> bool:
+    """
+    Runs cycles continuously for a wall-clock window, then returns.
+    Behaves like the continuous local loop, but bounded so a CI job ends
+    cleanly and the next scheduled one can take over. Returns True if any
+    cycle raised, so the caller can still exit non-zero -- a run that
+    failed every cycle must not report success.
+
+    A function rather than inline in __main__ specifically so it can be
+    tested against a simulated open market; the market-closed path was
+    the only one exercisable live outside trading hours.
+    """
+    log.info(f"Running in --duration-minutes mode: cycling for {duration_minutes:.0f} "
+              f"minutes, then exiting.")
+    deadline = time.monotonic() + duration_minutes * 60
+    had_error = False
+    while time.monotonic() < deadline:
+        try:
+            sleep_seconds = run_one_cycle()
+        except Exception as e:
+            # Keep the window alive through a bad cycle, but remember it
+            # so the process still exits non-zero -- otherwise a run that
+            # failed every single cycle would show up green.
+            log.error(f"Unexpected error in cycle, continuing after a short pause: {e}", exc_info=True)
+            had_error = True
+            sleep_seconds = 30
+        if sleep_seconds >= LONG_IDLE_SECONDS and market_done_for_day():
+            log.info("Market is closed for the day -- exiting early instead of idling.")
+            break
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        time.sleep(min(sleep_seconds, remaining))
+    log.info("Duration window finished.")
+    return had_error
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Adaptive intraday trading bot.")
     parser.add_argument("--once", action="store_true",
@@ -1063,32 +1100,7 @@ if __name__ == "__main__":
         log.info("Running in --once mode (single check cycle, for an external scheduler).")
         run_one_cycle()
     elif args.duration_minutes > 0:
-        # Bounded continuous mode: behaves like the local loop below, but
-        # exits after a set wall-clock window so a CI job ends cleanly and
-        # the next scheduled one can take over.
-        log.info(f"Running in --duration-minutes mode: cycling for {args.duration_minutes:.0f} "
-                  f"minutes, then exiting.")
-        deadline = time.monotonic() + args.duration_minutes * 60
-        had_error = False
-        while time.monotonic() < deadline:
-            try:
-                sleep_seconds = run_one_cycle()
-            except Exception as e:
-                # Keep the window alive through a bad cycle, but remember
-                # it so the process still exits non-zero -- otherwise a
-                # run that failed every single cycle would show up green.
-                log.error(f"Unexpected error in cycle, continuing after a short pause: {e}", exc_info=True)
-                had_error = True
-                sleep_seconds = 30
-            if sleep_seconds >= LONG_IDLE_SECONDS and market_done_for_day():
-                log.info("Market is closed for the day -- exiting early instead of idling.")
-                break
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                break
-            time.sleep(min(sleep_seconds, remaining))
-        log.info("Duration window finished.")
-        if had_error:
+        if run_for_duration(args.duration_minutes):
             raise SystemExit(1)
     else:
         while True:

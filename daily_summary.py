@@ -24,6 +24,7 @@ skipped rather than guessed at.
 """
 
 import os
+import json
 import smtplib
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
@@ -82,6 +83,57 @@ def fetch_todays_filled_orders() -> list:
         )
     )
     return [o for o in orders if o.filled_at is not None and o.filled_qty and float(o.filled_qty) > 0]
+
+
+WATCHLIST_STATE_FILE = "watchlist_state.json"
+
+
+def build_scanner_health_lines(today_str: str) -> list[str]:
+    """
+    Reports whether the scanner actually worked today.
+
+    This exists because a scanner failure is SILENT by design:
+    refresh_watchlist_if_needed falls back to the manual SYMBOLS list and
+    deliberately does NOT update last_scan_time (so it retries next
+    cycle). That means a stale timestamp is the only evidence anything is
+    wrong -- and it's in a JSON file nobody looks at. A broken scanner ran
+    for two days (2026-07-22 to 07-24) with every workflow run green
+    before anyone noticed the bot was only trading its fallback list.
+
+    So: surface it in the one thing that gets read every day.
+    """
+    try:
+        with open(WATCHLIST_STATE_FILE) as f:
+            state = json.load(f)
+    except FileNotFoundError:
+        return ["SCANNER: no watchlist state file found -- cannot tell whether the scanner ran."]
+    except Exception as e:
+        return [f"SCANNER: could not read watchlist state ({e})."]
+
+    watchlist = state.get("active_watchlist") or []
+    raw_scan_time = state.get("last_scan_time")
+
+    if not raw_scan_time:
+        return ["SCANNER WARNING: no successful scan has ever been recorded -- the bot is "
+                "running on its fallback SYMBOLS list, not scanner picks."]
+
+    try:
+        scan_dt = datetime.fromisoformat(raw_scan_time).astimezone(MARKET_TZ)
+    except Exception:
+        return [f"SCANNER: unreadable last_scan_time ({raw_scan_time!r})."]
+
+    scan_day = scan_dt.strftime("%Y-%m-%d")
+    if scan_day != today_str:
+        return [
+            f"SCANNER WARNING: the last successful scan was {scan_day} "
+            f"({scan_dt:%H:%M} ET), NOT today. Every scan since then has failed, so the bot "
+            f"has been trading its fallback SYMBOLS list instead of scanner picks. "
+            f"This is the exact failure that went unnoticed for two days -- worth "
+            f"investigating before the next session.",
+        ]
+
+    return [f"Scanner: OK -- last successful scan {scan_dt:%H:%M} ET, "
+            f"watching {len(watchlist)} symbol(s): {', '.join(watchlist) if watchlist else '(none)'}"]
 
 
 def fetch_open_positions() -> dict[str, dict]:
@@ -165,7 +217,8 @@ def pair_round_trip_trades(orders: list) -> tuple[list[dict], list[dict]]:
 
 
 def build_email_body(completed: list[dict], still_open: list[dict], today_str: str,
-                      open_positions: dict[str, dict] | None = None) -> tuple[str, str]:
+                      open_positions: dict[str, dict] | None = None,
+                      health_lines: list[str] | None = None) -> tuple[str, str]:
     """
     A position opened today counts as a trade whether or not it closed
     today. The first version of this counted only completed BUY->SELL
@@ -250,8 +303,19 @@ def build_email_body(completed: list[dict], still_open: list[dict], today_str: s
                           f"bell, so this means the bot was not running during that window -- "
                           f"worth checking the Actions tab.")
 
+    if health_lines:
+        lines.append("")
+        lines.append("-" * 68)
+        lines.extend(health_lines)
+
     lines.append("")
     lines.append("-- Sent automatically by the trading bot's daily_summary.py")
+
+    # A broken scanner is worth seeing without opening the email, since
+    # the whole failure mode is that it looks like nothing is wrong.
+    if any("WARNING" in line for line in (health_lines or [])):
+        subject = "[CHECK ME] " + subject
+
     return subject, "\n".join(lines)
 
 
@@ -272,7 +336,8 @@ if __name__ == "__main__":
     orders = fetch_todays_filled_orders()
     completed, still_open = pair_round_trip_trades(orders)
     open_positions = fetch_open_positions() if still_open else {}
-    subject, body = build_email_body(completed, still_open, today_str, open_positions)
+    subject, body = build_email_body(completed, still_open, today_str, open_positions,
+                                      build_scanner_health_lines(today_str))
     print(body)
     send_email(subject, body)
     print(f"\nEmail sent to {EMAIL_TO}.")

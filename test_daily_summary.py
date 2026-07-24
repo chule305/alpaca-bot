@@ -11,6 +11,7 @@ email config -- this file never calls send_email for real.
 
 import os
 import types
+import tempfile
 from datetime import datetime, timezone
 
 os.environ.setdefault("EMAIL_ADDRESS", "test@example.com")
@@ -151,6 +152,75 @@ def test_open_position_without_live_price_still_reported():
     check("P&L shown as n/a rather than a fabricated 0", "n/a" in body)
 
 
+def _with_watchlist_state(payload):
+    """Points daily_summary at a temp state file for one check."""
+    import json as _json
+    d = tempfile.mkdtemp()
+    path = os.path.join(d, "watchlist_state.json")
+    if payload is not None:
+        with open(path, "w") as f:
+            _json.dump(payload, f)
+    original = ds.WATCHLIST_STATE_FILE
+    ds.WATCHLIST_STATE_FILE = path
+    return original
+
+
+def test_scanner_health_flags_a_stale_scan():
+    """
+    Regression for the failure that hid for two days: the scanner returned
+    nothing on every run, fell back to SYMBOLS, and left last_scan_time
+    frozen at the last success. Every workflow run was green throughout.
+    This is the literal state file from that outage.
+    """
+    original = _with_watchlist_state(
+        {"active_watchlist": ["SMCI"], "last_scan_time": "2026-07-22T10:39:46.826489-04:00"})
+    try:
+        health = ds.build_scanner_health_lines("2026-07-24")
+        subject, body = ds.build_email_body([], [], "2026-07-24", {}, health)
+        check("a stale scan is reported as a WARNING",
+              any("WARNING" in line for line in health))
+        check("the warning names the date of the last good scan",
+              any("2026-07-22" in line for line in health))
+        check("the subject is flagged so it's visible without opening the email",
+              subject.startswith("[CHECK ME]"))
+        check("the warning reaches the email body", "WARNING" in body)
+    finally:
+        ds.WATCHLIST_STATE_FILE = original
+
+
+def test_scanner_health_reports_ok_when_scan_is_current():
+    original = _with_watchlist_state(
+        {"active_watchlist": ["SAFT", "RNG"], "last_scan_time": "2026-07-24T10:05:00-04:00"})
+    try:
+        health = ds.build_scanner_health_lines("2026-07-24")
+        subject, _ = ds.build_email_body([], [], "2026-07-24", {}, health)
+        check("a same-day scan reports OK", any("OK" in line for line in health))
+        check("no WARNING on a healthy day", not any("WARNING" in line for line in health))
+        check("a healthy day is not flagged in the subject",
+              not subject.startswith("[CHECK ME]"))
+        check("the health line lists what was being watched",
+              any("SAFT" in line for line in health))
+    finally:
+        ds.WATCHLIST_STATE_FILE = original
+
+
+def test_scanner_health_handles_never_scanned_and_missing_file():
+    original = _with_watchlist_state({"active_watchlist": [], "last_scan_time": None})
+    try:
+        health = ds.build_scanner_health_lines("2026-07-24")
+        check("a never-successful scan is a WARNING",
+              any("WARNING" in line for line in health))
+    finally:
+        ds.WATCHLIST_STATE_FILE = original
+
+    original = _with_watchlist_state(None)  # file deliberately absent
+    try:
+        health = ds.build_scanner_health_lines("2026-07-24")
+        check("a missing state file is reported, not crashed on", len(health) == 1)
+    finally:
+        ds.WATCHLIST_STATE_FILE = original
+
+
 if __name__ == "__main__":
     tests = [
         test_extract_strategy,
@@ -161,6 +231,9 @@ if __name__ == "__main__":
         test_build_email_body_totals,
         test_open_position_counts_as_a_trade,
         test_open_position_without_live_price_still_reported,
+        test_scanner_health_flags_a_stale_scan,
+        test_scanner_health_reports_ok_when_scan_is_current,
+        test_scanner_health_handles_never_scanned_and_missing_file,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

@@ -251,6 +251,88 @@ def test_scanner_tops_up_a_thin_watchlist():
         tb.active_watchlist, tb.last_scan_time = original
 
 
+# ---------------------------------------------------------------------------
+# DURATION MODE -- the GitHub Actions entry point. Exercised here against a
+# SIMULATED open market, because outside trading hours the only path that can
+# be run live is the market-closed early exit.
+# ---------------------------------------------------------------------------
+
+def test_run_for_duration_cycles_while_market_open():
+    """The whole point of this mode: many cycles per job, not one."""
+    calls = []
+    slept = []
+
+    def fake_cycle():
+        calls.append(1)
+        return 300.0  # what run_one_cycle returns on a normal 5-min cadence
+
+    def fake_sleep(seconds):
+        slept.append(seconds)
+        # Advance the loop's clock instead of really waiting.
+        fake_sleep.now += seconds
+    fake_sleep.now = 0.0
+
+    with patch.object(tb, "run_one_cycle", side_effect=fake_cycle), \
+         patch.object(tb, "market_done_for_day", return_value=False), \
+         patch.object(tb.time, "sleep", side_effect=fake_sleep), \
+         patch.object(tb.time, "monotonic", side_effect=lambda: fake_sleep.now):
+        had_error = tb.run_for_duration(30)  # 30 min at a 5-min cadence
+
+    check("runs many cycles in one job rather than a single one", len(calls) == 6)
+    check("sleeps the interval the cycle asked for", set(slept) == {300.0})
+    check("reports no error on a clean window", had_error is False)
+
+
+def test_run_for_duration_never_overruns_its_window():
+    """Must not sleep past the deadline -- a CI job that overruns gets
+    killed mid-cycle and its state never gets committed."""
+    def fake_sleep(seconds):
+        fake_sleep.now += seconds
+    fake_sleep.now = 0.0
+
+    with patch.object(tb, "run_one_cycle", return_value=3600.0), \
+         patch.object(tb, "market_done_for_day", return_value=False), \
+         patch.object(tb.time, "sleep", side_effect=fake_sleep), \
+         patch.object(tb.time, "monotonic", side_effect=lambda: fake_sleep.now):
+        tb.run_for_duration(10)  # 10 min window, cycle wants to idle 60 min
+
+    check("a long idle request is clamped to the window, not overrun",
+          fake_sleep.now <= 10 * 60 + 1)
+
+
+def test_run_for_duration_exits_when_session_is_over():
+    calls = []
+    with patch.object(tb, "run_one_cycle", side_effect=lambda: (calls.append(1), 3605.0)[1]), \
+         patch.object(tb, "market_done_for_day", return_value=True), \
+         patch.object(tb.time, "sleep") as mock_sleep:
+        tb.run_for_duration(150)
+    check("stops after one cycle once the session is over", len(calls) == 1)
+    check("does not idle away the rest of the window", not mock_sleep.called)
+
+
+def test_run_for_duration_survives_a_bad_cycle_but_reports_it():
+    """One bad cycle must not kill the window -- but the job must still go
+    red, or a run that failed every cycle would look green."""
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        raise RuntimeError("Alpaca hiccup")
+
+    def fake_sleep(seconds):
+        fake_sleep.now += seconds
+    fake_sleep.now = 0.0
+
+    with patch.object(tb, "run_one_cycle", side_effect=flaky), \
+         patch.object(tb, "market_done_for_day", return_value=False), \
+         patch.object(tb.time, "sleep", side_effect=fake_sleep), \
+         patch.object(tb.time, "monotonic", side_effect=lambda: fake_sleep.now):
+        had_error = tb.run_for_duration(5)
+
+    check("keeps cycling through repeated failures", len(calls) > 1)
+    check("still reports failure so the run goes red", had_error is True)
+
+
 if __name__ == "__main__":
     tests = [
         test_would_exceed_portfolio_risk_cap,
@@ -259,6 +341,10 @@ if __name__ == "__main__":
         test_check_symbol_gating,
         test_leveraged_etf_name_detection,
         test_scanner_tops_up_a_thin_watchlist,
+        test_run_for_duration_cycles_while_market_open,
+        test_run_for_duration_never_overruns_its_window,
+        test_run_for_duration_exits_when_session_is_over,
+        test_run_for_duration_survives_a_bad_cycle_but_reports_it,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

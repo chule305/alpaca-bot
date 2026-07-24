@@ -467,3 +467,27 @@ also add the signal that says the fallback is being used — a stale
 `last_scan_time` was the only evidence either bug existed, and only
 because the code happens not to update it on failure. "All runs green"
 proved nothing about whether the bot was actually working.
+
+### Follow-up: making the next failure loud instead of silent
+Both 07-24 bugs shared one property: they degraded into something
+plausible and still exited zero. Confidence in the fixes isn't the real
+protection — the protection is that a recurrence announces itself.
+
+- `daily_summary.py` now reads `watchlist_state.json` and reports scanner
+  health in the daily email. If `last_scan_time` isn't today's date, the
+  email says so explicitly and the subject is prefixed `[CHECK ME]`. Fed
+  the actual state file from the outage, this produces the warning — so
+  the two-day blind spot would have surfaced on day one.
+- The email also warns whenever a position is left open overnight, since
+  `FLATTEN_BEFORE_CLOSE` should make that impossible; it happening means
+  the bot wasn't running in the final 10 minutes.
+- `run_for_duration()` was extracted out of `__main__` specifically so the
+  market-OPEN path could be tested. Outside trading hours the only live-
+  exercisable path is the market-closed early exit, which is not the path
+  that matters. It now has coverage for cycling, deadline clamping, early
+  exit, and error-survival-but-still-report.
+
+Still unproven until a live session: the scanner against *intraday*
+movers (composition differs from after-hours), and GitHub's actual
+queuing behavior under the new 150-min/20-min arrangement. Both are
+observable in Monday's email rather than requiring a code dive.
