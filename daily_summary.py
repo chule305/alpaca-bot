@@ -37,17 +37,24 @@ from alpaca.common.enums import Sort
 
 load_dotenv()
 
-API_KEY = os.getenv("ALPACA_API_KEY")
-SECRET_KEY = os.getenv("ALPACA_SECRET_KEY")
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
-EMAIL_TO = os.getenv("EMAIL_TO", EMAIL_ADDRESS)
+# .strip() on every credential defends against a trailing newline/
+# whitespace sneaking into a pasted secret (e.g. a GitHub Actions secret
+# box) -- that produces a cryptic "Invalid header value"/SMTP auth error
+# with no obvious link back to "check for a stray newline", so it's
+# worth doing unconditionally. Confirmed this exact failure mode live:
+# a trailing "\n" on ALPACA_API_KEY reproduces requests' InvalidHeader
+# error exactly.
+API_KEY = (os.getenv("ALPACA_API_KEY") or "").strip()
+SECRET_KEY = (os.getenv("ALPACA_SECRET_KEY") or "").strip()
+EMAIL_ADDRESS = (os.getenv("EMAIL_ADDRESS") or "").strip()
+EMAIL_APP_PASSWORD = (os.getenv("EMAIL_APP_PASSWORD") or "").strip()
+EMAIL_TO = (os.getenv("EMAIL_TO") or EMAIL_ADDRESS).strip()
 # Provider-agnostic -- defaults to Gmail's server, but EMAIL_SMTP_SERVER
 # lets this send from any SMTP provider (e.g. smtp.mail.me.com for
 # iCloud) without touching code. All major providers use port 587 with
 # STARTTLS and require an app-specific password, not your normal one.
-EMAIL_SMTP_SERVER = os.getenv("EMAIL_SMTP_SERVER", "smtp.gmail.com")
-EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", 587))
+EMAIL_SMTP_SERVER = (os.getenv("EMAIL_SMTP_SERVER") or "smtp.gmail.com").strip()
+EMAIL_SMTP_PORT = int((os.getenv("EMAIL_SMTP_PORT") or "587").strip())
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit("ERROR: Fill in your Alpaca PAPER API keys in .env first.")

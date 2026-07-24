@@ -63,8 +63,14 @@ from strategy import (
 
 load_dotenv()
 
-API_KEY = os.getenv("ALPACA_API_KEY")
-SECRET_KEY = os.getenv("ALPACA_SECRET_KEY")
+# .strip() defends against a trailing newline/whitespace sneaking into a
+# pasted credential (e.g. via a GitHub Actions secret) -- that produces
+# a cryptic "Invalid header value" error from the requests library with
+# no obvious link back to "check your secret for a stray newline", so
+# it's worth stripping unconditionally rather than relying on every
+# credential being pasted perfectly clean everywhere this runs.
+API_KEY = (os.getenv("ALPACA_API_KEY") or "").strip()
+SECRET_KEY = (os.getenv("ALPACA_SECRET_KEY") or "").strip()
 
 # Widened from the original TSLA/NVDA/COIN after the first backtest showed
 # those three are behaviorally correlated (high-beta growth/risk-sentiment

@@ -28,8 +28,10 @@ from alpaca.trading.enums import QueryOrderStatus
 
 load_dotenv()
 
-API_KEY = os.getenv("ALPACA_API_KEY")
-SECRET_KEY = os.getenv("ALPACA_SECRET_KEY")
+# .strip() defends against a trailing newline/whitespace in a pasted
+# credential -- see trading_bot.py for the full explanation.
+API_KEY = (os.getenv("ALPACA_API_KEY") or "").strip()
+SECRET_KEY = (os.getenv("ALPACA_SECRET_KEY") or "").strip()
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit("ERROR: Fill in your Alpaca PAPER API keys in .env first.")
