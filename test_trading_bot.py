@@ -17,7 +17,7 @@ startup logging config -- same as it would on a real run.)
 import os
 import tempfile
 import types
-from datetime import date
+from datetime import date, datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -194,12 +194,71 @@ def test_check_symbol_gating():
           mock_sell.called and notional == 0.0)
 
 
+# ---------------------------------------------------------------------------
+# SCANNER -- regression cover for the 2026-07-24 silent-empty-watchlist bug,
+# where every scan returned nothing for two days and the bot ran the whole
+# time on its fallback SYMBOLS list without anything looking broken.
+# ---------------------------------------------------------------------------
+
+def test_leveraged_etf_name_detection():
+    """
+    Real Alpaca asset names seen live on 2026-07-24. The old ticker
+    denylist knew none of these symbols; the name pattern is what
+    actually catches them.
+    """
+    leveraged = [
+        "Tradr 2X Short NBIS Daily ETF",
+        "GraniteShares ETF Trust GraniteShares 2x Long NBIS Daily ETF",
+        "Themes ETF Trust Leverage Shares 2X Long NBIS Daily ETF",
+        "Tidal Trust II Defiance Daily Target 2X Long HIMS ETF",
+        "Direxion Daily Semiconductor Bull 3X Shares",
+        "ProShares UltraShort QQQ",
+    ]
+    ordinary = [
+        "Safety Insurance Group, Inc. Common Stock",
+        "RINGCENTRAL, INC.",
+        "Noodles & Company Class A Common Stock",
+        "Tesla, Inc. Common Stock",
+        "NVIDIA Corporation Common Stock",
+    ]
+    for name in leveraged:
+        check(f"flags leveraged ETF: {name[:45]}",
+              bool(tb.LEVERAGED_ETF_NAME_PATTERN.search(name)))
+    for name in ordinary:
+        check(f"allows ordinary stock: {name[:45]}",
+              not tb.LEVERAGED_ETF_NAME_PATTERN.search(name))
+
+
+def test_scanner_tops_up_a_thin_watchlist():
+    """A scan that legitimately finds only 1-2 names still leaves the bot
+    with a usable watchlist, rather than a near-empty one."""
+    original = (tb.active_watchlist, tb.last_scan_time)
+    try:
+        with patch.object(tb, "scan_for_volatile_stocks", return_value=["SAFT", "RNG"]), \
+             patch.object(tb, "save_watchlist_state"), \
+             patch.object(tb, "SCANNER_MIN_WATCHLIST_SIZE", 5), \
+             patch.object(tb, "SYMBOLS", ["TSLA", "NVDA", "COIN", "AMD", "PLTR"]), \
+             patch.object(tb, "USE_SCANNER", True):
+            tb.last_scan_time = None  # force a refresh
+            tb.refresh_watchlist_if_needed(datetime.now(timezone.utc))
+            result = tb.active_watchlist
+        check("a 2-name scan gets topped up to the 5-name floor", len(result) == 5)
+        check("the scanner's own picks come first and are kept",
+              result[:2] == ["SAFT", "RNG"])
+        check("top-up names come from the fallback list",
+              set(result[2:]) <= {"TSLA", "NVDA", "COIN", "AMD", "PLTR"})
+    finally:
+        tb.active_watchlist, tb.last_scan_time = original
+
+
 if __name__ == "__main__":
     tests = [
         test_would_exceed_portfolio_risk_cap,
         test_get_current_portfolio_risk_usd,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
+        test_leveraged_etf_name_detection,
+        test_scanner_tops_up_a_thin_watchlist,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

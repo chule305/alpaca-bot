@@ -23,6 +23,7 @@ is open -- it sleeps the rest of the time and wakes back up automatically.
 """
 
 import os
+import re
 import time
 import json
 import argparse
@@ -88,12 +89,33 @@ USE_SCANNER = os.getenv("USE_SCANNER", "true").strip().lower() in ("1", "true", 
 # much bigger watchlist every cycle cheap on API calls, so the scanner can
 # now afford to look harder and more often.
 SCANNER_WATCHLIST_SIZE = int(os.getenv("SCANNER_WATCHLIST_SIZE", 12))
+# Floor on the watchlist size: if a scan legitimately succeeds but finds
+# only a couple of qualifying names (common -- Alpaca caps the candidate
+# pool at 50 gainers + 50 losers, and most extreme movers are either
+# penny stocks or leveraged ETFs that get filtered out), top the list up
+# with the known-liquid SYMBOLS names rather than letting the bot go a
+# whole day with almost nothing to look at. Set to 0 to disable.
+SCANNER_MIN_WATCHLIST_SIZE = int(os.getenv("SCANNER_MIN_WATCHLIST_SIZE", 5))
 # Alpaca's screener endpoints hard-cap the "top" parameter at 50 server-side
 # ("invalid top: should not be larger than 50") -- found live on 2026-07-23
 # when this was set to 100. Clamped here (not just defaulted lower) so a
 # misconfigured env var can't reintroduce the same failure.
 SCANNER_CANDIDATE_POOL = min(int(os.getenv("SCANNER_CANDIDATE_POOL", 50)), 50)
 SCANNER_MIN_PRICE = float(os.getenv("SCANNER_MIN_PRICE", 10.0))
+# Minimum average DOLLAR volume (price x shares) for a candidate to count
+# as liquid enough to trade. This replaced the original liquidity gate,
+# which required a candidate to also appear in Alpaca's "most actives by
+# volume" top 50 -- that gate was structurally broken and silently
+# returned an EMPTY watchlist every scan for two days (2026-07-22 to
+# 2026-07-24), so the bot ran on the fallback SYMBOLS list the whole
+# time. Reason: "most active by SHARE volume" is dominated by cheap
+# stocks (a dollar buys more shares), so the only names appearing in both
+# the biggest-movers list AND the most-actives list were sub-$10 penny
+# stocks -- exactly what SCANNER_MIN_PRICE then rejected. The two filters
+# were mutually exclusive by construction. Measured live: 100 movers ->
+# 5 in both lists -> 0 survived the price filter. Dollar volume is the
+# correct liquidity measure and doesn't fight the price filter.
+SCANNER_MIN_DOLLAR_VOLUME = float(os.getenv("SCANNER_MIN_DOLLAR_VOLUME", 10_000_000))
 SCANNER_REFRESH_HOURS = float(os.getenv("SCANNER_REFRESH_HOURS", 0.5))
 EXCLUDE_LEVERAGED_ETFS = os.getenv("EXCLUDE_LEVERAGED_ETFS", "true").strip().lower() in ("1", "true", "yes")
 # The scanner ranks by size of today's move, which means it structurally
@@ -139,6 +161,18 @@ LEVERAGED_ETF_DENYLIST = {
 LOCAL_TZ = ZoneInfo(os.getenv("LOCAL_TIMEZONE", "Europe/Zagreb"))
 WATCHLIST_STATE_FILE = "watchlist_state.json"
 DAILY_RISK_STATE_FILE = "daily_risk_state.json"
+
+# Mutable run state. Initialized here (not only in the __main__ block) so
+# importing this module -- which the tests do -- gives a consistent
+# starting state instead of AttributeError on first access. The __main__
+# block still re-initializes these and then loads the saved state files
+# over the top, so live behavior is unchanged.
+active_watchlist: list[str] = list(SYMBOLS)
+last_scan_time: datetime | None = None
+last_flatten_date: date | None = None
+current_trading_day: date | None = None
+day_start_equity: float | None = None
+daily_loss_breaker_tripped = False
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit(
@@ -252,20 +286,62 @@ def fetch_news_counts(symbols: list[str]) -> dict[str, int]:
 # WATCHLIST SCANNER -- picks today's volatile-stock candidates automatically
 # ---------------------------------------------------------------------------
 
+# Matches the way leveraged/inverse ETFs name themselves: a multiplier
+# token ("2X", "3x", "1.5X"), or an explicit leverage/direction word.
+# Checked against Alpaca's own asset name, NOT a ticker list, because a
+# ticker denylist is unmaintainable here -- single-stock leveraged ETFs
+# launch constantly under new symbols. Found live on 2026-07-24: 14 of
+# the scanner's 21 surviving candidates were 2x single-stock ETFs
+# ("Tradr 2X Short NBIS Daily ETF", "GraniteShares 2x Long NBIS Daily
+# ETF", ...), none of which the ticker denylist knew about. These are
+# especially dangerous for this bot because its stop-loss/take-profit
+# percentages assume ordinary single-stock volatility, and a 2x/3x
+# product blows through them twice as fast.
+LEVERAGED_ETF_NAME_PATTERN = re.compile(
+    r"(\b\d+(\.\d+)?\s*X\b|\bLEVERAGE|\bINVERSE\b|\bULTRA|\bBULL\b|\bBEAR\b)",
+    re.IGNORECASE,
+)
+
+# Asset names never change, so cache them -- this keeps repeated scans
+# inside one long-running job from re-fetching the same metadata.
+_asset_name_cache: dict[str, str] = {}
+
+
+def is_leveraged_etf(symbol: str) -> bool | None:
+    """
+    True if Alpaca's asset name for this symbol looks like a leveraged or
+    inverse ETF, False if it clearly doesn't, None if it couldn't be
+    determined (lookup failed). Callers treat None as "skip it" -- see
+    scan_for_volatile_stocks for why that's the safe direction.
+    """
+    name = _asset_name_cache.get(symbol)
+    if name is None:
+        try:
+            name = trading_client.get_asset(symbol).name or ""
+        except Exception:
+            return None
+        _asset_name_cache[symbol] = name
+    return bool(LEVERAGED_ETF_NAME_PATTERN.search(name))
+
+
 def scan_for_volatile_stocks() -> list[str]:
     """
     Builds a watchlist automatically using Alpaca's screener data instead
     of a fixed symbol list:
       1. Pulls today's biggest % gainers and losers (candidates for
          volatility -- big moves happening right now).
-      2. Pulls today's most-active-by-volume stocks (a liquidity check).
-      3. Keeps only candidates that appear in BOTH lists, are above
-         SCANNER_MIN_PRICE, and haven't already moved more than
-         SCANNER_MAX_EXTENSION_PCT today (likely near-exhausted rather
-         than just getting started).
-      4. Optionally excludes known leveraged/inverse ETFs (see denylist
+      2. Keeps only candidates above SCANNER_MIN_PRICE that haven't
+         already moved more than SCANNER_MAX_EXTENSION_PCT today (likely
+         near-exhausted rather than just getting started).
+      3. Optionally excludes known leveraged/inverse ETFs (see denylist
          above) -- these move a lot structurally, not because anything
          unusual is actually happening.
+      4. Liquidity check: requires average DOLLAR volume (price x shares)
+         of at least SCANNER_MIN_DOLLAR_VOLUME, measured from real recent
+         bars. Alpaca's "most actives" list is used only as a free fast
+         path (anything in it is already known liquid) and as a fallback
+         if the bar fetch fails -- deliberately NOT as a hard gate; see
+         SCANNER_MIN_DOLLAR_VOLUME's comment for the outage that caused.
       5. If USE_NEWS_FILTER is on: drops candidates with fewer than
          MIN_NEWS_ITEMS recent articles (a mover with no news behind it
          is more likely noise/thin-volume than a real catalyst) -- unless
@@ -280,25 +356,89 @@ def scan_for_volatile_stocks() -> list[str]:
         movers = screener_client.get_market_movers(
             MarketMoversRequest(top=SCANNER_CANDIDATE_POOL, market_type=MarketType.STOCKS)
         )
-        actives = screener_client.get_most_actives(
-            MostActivesRequest(by=MostActivesBy.VOLUME, top=SCANNER_CANDIDATE_POOL)
-        )
     except Exception as e:
         log.error(f"SCANNER: could not fetch screener data: {e}")
         return []
 
-    liquid_symbols = {a.symbol for a in actives.most_actives}
+    # Best-effort only -- a failure here must not stop the scan, since
+    # this is now just a fast path, not a requirement.
+    known_liquid: set[str] = set()
+    try:
+        actives = screener_client.get_most_actives(
+            MostActivesRequest(by=MostActivesBy.VOLUME, top=SCANNER_CANDIDATE_POOL)
+        )
+        known_liquid = {a.symbol for a in actives.most_actives}
+    except Exception as e:
+        log.warning(f"SCANNER: could not fetch most-actives list ({e}) -- "
+                     f"falling back to dollar-volume checks alone.")
+
     candidates = list(movers.gainers) + list(movers.losers)
 
-    qualified = []
+    # Cheap filters first, so the bar fetch below only covers survivors.
+    prefiltered = []
     for m in candidates:
-        if m.symbol not in liquid_symbols or m.price < SCANNER_MIN_PRICE:
+        if m.price < SCANNER_MIN_PRICE:
             continue
         if abs(m.percent_change) > SCANNER_MAX_EXTENSION_PCT:
             continue
         if EXCLUDE_LEVERAGED_ETFS and m.symbol in LEVERAGED_ETF_DENYLIST:
             continue
-        qualified.append(m)
+        prefiltered.append(m)
+
+    if not prefiltered:
+        log.warning("SCANNER: no candidates survived the price/extension filters.")
+        return []
+
+    # Structural leveraged/inverse ETF check against Alpaca's asset names.
+    # Deliberately fail-CLOSED (an unverifiable symbol is skipped): the
+    # cost of skipping one candidate is ~zero since others are always
+    # available, while the cost of accidentally trading a 2x product with
+    # stops tuned for ordinary stocks is real. If the asset endpoint were
+    # down entirely this returns nothing and the caller falls back to the
+    # known-liquid SYMBOLS list, which is a safe degradation.
+    if EXCLUDE_LEVERAGED_ETFS:
+        kept = []
+        for m in prefiltered:
+            verdict = is_leveraged_etf(m.symbol)
+            if verdict is None:
+                log.info(f"SCANNER: skipping {m.symbol} -- could not verify what kind of asset it is.")
+                continue
+            if verdict:
+                continue
+            kept.append(m)
+        if len(kept) < len(prefiltered):
+            log.info(f"SCANNER: excluded {len(prefiltered) - len(kept)} leveraged/inverse ETF(s) "
+                      f"from {len(prefiltered)} candidate(s).")
+        prefiltered = kept
+        if not prefiltered:
+            log.warning("SCANNER: every candidate this cycle was a leveraged/inverse ETF.")
+            return []
+
+    # Dollar-volume liquidity check on whatever isn't already known liquid.
+    needs_check = [m.symbol for m in prefiltered if m.symbol not in known_liquid]
+    liquid_enough = set(known_liquid)
+    if needs_check:
+        try:
+            bars = get_recent_bars_batch(needs_check, lookback_days=5)
+            for symbol, df in bars.items():
+                if df is None or df.empty:
+                    continue
+                avg_dollar_volume = float((df["close"] * df["volume"]).mean())
+                # Bars are BAR_MINUTES long, so scale one bar's average up
+                # to a full 6.5-hour session for a comparable daily figure.
+                bars_per_session = (6.5 * 60) / BAR_MINUTES
+                if avg_dollar_volume * bars_per_session >= SCANNER_MIN_DOLLAR_VOLUME:
+                    liquid_enough.add(symbol)
+        except Exception as e:
+            # Degrade to the old behavior rather than returning nothing.
+            log.warning(f"SCANNER: dollar-volume check failed ({e}) -- falling back to "
+                         f"the most-actives list alone for liquidity this cycle.")
+
+    qualified = [m for m in prefiltered if m.symbol in liquid_enough]
+    if not qualified:
+        log.warning(f"SCANNER: {len(prefiltered)} candidate(s) passed price/extension filters but "
+                     f"none met the ${SCANNER_MIN_DOLLAR_VOLUME:,.0f} average dollar-volume bar.")
+        return []
 
     news_counts: dict[str, int] = {}
     if USE_NEWS_FILTER and qualified:
@@ -318,7 +458,7 @@ def scan_for_volatile_stocks() -> list[str]:
         if m.symbol not in picked:
             news_note = f", {news_counts.get(m.symbol, 0)} recent news item(s)" if USE_NEWS_FILTER else ""
             log.info(f"SCANNER: candidate {m.symbol} -- {m.percent_change:+.1f}% today, ${m.price:.2f}, "
-                      f"liquid (in top {SCANNER_CANDIDATE_POOL} by volume){news_note}")
+                      f"liquid{news_note}")
             picked.append(m.symbol)
         if len(picked) >= SCANNER_WATCHLIST_SIZE:
             break
@@ -386,6 +526,16 @@ def refresh_watchlist_if_needed(clock_timestamp: datetime) -> None:
     picked = scan_for_volatile_stocks()
 
     if picked:
+        if len(picked) < SCANNER_MIN_WATCHLIST_SIZE:
+            topped_up = list(picked)
+            for s in SYMBOLS:
+                if len(topped_up) >= SCANNER_MIN_WATCHLIST_SIZE:
+                    break
+                if s not in topped_up:
+                    topped_up.append(s)
+            log.info(f"SCANNER: only {len(picked)} name(s) qualified -- topping the watchlist up to "
+                      f"{len(topped_up)} with fallback symbols so there's still enough to work with.")
+            picked = topped_up
         active_watchlist = picked
         last_scan_time = clock_timestamp
         save_watchlist_state()
@@ -807,12 +957,39 @@ def run_one_cycle() -> float:
     return sleep_seconds
 
 
+# In --duration-minutes mode, a cycle asking to idle at least this long
+# is worth a quick "is the session actually over?" check before we commit
+# to waiting it out.
+LONG_IDLE_SECONDS = 15 * 60
+# ...and if the next open is further away than this, the trading day is
+# done (rather than us just sitting in a pre-open gap), so the run can
+# end early instead of holding a CI runner all night.
+SESSION_OVER_GAP_SECONDS = 2 * 3600
+
+
+def market_done_for_day() -> bool:
+    """True if the market is closed and the next open is hours away."""
+    try:
+        clock = trading_client.get_clock()
+    except Exception:
+        return False  # can't tell -- keep going rather than exiting early
+    if clock.is_open:
+        return False
+    return seconds_until(clock.next_open, clock.timestamp) > SESSION_OVER_GAP_SECONDS
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Adaptive intraday trading bot.")
     parser.add_argument("--once", action="store_true",
                          help="Run a single check cycle and exit, instead of looping forever. "
                               "For external schedulers (e.g. GitHub Actions) that decide when the "
                               "next run happens, rather than this process sleeping in between.")
+    parser.add_argument("--duration-minutes", type=float, default=0,
+                         help="Run cycles continuously for this many minutes, then exit. Bridges "
+                              "unreliable external schedulers: GitHub Actions silently drops most "
+                              "high-frequency cron ticks (measured 2026-07-24: 5 runs fired out of "
+                              "~96 scheduled, and the first one landed 88 minutes after the open), "
+                              "so one run has to cover a WINDOW rather than a single instant.")
     args = parser.parse_args()
 
     active_strategies = []
@@ -885,6 +1062,34 @@ if __name__ == "__main__":
         # scheduler (e.g. GitHub Actions), instead of silently vanishing.
         log.info("Running in --once mode (single check cycle, for an external scheduler).")
         run_one_cycle()
+    elif args.duration_minutes > 0:
+        # Bounded continuous mode: behaves like the local loop below, but
+        # exits after a set wall-clock window so a CI job ends cleanly and
+        # the next scheduled one can take over.
+        log.info(f"Running in --duration-minutes mode: cycling for {args.duration_minutes:.0f} "
+                  f"minutes, then exiting.")
+        deadline = time.monotonic() + args.duration_minutes * 60
+        had_error = False
+        while time.monotonic() < deadline:
+            try:
+                sleep_seconds = run_one_cycle()
+            except Exception as e:
+                # Keep the window alive through a bad cycle, but remember
+                # it so the process still exits non-zero -- otherwise a
+                # run that failed every single cycle would show up green.
+                log.error(f"Unexpected error in cycle, continuing after a short pause: {e}", exc_info=True)
+                had_error = True
+                sleep_seconds = 30
+            if sleep_seconds >= LONG_IDLE_SECONDS and market_done_for_day():
+                log.info("Market is closed for the day -- exiting early instead of idling.")
+                break
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(sleep_seconds, remaining))
+        log.info("Duration window finished.")
+        if had_error:
+            raise SystemExit(1)
     else:
         while True:
             try:

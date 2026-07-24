@@ -104,12 +104,36 @@ runs (screen can turn off, just not full sleep).
 
 `.github/workflows/trade.yml` runs the bot on a schedule in GitHub's cloud
 instead of a continuous local process — nothing needs to stay on at
-home. `trading_bot.py --once` runs a single check cycle and exits;
-GitHub's scheduler re-invokes it every 5 minutes during market hours.
-State that needs to survive between runs (`watchlist_state.json`,
+home. State that needs to survive between runs (`watchlist_state.json`,
 `daily_risk_state.json`) is committed back to the repo at the end of
 every run, so the next run picks up where the last one left off — this
 is why those two files are tracked in git rather than ignored.
+
+**Don't trust GitHub's cron to be the bot's heartbeat.** This originally
+ran `trading_bot.py --once` on a `*/5` schedule, on the assumption that
+meant a check every 5 minutes. It didn't. On 2026-07-24 GitHub fired
+**5 of ~96 scheduled ticks** (gaps of 65–111 minutes), and the first one
+landed at 14:58 UTC — 88 minutes after the 13:30 open — so the
+opening-range and gap strategies never got a chance to run at all.
+GitHub documents scheduled workflows as best-effort and drops them under
+load, and a high-frequency cron makes that worse rather than better.
+
+So the workflow now runs `trading_bot.py --duration-minutes 150`: one job
+stays alive for 2.5 hours and runs its own cycle every
+`CHECK_INTERVAL_MINUTES` from inside that window. The cron only decides
+how often a new *window* starts. Because GitHub allows one running plus
+one queued run per concurrency group, the queued job starts the instant
+the current one ends, so coverage stays continuous even when most ticks
+are dropped. Jobs start before the open so one is already alive at the
+bell, and exit early on their own once the session is over.
+
+You will see a lot of grey **cancelled** runs in the Actions tab — that's
+expected and healthy. GitHub keeps only the most recent queued run per
+concurrency group and cancels the older ones, which is exactly what stops
+a backlog from building up.
+
+`trading_bot.py --once` (a single cycle, then exit) still exists for any
+external scheduler that genuinely fires reliably.
 
 Setup (one-time):
 1. Create a GitHub repo and push this project to it.
@@ -321,15 +345,39 @@ positions are still managed normally, this only blocks new entries.
 ## Picking which stocks to trade: automatic scanner
 
 By default, the bot scans the market itself every 30 minutes: pulls the
-biggest gainers/losers, keeps only ones that are also among the most
-active by volume (a liquidity check against thin/manipulated stocks),
-filters out anything under `SCANNER_MIN_PRICE` or already moved more
-than `SCANNER_MAX_EXTENSION_PCT` today, excludes leveraged ETFs, and —
+biggest gainers/losers, filters out anything under `SCANNER_MIN_PRICE` or
+already moved more than `SCANNER_MAX_EXTENSION_PCT` today, requires at
+least `SCANNER_MIN_DOLLAR_VOLUME` of average daily dollar volume (a
+liquidity check against thin/manipulated stocks), excludes leveraged and
+inverse ETFs, and —
 if `USE_NEWS_FILTER` is on — drops candidates with no recent news
 behind them (a mover with zero news is more likely thin-volume noise
 than a real catalyst; this is a presence/frequency check, **not** AI
 sentiment scoring, so it stays fast and simple). It then trades the top
-`SCANNER_WATCHLIST_SIZE` survivors.
+`SCANNER_WATCHLIST_SIZE` survivors. If fewer than
+`SCANNER_MIN_WATCHLIST_SIZE` names qualify, the list is topped up from
+`SYMBOLS` so a thin scan day doesn't leave the bot with nothing to watch.
+
+Two filters here have bitten this project and are worth understanding:
+
+- **Liquidity is measured in dollars, not shares.** The original version
+  required a candidate to appear in Alpaca's "most actives by volume"
+  list. That list is share-count based, so it's dominated by cheap
+  stocks — meaning the only names appearing in *both* the biggest-movers
+  list and the most-actives list were sub-$10 penny stocks, which
+  `SCANNER_MIN_PRICE` then rejected. The two filters were mutually
+  exclusive by construction, so **every scan returned an empty list** and
+  the bot silently ran on its fallback `SYMBOLS` list for two days
+  (2026-07-22 → 07-24) without anything looking broken.
+- **Leveraged ETFs are excluded by asset name, not by ticker.** A
+  hardcoded ticker denylist can't keep up: 2x/3x *single-stock* ETFs
+  launch constantly under new symbols, and on 2026-07-24 fourteen of the
+  scanner's twenty-one surviving candidates were ones the denylist had
+  never heard of ("Tradr 2X Short NBIS Daily ETF" and similar). These are
+  particularly dangerous here because the stop-loss and take-profit
+  percentages assume ordinary single-stock volatility, and a 2x product
+  blows through them twice as fast. The name check is the real gate; the
+  ticker denylist is just a free first pass.
 
 ```
 SCANNER_REFRESH_HOURS=0.5

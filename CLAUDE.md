@@ -397,3 +397,73 @@ now that `rvol_spike` isn't absorbing bars ahead of it.
 - Be honest about limitations in output/docs (slippage not modeled,
   overfitting risk, performance characteristics) rather than overstating
   confidence in results.
+
+## 2026-07-24: first full unattended trading day — two silent failures
+
+The bot traded exactly one symbol (TSLA) on its first real day running on
+GitHub Actions. Neither cause was visible from the outside: every workflow
+run reported **success**, and the daily summary email sent fine. Both bugs
+failed silently into a plausible-looking fallback, which is the specific
+thing to watch for in this system.
+
+### 1. The scanner had been returning an empty list for two days
+
+`watchlist_state.json` still read `{"active_watchlist": ["SMCI"],
+"last_scan_time": "2026-07-22..."}` — a fossil. The fallback path in
+`refresh_watchlist_if_needed` deliberately does *not* update
+`last_scan_time` (so it retries next cycle), which means a stale
+timestamp there is the tell that scans have been failing, not succeeding.
+Every run since 07-22 fell back to `SYMBOLS`, and TSLA is simply the
+first name in that list.
+
+Root cause, reproduced live rather than guessed: the scan required a
+candidate to appear in **both** the top-50 movers and the top-50
+most-actives-by-volume. Most-actives is share-count based, so it's
+dominated by cheap stocks; the intersection of "biggest % movers" and
+"most shares traded" is almost entirely sub-$10 penny stocks — exactly
+what `SCANNER_MIN_PRICE=10` then rejects. Measured: 100 candidates → 5 in
+both lists → **0** survived the price filter. The two filters were
+mutually exclusive by construction, so the scanner could never return
+anything. Fixed by making liquidity a **dollar-volume** measurement from
+real bars (`SCANNER_MIN_DOLLAR_VOLUME`); most-actives is now only a free
+fast path and a degradation fallback, never a gate.
+
+A second bug was hiding behind the first: 14 of the 21 candidates that
+then survived were 2x **single-stock** leveraged ETFs ("Tradr 2X Short
+NBIS Daily ETF", "GraniteShares 2x Long NBIS Daily ETF") that the
+hardcoded `LEVERAGED_ETF_DENYLIST` had never heard of. A ticker denylist
+is unmaintainable here — these launch constantly under new symbols — so
+detection is now by **asset name pattern** against Alpaca's own metadata
+(`is_leveraged_etf`), which is what actually catches them. This matters
+beyond tidiness: the fixed 5%/10% stop and target assume ordinary
+single-stock volatility, and a 2x product moves through them twice as
+fast. That check fails **closed** (an unverifiable symbol is skipped) —
+skipping a candidate costs nothing, trading a leveraged ETF by accident
+does not.
+
+### 2. GitHub ran the bot 5 times, not 96
+
+`cron: "*/5"` does not mean "every 5 minutes." Actual scheduled runs on
+07-24: 14:58, 16:49, 18:10, 19:47, 20:52 UTC — gaps of 65–111 minutes,
+and the first landed **88 minutes after the open**, so ORB and gap
+continuation (both enabled) never had a chance to fire at all. GitHub
+treats scheduled workflows as best-effort and drops them under load;
+hammering it with a high-frequency cron makes this worse, not better.
+
+Fixed by inverting the model: the cron no longer *is* the heartbeat, it
+just starts a **window**. `trading_bot.py --duration-minutes 150` keeps
+one job alive for 2.5h running its own cycle every
+`CHECK_INTERVAL_MINUTES`. Since GitHub permits one running + one queued
+run per concurrency group, the queued job starts the moment the current
+one ends — coverage stays continuous even when most ticks are dropped,
+and it degrades gracefully (only one tick needs to land per window). Jobs
+start before the open so one is alive at the bell, and exit early once
+the session is over rather than holding a runner all night.
+
+### The lesson worth carrying forward
+Both failures were invisible because each fell back to something
+reasonable-looking and still exited zero. When adding a fallback path,
+also add the signal that says the fallback is being used — a stale
+`last_scan_time` was the only evidence either bug existed, and only
+because the code happens not to update it on failure. "All runs green"
+proved nothing about whether the bot was actually working.

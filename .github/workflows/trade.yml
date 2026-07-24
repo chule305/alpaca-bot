@@ -12,13 +12,25 @@ name: Trading bot check cycle
 
 on:
   schedule:
-    # Every 5 minutes, weekdays, 13:00-21:15 UTC. Deliberately wider than
-    # NYSE's actual 9:30am-4pm ET session (13:30-20:00 UTC in EDT,
-    # 14:30-21:00 UTC in EST) so it covers both daylight-saving offsets
-    # without needing seasonal updates -- ticks outside the real session
-    # just hit the market-closed check inside the script and exit almost
-    # immediately (cheap; no cost concern on a public repo either way).
-    - cron: "*/5 13-21 * * 1-5"
+    # Every 20 minutes, weekdays, 12:40-21:00 UTC.
+    #
+    # IMPORTANT: the cron does NOT set how often the bot checks the market
+    # -- trading_bot.py's own --duration-minutes loop does that (every
+    # CHECK_INTERVAL_MINUTES, from inside a single long-running job). This
+    # schedule only decides how often a new *window* is started.
+    #
+    # Why: this used to be "*/5" on the assumption that meant a check every
+    # 5 minutes. It didn't. On 2026-07-24 GitHub actually fired 5 of the
+    # ~96 scheduled ticks (gaps of 65-111 min), and the first one landed at
+    # 14:58 UTC -- 88 minutes after the 13:30 open, so the opening-range and
+    # gap strategies never got a chance to run at all. GitHub explicitly
+    # treats scheduled workflows as best-effort and drops them under load,
+    # and hammering it with a high-frequency cron makes that worse, not
+    # better. So: fewer, longer-lived jobs that each cover a window, and the
+    # schedule only needs to land occasionally for coverage to stay
+    # continuous. Starts before the open (12:40 UTC) so a job is already
+    # alive and waiting when the bell rings, in both EDT and EST.
+    - cron: "*/20 12-21 * * 1-5"
   # Lets you trigger a run manually from the Actions tab, e.g. to verify
   # the setup works before waiting for the next scheduled tick.
   workflow_dispatch:
@@ -36,7 +48,10 @@ permissions:
 jobs:
   trade:
     runs-on: ubuntu-latest
-    timeout-minutes: 8  # a single cycle should be fast; guards against a hung run blocking the next one
+    # Each job now covers a ~2.5h window of trading rather than one instant
+    # (see the schedule comment). Timeout is a little above the window so a
+    # hung cycle still gets killed rather than blocking the next job.
+    timeout-minutes: 165
     steps:
       - uses: actions/checkout@v4
 
@@ -69,7 +84,9 @@ jobs:
           BAR_MINUTES: "5"
           USE_SCANNER: "true"
           SCANNER_WATCHLIST_SIZE: "12"
+          SCANNER_MIN_WATCHLIST_SIZE: "5"
           SCANNER_MIN_PRICE: "10"
+          SCANNER_MIN_DOLLAR_VOLUME: "10000000"
           SCANNER_REFRESH_HOURS: "0.5"
           SCANNER_MAX_EXTENSION_PCT: "50"
           USE_NEWS_FILTER: "true"
@@ -101,12 +118,28 @@ jobs:
           ENTRY_BLACKOUT_START_MINUTES: "210"
           ENTRY_BLACKOUT_END_MINUTES: "270"
           LOCAL_TIMEZONE: "Europe/Zagreb"
-        run: python trading_bot.py --once
+        # 150 min per job, against a 20-min schedule: overlapping windows
+        # are intentional. GitHub allows one running + one queued run per
+        # concurrency group, so the queued one starts the moment this
+        # finishes -- coverage stays continuous even when most cron ticks
+        # get dropped. Exits early on its own once the session is over.
+        run: python trading_bot.py --duration-minutes 150
 
       - name: Commit updated state, if any
+        # always() so a run that errored partway still saves the state it
+        # did manage to write, rather than throwing the whole day away.
+        if: always()
         run: |
           git config user.name "trading-bot"
           git config user.email "actions@users.noreply.github.com"
           git add watchlist_state.json daily_risk_state.json
-          git diff --cached --quiet || git commit -m "Update bot state [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "No state changes to commit."
+          else
+            git commit -m "Update bot state [skip ci]"
+            # A 150-minute job leaves a wide window for some other commit
+            # to land first, so rebase onto it instead of failing the run
+            # on a stale ref.
+            git pull --rebase --autostash
+            git push
+          fi
