@@ -1,4 +1,5 @@
 name: Trading bot check cycle
+# (re-touched to force GitHub to re-index this workflow file)
 
 # Runs the bot's single-cycle mode (trading_bot.py --once) on a schedule
 # instead of one continuous local process, since nothing is available to
