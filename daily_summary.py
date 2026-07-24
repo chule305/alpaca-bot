@@ -42,13 +42,20 @@ SECRET_KEY = os.getenv("ALPACA_SECRET_KEY")
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 EMAIL_TO = os.getenv("EMAIL_TO", EMAIL_ADDRESS)
+# Provider-agnostic -- defaults to Gmail's server, but EMAIL_SMTP_SERVER
+# lets this send from any SMTP provider (e.g. smtp.mail.me.com for
+# iCloud) without touching code. All major providers use port 587 with
+# STARTTLS and require an app-specific password, not your normal one.
+EMAIL_SMTP_SERVER = os.getenv("EMAIL_SMTP_SERVER", "smtp.gmail.com")
+EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", 587))
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit("ERROR: Fill in your Alpaca PAPER API keys in .env first.")
 if not EMAIL_ADDRESS or not EMAIL_APP_PASSWORD:
     raise SystemExit("ERROR: EMAIL_ADDRESS and EMAIL_APP_PASSWORD must be set "
                       "(GitHub secrets in CI, or .env locally) to send the summary email. "
-                      "EMAIL_APP_PASSWORD is a Gmail App Password, NOT your normal Gmail password.")
+                      "EMAIL_APP_PASSWORD is an APP-SPECIFIC password from your email "
+                      "provider, NOT your normal account password.")
 
 trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 MARKET_TZ = ZoneInfo("America/New_York")
@@ -183,7 +190,7 @@ def send_email(subject: str, body: str) -> None:
     msg["From"] = EMAIL_ADDRESS
     msg["To"] = EMAIL_TO
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    with smtplib.SMTP(EMAIL_SMTP_SERVER, EMAIL_SMTP_PORT) as server:
         server.starttls()
         server.login(EMAIL_ADDRESS, EMAIL_APP_PASSWORD)
         server.send_message(msg)

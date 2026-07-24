@@ -37,4 +37,9 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          # iCloud's SMTP server -- EMAIL_ADDRESS should be an
+          # @icloud.com (or @me.com/@mac.com) address, with an
+          # app-specific password from appleid.apple.com, not Gmail.
+          EMAIL_SMTP_SERVER: smtp.mail.me.com
+          EMAIL_SMTP_PORT: "587"
         run: python daily_summary.py

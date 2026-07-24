@@ -145,20 +145,28 @@ triggered it (via Alpaca's `client_order_id` field) specifically so
 this email can attribute each trade to a strategy, not just show raw
 numbers.
 
+Provider-agnostic — the workflow is currently set up for **iCloud Mail**
+(`smtp.mail.me.com`), sending an account's own email to itself.
+
 Setup (in addition to the two Alpaca secrets above):
-1. On the Gmail account you want to send FROM: turn on 2-Step
-   Verification (myaccount.google.com/security) if it isn't already on.
-2. Create an **App Password**: myaccount.google.com/apppasswords → name
-   it anything (e.g. "trading bot") → copy the 16-character password it
-   generates. This is NOT your normal Gmail password, and your normal
-   password won't work for this.
-3. Repo Settings → Secrets and variables → Actions → add two more
-   secrets: `EMAIL_ADDRESS` (the Gmail address) and
-   `EMAIL_APP_PASSWORD` (the 16-character password from step 2).
-4. By default it emails that same address. To send somewhere else,
+1. On the iCloud account you want to send from/to: go to
+   appleid.apple.com → Sign-In and Security → **App-Specific Passwords**
+   → generate one, name it anything (e.g. "trading bot"). This is NOT
+   your normal Apple ID password, and your normal password won't work
+   for this.
+2. Repo Settings → Secrets and variables → Actions → add two more
+   secrets: `EMAIL_ADDRESS` (your full `@icloud.com` address) and
+   `EMAIL_APP_PASSWORD` (the app-specific password from step 1).
+3. By default it emails that same address. To send somewhere else,
    also add an `EMAIL_TO` secret with the destination address.
-5. Trigger it manually once from the Actions tab to confirm it sends
+4. Trigger it manually once from the Actions tab to confirm it sends
    before waiting for the schedule.
+
+To use a different provider instead (e.g. Gmail), set `EMAIL_ADDRESS`/
+`EMAIL_APP_PASSWORD` to that account's own app password, and override
+`EMAIL_SMTP_SERVER` in the workflow (defaults to `smtp.gmail.com` if
+unset, so removing the `EMAIL_SMTP_SERVER` line entirely would also
+work for Gmail).
 
 ## Risk management
 
