@@ -504,7 +504,8 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
     return (portfolio_risk_estimate + projected_new_risk) > cap
 
 
-def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equity: float | None):
+def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equity: float | None,
+                     reason_key: str = "unknown"):
     """
     Buys a stop-loss/take-profit-protected position ("bracket" order).
 
@@ -524,6 +525,13 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     Stop/target levels come from strategy.compute_stop_and_target, the
     same helper the backtester uses, so live and backtest can't drift
     apart on this either.
+
+    The order's client_order_id is tagged with reason_key (which
+    strategy triggered it) -- Alpaca has no concept of "why" an order
+    was placed, and trading_log.txt doesn't persist across GitHub
+    Actions' fresh-checkout-per-run model, so this is the only place
+    that information can survive to be read back later (e.g. by
+    daily_summary.py) without adding a whole separate state file.
 
     Returns (order, notional_usd) -- order is None if the trade was
     skipped (computed size was 0 shares), in which case notional_usd is 0.
@@ -554,6 +562,7 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         order_class=OrderClass.BRACKET,
         take_profit=TakeProfitRequest(limit_price=take_profit_price),
         stop_loss=StopLossRequest(stop_price=stop_price),
+        client_order_id=f"{reason_key}-{int(datetime.now(timezone.utc).timestamp())}",
     )
     notional = qty * last_price
     log.info(f"[{symbol}] Buying {qty} share(s) (~${notional:.0f}, {sizing_style} sizing) | "
@@ -622,7 +631,7 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT="
                           f"{MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate risk cap).")
             else:
-                order, notional = place_buy_order(symbol, last_price, atr_value, equity)
+                order, notional = place_buy_order(symbol, last_price, atr_value, equity, reason_key)
                 if order is not None:
                     log.info(f"[{symbol}] ACTION: BUY (order id {order.id}, strategy: {reason_key})")
                     notional_opened = notional

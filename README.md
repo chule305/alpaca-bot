@@ -32,6 +32,8 @@ something to trust on description alone.
   portfolio risk cap, daily-risk-state persistence, entry gating order.
 - `export_trades.py` — pulls your full order history and account equity
   curve into CSV files for outside analysis.
+- `daily_summary.py` / `test_daily_summary.py` — emails a daily trade
+  summary (see "Daily email summary" below) and its tests.
 - `.env` — your settings and API keys (never share this file).
 - `requirements.txt` — what to install.
 
@@ -124,6 +126,39 @@ The workflow's `env:` block mirrors this project's `.env` tuning
 explicitly (not left to code defaults) specifically so a future code
 change can't silently change what the unattended bot does — if you
 retune something locally and want it live, update both places.
+
+**Note on GitHub's own indexing**: if a brand-new workflow file doesn't
+show up under the repo's Actions tab (or `.../actions/workflows/trade.yml`
+says "This workflow does not exist") even though it's clearly committed,
+that's a known GitHub quirk with workflows added in a repo's very first
+commit. Fix: make any trivial edit to the file and push again — GitHub
+re-indexes it and it shows up within seconds.
+
+## Daily email summary
+
+`.github/workflows/daily_summary.yml` runs `daily_summary.py` once a
+day after market close and emails what was traded, how much was
+invested, and how much was made or lost — pulled directly from Alpaca's
+real order history (not from local logs, which don't persist between
+GitHub Actions runs). Each buy order is tagged with the strategy that
+triggered it (via Alpaca's `client_order_id` field) specifically so
+this email can attribute each trade to a strategy, not just show raw
+numbers.
+
+Setup (in addition to the two Alpaca secrets above):
+1. On the Gmail account you want to send FROM: turn on 2-Step
+   Verification (myaccount.google.com/security) if it isn't already on.
+2. Create an **App Password**: myaccount.google.com/apppasswords → name
+   it anything (e.g. "trading bot") → copy the 16-character password it
+   generates. This is NOT your normal Gmail password, and your normal
+   password won't work for this.
+3. Repo Settings → Secrets and variables → Actions → add two more
+   secrets: `EMAIL_ADDRESS` (the Gmail address) and
+   `EMAIL_APP_PASSWORD` (the 16-character password from step 2).
+4. By default it emails that same address. To send somewhere else,
+   also add an `EMAIL_TO` secret with the destination address.
+5. Trigger it manually once from the Actions tab to confirm it sends
+   before waiting for the schedule.
 
 ## Risk management
 

@@ -1,0 +1,40 @@
+name: Daily trade summary email
+
+# Runs once a day after market close, emails what was traded, how much
+# was invested, and how much was made/lost -- pulled directly from
+# Alpaca's real order history (see daily_summary.py for why: nothing
+# local persists between this workflow's runs and trade.yml's runs
+# except what's committed to git, so Alpaca itself is the one reliable
+# source of truth for "what actually happened today").
+
+on:
+  schedule:
+    # 21:30 UTC, weekdays -- after NYSE close in BOTH EDT (20:00 UTC)
+    # and EST (21:00 UTC), with buffer for the end-of-day flatten's
+    # fills to register. Doesn't need to be precise to the minute.
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:  # lets you trigger it manually to test, from the Actions tab
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send daily summary email
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: python daily_summary.py
