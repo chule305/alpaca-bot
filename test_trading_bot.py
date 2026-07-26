@@ -24,12 +24,18 @@ import numpy as np
 import pandas as pd
 from alpaca.trading.enums import OrderType
 
+# trading_bot configures its log file at IMPORT time, so this has to be set
+# before the import below or the suite's output (including deliberate test
+# tracebacks) lands in the real logs/<today>.log that gets committed --
+# noise in exactly the file a future post-mortem depends on.
+os.environ["LOG_DIR"] = tempfile.mkdtemp()
+
 import trading_bot as tb
 import trade_recorder
 
-# check_symbol records real trades, so without this the suite appends test
-# rows to the project's actual trades.csv -- which is committed to git and
-# is meant to be genuine trading history, not test noise.
+# Likewise: check_symbol records real trades, so without this the suite
+# appends test rows to the project's actual trades.csv, which is committed
+# to git and meant to be genuine trading history.
 trade_recorder.TRADE_HISTORY_FILE = os.path.join(tempfile.mkdtemp(), "trades.csv")
 
 FAILURES = []
