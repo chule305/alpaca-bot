@@ -28,7 +28,6 @@ import time
 import json
 import argparse
 import logging
-from logging.handlers import RotatingFileHandler
 from datetime import datetime, date, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -46,6 +45,7 @@ from alpaca.data.requests import StockBarsRequest, MostActivesRequest, MarketMov
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import MostActivesBy, MarketType
 
+from trade_recorder import record_trade, extract_context
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
@@ -184,17 +184,56 @@ if not SYMBOLS:
     raise SystemExit("ERROR: SYMBOLS in your .env file is empty. Add at least one stock ticker "
                       "(used as a fallback if the scanner is off or fails).")
 
+# Logs are written per TRADING DAY into logs/, not to one growing file.
+#
+# The reason is GitHub Actions: every scheduled run gets a fresh checkout
+# and the runner is destroyed afterwards, so anything not committed back
+# is gone forever. That's why diagnosing the 2026-07-24 failures meant
+# reproducing them locally instead of just reading what the bot had
+# logged -- there was nothing left to read. A dated file per day means
+# every run that day appends to the same file, the workflow commits it
+# back, and the whole session's terminal output stays available
+# afterwards for exactly that kind of post-mortem.
+LOG_DIR = os.getenv("LOG_DIR", "logs").strip()
+LOG_RETENTION_DAYS = int(os.getenv("LOG_RETENTION_DAYS", 30))
+MARKET_TZ_FOR_LOGS = ZoneInfo("America/New_York")
+
+
+def _todays_log_path() -> str:
+    os.makedirs(LOG_DIR, exist_ok=True)
+    day = datetime.now(MARKET_TZ_FOR_LOGS).strftime("%Y-%m-%d")
+    return os.path.join(LOG_DIR, f"{day}.log")
+
+
+def _prune_old_logs() -> None:
+    """Keeps the repo from growing without bound, since these get committed."""
+    try:
+        cutoff = datetime.now(MARKET_TZ_FOR_LOGS).date() - timedelta(days=LOG_RETENTION_DAYS)
+        for name in os.listdir(LOG_DIR):
+            if not name.endswith(".log"):
+                continue
+            try:
+                file_day = datetime.strptime(name[:-4], "%Y-%m-%d").date()
+            except ValueError:
+                continue
+            if file_day < cutoff:
+                os.remove(os.path.join(LOG_DIR, name))
+    except Exception:
+        pass  # log housekeeping must never stop the bot from trading
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(message)s",
     handlers=[
-        # Rotates at ~5MB, keeps 5 old logs -- left running for weeks at a
-        # time this would otherwise grow forever.
-        RotatingFileHandler("trading_log.txt", maxBytes=5_000_000, backupCount=5),
-        logging.StreamHandler()
+        # Append, so every run in the same trading day adds to one file
+        # rather than overwriting the earlier runs' output.
+        logging.FileHandler(_todays_log_path(), mode="a", encoding="utf-8"),
+        logging.StreamHandler(),
     ]
 )
 log = logging.getLogger()
+_prune_old_logs()
 
 trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 data_client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
@@ -724,7 +763,23 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     log.info(f"[{symbol}] Buying {qty} share(s) (~${notional:.0f}, {sizing_style} sizing) | "
               f"stop-loss ${stop_price:.2f} | take-profit ${take_profit_price:.2f} ({stop_style})")
     order = trading_client.submit_order(order_request)
+    place_buy_order.last_details = {
+        "qty": qty,
+        "price": last_price,
+        "notional": notional,
+        "stop_loss": stop_price,
+        "take_profit": take_profit_price,
+        "sizing_style": sizing_style,
+        "equity": equity,
+    }
     return order, notional
+
+
+# Populated by place_buy_order so check_symbol can record the sizing and
+# bracket levels it chose without place_buy_order needing to know about
+# indicator context (which it has no access to) -- keeps the recording
+# concern out of the order-placement signature.
+place_buy_order.last_details = {}
 
 
 def place_sell_order(symbol: str):
@@ -791,9 +846,25 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 if order is not None:
                     log.info(f"[{symbol}] ACTION: BUY (order id {order.id}, strategy: {reason_key})")
                     notional_opened = notional
+                    record_trade(
+                        "BUY", symbol,
+                        trading_day_et=_trading_day_et(),
+                        strategy=reason_key, reason=reason,
+                        order_id=str(order.id), client_order_id=order.client_order_id,
+                        context=extract_context(enriched, i),
+                        details=place_buy_order.last_details,
+                    )
         elif signal == "SELL" and current_qty > 0:
             order = place_sell_order(symbol)
             log.info(f"[{symbol}] ACTION: SELL - closing position (order id {order.id})")
+            record_trade(
+                "SELL", symbol,
+                trading_day_et=_trading_day_et(),
+                strategy=reason_key, reason=reason,
+                qty=current_qty, price=last_price, notional=current_qty * last_price,
+                equity=equity, order_id=str(order.id),
+                context=extract_context(enriched, i),
+            )
         else:
             log.info(f"[{symbol}] ACTION: No trade.")
     except Exception as e:
@@ -828,13 +899,34 @@ def seconds_until(target: datetime, now: datetime) -> float:
     return max((target - now).total_seconds(), 0)
 
 
+def _trading_day_et() -> str:
+    """The ET calendar day, so trades group the same way the logs do."""
+    return datetime.now(MARKET_TZ_FOR_LOGS).strftime("%Y-%m-%d")
+
+
 def flatten_all_positions() -> None:
     """Closes every open position and cancels any pending orders."""
+    # Read positions BEFORE closing them -- afterwards there's nothing
+    # left to describe, and an end-of-day exit is exactly the kind of
+    # trade worth being able to analyze separately from a signal-driven
+    # one (it's an exit the strategy didn't choose).
+    try:
+        closing = get_all_open_positions()
+    except Exception:
+        closing = {}
+
     try:
         trading_client.close_all_positions(cancel_orders=True)
         log.info("EOD FLATTEN: all positions closed, all pending orders cancelled.")
     except Exception as e:
         log.error(f"EOD FLATTEN failed: {e}")
+        return
+
+    day = _trading_day_et()
+    for symbol, details in closing.items():
+        record_trade("FLATTEN", symbol, trading_day_et=day,
+                      strategy="end_of_day", reason="Flattened before market close",
+                      qty=details.get("qty"))
 
 
 def run_one_cycle() -> float:

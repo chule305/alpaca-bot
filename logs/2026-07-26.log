@@ -1,0 +1,548 @@
+2026-07-26 18:05:11,851 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-26 18:05:11,851 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-26 18:05:11,851 | Bar size: 5min | Check interval while market open: 5min
+2026-07-26 18:05:11,851 | Active strategies: breakout, gap_continuation, orb, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-26 18:05:11,851 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-26 18:05:11,852 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-26 18:05:11,852 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-26 18:05:11,852 | Position sizing: flat $500 per trade
+2026-07-26 18:05:11,852 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-26 18:05:11,852 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-26 18:05:11,868 | Loaded saved watchlist from previous run: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-26 18:05:11,883 | Restored daily risk state from previous run: day 2026-07-24, breaker tripped: False
+2026-07-26 18:05:11,884 | Running in --once mode (single check cycle, for an external scheduler).
+2026-07-26 18:05:13,399 | Market is closed. Next open: 2026-07-27 15:30:00 CEST (your local time) -- in 21.4 hours.
+2026-07-26 18:05:32,335 | [TSLA] price stretched below VWAP and turning up | Signal: BUY | Shares held: 0.0 | Last price: $312.00
+2026-07-26 18:05:32,336 | [TSLA] Buying 1 share(s) (~$312, flat $ sizing) | stop-loss $296.40 | take-profit $343.20 (fixed %)
+2026-07-26 18:05:32,336 | [TSLA] ACTION: BUY (order id abc-123, strategy: vwap_reversion)
+2026-07-26 18:06:30,723 | Could not fetch open orders for portfolio risk check: API down
+2026-07-26 18:06:30,745 | Restored daily risk state from previous run: day 2026-07-22, breaker tripped: True
+2026-07-26 18:06:30,748 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:06:30,748 | [AAA] ACTION: No trade (within X min of close).
+2026-07-26 18:06:30,749 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:06:30,749 | [AAA] ACTION: No trade (within the historically weak 210-270 min-since-open entry window).
+2026-07-26 18:06:30,751 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:06:30,752 | [AAA] ACTION: No trade (at MAX_CONCURRENT_POSITIONS=5 cap).
+2026-07-26 18:06:30,753 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:06:30,753 | [AAA] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT=5.0% aggregate risk cap).
+2026-07-26 18:06:30,754 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:06:30,755 | [AAA] ACTION: BUY (order id test-order-id, strategy: breakout)
+2026-07-26 18:06:30,755 | [AAA] Order failed: 'types.SimpleNamespace' object has no attribute 'client_order_id'
+2026-07-26 18:06:30,756 | [AAA] test sell | Signal: SELL | Shares held: 5.0 | Last price: $100.00
+2026-07-26 18:06:30,756 | [AAA] ACTION: SELL - closing position (order id sell-id)
+2026-07-26 18:06:30,759 | SCANNER: refreshing watchlist...
+2026-07-26 18:06:30,759 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-26 18:06:30,760 | SCANNER: new watchlist -> SAFT, RNG, TSLA, NVDA, COIN
+2026-07-26 18:06:30,761 | Running in --duration-minutes mode: cycling for 30 minutes, then exiting.
+2026-07-26 18:06:30,761 | Duration window finished.
+2026-07-26 18:06:30,762 | Running in --duration-minutes mode: cycling for 10 minutes, then exiting.
+2026-07-26 18:06:30,763 | Duration window finished.
+2026-07-26 18:06:30,763 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-26 18:06:30,763 | Market is closed for the day -- exiting early instead of idling.
+2026-07-26 18:06:30,763 | Duration window finished.
+2026-07-26 18:06:30,764 | Running in --duration-minutes mode: cycling for 5 minutes, then exiting.
+2026-07-26 18:06:30,764 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,806 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,808 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,810 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,811 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,813 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,814 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,815 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,817 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,819 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:06:30,820 | Duration window finished.
+2026-07-26 18:07:45,878 | Could not fetch open orders for portfolio risk check: API down
+2026-07-26 18:07:45,885 | Restored daily risk state from previous run: day 2026-07-22, breaker tripped: True
+2026-07-26 18:07:45,888 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:07:45,888 | [AAA] ACTION: No trade (within X min of close).
+2026-07-26 18:07:45,890 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:07:45,890 | [AAA] ACTION: No trade (within the historically weak 210-270 min-since-open entry window).
+2026-07-26 18:07:45,892 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:07:45,892 | [AAA] ACTION: No trade (at MAX_CONCURRENT_POSITIONS=5 cap).
+2026-07-26 18:07:45,894 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:07:45,898 | [AAA] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT=5.0% aggregate risk cap).
+2026-07-26 18:07:45,900 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:07:45,900 | [AAA] ACTION: BUY (order id test-order-id, strategy: breakout)
+2026-07-26 18:07:45,900 | [AAA] Order failed: 'types.SimpleNamespace' object has no attribute 'client_order_id'
+2026-07-26 18:07:45,902 | [AAA] test sell | Signal: SELL | Shares held: 5.0 | Last price: $100.00
+2026-07-26 18:07:45,902 | [AAA] ACTION: SELL - closing position (order id sell-id)
+2026-07-26 18:07:45,905 | SCANNER: refreshing watchlist...
+2026-07-26 18:07:45,905 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-26 18:07:45,905 | SCANNER: new watchlist -> SAFT, RNG, TSLA, NVDA, COIN
+2026-07-26 18:07:45,906 | Running in --duration-minutes mode: cycling for 30 minutes, then exiting.
+2026-07-26 18:07:45,907 | Duration window finished.
+2026-07-26 18:07:45,909 | Running in --duration-minutes mode: cycling for 10 minutes, then exiting.
+2026-07-26 18:07:45,909 | Duration window finished.
+2026-07-26 18:07:45,909 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-26 18:07:45,910 | Market is closed for the day -- exiting early instead of idling.
+2026-07-26 18:07:45,910 | Duration window finished.
+2026-07-26 18:07:45,910 | Running in --duration-minutes mode: cycling for 5 minutes, then exiting.
+2026-07-26 18:07:45,911 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,915 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,917 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,918 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,920 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,921 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,923 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,924 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,926 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,928 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 320, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:07:45,929 | Duration window finished.
+2026-07-26 18:09:03,846 | Could not fetch open orders for portfolio risk check: API down
+2026-07-26 18:09:03,852 | Restored daily risk state from previous run: day 2026-07-22, breaker tripped: True
+2026-07-26 18:09:03,855 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:09:03,855 | [AAA] ACTION: No trade (within X min of close).
+2026-07-26 18:09:03,856 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:09:03,856 | [AAA] ACTION: No trade (within the historically weak 210-270 min-since-open entry window).
+2026-07-26 18:09:03,858 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:09:03,858 | [AAA] ACTION: No trade (at MAX_CONCURRENT_POSITIONS=5 cap).
+2026-07-26 18:09:03,860 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:09:03,860 | [AAA] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT=5.0% aggregate risk cap).
+2026-07-26 18:09:03,861 | [AAA] test breakout | Signal: BUY | Shares held: 0.0 | Last price: $100.00
+2026-07-26 18:09:03,861 | [AAA] ACTION: BUY (order id test-order-id, strategy: breakout)
+2026-07-26 18:09:03,862 | [AAA] Order failed: 'types.SimpleNamespace' object has no attribute 'client_order_id'
+2026-07-26 18:09:03,863 | [AAA] test sell | Signal: SELL | Shares held: 5.0 | Last price: $100.00
+2026-07-26 18:09:03,863 | [AAA] ACTION: SELL - closing position (order id sell-id)
+2026-07-26 18:09:03,865 | SCANNER: refreshing watchlist...
+2026-07-26 18:09:03,865 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-26 18:09:03,866 | SCANNER: new watchlist -> SAFT, RNG, TSLA, NVDA, COIN
+2026-07-26 18:09:03,867 | Running in --duration-minutes mode: cycling for 30 minutes, then exiting.
+2026-07-26 18:09:03,868 | Duration window finished.
+2026-07-26 18:09:03,870 | Running in --duration-minutes mode: cycling for 10 minutes, then exiting.
+2026-07-26 18:09:03,870 | Duration window finished.
+2026-07-26 18:09:03,871 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-26 18:09:03,871 | Market is closed for the day -- exiting early instead of idling.
+2026-07-26 18:09:03,871 | Duration window finished.
+2026-07-26 18:09:03,872 | Running in --duration-minutes mode: cycling for 5 minutes, then exiting.
+2026-07-26 18:09:03,872 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,876 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,878 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,880 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,881 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,883 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,884 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,886 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,887 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,889 | Unexpected error in cycle, continuing after a short pause: Alpaca hiccup
+Traceback (most recent call last):
+  File "C:\Users\Matej\Desktop\alpaca_bot\trading_bot.py", line 1091, in run_for_duration
+    sleep_seconds = run_one_cycle()
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Matej\AppData\Local\Programs\Python\Python314\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "C:\Users\Matej\Desktop\alpaca_bot\test_trading_bot.py", line 326, in flaky
+    raise RuntimeError("Alpaca hiccup")
+RuntimeError: Alpaca hiccup
+2026-07-26 18:09:03,890 | Duration window finished.

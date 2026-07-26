@@ -25,6 +25,12 @@ import pandas as pd
 from alpaca.trading.enums import OrderType
 
 import trading_bot as tb
+import trade_recorder
+
+# check_symbol records real trades, so without this the suite appends test
+# rows to the project's actual trades.csv -- which is committed to git and
+# is meant to be genuine trading history, not test noise.
+trade_recorder.TRADE_HISTORY_FILE = os.path.join(tempfile.mkdtemp(), "trades.csv")
 
 FAILURES = []
 

@@ -10,3 +10,17 @@ equity_history_export.csv
 # tracked (not ignored) -- the GitHub Actions workflow commits them
 # back after every run so state survives between the fresh checkouts
 # each scheduled run gets. See .github/workflows/trade.yml.
+#
+# logs/ and trades.csv are tracked for the SAME reason, but a different
+# purpose: not state the next run needs, but evidence a human (or Claude)
+# needs afterwards. A GitHub Actions runner is destroyed when its job
+# ends, so anything not committed back is unrecoverable -- which is why
+# diagnosing the 2026-07-24 failures meant reproducing them locally
+# rather than reading what the bot had actually logged. logs/ keeps the
+# terminal output per trading day; trades.csv keeps every trade with the
+# indicator context behind it. Old logs are pruned after
+# LOG_RETENTION_DAYS so the repo can't grow without bound.
+#
+# trading_log.txt above is the legacy single-file local log, superseded
+# by logs/<date>.log -- still ignored so an old local copy doesn't get
+# committed by accident.

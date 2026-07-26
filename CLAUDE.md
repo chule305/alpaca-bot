@@ -491,3 +491,27 @@ Still unproven until a live session: the scanner against *intraday*
 movers (composition differs from after-hours), and GitHub's actual
 queuing behavior under the new 150-min/20-min arrangement. Both are
 observable in Monday's email rather than requiring a code dive.
+
+## 2026-07-26: logs and trade history now survive the runner
+Added `logs/<date>.log` (terminal-identical output, one file per trading
+day, pruned after `LOG_RETENTION_DAYS`) and `trades.csv` (one row per
+trade with indicator context), both committed back by `trade.yml`.
+
+The gap this closes: `trading_log.txt` was in `.gitignore`, and a GitHub
+Actions runner is destroyed when its job ends. So every log the live bot
+had ever written was unrecoverable, which is why the 07-24 post-mortem
+had to reproduce failures locally rather than read them. The workflow's
+commit step uses `if: always()` specifically so a CRASHED run still saves
+its log — that's the run whose log you actually need.
+
+`trades.csv` is deliberately NOT a re-derivation of Alpaca's order
+history. Alpaca knows what and at what price; it cannot know why. RSI,
+ADX, VWAP distance, ATR and relative volume at the decision instant exist
+nowhere else once the cycle ends, and they're the only way to answer
+"which strategy works in which regime" — the question that actually
+drives tuning. `client_order_id` already smuggles the strategy name into
+Alpaca, but there's nowhere to put twenty indicator values.
+
+Recording is best-effort by design (`trade_recorder.record_trade` never
+raises): a bot that won't trade because it can't write a CSV row is a
+worse failure than a missing row.

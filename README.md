@@ -34,6 +34,9 @@ something to trust on description alone.
   curve into CSV files for outside analysis.
 - `daily_summary.py` / `test_daily_summary.py` — emails a daily trade
   summary (see "Daily email summary" below) and its tests.
+- `trade_recorder.py` / `test_trade_recorder.py` — appends every trade to
+  `trades.csv` with the indicator context behind the decision (see "Logs
+  and trade history" below), and its tests.
 - `.env` — your settings and API keys (never share this file).
 - `requirements.txt` — what to install.
 
@@ -509,3 +512,51 @@ Natural next steps, in order:
    loss breaker are NOT provable by backtesting harder (structurally
    can't be — single-symbol isolation). The only way to know they work
    as intended is watching the live bot actually hit them.
+
+## Logs and trade history (post-mortem + research data)
+
+Two files are committed back by the workflow after every run, for the
+same reason the state JSON files are: **a GitHub Actions runner is
+destroyed when its job ends, so anything not committed back is gone.**
+That is not a theoretical concern — diagnosing the 2026-07-24 failures
+meant reproducing them locally, because the bot's own logs had already
+been thrown away with the runner.
+
+### `logs/<YYYY-MM-DD>.log`
+Exactly what you'd have seen in the terminal, one file per trading day,
+appended across every run that day. This is the first place to look when
+something fails. Old files are pruned after `LOG_RETENTION_DAYS`
+(default 30) so the repo can't grow forever.
+
+Read one straight from GitHub without cloning:
+
+```bash
+curl -s https://raw.githubusercontent.com/chule305/alpaca-bot/master/logs/2026-07-27.log
+```
+
+### `trades.csv`
+One append-only row per trade, with the **decision context** attached:
+RSI, ADX, ATR, VWAP, EMAs, volume vs. its own average, minutes since the
+open, plus the sizing and bracket levels chosen.
+
+This is deliberately not a duplicate of Alpaca's order history. Alpaca
+knows *what* was traded and at what price; it has no idea *why*. The
+indicator values behind a decision exist only for the instant the bot is
+looking at them, and they're what's needed to answer the questions that
+actually improve the strategy:
+
+- Does `vwap_reversion` only work when ADX is low (i.e. no strong trend)?
+- Are the losers disproportionately entries made in the first 15 minutes?
+- Is the ATR stop too tight on high-volatility names?
+
+None of those are answerable from order history alone, which is why this
+file exists.
+
+```bash
+py -c "import pandas as pd; d=pd.read_csv('trades.csv'); print(d.groupby('strategy')[['notional']].agg(['count','mean']))"
+```
+
+Recording is strictly best-effort: every write is wrapped so a disk error
+logs a warning and nothing more. A bot that refused to place an order
+because it couldn't append a CSV row would be a much worse failure than a
+missing row.
