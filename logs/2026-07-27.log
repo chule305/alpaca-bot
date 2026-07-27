@@ -448,3 +448,157 @@
 2026-07-27 16:34:13,501 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.30
 2026-07-27 16:34:13,501 | [VEEE] ACTION: No trade.
 2026-07-27 16:38:06,098 | Duration window finished.
+2026-07-27 19:08:58,757 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-27 19:08:58,757 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-27 19:08:58,757 | Bar size: 5min | Check interval while market open: 5min
+2026-07-27 19:08:58,757 | Active strategies: breakout, gap_continuation, orb, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-27 19:08:58,757 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-27 19:08:58,757 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-27 19:08:58,757 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-27 19:08:58,757 | Position sizing: flat $500 per trade
+2026-07-27 19:08:58,757 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-27 19:08:58,757 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-27 19:08:58,758 | Loaded saved watchlist from previous run: FBRX, VEEE, TSLA, NVDA, COIN
+2026-07-27 19:08:58,758 | Restored daily risk state from previous run: day 2026-07-27, breaker tripped: False
+2026-07-27 19:08:58,758 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-27 19:08:58,810 | SCANNER: refreshing watchlist...
+2026-07-27 19:08:59,240 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 18 candidate(s).
+2026-07-27 19:08:59,481 | SCANNER: candidate FBRX -- +39.6% today, $76.47, liquid, 7 recent news item(s)
+2026-07-27 19:08:59,482 | SCANNER: candidate TRAX -- +20.9% today, $42.93, liquid, 2 recent news item(s)
+2026-07-27 19:08:59,482 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 19:08:59,482 | SCANNER: new watchlist -> FBRX, TRAX, TSLA, NVDA, COIN
+2026-07-27 19:08:59,493 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:09:00,008 | [COIN] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $166.56
+2026-07-27 19:09:00,008 | [COIN] ACTION: No trade.
+2026-07-27 19:09:00,034 | [FBRX] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 19:09:00,034 | [FBRX] ACTION: No trade.
+2026-07-27 19:09:00,069 | [NVDA] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.28
+2026-07-27 19:09:00,069 | [NVDA] ACTION: No trade.
+2026-07-27 19:09:00,103 | [QBTS] choppy/sideways (ADX 12.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.73
+2026-07-27 19:09:00,103 | [QBTS] ACTION: No trade.
+2026-07-27 19:09:00,127 | [TRAX] trending (ADX 31.2) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.73
+2026-07-27 19:09:00,128 | [TRAX] ACTION: No trade.
+2026-07-27 19:09:00,164 | [TSLA] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.12
+2026-07-27 19:09:00,164 | [TSLA] ACTION: No trade.
+2026-07-27 19:14:00,256 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:14:00,833 | [COIN] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $166.81
+2026-07-27 19:14:00,833 | [COIN] ACTION: No trade.
+2026-07-27 19:14:00,857 | [FBRX] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 19:14:00,857 | [FBRX] ACTION: No trade.
+2026-07-27 19:14:00,892 | [NVDA] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.44
+2026-07-27 19:14:00,893 | [NVDA] ACTION: No trade.
+2026-07-27 19:14:00,927 | [QBTS] choppy/sideways (ADX 12.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.82
+2026-07-27 19:14:00,927 | [QBTS] ACTION: No trade.
+2026-07-27 19:14:00,951 | [TRAX] trending (ADX 30.8) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.94
+2026-07-27 19:14:00,951 | [TRAX] ACTION: No trade.
+2026-07-27 19:14:00,987 | [TSLA] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.63
+2026-07-27 19:14:00,987 | [TSLA] ACTION: No trade.
+2026-07-27 19:19:01,075 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:19:01,598 | [COIN] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $166.35
+2026-07-27 19:19:01,598 | [COIN] ACTION: No trade.
+2026-07-27 19:19:01,622 | [FBRX] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.46
+2026-07-27 19:19:01,622 | [FBRX] ACTION: No trade.
+2026-07-27 19:19:01,659 | [NVDA] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.36
+2026-07-27 19:19:01,659 | [NVDA] ACTION: No trade.
+2026-07-27 19:19:01,701 | [QBTS] choppy/sideways (ADX 11.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.95
+2026-07-27 19:19:01,701 | [QBTS] ACTION: No trade.
+2026-07-27 19:19:01,725 | [TRAX] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.92
+2026-07-27 19:19:01,725 | [TRAX] ACTION: No trade.
+2026-07-27 19:19:01,759 | [TSLA] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.24
+2026-07-27 19:19:01,759 | [TSLA] ACTION: No trade.
+2026-07-27 19:24:02,163 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:24:02,590 | [COIN] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.39
+2026-07-27 19:24:02,590 | [COIN] ACTION: No trade.
+2026-07-27 19:24:02,613 | [FBRX] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.47
+2026-07-27 19:24:02,613 | [FBRX] ACTION: No trade.
+2026-07-27 19:24:02,649 | [NVDA] choppy/sideways (ADX 18.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.62
+2026-07-27 19:24:02,649 | [NVDA] ACTION: No trade.
+2026-07-27 19:24:02,682 | [QBTS] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 25.0 | Last price: $19.18
+2026-07-27 19:24:02,682 | [QBTS] ACTION: No trade.
+2026-07-27 19:24:02,706 | [TRAX] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.72
+2026-07-27 19:24:02,706 | [TRAX] ACTION: No trade.
+2026-07-27 19:24:02,762 | [TSLA] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.92
+2026-07-27 19:24:02,762 | [TSLA] ACTION: No trade.
+2026-07-27 19:29:02,844 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:29:03,353 | [COIN] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.03
+2026-07-27 19:29:03,353 | [COIN] ACTION: No trade.
+2026-07-27 19:29:03,376 | [FBRX] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.47
+2026-07-27 19:29:03,377 | [FBRX] ACTION: No trade.
+2026-07-27 19:29:03,412 | [NVDA] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.51
+2026-07-27 19:29:03,412 | [NVDA] ACTION: No trade.
+2026-07-27 19:29:03,445 | [QBTS] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.10
+2026-07-27 19:29:03,445 | [QBTS] ACTION: No trade.
+2026-07-27 19:29:03,469 | [TRAX] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.88
+2026-07-27 19:29:03,469 | [TRAX] ACTION: No trade.
+2026-07-27 19:29:03,504 | [TSLA] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.06
+2026-07-27 19:29:03,504 | [TSLA] ACTION: No trade.
+2026-07-27 19:34:03,587 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:34:04,236 | [COIN] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.46
+2026-07-27 19:34:04,237 | [COIN] ACTION: No trade.
+2026-07-27 19:34:04,260 | [FBRX] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.47
+2026-07-27 19:34:04,260 | [FBRX] ACTION: No trade.
+2026-07-27 19:34:04,295 | [NVDA] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.67
+2026-07-27 19:34:04,295 | [NVDA] ACTION: No trade.
+2026-07-27 19:34:04,328 | [QBTS] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.11
+2026-07-27 19:34:04,328 | [QBTS] ACTION: No trade.
+2026-07-27 19:34:04,351 | [TRAX] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.70
+2026-07-27 19:34:04,351 | [TRAX] ACTION: No trade.
+2026-07-27 19:34:04,386 | [TSLA] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.12
+2026-07-27 19:34:04,386 | [TSLA] ACTION: No trade.
+2026-07-27 19:39:04,452 | SCANNER: refreshing watchlist...
+2026-07-27 19:39:04,850 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-27 19:39:05,055 | SCANNER: candidate FBRX -- +39.6% today, $76.45, liquid, 7 recent news item(s)
+2026-07-27 19:39:05,055 | SCANNER: candidate PN -- +26.7% today, $10.11, liquid, 3 recent news item(s)
+2026-07-27 19:39:05,055 | SCANNER: candidate TRAX -- +19.7% today, $42.52, liquid, 2 recent news item(s)
+2026-07-27 19:39:05,055 | SCANNER: only 3 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 19:39:05,055 | SCANNER: new watchlist -> FBRX, PN, TRAX, TSLA, NVDA
+2026-07-27 19:39:05,083 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 7 symbols: COIN, FBRX, NVDA, PN, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:39:05,486 | [COIN] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.08
+2026-07-27 19:39:05,487 | [COIN] ACTION: No trade.
+2026-07-27 19:39:05,510 | [FBRX] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.47
+2026-07-27 19:39:05,510 | [FBRX] ACTION: No trade.
+2026-07-27 19:39:05,545 | [NVDA] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.94
+2026-07-27 19:39:05,545 | [NVDA] ACTION: No trade.
+2026-07-27 19:39:05,568 | [PN] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $9.82
+2026-07-27 19:39:05,568 | [PN] ACTION: No trade.
+2026-07-27 19:39:05,601 | [QBTS] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.21
+2026-07-27 19:39:05,602 | [QBTS] ACTION: No trade.
+2026-07-27 19:39:05,625 | [TRAX] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.56
+2026-07-27 19:39:05,625 | [TRAX] ACTION: No trade.
+2026-07-27 19:39:05,659 | [TSLA] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.35
+2026-07-27 19:39:05,660 | [TSLA] ACTION: No trade.
+2026-07-27 19:44:05,737 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 7 symbols: COIN, FBRX, NVDA, PN, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:44:06,151 | [COIN] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.47
+2026-07-27 19:44:06,151 | [COIN] ACTION: No trade.
+2026-07-27 19:44:06,174 | [FBRX] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.47
+2026-07-27 19:44:06,174 | [FBRX] ACTION: No trade.
+2026-07-27 19:44:06,209 | [NVDA] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.73
+2026-07-27 19:44:06,209 | [NVDA] ACTION: No trade.
+2026-07-27 19:44:06,232 | [PN] choppy/sideways (ADX 12.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.20
+2026-07-27 19:44:06,232 | [PN] ACTION: No trade.
+2026-07-27 19:44:06,265 | [QBTS] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 25.0 | Last price: $19.33
+2026-07-27 19:44:06,265 | [QBTS] ACTION: No trade.
+2026-07-27 19:44:06,288 | [TRAX] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.52
+2026-07-27 19:44:06,288 | [TRAX] ACTION: No trade.
+2026-07-27 19:44:06,323 | [TSLA] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.33
+2026-07-27 19:44:06,323 | [TSLA] ACTION: No trade.
+2026-07-27 19:49:06,399 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 7 symbols: COIN, FBRX, NVDA, PN, QBTS, TRAX, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-07-27 19:49:07,050 | [COIN] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $167.59
+2026-07-27 19:49:07,050 | [COIN] ACTION: No trade.
+2026-07-27 19:49:07,074 | [FBRX] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.45
+2026-07-27 19:49:07,074 | [FBRX] ACTION: No trade.
+2026-07-27 19:49:07,109 | [NVDA] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.63
+2026-07-27 19:49:07,109 | [NVDA] ACTION: No trade.
+2026-07-27 19:49:07,132 | [PN] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.10
+2026-07-27 19:49:07,132 | [PN] ACTION: No trade.
+2026-07-27 19:49:07,165 | [QBTS] Opening Range Breakout (broke the first 15-min range high) | Signal: BUY | Shares held: 25.0 | Last price: $19.36
+2026-07-27 19:49:07,165 | [QBTS] ACTION: No trade.
+2026-07-27 19:49:07,188 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.59
+2026-07-27 19:49:07,189 | [TRAX] ACTION: No trade.
+2026-07-27 19:49:07,223 | [TSLA] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.81
+2026-07-27 19:49:07,223 | [TSLA] ACTION: No trade.
+2026-07-27 19:54:07,645 | Within 10 min of close -- flattening all positions for the day.
+2026-07-27 19:54:07,757 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-07-27 20:00:02,013 | Market is closed. Next open: 2026-07-28 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-07-27 20:00:02,022 | Market is closed for the day -- exiting early instead of idling.
+2026-07-27 20:00:02,022 | Duration window finished.

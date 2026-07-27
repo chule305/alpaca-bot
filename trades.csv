@@ -8,3 +8,8 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-27T15:18:39+00:00,2026-07-27,VEEE,BUY,vwap_reversion,stretched below VWAP and turning back up,28,17.3599,486.077,16.49,19.1,flat $,99943.8,,90,d364642b-cbbf-4fff-82c3-b692a2293a13,vwap_reversion-1785165519,17.3599,47.9962,40.661,1.16513,17.744,17.8103,18.8651,21925,130659,21.7001,19.36,13
 2026-07-27T15:48:51+00:00,2026-07-27,VEEE,BUY,vwap_reversion,stretched below VWAP and turning back up,29,16.8368,488.267,15.99,18.52,flat $,99891,,120,e5f905b5-af22-4b99-ac21-eb6efd658217,vwap_reversion-1785167331,16.8368,45.713,30.7852,1.01663,17.1247,17.4454,18.7837,15051,100521,21.7001,19.36,13
 2026-07-27T16:29:11+00:00,2026-07-27,COIN,BUY,gap_continuation,"Gap Pattern (Type A) continuation, gap held and extended",3,163.555,490.665,155.38,179.91,flat $,99871.1,,160,41aeb0d9-38b0-44b9-ad76-885c55223da0,gap_continuation-1785169751,163.555,56.4226,16.0876,1.03101,162.726,162.777,164.033,77602,62813.1,163.29,167.87,157.47
+2026-07-27T19:54:07+00:00,2026-07-27,COIN,FLATTEN,end_of_day,Flattened before market close,3,,,,,,,,,,,,,,,,,,,,,,
+2026-07-27T19:54:07+00:00,2026-07-27,NVDA,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
+2026-07-27T19:54:07+00:00,2026-07-27,QBTS,FLATTEN,end_of_day,Flattened before market close,25,,,,,,,,,,,,,,,,,,,,,,
+2026-07-27T19:54:07+00:00,2026-07-27,TRAX,FLATTEN,end_of_day,Flattened before market close,11,,,,,,,,,,,,,,,,,,,,,,
+2026-07-27T19:54:07+00:00,2026-07-27,TSLA,FLATTEN,end_of_day,Flattened before market close,1,,,,,,,,,,,,,,,,,,,,,,
