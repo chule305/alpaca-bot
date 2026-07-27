@@ -515,3 +515,63 @@ Alpaca, but there's nowhere to put twenty indicator values.
 Recording is best-effort by design (`trade_recorder.record_trade` never
 raises): a bot that won't trade because it can't write a CSV row is a
 worse failure than a missing row.
+
+## 2026-07-27: first losing day (-$171.61), and a hypothesis that failed
+10 trades, 30% win rate. vwap_reversion took 8 of them, lost 7, and
+accounted for essentially the whole loss while breakout and
+gap_continuation were both slightly green. This is the first analysis
+done from `trades.csv` rather than by reproducing things locally -- the
+indicator context recorded at each entry is what made it solvable.
+
+### The wrong answer (recorded because it was convincing)
+Every losing entry had ADX >= 25: VEEE at 44.6/40.7/30.8, TRAX at 25.0
+twice, NVDA at 53.6. "Mean reversion in a strong trend is knife-catching"
+is textbook, the correlation was perfect, and it was wrong.
+
+A 90-day backtest killed it. Gating vwap_reversion at ADX < 25 takes the
+strategy from 56 trades / 66% wins / +$76.61 to 14 trades / 50% /
+-$12.54, and halves total return (+11.1% -> +5.9%). High ADX is just as
+common in this strategy's winners; one day's losers aren't a sample.
+Kept at 50 as a backtest-neutral rail (+10.9%, and vwap_reversion is
+fractionally better at +$81.60), explicitly NOT as the fix.
+
+### The actual cause: the stop was inside the noise
+VEEE's ATR was 6.0-7.3% PER FIVE-MINUTE BAR against a 5% stop. The stop
+sat inside a single bar's normal range, so it was certain to be hit at
+random and certain to slip when hit. The day sorts almost perfectly by
+this one number:
+
+    VEEE  ATR 6.0-7.3%/bar -> -8.78%, -8.32%, -8.26%
+    TRAX  ATR 2.21%/bar    -> -4.21%, -4.16%, -3.28%
+    NVDA  ATR 0.50%/bar    -> -1.19%
+    QBTS  ATR 1.37%/bar    -> +0.47%
+    COIN  ATR 0.63%/bar    -> +1.37%
+
+`MIN_STOP_TO_ATR_RATIO` (2.0) now refuses any entry whose stop isn't at
+least 2 ATRs away. It blocks exactly the three VEEE trades ($127 of the
+$172) and nothing else from that day, and is backtest-neutral on
+megacaps (+10.9% vs +11.1%) because their ATR is 0.5-0.6%/bar. Widening
+the stop instead would have been the wrong move -- it converts a 5% risk
+into a 15% one. These stocks are simply untradeable with this system.
+
+Why this one generalizes where ADX didn't: it's a property of the
+INSTRUMENT rather than of one day's tape, it protects every strategy
+rather than one, and it's enforced in `strategy.py` so the backtester
+can't flatter a setup the live bot would refuse.
+
+### Also fixed
+- 7 of the 10 trades were rapid re-entries into two falling stocks (VEEE
+  bought back five minutes after being stopped out, four times total).
+  `SYMBOL_COOLDOWN_MINUTES` (60) bans re-entry after any position closes,
+  detected from the positions already fetched each cycle so bracket-leg
+  fills the bot never sees as orders still count.
+- Brackets are now priced off a fresh quote, not the last bar's close.
+  A stale close in a fast-falling stock produced
+  "stop_loss.stop_price must be <= base_price - 0.01" and Alpaca rejected
+  the whole order (VEEE, 15:28).
+
+### Lesson
+`trades.csv` paid for itself on day one -- none of this was reachable
+from order history alone. But a perfect correlation across one day's
+seven losers still pointed at the wrong cause. Backtest the hypothesis
+before shipping it, especially when it's textbook enough to feel obvious.

@@ -41,11 +41,15 @@ from alpaca.trading.requests import (
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass, QueryOrderStatus, OrderType
 from alpaca.data.historical import StockHistoricalDataClient, ScreenerClient
 from alpaca.data.historical.news import NewsClient
-from alpaca.data.requests import StockBarsRequest, MostActivesRequest, MarketMoversRequest, NewsRequest
+from alpaca.data.requests import (
+    StockBarsRequest, MostActivesRequest, MarketMoversRequest, NewsRequest,
+    StockLatestTradeRequest,
+)
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import MostActivesBy, MarketType
 
 from trade_recorder import record_trade, extract_context
+from strategy import MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
@@ -101,6 +105,19 @@ SCANNER_MIN_WATCHLIST_SIZE = int(os.getenv("SCANNER_MIN_WATCHLIST_SIZE", 5))
 # when this was set to 100. Clamped here (not just defaulted lower) so a
 # misconfigured env var can't reintroduce the same failure.
 SCANNER_CANDIDATE_POOL = min(int(os.getenv("SCANNER_CANDIDATE_POOL", 50)), 50)
+# After a position in a symbol closes, refuse to buy that symbol again for
+# this many minutes.
+#
+# 2026-07-27 is the case for it: of 10 trades, 7 were rapid re-entries into
+# just TWO falling stocks. VEEE was bought four separate times as it fell
+# 17.79 -> 15.33 (once only FIVE minutes after being stopped out), and TRAX
+# three times on the way from 43.42 to 40.54. Six of those seven repeats
+# lost money; together they are most of the day's -$171.
+#
+# One bad read on a stock became four bad trades purely because nothing
+# stopped the bot from immediately trying again. This is what turns a
+# normal losing trade into a bleed.
+SYMBOL_COOLDOWN_MINUTES = float(os.getenv("SYMBOL_COOLDOWN_MINUTES", 60))
 SCANNER_MIN_PRICE = float(os.getenv("SCANNER_MIN_PRICE", 10.0))
 # Minimum average DOLLAR volume (price x shares) for a candidate to count
 # as liquid enough to trade. This replaced the original liquidity gate,
@@ -173,6 +190,12 @@ last_flatten_date: date | None = None
 current_trading_day: date | None = None
 day_start_equity: float | None = None
 daily_loss_breaker_tripped = False
+# Symbols that recently had a position close, and the time they become
+# eligible to buy again. See SYMBOL_COOLDOWN_MINUTES.
+symbol_cooldown_until: dict[str, datetime] = {}
+# What we held on the previous cycle, so a position closing (by stop, by
+# target, or by our own sell) can be detected without an extra API call.
+previously_held: set[str] = set()
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit(
@@ -286,6 +309,25 @@ def get_recent_bars_batch(symbols: list[str], lookback_days: int = 10) -> dict[s
         symbol: group.drop(columns="symbol").reset_index(drop=True)
         for symbol, group in bars.groupby("symbol")
     }
+
+
+def get_latest_price(symbol: str) -> float | None:
+    """
+    The most recent traded price, for pricing a bracket right before
+    submitting it. Returns None on any failure so callers fall back to
+    the last bar's close -- a slightly stale price is far better than
+    skipping a trade over a quote lookup.
+    """
+    try:
+        latest = data_client.get_stock_latest_trade(
+            StockLatestTradeRequest(symbol_or_symbols=symbol)
+        )
+        trade = latest.get(symbol) if isinstance(latest, dict) else None
+        price = float(trade.price) if trade is not None else None
+        return price if price and price > 0 else None
+    except Exception as e:
+        log.info(f"[{symbol}] Could not fetch a fresh quote ({e}) -- using the last bar's close.")
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -598,6 +640,8 @@ def save_daily_risk_state() -> None:
                 "day_start_equity": day_start_equity,
                 "current_trading_day": current_trading_day.isoformat() if current_trading_day else None,
                 "daily_loss_breaker_tripped": daily_loss_breaker_tripped,
+                "symbol_cooldown_until": {s: t.isoformat() for s, t in symbol_cooldown_until.items()},
+                "previously_held": sorted(previously_held),
             }, f)
     except Exception as e:
         log.warning(f"Could not save daily risk state: {e}")
@@ -611,7 +655,8 @@ def load_daily_risk_state() -> None:
     one) and reinitialize everything fresh -- no special-casing needed
     here for stale state.
     """
-    global day_start_equity, current_trading_day, daily_loss_breaker_tripped
+    global day_start_equity, current_trading_day, daily_loss_breaker_tripped, \
+        symbol_cooldown_until, previously_held
     try:
         with open(DAILY_RISK_STATE_FILE, "r") as f:
             data = json.load(f)
@@ -620,6 +665,15 @@ def load_daily_risk_state() -> None:
             current_trading_day = date.fromisoformat(saved_day)
             day_start_equity = data.get("day_start_equity")
             daily_loss_breaker_tripped = bool(data.get("daily_loss_breaker_tripped", False))
+            # Cooldowns must survive across runs: each GitHub Actions job
+            # is a separate process, so without this a re-entry ban simply
+            # evaporates whenever one job hands over to the next.
+            for symbol, raw in (data.get("symbol_cooldown_until") or {}).items():
+                try:
+                    symbol_cooldown_until[symbol] = datetime.fromisoformat(raw)
+                except Exception:
+                    continue
+            previously_held = set(data.get("previously_held") or [])
             log.info(f"Restored daily risk state from previous run: day {current_trading_day}, "
                       f"breaker tripped: {daily_loss_breaker_tripped}")
     except FileNotFoundError:
@@ -731,19 +785,49 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     Returns (order, notional_usd) -- order is None if the trade was
     skipped (computed size was 0 shares), in which case notional_usd is 0.
     """
-    stop_price, take_profit_price = compute_stop_and_target(last_price, atr_value)
+    # `last_price` is the last completed BAR's close, which can be minutes
+    # stale. In a fast-falling stock the market has already moved below it
+    # by the time we submit, and Alpaca rejects the whole bracket:
+    #   "stop_loss.stop_price must be <= base_price - 0.01"
+    # (seen live on VEEE, 2026-07-27 15:28). Pricing the stop off a fresh
+    # quote fixes the rejection and, more importantly, makes the stop
+    # correct rather than anchored to a price that no longer exists.
+    reference_price = get_latest_price(symbol) or last_price
+
+    stop_price, take_profit_price = compute_stop_and_target(reference_price, atr_value)
     stop_price = round(stop_price, 2)
     take_profit_price = round(take_profit_price, 2)
 
+    # Belt and braces: even with a fresh quote the price can tick down
+    # between fetch and submit, so never let the stop sit at or above it.
+    max_allowed_stop = round(reference_price - 0.01, 2)
+    if stop_price > max_allowed_stop:
+        log.info(f"[{symbol}] Price moved to ${reference_price:.2f} while sizing -- "
+                  f"lowering stop from ${stop_price:.2f} to ${max_allowed_stop:.2f} to stay valid.")
+        stop_price = max_allowed_stop
+    if stop_price <= 0 or take_profit_price <= reference_price:
+        log.warning(f"[{symbol}] Could not build a sane bracket around ${reference_price:.2f} "
+                     f"(stop ${stop_price:.2f}, target ${take_profit_price:.2f}) -- skipping.")
+        return None, 0.0
+
+    if not stop_is_wider_than_noise(reference_price, atr_value, stop_price):
+        atr_pct = (atr_value / reference_price * 100) if reference_price else 0
+        stop_pct = (reference_price - stop_price) / reference_price * 100
+        log.info(f"[{symbol}] ACTION: No trade -- too volatile to protect. ATR is "
+                  f"${atr_value:.2f} ({atr_pct:.1f}% per bar) but the stop is only "
+                  f"{stop_pct:.1f}% away, so it sits inside the noise and would be hit "
+                  f"at random. Needs {MIN_STOP_TO_ATR_RATIO:.1f}x ATR of room.")
+        return None, 0.0
+
     if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
-        qty = compute_position_size(equity, last_price, stop_price)
+        qty = compute_position_size(equity, reference_price, stop_price)
         sizing_style = f"risk-based, {RISK_PER_TRADE_PCT:.1f}% of ${equity:,.0f}"
     else:
-        qty = int(TRADE_AMOUNT_USD // last_price)
+        qty = int(TRADE_AMOUNT_USD // reference_price)
         sizing_style = "flat $"
 
     if qty < 1:
-        log.warning(f"[{symbol}] Computed position size is 0 shares at ${last_price:.2f} "
+        log.warning(f"[{symbol}] Computed position size is 0 shares at ${reference_price:.2f} "
                      f"({sizing_style} sizing) -- skipping this trade.")
         return None, 0.0
 
@@ -759,13 +843,13 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         stop_loss=StopLossRequest(stop_price=stop_price),
         client_order_id=f"{reason_key}-{int(datetime.now(timezone.utc).timestamp())}",
     )
-    notional = qty * last_price
+    notional = qty * reference_price
     log.info(f"[{symbol}] Buying {qty} share(s) (~${notional:.0f}, {sizing_style} sizing) | "
               f"stop-loss ${stop_price:.2f} | take-profit ${take_profit_price:.2f} ({stop_style})")
     order = trading_client.submit_order(order_request)
     place_buy_order.last_details = {
         "qty": qty,
-        "price": last_price,
+        "price": reference_price,
         "notional": notional,
         "stop_loss": stop_price,
         "take_profit": take_profit_price,
@@ -806,7 +890,8 @@ def place_sell_order(symbol: str):
 # ---------------------------------------------------------------------------
 
 def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | None, at_position_cap: bool,
-                  current_qty: float, equity: float | None, portfolio_risk_estimate: float) -> float:
+                  current_qty: float, equity: float | None, portfolio_risk_estimate: float,
+                  in_cooldown: bool = False) -> float:
     """
     Checks one symbol and acts on its signal. Returns the notional $
     amount of a newly opened position (0.0 if none), so the caller can
@@ -833,6 +918,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         if signal == "BUY" and current_qty == 0:
             if entries_paused_reason:
                 log.info(f"[{symbol}] ACTION: No trade ({entries_paused_reason}).")
+            elif in_cooldown:
+                log.info(f"[{symbol}] ACTION: No trade (cooling off for "
+                          f"{SYMBOL_COOLDOWN_MINUTES:.0f} min after this symbol's last position closed).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
@@ -944,7 +1032,7 @@ def run_one_cycle() -> float:
     not a behavior change.
     """
     global active_watchlist, last_scan_time, current_trading_day, day_start_equity, \
-        daily_loss_breaker_tripped, last_flatten_date
+        daily_loss_breaker_tripped, last_flatten_date, previously_held
 
     try:
         clock = trading_client.get_clock()
@@ -1009,6 +1097,21 @@ def run_one_cycle() -> float:
     open_positions = get_all_open_positions()
     open_position_symbols = set(open_positions.keys())
     open_count = len(open_position_symbols)
+
+    # Anything we held last cycle but don't now has closed -- by stop-loss,
+    # by take-profit, or by our own sell. Start its cooldown. Derived from
+    # the positions we already fetched, so this costs no extra API call
+    # and catches bracket-leg fills the bot never sees as orders.
+    just_closed = previously_held - open_position_symbols
+    for symbol in just_closed:
+        symbol_cooldown_until[symbol] = clock.timestamp + timedelta(minutes=SYMBOL_COOLDOWN_MINUTES)
+        log.info(f"[{symbol}] Position closed -- no re-entry for {SYMBOL_COOLDOWN_MINUTES:.0f} min "
+                  f"(guards against repeatedly buying the same falling stock).")
+    if just_closed:
+        previously_held = set(open_position_symbols)
+        save_daily_risk_state()
+    else:
+        previously_held = set(open_position_symbols)
     portfolio_risk_estimate = get_current_portfolio_risk_usd(open_positions) if USE_RISK_BASED_SIZING else 0.0
     equity_estimate = equity_now
 
@@ -1027,8 +1130,11 @@ def run_one_cycle() -> float:
     for symbol in symbols_to_check:
         at_position_cap = open_count >= MAX_CONCURRENT_POSITIONS
         current_qty = open_positions.get(symbol, {}).get("qty", 0.0)
+        cooldown_until = symbol_cooldown_until.get(symbol)
+        in_cooldown = cooldown_until is not None and clock.timestamp < cooldown_until
         notional = check_symbol(symbol, bars_by_symbol.get(symbol), entries_paused_reason,
-                                 at_position_cap, current_qty, equity_estimate, portfolio_risk_estimate)
+                                 at_position_cap, current_qty, equity_estimate, portfolio_risk_estimate,
+                                 in_cooldown=in_cooldown)
         if notional > 0:
             open_count += 1
             if equity_estimate is not None:

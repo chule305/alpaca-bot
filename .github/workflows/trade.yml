@@ -87,6 +87,9 @@ jobs:
           SCANNER_MIN_WATCHLIST_SIZE: "5"
           SCANNER_MIN_PRICE: "10"
           SCANNER_MIN_DOLLAR_VOLUME: "10000000"
+          SYMBOL_COOLDOWN_MINUTES: "60"
+          MIN_STOP_TO_ATR_RATIO: "2.0"
+          VWAP_REVERSION_MAX_ADX: "50"
           SCANNER_REFRESH_HOURS: "0.5"
           SCANNER_MAX_EXTENSION_PCT: "50"
           USE_NEWS_FILTER: "true"
@@ -138,11 +141,27 @@ jobs:
           git add -A logs trades.csv 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No state changes to commit."
-          else
-            git commit -m "Update bot state [skip ci]"
-            # A 150-minute job leaves a wide window for some other commit
-            # to land first, so rebase onto it instead of failing the run
-            # on a stale ref.
-            git pull --rebase --autostash
-            git push
+            exit 0
           fi
+          git commit -m "Update bot state [skip ci]"
+          # Retry rather than fail: a 150-minute job leaves a wide window
+          # for another job's commit to land first. Conflicts on the
+          # append-only log/CSV files are resolved by the union merge
+          # driver (see .gitattributes) instead of aborting -- on
+          # 2026-07-27 this step failed twice and took 150 minutes of
+          # trading log down with it.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) -- rebasing onto latest and retrying."
+            git pull --rebase --autostash || {
+              echo "Rebase could not be completed automatically; aborting it and retrying."
+              git rebase --abort || true
+              git pull --no-rebase --no-edit || true
+            }
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push bot state after 5 attempts."
+          exit 1

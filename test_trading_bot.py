@@ -263,6 +263,35 @@ def test_scanner_tops_up_a_thin_watchlist():
         tb.active_watchlist, tb.last_scan_time = original
 
 
+def test_symbol_cooldown_blocks_immediate_reentry():
+    """
+    Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
+    into two falling stocks -- VEEE bought back FIVE minutes after being
+    stopped out, four times in total, and TRAX three times. A BUY signal
+    is not enough on its own; a symbol whose position just closed has to
+    sit out first.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})  # content irrelevant, add_indicators is mocked
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("VEEE", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, in_cooldown=True)
+    check("a BUY signal is refused while the symbol is cooling off", not mock_buy.called)
+    check("a refused re-entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("VEEE", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, in_cooldown=False)
+    check("the same signal is taken once the cooldown has expired", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
 # ---------------------------------------------------------------------------
 # DURATION MODE -- the GitHub Actions entry point. Exercised here against a
 # SIMULATED open market, because outside trading hours the only path that can
@@ -353,6 +382,7 @@ if __name__ == "__main__":
         test_check_symbol_gating,
         test_leveraged_etf_name_detection,
         test_scanner_tops_up_a_thin_watchlist,
+        test_symbol_cooldown_blocks_immediate_reentry,
         test_run_for_duration_cycles_while_market_open,
         test_run_for_duration_never_overruns_its_window,
         test_run_for_duration_exits_when_session_is_over,

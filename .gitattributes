@@ -1,0 +1,18 @@
+# Append-only files written by the bot, merged with git's built-in "union"
+# driver: on conflict, keep BOTH sides' lines instead of failing.
+#
+# Why this is needed: two workflow jobs can each append to the same day's
+# log (GitHub lets a queued job start as the previous one is finishing),
+# both starting from the same commit. Git cannot auto-merge two different
+# appends to the end of one file -- it's a textbook conflict -- so the
+# rebase in the commit step failed and the whole step failed with it.
+#
+# Measured on 2026-07-27: 2 of 5 runs failed that way, and 150 minutes of
+# trading log plus some trades.csv rows were permanently lost. That is
+# the exact evidence these files exist to preserve, so losing it silently
+# is the worst possible failure for them.
+#
+# "union" is the standard answer for changelog-style files. Worst case it
+# duplicates a line; it never drops one, and it never conflicts.
+logs/*.log merge=union
+trades.csv merge=union

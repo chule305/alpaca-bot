@@ -109,6 +109,22 @@ ORB_MINUTES = int(os.getenv("ORB_MINUTES", 15))
 # and starting to turn back up.
 USE_VWAP_REVERSION = os.getenv("USE_VWAP_REVERSION", "true").strip().lower() in ("1", "true", "yes")
 VWAP_REVERSION_PCT = float(os.getenv("VWAP_REVERSION_PCT", 1.5))
+# Refuse VWAP reversion entries above this ADX -- an extreme-trend guard,
+# NOT the fix for the 2026-07-27 losses.
+#
+# The tempting story that day was "every loser was entered at ADX >= 25,
+# so gate on 25". A 90-day backtest killed that idea: at 25 the strategy
+# drops from 56 trades / 66% wins / +$76.61 to 14 trades / 50% / -$12.54,
+# and total return halves (+11.1% -> +5.9%). High ADX is just as common in
+# this strategy's WINNERS. The one-day correlation was real and the
+# conclusion drawn from it was wrong -- the actual cause was volatility
+# (see MIN_STOP_TO_ATR_RATIO), not trend strength.
+#
+# 50 is set as a cheap safety rail: backtest-neutral (+10.9% vs +11.1%,
+# and vwap_reversion is fractionally BETTER at +$81.60), while still
+# refusing genuinely absurd cases. Deliberately not tighter, because the
+# evidence says tighter costs money.
+VWAP_REVERSION_MAX_ADX = float(os.getenv("VWAP_REVERSION_MAX_ADX", 50))
 
 # Relative volume (RVOL) spike -- an unusual volume surge on a green bar,
 # independent of the breakout strategy's "new high" requirement.
@@ -160,6 +176,13 @@ ENTRY_BLACKOUT_END_MINUTES = int(os.getenv("ENTRY_BLACKOUT_END_MINUTES", 270))  
 # Risk management: fixed-% exit levels (the default), as a % away from entry.
 STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", 5))
 TAKE_PROFIT_PCT = float(os.getenv("TAKE_PROFIT_PCT", 10))
+# The stop must sit at least this many ATRs below the entry, or the trade
+# is skipped entirely. See stop_is_wider_than_noise for the day this was
+# learned the expensive way. 2.0 is the conventional "stop outside the
+# noise" ratio; at STOP_LOSS_PCT=5 it refuses anything whose ATR exceeds
+# 2.5% of price per bar, which excludes VEEE-class stocks while leaving
+# ordinary movers (ATR 0.5-2.2%/bar) untouched. Set to 0 to disable.
+MIN_STOP_TO_ATR_RATIO = float(os.getenv("MIN_STOP_TO_ATR_RATIO", 2.0))
 
 # Risk management: optional volatility-adjusted exit levels instead of a
 # flat % for every stock. Off by default -- flip on and backtest first.
@@ -534,9 +557,34 @@ def orb_at(df: pd.DataFrame, i: int) -> bool:
 
 
 def vwap_reversion_at(df: pd.DataFrame, i: int) -> bool:
-    """BUY when price is stretched VWAP_REVERSION_PCT% below session VWAP and just turned back up."""
+    """
+    BUY when price is stretched VWAP_REVERSION_PCT% below session VWAP and
+    just turned back up -- but ONLY when the stock isn't in a strong trend.
+
+    That last condition is the whole difference between mean reversion and
+    catching a falling knife, and its absence cost real money on
+    2026-07-27: this strategy took 8 of the day's 10 trades, lost 7 of
+    them, and accounted for essentially the entire -$171 day while the
+    other two strategies were both slightly green.
+
+    Every one of those losses was entered while ADX said "strong trend":
+    VEEE at ADX 44.6 / 40.7 / 30.8, TRAX at 25.0 twice, NVDA at 53.6 with
+    RSI 17.7. "Stretched below VWAP and ticking up" is a reversion signal
+    in a RANGE; in a downtrend it's just a pause on the way down, and the
+    bot bought every one of those pauses.
+
+    ADX was already computed and already had a threshold constant -- it
+    was simply never consulted here, because this strategy runs at
+    priority 1, ahead of the regime switch that does check it.
+    """
     vwap = df["vwap"].iat[i]
     if pd.isna(vwap) or vwap == 0 or i < 1:
+        return False
+    adx = df["adx"].iat[i]
+    # Unknown ADX fails CLOSED: without a trend reading there's no way to
+    # tell reversion from knife-catching, and the evidence says guessing
+    # wrong is expensive.
+    if pd.isna(adx) or adx >= VWAP_REVERSION_MAX_ADX:
         return False
     close_now = df["close"].iat[i]
     close_prev = df["close"].iat[i - 1]
@@ -711,6 +759,43 @@ def decide_signal_at(df: pd.DataFrame, i: int) -> tuple[str, str, str]:
 # Shared by the live bot (place_buy_order) and the backtester (simulate)
 # so the two can't drift apart on this either.
 # ---------------------------------------------------------------------------
+
+def stop_is_wider_than_noise(entry_price: float, atr_value: float | None,
+                              stop_price: float) -> bool:
+    """
+    True if the stop sits far enough below the entry to survive the
+    stock's ordinary bar-to-bar movement.
+
+    This is the real lesson of 2026-07-27. The bot bought VEEE three
+    times with a 5% stop while VEEE's ATR was 6.0-7.3% PER FIVE-MINUTE
+    BAR -- the stop was inside a single bar's normal range, so it was
+    certain to be hit by noise and certain to slip badly when it was.
+    Those three trades lost 8.78%, 8.32% and 8.26% against a "5%" stop
+    and made up $127 of the day's $172 loss.
+
+    The day's results line up almost perfectly with this one number:
+
+        VEEE  ATR 6.0-7.3%/bar -> -8.78%, -8.32%, -8.26%
+        TRAX  ATR 2.21%/bar    -> -4.21%, -4.16%, -3.28%
+        NVDA  ATR 0.50%/bar    -> -1.19%
+        QBTS  ATR 1.37%/bar    -> +0.47%
+        COIN  ATR 0.63%/bar    -> +1.37%
+
+    A stop tighter than the noise isn't risk management, it's a coin flip
+    with a fee. The right response is to not trade the stock at all --
+    widening the stop instead would just turn a 5% risk into a 15% one.
+
+    Unlike a signal filter this protects EVERY strategy, and it's a
+    property of the instrument rather than of one day's tape, which is
+    why it generalizes where the ADX theory didn't.
+    """
+    if atr_value is None or pd.isna(atr_value) or atr_value <= 0:
+        return True  # no ATR reading -- don't block on missing data
+    stop_distance = entry_price - stop_price
+    if stop_distance <= 0:
+        return False
+    return stop_distance >= MIN_STOP_TO_ATR_RATIO * atr_value
+
 
 def compute_stop_and_target(entry_price: float, atr_value: float | None = None) -> tuple[float, float]:
     """

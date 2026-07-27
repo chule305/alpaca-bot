@@ -232,20 +232,75 @@ def test_orb():
 # 7. VWAP mean-reversion
 # ---------------------------------------------------------------------------
 
-def test_vwap_reversion():
-    ts = ts_range("2024-01-02", "09:30", 11)
-    closes = [100.0] * 9 + [96.0, 96.5]
-    df = flat_bars(ts, closes)
-    enriched = strat.add_indicators(df)
-    check("VWAP reversion does NOT fire on the initial drop (not turning up yet)",
-          not strat.vwap_reversion_at(enriched, 9))
-    check("VWAP reversion fires once price is stretched below VWAP AND turns up",
-          strat.vwap_reversion_at(enriched, 10))
+def test_stop_must_be_wider_than_noise():
+    """
+    Regression for 2026-07-27, using that day's real numbers. The bot
+    bought VEEE three times with a 5% stop while VEEE moved 6-7% per
+    5-minute bar -- the stop was inside one bar's normal range. Those
+    three trades lost 8.78%, 8.32% and 8.26% and made up $127 of the
+    day's $172 loss.
+    """
+    cases = [
+        # symbol, price, atr/bar, should_be_tradeable
+        ("VEEE", 17.25, 1.2602, False),   # ATR 7.31%/bar vs a 5% stop
+        ("VEEE", 17.36, 1.1651, False),   # 6.71%
+        ("VEEE", 16.84, 1.0166, False),   # 6.04%
+        ("TRAX", 44.33, 0.9779, True),    # 2.21% -- tight but survivable
+        ("QBTS", 19.24, 0.2633, True),    # 1.37%
+        ("COIN", 163.56, 1.0310, True),   # 0.63%
+        ("NVDA", 199.13, 0.9986, True),   # 0.50%
+    ]
+    for symbol, price, atr, tradeable in cases:
+        stop, _ = strat.compute_stop_and_target(price, atr)
+        got = strat.stop_is_wider_than_noise(price, atr, stop)
+        label = "tradeable" if tradeable else "refused as too volatile"
+        check(f"{symbol} at ATR {atr / price * 100:.2f}%/bar is {label}", got is tradeable)
 
-    closes_no_turn = [100.0] * 9 + [96.0, 95.5]  # still falling
-    df2 = flat_bars(ts, closes_no_turn)
-    enriched2 = strat.add_indicators(df2)
-    check("VWAP reversion does NOT fire if price keeps falling", not strat.vwap_reversion_at(enriched2, 10))
+    check("a missing ATR does not block the trade (no data != bad data)",
+          strat.stop_is_wider_than_noise(100.0, None, 95.0))
+    check("a NaN ATR does not block the trade",
+          strat.stop_is_wider_than_noise(100.0, float("nan"), 95.0))
+    check("a stop at or above the entry is always refused",
+          not strat.stop_is_wider_than_noise(100.0, 0.1, 100.0))
+
+
+def test_vwap_reversion():
+    # A RANGING stock (low ADX): stretched below VWAP and turning up is a
+    # genuine reversion setup, and should fire.
+    n = 40
+    ranging = [100.0 + (1.0 if i % 2 else -1.0) for i in range(n - 2)] + [96.0, 96.6]
+    enriched = strat.add_indicators(flat_bars(ts_range("2024-01-02", "09:30", n), ranging))
+    check("VWAP reversion fires in a RANGE when stretched below VWAP and turning up",
+          strat.vwap_reversion_at(enriched, n - 1))
+
+    ranging_no_turn = [100.0 + (1.0 if i % 2 else -1.0) for i in range(n - 2)] + [96.0, 95.5]
+    enriched_no_turn = strat.add_indicators(
+        flat_bars(ts_range("2024-01-02", "09:30", n), ranging_no_turn))
+    check("VWAP reversion does NOT fire if price keeps falling",
+          not strat.vwap_reversion_at(enriched_no_turn, n - 1))
+
+    # A stock in a STRONG DOWNTREND (high ADX). This bar is deeply below
+    # VWAP and ticking up -- textbook "stretched and turning", which the
+    # old code bought without hesitation. It's the exact shape of the
+    # 2026-07-27 losses (VEEE at ADX 44.6, TRAX at 25.0, NVDA at 53.6):
+    # not a bounce, just a pause on the way down.
+    trending = [100.0 - i * 0.8 for i in range(n - 1)]
+    trending.append(trending[-1] + 0.3)
+    enriched_trend = strat.add_indicators(
+        flat_bars(ts_range("2024-01-02", "09:30", n), trending))
+    stretched = enriched_trend["close"].iat[n - 1] < enriched_trend["vwap"].iat[n - 1] * 0.985
+    turning_up = enriched_trend["close"].iat[n - 1] > enriched_trend["close"].iat[n - 2]
+    check("(fixture sanity) the trending bar really is stretched below VWAP and turning up",
+          stretched and turning_up)
+    check("VWAP reversion does NOT fire in a strong downtrend -- the knife-catching case",
+          not strat.vwap_reversion_at(enriched_trend, n - 1))
+
+    # Unknown ADX must fail closed: with no trend reading there's no way to
+    # tell reversion from knife-catching.
+    short = strat.add_indicators(
+        flat_bars(ts_range("2024-01-02", "09:30", 11), [100.0] * 9 + [96.0, 96.5]))
+    check("VWAP reversion does NOT fire when ADX is unknown (fails closed)",
+          not strat.vwap_reversion_at(short, 10))
 
 
 # ---------------------------------------------------------------------------
@@ -402,6 +457,7 @@ def test_mean_reversion_turning_confirmation():
 
 if __name__ == "__main__":
     tests = [
+        test_stop_must_be_wider_than_noise,
         test_indicator_precompute_matches_growing_window,
         test_breakout,
         test_smash_day,

@@ -66,6 +66,7 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
+    stop_is_wider_than_noise,
     BAR_MINUTES, TRADE_AMOUNT_USD,
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
@@ -255,6 +256,12 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float) -> list[di
             if signal == "BUY":
                 entry_price = current_bar["close"]
                 stop_price, take_profit_price = compute_stop_and_target(entry_price, current_bar["atr"])
+                # Same volatility guard the live bot applies -- a stop
+                # inside the stock's own bar-to-bar noise isn't a stop.
+                # Mirrored here so backtests can't flatter a setup the
+                # live bot would refuse to take.
+                if not stop_is_wider_than_noise(entry_price, current_bar["atr"], stop_price):
+                    continue
                 if USE_RISK_BASED_SIZING:
                     qty = compute_position_size(equity, entry_price, stop_price)
                 else:
