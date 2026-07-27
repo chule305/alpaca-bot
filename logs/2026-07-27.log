@@ -1,0 +1,450 @@
+2026-07-27 14:08:06,096 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-27 14:08:06,096 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-27 14:08:06,096 | Bar size: 5min | Check interval while market open: 5min
+2026-07-27 14:08:06,097 | Active strategies: breakout, gap_continuation, orb, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-27 14:08:06,097 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-27 14:08:06,097 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-27 14:08:06,097 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-27 14:08:06,097 | Position sizing: flat $500 per trade
+2026-07-27 14:08:06,097 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-27 14:08:06,097 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-27 14:08:06,097 | Loaded saved watchlist from previous run: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-27 14:08:06,097 | Restored daily risk state from previous run: day 2026-07-24, breaker tripped: False
+2026-07-27 14:08:06,097 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-27 14:08:06,462 | Daily loss circuit breaker: tracking from starting equity $99,968.31 (limit -3%).
+2026-07-27 14:08:06,462 | SCANNER: refreshing watchlist...
+2026-07-27 14:08:08,747 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 22 candidate(s).
+2026-07-27 14:08:09,877 | SCANNER: candidate FBRX -- +39.5% today, $76.41, liquid, 3 recent news item(s)
+2026-07-27 14:08:09,877 | SCANNER: candidate PN -- +25.3% today, $10.00, liquid, 2 recent news item(s)
+2026-07-27 14:08:09,877 | SCANNER: candidate TRAX -- +21.9% today, $43.28, liquid, 1 recent news item(s)
+2026-07-27 14:08:09,877 | SCANNER: candidate QBTS -- +18.9% today, $19.27, liquid, 4 recent news item(s)
+2026-07-27 14:08:09,877 | SCANNER: candidate LEGN -- -14.8% today, $18.92, liquid, 1 recent news item(s)
+2026-07-27 14:08:09,878 | SCANNER: new watchlist -> FBRX, PN, TRAX, QBTS, LEGN
+2026-07-27 14:08:10,032 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:08:10,535 | [FBRX] trending (ADX 62.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.43
+2026-07-27 14:08:10,535 | [FBRX] ACTION: No trade.
+2026-07-27 14:08:10,562 | [LEGN] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.45
+2026-07-27 14:08:10,562 | [LEGN] ACTION: No trade.
+2026-07-27 14:08:10,588 | [PN] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.11
+2026-07-27 14:08:10,588 | [PN] ACTION: No trade.
+2026-07-27 14:08:10,627 | [QBTS] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $19.24
+2026-07-27 14:08:10,627 | [QBTS] Buying 25 share(s) (~$481, flat $ sizing) | stop-loss $18.28 | take-profit $21.16 (fixed %)
+2026-07-27 14:08:10,731 | [QBTS] ACTION: BUY (order id 8b20f97b-663e-4280-9fde-9f02c52701a6, strategy: breakout)
+2026-07-27 14:08:10,760 | [TRAX] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.63
+2026-07-27 14:08:10,760 | [TRAX] ACTION: No trade.
+2026-07-27 14:08:10,800 | [TSLA] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $311.55
+2026-07-27 14:08:10,800 | [TSLA] ACTION: No trade.
+2026-07-27 14:13:11,288 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:13:12,047 | [FBRX] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.42
+2026-07-27 14:13:12,047 | [FBRX] ACTION: No trade.
+2026-07-27 14:13:12,073 | [LEGN] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.52
+2026-07-27 14:13:12,073 | [LEGN] ACTION: No trade.
+2026-07-27 14:13:12,099 | [PN] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.52
+2026-07-27 14:13:12,099 | [PN] ACTION: No trade.
+2026-07-27 14:13:12,136 | [QBTS] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.11
+2026-07-27 14:13:12,136 | [QBTS] ACTION: No trade.
+2026-07-27 14:13:12,162 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.33
+2026-07-27 14:13:12,162 | [TRAX] Buying 11 share(s) (~$488, flat $ sizing) | stop-loss $42.11 | take-profit $48.76 (fixed %)
+2026-07-27 14:13:12,254 | [TRAX] ACTION: BUY (order id 28cd6e0c-66cb-4590-9b79-01282c72084a, strategy: vwap_reversion)
+2026-07-27 14:13:12,293 | [TSLA] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.06
+2026-07-27 14:13:12,293 | [TSLA] ACTION: No trade.
+2026-07-27 14:18:13,382 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:18:14,247 | [FBRX] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.39
+2026-07-27 14:18:14,247 | [FBRX] ACTION: No trade.
+2026-07-27 14:18:14,273 | [LEGN] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.38
+2026-07-27 14:18:14,273 | [LEGN] ACTION: No trade.
+2026-07-27 14:18:14,299 | [PN] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.20
+2026-07-27 14:18:14,299 | [PN] ACTION: No trade.
+2026-07-27 14:18:14,340 | [QBTS] trending (ADX 56.0) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.29
+2026-07-27 14:18:14,340 | [QBTS] ACTION: No trade.
+2026-07-27 14:18:14,366 | [TRAX] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.46
+2026-07-27 14:18:14,366 | [TRAX] ACTION: No trade.
+2026-07-27 14:18:14,405 | [TSLA] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.73
+2026-07-27 14:18:14,405 | [TSLA] ACTION: No trade.
+2026-07-27 14:23:14,876 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:23:15,609 | [FBRX] trending (ADX 58.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.41
+2026-07-27 14:23:15,609 | [FBRX] ACTION: No trade.
+2026-07-27 14:23:15,635 | [LEGN] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.00
+2026-07-27 14:23:15,635 | [LEGN] ACTION: No trade.
+2026-07-27 14:23:15,660 | [PN] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.00
+2026-07-27 14:23:15,660 | [PN] ACTION: No trade.
+2026-07-27 14:23:15,697 | [QBTS] trending (ADX 57.7) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.25
+2026-07-27 14:23:15,698 | [QBTS] ACTION: No trade.
+2026-07-27 14:23:15,724 | [TRAX] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.22
+2026-07-27 14:23:15,724 | [TRAX] ACTION: No trade.
+2026-07-27 14:23:15,762 | [TSLA] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.43
+2026-07-27 14:23:15,762 | [TSLA] ACTION: No trade.
+2026-07-27 14:28:16,235 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:28:17,027 | [FBRX] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.42
+2026-07-27 14:28:17,027 | [FBRX] ACTION: No trade.
+2026-07-27 14:28:17,054 | [LEGN] trending (ADX 33.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.96
+2026-07-27 14:28:17,054 | [LEGN] ACTION: No trade.
+2026-07-27 14:28:17,080 | [PN] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $9.85
+2026-07-27 14:28:17,080 | [PN] ACTION: No trade.
+2026-07-27 14:28:17,118 | [QBTS] trending (ADX 56.6) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.03
+2026-07-27 14:28:17,118 | [QBTS] ACTION: No trade.
+2026-07-27 14:28:17,164 | [TRAX] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.33
+2026-07-27 14:28:17,164 | [TRAX] ACTION: No trade.
+2026-07-27 14:28:17,203 | [TSLA] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.30
+2026-07-27 14:28:17,203 | [TSLA] ACTION: No trade.
+2026-07-27 14:33:17,674 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, LEGN, PN, QBTS, TRAX, TSLA
+2026-07-27 14:33:18,531 | [FBRX] trending (ADX 56.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.43
+2026-07-27 14:33:18,531 | [FBRX] ACTION: No trade.
+2026-07-27 14:33:18,558 | [LEGN] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.67
+2026-07-27 14:33:18,558 | [LEGN] ACTION: No trade.
+2026-07-27 14:33:18,584 | [PN] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $9.75
+2026-07-27 14:33:18,584 | [PN] ACTION: No trade.
+2026-07-27 14:33:18,621 | [QBTS] trending (ADX 55.5) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.93
+2026-07-27 14:33:18,621 | [QBTS] ACTION: No trade.
+2026-07-27 14:33:18,647 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $42.92
+2026-07-27 14:33:18,647 | [TRAX] Buying 11 share(s) (~$472, flat $ sizing) | stop-loss $40.77 | take-profit $47.21 (fixed %)
+2026-07-27 14:33:18,746 | [TRAX] ACTION: BUY (order id b6e32c0e-aa4b-4c77-86f8-f8cf0857953f, strategy: vwap_reversion)
+2026-07-27 14:33:18,786 | [TSLA] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.41
+2026-07-27 14:33:18,786 | [TSLA] ACTION: No trade.
+2026-07-27 14:38:19,428 | SCANNER: refreshing watchlist...
+2026-07-27 14:38:20,347 | SCANNER: excluded 16 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-27 14:38:21,339 | SCANNER: candidate VEEE -- +42.2% today, $18.44, liquid, 1 recent news item(s)
+2026-07-27 14:38:21,339 | SCANNER: candidate FBRX -- +39.5% today, $76.44, liquid, 3 recent news item(s)
+2026-07-27 14:38:21,339 | SCANNER: candidate TRAX -- +18.9% today, $42.23, liquid, 1 recent news item(s)
+2026-07-27 14:38:21,339 | SCANNER: only 3 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 14:38:21,340 | SCANNER: new watchlist -> VEEE, FBRX, TRAX, TSLA, NVDA
+2026-07-27 14:38:21,502 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 14:38:22,192 | [FBRX] trending (ADX 55.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.43
+2026-07-27 14:38:22,192 | [FBRX] ACTION: No trade.
+2026-07-27 14:38:22,230 | [NVDA] trending (ADX 49.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $200.09
+2026-07-27 14:38:22,230 | [NVDA] ACTION: No trade.
+2026-07-27 14:38:22,267 | [QBTS] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.72
+2026-07-27 14:38:22,267 | [QBTS] ACTION: No trade.
+2026-07-27 14:38:22,293 | [TRAX] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.86
+2026-07-27 14:38:22,293 | [TRAX] ACTION: No trade.
+2026-07-27 14:38:22,331 | [TSLA] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.76
+2026-07-27 14:38:22,332 | [TSLA] ACTION: No trade.
+2026-07-27 14:38:22,364 | [VEEE] trending (ADX 52.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.08
+2026-07-27 14:38:22,364 | [VEEE] ACTION: No trade.
+2026-07-27 14:43:23,389 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 14:43:24,379 | [FBRX] trending (ADX 54.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 14:43:24,379 | [FBRX] ACTION: No trade.
+2026-07-27 14:43:24,418 | [NVDA] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $198.94
+2026-07-27 14:43:24,418 | [NVDA] ACTION: No trade.
+2026-07-27 14:43:24,455 | [QBTS] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.91
+2026-07-27 14:43:24,456 | [QBTS] ACTION: No trade.
+2026-07-27 14:43:24,481 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.89
+2026-07-27 14:43:24,482 | [TRAX] ACTION: No trade.
+2026-07-27 14:43:24,521 | [TSLA] trending (ADX 40.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.98
+2026-07-27 14:43:24,521 | [TSLA] ACTION: No trade.
+2026-07-27 14:43:24,555 | [VEEE] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.71
+2026-07-27 14:43:24,555 | [VEEE] ACTION: No trade.
+2026-07-27 14:48:25,033 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 14:48:26,465 | [FBRX] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 14:48:26,465 | [FBRX] ACTION: No trade.
+2026-07-27 14:48:26,503 | [NVDA] trending (ADX 52.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $198.76
+2026-07-27 14:48:26,503 | [NVDA] ACTION: No trade.
+2026-07-27 14:48:26,541 | [QBTS] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.88
+2026-07-27 14:48:26,541 | [QBTS] ACTION: No trade.
+2026-07-27 14:48:26,567 | [TRAX] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.29
+2026-07-27 14:48:26,567 | [TRAX] ACTION: No trade.
+2026-07-27 14:48:26,606 | [TSLA] trending (ADX 42.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.15
+2026-07-27 14:48:26,606 | [TSLA] ACTION: No trade.
+2026-07-27 14:48:26,639 | [VEEE] trending (ADX 51.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.70
+2026-07-27 14:48:26,640 | [VEEE] ACTION: No trade.
+2026-07-27 14:53:27,112 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 14:53:27,950 | [FBRX] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 14:53:27,950 | [FBRX] ACTION: No trade.
+2026-07-27 14:53:27,988 | [NVDA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $199.13
+2026-07-27 14:53:27,988 | [NVDA] Buying 2 share(s) (~$398, flat $ sizing) | stop-loss $189.17 | take-profit $219.04 (fixed %)
+2026-07-27 14:53:28,068 | [NVDA] ACTION: BUY (order id 5177fac3-3ade-4082-9d98-cf982d0620e2, strategy: vwap_reversion)
+2026-07-27 14:53:28,106 | [QBTS] trending (ADX 47.3) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.68
+2026-07-27 14:53:28,106 | [QBTS] ACTION: No trade.
+2026-07-27 14:53:28,133 | [TRAX] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.15
+2026-07-27 14:53:28,133 | [TRAX] ACTION: No trade.
+2026-07-27 14:53:28,171 | [TSLA] trending (ADX 43.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.21
+2026-07-27 14:53:28,171 | [TSLA] ACTION: No trade.
+2026-07-27 14:53:28,204 | [VEEE] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.66
+2026-07-27 14:53:28,204 | [VEEE] ACTION: No trade.
+2026-07-27 14:58:28,712 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 14:58:29,618 | [FBRX] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 14:58:29,618 | [FBRX] ACTION: No trade.
+2026-07-27 14:58:29,656 | [NVDA] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.68
+2026-07-27 14:58:29,656 | [NVDA] ACTION: No trade.
+2026-07-27 14:58:29,692 | [QBTS] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.38
+2026-07-27 14:58:29,692 | [QBTS] ACTION: No trade.
+2026-07-27 14:58:29,718 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.70
+2026-07-27 14:58:29,718 | [TRAX] ACTION: No trade.
+2026-07-27 14:58:29,756 | [TSLA] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $304.64
+2026-07-27 14:58:29,756 | [TSLA] ACTION: No trade.
+2026-07-27 14:58:29,788 | [VEEE] trending (ADX 48.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.29
+2026-07-27 14:58:29,788 | [VEEE] ACTION: No trade.
+2026-07-27 15:03:30,574 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:03:31,534 | [FBRX] trending (ADX 52.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:03:31,534 | [FBRX] ACTION: No trade.
+2026-07-27 15:03:31,574 | [NVDA] trending (ADX 55.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.93
+2026-07-27 15:03:31,574 | [NVDA] ACTION: No trade.
+2026-07-27 15:03:31,612 | [QBTS] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.80
+2026-07-27 15:03:31,612 | [QBTS] ACTION: No trade.
+2026-07-27 15:03:31,640 | [TRAX] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.65
+2026-07-27 15:03:31,640 | [TRAX] ACTION: No trade.
+2026-07-27 15:03:31,680 | [TSLA] trending (ADX 47.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.14
+2026-07-27 15:03:31,680 | [TSLA] ACTION: No trade.
+2026-07-27 15:03:31,714 | [VEEE] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.21
+2026-07-27 15:03:31,714 | [VEEE] ACTION: No trade.
+2026-07-27 15:08:32,298 | SCANNER: refreshing watchlist...
+2026-07-27 15:08:32,727 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-27 15:08:33,724 | SCANNER: candidate FBRX -- +39.5% today, $76.44, liquid, 4 recent news item(s)
+2026-07-27 15:08:33,725 | SCANNER: candidate VEEE -- +33.5% today, $17.32, liquid, 1 recent news item(s)
+2026-07-27 15:08:33,725 | SCANNER: candidate TRAX -- +20.6% today, $42.82, liquid, 2 recent news item(s)
+2026-07-27 15:08:33,725 | SCANNER: candidate QBTS -- +16.9% today, $18.95, liquid, 4 recent news item(s)
+2026-07-27 15:08:33,725 | SCANNER: only 4 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 15:08:33,725 | SCANNER: new watchlist -> FBRX, VEEE, TRAX, QBTS, TSLA
+2026-07-27 15:08:33,935 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:08:34,626 | [FBRX] trending (ADX 51.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.45
+2026-07-27 15:08:34,627 | [FBRX] ACTION: No trade.
+2026-07-27 15:08:34,665 | [NVDA] trending (ADX 55.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $199.26
+2026-07-27 15:08:34,665 | [NVDA] ACTION: No trade.
+2026-07-27 15:08:34,705 | [QBTS] trending (ADX 39.9) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.86
+2026-07-27 15:08:34,705 | [QBTS] ACTION: No trade.
+2026-07-27 15:08:34,731 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $43.00
+2026-07-27 15:08:34,732 | [TRAX] ACTION: No trade.
+2026-07-27 15:08:34,771 | [TSLA] trending (ADX 45.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.68
+2026-07-27 15:08:34,771 | [TSLA] ACTION: No trade.
+2026-07-27 15:08:34,803 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $17.25
+2026-07-27 15:08:34,804 | [VEEE] Buying 28 share(s) (~$483, flat $ sizing) | stop-loss $16.39 | take-profit $18.98 (fixed %)
+2026-07-27 15:08:34,936 | [VEEE] ACTION: BUY (order id 65940c13-c884-4701-9e30-021935baf28b, strategy: vwap_reversion)
+2026-07-27 15:13:35,766 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:13:37,117 | [FBRX] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:13:37,117 | [FBRX] ACTION: No trade.
+2026-07-27 15:13:37,156 | [NVDA] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $199.78
+2026-07-27 15:13:37,156 | [NVDA] ACTION: No trade.
+2026-07-27 15:13:37,194 | [QBTS] trending (ADX 38.4) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.88
+2026-07-27 15:13:37,194 | [QBTS] ACTION: No trade.
+2026-07-27 15:13:37,220 | [TRAX] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.58
+2026-07-27 15:13:37,220 | [TRAX] ACTION: No trade.
+2026-07-27 15:13:37,259 | [TSLA] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.76
+2026-07-27 15:13:37,259 | [TSLA] ACTION: No trade.
+2026-07-27 15:13:37,292 | [VEEE] trending (ADX 42.5) -> trend-following strategy | Signal: SELL | Shares held: 28.0 | Last price: $17.02
+2026-07-27 15:13:37,519 | [VEEE] ACTION: SELL - closing position (order id 8b9ba019-bcc8-47e5-9b8c-5447dca229fb)
+2026-07-27 15:18:38,349 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:18:39,485 | [FBRX] trending (ADX 50.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:18:39,485 | [FBRX] ACTION: No trade.
+2026-07-27 15:18:39,523 | [NVDA] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.58
+2026-07-27 15:18:39,523 | [NVDA] ACTION: No trade.
+2026-07-27 15:18:39,559 | [QBTS] trending (ADX 36.9) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.89
+2026-07-27 15:18:39,559 | [QBTS] ACTION: No trade.
+2026-07-27 15:18:39,584 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $43.02
+2026-07-27 15:18:39,584 | [TRAX] ACTION: No trade.
+2026-07-27 15:18:39,621 | [TSLA] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $310.37
+2026-07-27 15:18:39,621 | [TSLA] ACTION: No trade.
+2026-07-27 15:18:39,653 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $17.36
+2026-07-27 15:18:39,653 | [VEEE] Buying 28 share(s) (~$486, flat $ sizing) | stop-loss $16.49 | take-profit $19.10 (fixed %)
+2026-07-27 15:18:39,750 | [VEEE] ACTION: BUY (order id d364642b-cbbf-4fff-82c3-b692a2293a13, strategy: vwap_reversion)
+2026-07-27 15:23:40,558 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:23:41,476 | [FBRX] trending (ADX 50.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:23:41,477 | [FBRX] ACTION: No trade.
+2026-07-27 15:23:41,514 | [NVDA] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.14
+2026-07-27 15:23:41,514 | [NVDA] ACTION: No trade.
+2026-07-27 15:23:41,550 | [QBTS] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.84
+2026-07-27 15:23:41,550 | [QBTS] ACTION: No trade.
+2026-07-27 15:23:41,575 | [TRAX] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.56
+2026-07-27 15:23:41,575 | [TRAX] ACTION: No trade.
+2026-07-27 15:23:41,613 | [TSLA] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.40
+2026-07-27 15:23:41,613 | [TSLA] ACTION: No trade.
+2026-07-27 15:23:41,645 | [VEEE] trending (ADX 39.1) -> trend-following strategy | Signal: HOLD | Shares held: 28.0 | Last price: $17.27
+2026-07-27 15:23:41,645 | [VEEE] ACTION: No trade.
+2026-07-27 15:28:42,446 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:28:43,926 | [FBRX] trending (ADX 50.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.45
+2026-07-27 15:28:43,926 | [FBRX] ACTION: No trade.
+2026-07-27 15:28:43,965 | [NVDA] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.91
+2026-07-27 15:28:43,965 | [NVDA] ACTION: No trade.
+2026-07-27 15:28:44,002 | [QBTS] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.82
+2026-07-27 15:28:44,003 | [QBTS] ACTION: No trade.
+2026-07-27 15:28:44,029 | [TRAX] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.45
+2026-07-27 15:28:44,029 | [TRAX] ACTION: No trade.
+2026-07-27 15:28:44,068 | [TSLA] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.57
+2026-07-27 15:28:44,068 | [TSLA] ACTION: No trade.
+2026-07-27 15:28:44,101 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $17.57
+2026-07-27 15:28:44,101 | [VEEE] Buying 28 share(s) (~$492, flat $ sizing) | stop-loss $16.69 | take-profit $19.33 (fixed %)
+2026-07-27 15:28:44,176 | [VEEE] Order failed: {"base_price":"16.315","code":42210000,"message":"stop_loss.stop_price must be \u003c= base_price - 0.01"}
+2026-07-27 15:33:44,638 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:33:45,556 | [FBRX] trending (ADX 50.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.45
+2026-07-27 15:33:45,556 | [FBRX] ACTION: No trade.
+2026-07-27 15:33:45,594 | [NVDA] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.57
+2026-07-27 15:33:45,594 | [NVDA] ACTION: No trade.
+2026-07-27 15:33:45,631 | [QBTS] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.98
+2026-07-27 15:33:45,631 | [QBTS] ACTION: No trade.
+2026-07-27 15:33:45,656 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.68
+2026-07-27 15:33:45,657 | [TRAX] ACTION: No trade.
+2026-07-27 15:33:45,695 | [TSLA] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.52
+2026-07-27 15:33:45,695 | [TSLA] ACTION: No trade.
+2026-07-27 15:33:45,728 | [VEEE] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.38
+2026-07-27 15:33:45,728 | [VEEE] ACTION: No trade.
+2026-07-27 15:38:46,042 | SCANNER: refreshing watchlist...
+2026-07-27 15:38:46,432 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-07-27 15:38:47,043 | SCANNER: candidate FBRX -- +39.5% today, $76.44, liquid, 4 recent news item(s)
+2026-07-27 15:38:47,043 | SCANNER: candidate VEEE -- +30.0% today, $16.87, liquid, 1 recent news item(s)
+2026-07-27 15:38:47,043 | SCANNER: candidate TRAX -- +20.2% today, $42.70, liquid, 2 recent news item(s)
+2026-07-27 15:38:47,044 | SCANNER: only 3 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 15:38:47,044 | SCANNER: new watchlist -> FBRX, VEEE, TRAX, TSLA, NVDA
+2026-07-27 15:38:47,189 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:38:47,868 | [FBRX] trending (ADX 49.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:38:47,868 | [FBRX] ACTION: No trade.
+2026-07-27 15:38:47,906 | [NVDA] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.33
+2026-07-27 15:38:47,906 | [NVDA] ACTION: No trade.
+2026-07-27 15:38:47,942 | [QBTS] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.98
+2026-07-27 15:38:47,942 | [QBTS] ACTION: No trade.
+2026-07-27 15:38:47,968 | [TRAX] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.26
+2026-07-27 15:38:47,968 | [TRAX] ACTION: No trade.
+2026-07-27 15:38:48,006 | [TSLA] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.05
+2026-07-27 15:38:48,006 | [TSLA] ACTION: No trade.
+2026-07-27 15:38:48,040 | [VEEE] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.90
+2026-07-27 15:38:48,040 | [VEEE] ACTION: No trade.
+2026-07-27 15:43:48,528 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:43:49,462 | [FBRX] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:43:49,463 | [FBRX] ACTION: No trade.
+2026-07-27 15:43:49,503 | [NVDA] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.06
+2026-07-27 15:43:49,503 | [NVDA] ACTION: No trade.
+2026-07-27 15:43:49,543 | [QBTS] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $19.01
+2026-07-27 15:43:49,543 | [QBTS] ACTION: No trade.
+2026-07-27 15:43:49,570 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.45
+2026-07-27 15:43:49,570 | [TRAX] ACTION: No trade.
+2026-07-27 15:43:49,611 | [TSLA] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.54
+2026-07-27 15:43:49,611 | [TSLA] ACTION: No trade.
+2026-07-27 15:43:49,645 | [VEEE] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.20
+2026-07-27 15:43:49,646 | [VEEE] ACTION: No trade.
+2026-07-27 15:48:50,109 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:48:50,966 | [FBRX] trending (ADX 47.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.43
+2026-07-27 15:48:50,966 | [FBRX] ACTION: No trade.
+2026-07-27 15:48:51,004 | [NVDA] trending (ADX 54.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.39
+2026-07-27 15:48:51,004 | [NVDA] ACTION: No trade.
+2026-07-27 15:48:51,041 | [QBTS] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.80
+2026-07-27 15:48:51,041 | [QBTS] ACTION: No trade.
+2026-07-27 15:48:51,067 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $42.58
+2026-07-27 15:48:51,067 | [TRAX] ACTION: No trade.
+2026-07-27 15:48:51,106 | [TSLA] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.78
+2026-07-27 15:48:51,106 | [TSLA] ACTION: No trade.
+2026-07-27 15:48:51,139 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.84
+2026-07-27 15:48:51,140 | [VEEE] Buying 29 share(s) (~$488, flat $ sizing) | stop-loss $15.99 | take-profit $18.52 (fixed %)
+2026-07-27 15:48:51,219 | [VEEE] ACTION: BUY (order id e5f905b5-af22-4b99-ac21-eb6efd658217, strategy: vwap_reversion)
+2026-07-27 15:53:52,117 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:53:57,466 | [FBRX] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:53:57,466 | [FBRX] ACTION: No trade.
+2026-07-27 15:53:57,504 | [NVDA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $196.45
+2026-07-27 15:53:57,504 | [NVDA] ACTION: No trade.
+2026-07-27 15:53:57,541 | [QBTS] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.80
+2026-07-27 15:53:57,541 | [QBTS] ACTION: No trade.
+2026-07-27 15:53:57,566 | [TRAX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 11.0 | Last price: $43.10
+2026-07-27 15:53:57,566 | [TRAX] ACTION: No trade.
+2026-07-27 15:53:57,604 | [TSLA] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.42
+2026-07-27 15:53:57,604 | [TSLA] ACTION: No trade.
+2026-07-27 15:53:57,636 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.10
+2026-07-27 15:53:57,637 | [VEEE] ACTION: No trade.
+2026-07-27 15:58:58,107 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 15:58:59,240 | [FBRX] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 15:58:59,240 | [FBRX] ACTION: No trade.
+2026-07-27 15:58:59,279 | [NVDA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $196.83
+2026-07-27 15:58:59,279 | [NVDA] ACTION: No trade.
+2026-07-27 15:58:59,316 | [QBTS] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.84
+2026-07-27 15:58:59,317 | [QBTS] ACTION: No trade.
+2026-07-27 15:58:59,343 | [TRAX] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.09
+2026-07-27 15:58:59,343 | [TRAX] ACTION: No trade.
+2026-07-27 15:58:59,382 | [TSLA] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.15
+2026-07-27 15:58:59,382 | [TSLA] ACTION: No trade.
+2026-07-27 15:58:59,416 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.20
+2026-07-27 15:58:59,416 | [VEEE] ACTION: No trade.
+2026-07-27 16:04:00,443 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: FBRX, NVDA, QBTS, TRAX, TSLA, VEEE
+2026-07-27 16:04:01,801 | [FBRX] trending (ADX 44.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.43
+2026-07-27 16:04:01,802 | [FBRX] ACTION: No trade.
+2026-07-27 16:04:01,839 | [NVDA] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.57
+2026-07-27 16:04:01,839 | [NVDA] ACTION: No trade.
+2026-07-27 16:04:01,876 | [QBTS] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.73
+2026-07-27 16:04:01,876 | [QBTS] ACTION: No trade.
+2026-07-27 16:04:01,901 | [TRAX] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.74
+2026-07-27 16:04:01,901 | [TRAX] ACTION: No trade.
+2026-07-27 16:04:01,940 | [TSLA] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.90
+2026-07-27 16:04:01,940 | [TSLA] ACTION: No trade.
+2026-07-27 16:04:01,973 | [VEEE] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 29.0 | Last price: $17.10
+2026-07-27 16:04:01,973 | [VEEE] ACTION: No trade.
+2026-07-27 16:09:02,295 | SCANNER: refreshing watchlist...
+2026-07-27 16:09:02,623 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-27 16:09:03,284 | SCANNER: candidate FBRX -- +39.5% today, $76.44, liquid, 4 recent news item(s)
+2026-07-27 16:09:03,285 | SCANNER: candidate VEEE -- +35.8% today, $17.61, liquid, 1 recent news item(s)
+2026-07-27 16:09:03,285 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-27 16:09:03,285 | SCANNER: new watchlist -> FBRX, VEEE, TSLA, NVDA, COIN
+2026-07-27 16:09:03,436 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:09:04,300 | [COIN] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $161.96
+2026-07-27 16:09:04,300 | [COIN] ACTION: No trade.
+2026-07-27 16:09:04,327 | [FBRX] trending (ADX 44.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:09:04,327 | [FBRX] ACTION: No trade.
+2026-07-27 16:09:04,366 | [NVDA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $196.59
+2026-07-27 16:09:04,367 | [NVDA] ACTION: No trade.
+2026-07-27 16:09:04,404 | [QBTS] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.79
+2026-07-27 16:09:04,404 | [QBTS] ACTION: No trade.
+2026-07-27 16:09:04,443 | [TSLA] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.81
+2026-07-27 16:09:04,443 | [TSLA] ACTION: No trade.
+2026-07-27 16:09:04,476 | [VEEE] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 29.0 | Last price: $17.01
+2026-07-27 16:09:04,476 | [VEEE] ACTION: No trade.
+2026-07-27 16:14:04,944 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:14:06,007 | [COIN] choppy/sideways (ADX 14.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.40
+2026-07-27 16:14:06,008 | [COIN] ACTION: No trade.
+2026-07-27 16:14:06,034 | [FBRX] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:14:06,034 | [FBRX] ACTION: No trade.
+2026-07-27 16:14:06,073 | [NVDA] trending (ADX 52.0) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.60
+2026-07-27 16:14:06,074 | [NVDA] ACTION: No trade.
+2026-07-27 16:14:06,111 | [QBTS] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.82
+2026-07-27 16:14:06,111 | [QBTS] ACTION: No trade.
+2026-07-27 16:14:06,150 | [TSLA] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.74
+2026-07-27 16:14:06,150 | [TSLA] ACTION: No trade.
+2026-07-27 16:14:06,183 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.70
+2026-07-27 16:14:06,184 | [VEEE] ACTION: No trade.
+2026-07-27 16:19:06,646 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:19:07,618 | [COIN] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.74
+2026-07-27 16:19:07,619 | [COIN] ACTION: No trade.
+2026-07-27 16:19:07,645 | [FBRX] trending (ADX 43.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:19:07,645 | [FBRX] ACTION: No trade.
+2026-07-27 16:19:07,684 | [NVDA] trending (ADX 49.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.08
+2026-07-27 16:19:07,684 | [NVDA] ACTION: No trade.
+2026-07-27 16:19:07,721 | [QBTS] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.97
+2026-07-27 16:19:07,721 | [QBTS] ACTION: No trade.
+2026-07-27 16:19:07,760 | [TSLA] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.94
+2026-07-27 16:19:07,760 | [TSLA] ACTION: No trade.
+2026-07-27 16:19:07,793 | [VEEE] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 29.0 | Last price: $17.10
+2026-07-27 16:19:07,793 | [VEEE] ACTION: No trade.
+2026-07-27 16:24:08,259 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:24:09,196 | [COIN] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.87
+2026-07-27 16:24:09,197 | [COIN] ACTION: No trade.
+2026-07-27 16:24:09,223 | [FBRX] trending (ADX 43.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:24:09,223 | [FBRX] ACTION: No trade.
+2026-07-27 16:24:09,262 | [NVDA] trending (ADX 47.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.17
+2026-07-27 16:24:09,262 | [NVDA] ACTION: No trade.
+2026-07-27 16:24:09,299 | [QBTS] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.82
+2026-07-27 16:24:09,300 | [QBTS] ACTION: No trade.
+2026-07-27 16:24:09,338 | [TSLA] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $309.16
+2026-07-27 16:24:09,338 | [TSLA] ACTION: No trade.
+2026-07-27 16:24:09,371 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.51
+2026-07-27 16:24:09,372 | [VEEE] ACTION: No trade.
+2026-07-27 16:29:10,200 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:29:11,488 | [COIN] Gap Pattern (Type A) continuation, gap held and extended | Signal: BUY | Shares held: 0.0 | Last price: $163.56
+2026-07-27 16:29:11,488 | [COIN] Buying 3 share(s) (~$491, flat $ sizing) | stop-loss $155.38 | take-profit $179.91 (fixed %)
+2026-07-27 16:29:11,575 | [COIN] ACTION: BUY (order id 41aeb0d9-38b0-44b9-ad76-885c55223da0, strategy: gap_continuation)
+2026-07-27 16:29:11,603 | [FBRX] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:29:11,603 | [FBRX] ACTION: No trade.
+2026-07-27 16:29:11,646 | [NVDA] trending (ADX 44.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.69
+2026-07-27 16:29:11,646 | [NVDA] ACTION: No trade.
+2026-07-27 16:29:11,683 | [QBTS] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.89
+2026-07-27 16:29:11,683 | [QBTS] ACTION: No trade.
+2026-07-27 16:29:11,722 | [TSLA] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.70
+2026-07-27 16:29:11,722 | [TSLA] ACTION: No trade.
+2026-07-27 16:29:11,755 | [VEEE] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 29.0 | Last price: $17.08
+2026-07-27 16:29:11,756 | [VEEE] ACTION: No trade.
+2026-07-27 16:34:12,373 | Market is open (closes 2026-07-27 22:00:00 CEST your local time). Checking 6 symbols: COIN, FBRX, NVDA, QBTS, TSLA, VEEE
+2026-07-27 16:34:13,319 | [COIN] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 3.0 | Last price: $163.06
+2026-07-27 16:34:13,320 | [COIN] ACTION: No trade.
+2026-07-27 16:34:13,347 | [FBRX] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.44
+2026-07-27 16:34:13,347 | [FBRX] ACTION: No trade.
+2026-07-27 16:34:13,387 | [NVDA] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.98
+2026-07-27 16:34:13,387 | [NVDA] ACTION: No trade.
+2026-07-27 16:34:13,426 | [QBTS] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 25.0 | Last price: $18.79
+2026-07-27 16:34:13,426 | [QBTS] ACTION: No trade.
+2026-07-27 16:34:13,467 | [TSLA] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $308.05
+2026-07-27 16:34:13,467 | [TSLA] ACTION: No trade.
+2026-07-27 16:34:13,501 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 29.0 | Last price: $17.30
+2026-07-27 16:34:13,501 | [VEEE] ACTION: No trade.
+2026-07-27 16:38:06,098 | Duration window finished.
