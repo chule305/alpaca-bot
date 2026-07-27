@@ -618,3 +618,6 @@
 2026-07-27 21:02:22,058 | Market is closed. Next open: 2026-07-28 15:30:00 CEST (your local time) -- in 16.5 hours.
 2026-07-27 21:02:22,115 | Market is closed for the day -- exiting early instead of idling.
 2026-07-27 21:02:22,115 | Duration window finished.
+2026-07-28 00:02:42,379 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-28 00:02:43,699 | SCANNER: candidate FBRX -- +39.6% today, $76.50, liquid, 7 recent news item(s)
+2026-07-28 00:02:43,699 | SCANNER: candidate VEEE -- +21.6% today, $15.77, liquid, 2 recent news item(s)

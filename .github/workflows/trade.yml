@@ -107,7 +107,7 @@ jobs:
           USE_GAP_PATTERN: "true"
           USE_SMASH_DAY_PATTERN: "false"
           USE_ROSS_HOOK: "false"
-          USE_ORB: "true"
+          USE_ORB: "false"
           USE_RVOL_SPIKE: "false"
           USE_VWAP_REVERSION: "true"
           ADX_PERIOD: "14"

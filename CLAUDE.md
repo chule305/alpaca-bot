@@ -575,3 +575,68 @@ can't flatter a setup the live bot would refuse.
 from order history alone. But a perfect correlation across one day's
 seven losers still pointed at the wrong cause. Backtest the hypothesis
 before shipping it, especially when it's textbook enough to feel obvious.
+
+## 2026-07-28: backtesting the universe the bot ACTUALLY trades
+Every backtest before this ran on TSLA/NVDA/COIN/AMD/PLTR -- megacaps the
+bot barely trades. Its real universe is scanner picks: FBRX, VEEE, PN,
+TRAX, QBTS, SMCI, SAFT, RNG. Testing those changed several conclusions.
+
+### The backtester was flattering volatile stocks
+It filled stops at exactly the stop price. Real stops are market orders
+once triggered and fill at whatever comes next. Measured from the three
+live VEEE stop-outs on 07-27, slippage was 0.51-0.54 x ATR every time
+(stop 16.56 -> filled 15.90, 16.90 -> 16.31, 15.87 -> 15.33), so
+`STOP_SLIPPAGE_ATR_FRACTION` now defaults to 0.5, capped at the bar's low.
+
+This was not a small correction. On scanner picks it moved the whole
+system from "+7.7%, profit factor 1.05" to "profit factor 0.90, 27.7%
+drawdown". Every backtest number recorded before today is optimistic, and
+by more on volatile names than on megacaps.
+
+### It also reversed yesterday's conclusion about MIN_STOP_TO_ATR_RATIO
+With perfect fills, the volatility guard looked like it HURT the scanner
+universe (+7.7% -> -0.1%). With realistic fills it clearly helps:
+
+    guard off: profit factor 0.90, max drawdown 27.7%, vwap_reversion -$239.21
+    guard on:  profit factor 0.95, max drawdown 12.4%, vwap_reversion  +$74.52
+
+The guard was right; the measuring instrument was wrong. Worth
+remembering that a backtest disagreeing with live evidence is not
+automatically the more trustworthy of the two -- check what the
+simulation is assuming first.
+
+### ORB is off by default now
+Highest-volume strategy in the system, and it doesn't pay for itself:
+
+    scanner picks: 183 trades, 37% wins, -$474.56
+    megacaps:       78 trades, 44% wins,   +$0.73  (noise)
+
+Disabling it improves BOTH universes, which is why it's a default change
+rather than a per-universe tweak:
+    scanner: profit factor 0.95 -> 1.08, drawdown 12.4% -> 8.8%
+    megacap: profit factor 1.37 -> 1.52, drawdown  3.0% -> 2.1%
+It also frees capital for breakout ($166 -> $233). ORB looked merely flat
+for months because its losers cluster in exactly the fast-moving names
+where the old perfect-fill assumption was most wrong.
+
+### Where the system stands, honestly
+    scanner picks (real universe): +5.5% / 90d, 47% wins, PF 1.08, DD 8.8%
+    megacaps:                     +11.2% / 90d, 55% wins, PF 1.52, DD 2.1%
+
+The bot performs far better on liquid megacaps than on the volatile
+stocks its own scanner selects. Profit factor 1.08 is barely above
+breakeven -- thin enough that ordinary commissions or a bad week would
+erase it. That is a strategy-level question (should the scanner prefer
+liquidity over volatility?) rather than a bug, and it is the most
+important open question in the project.
+
+Still losing on scanner picks: trend_following (-$274.86, 30% wins). It
+can't simply be toggled off -- it's the fallback that also governs exits
+-- so gating its ENTRIES separately from its exits is the next thing
+worth trying.
+
+### Selection-bias caveat
+The scanner list was assembled from names the scanner picked in the last
+few days, i.e. stocks known to be volatile NOW. Backtesting them over 90
+days has look-ahead bias in symbol selection. Directionally useful,
+absolutely not a forecast.

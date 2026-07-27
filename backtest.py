@@ -88,6 +88,11 @@ trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 # Used only if the real account can't be reached (see get_starting_equity)
 # -- Alpaca paper accounts default to $100,000, so that's the fallback too.
 DEFAULT_BACKTEST_EQUITY = float(os.getenv("DEFAULT_BACKTEST_EQUITY", 100_000))
+# How far past the stop price a triggered stop actually fills, in ATRs.
+# Measured from live fills on 2026-07-27 (three VEEE stop-outs, all
+# 0.51-0.54 x ATR). Set to 0 to restore the old perfect-fill assumption,
+# but be aware that assumption systematically flatters volatile stocks.
+STOP_SLIPPAGE_ATR_FRACTION = float(os.getenv("STOP_SLIPPAGE_ATR_FRACTION", 0.5))
 
 
 def get_starting_equity() -> float:
@@ -211,7 +216,22 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float) -> list[di
             # Conservative assumption: if both levels were touched in the
             # same bar, assume the stop-loss hit first.
             if current_bar["low"] <= position["stop_price"]:
-                exit_price = position["stop_price"]
+                # A stop is a MARKET order once triggered -- it fills at
+                # whatever is available next, not at the stop price. The
+                # old code assumed a perfect fill, which quietly flattered
+                # exactly the volatile stocks where stops slip worst, and
+                # made high-ATR names look far more tradeable than they are.
+                #
+                # 0.5 x ATR is measured, not guessed: all three VEEE
+                # stop-outs on 2026-07-27 slipped 0.51-0.54 x ATR
+                # (stop 16.56 -> filled 15.90, 16.90 -> 16.31,
+                # 15.87 -> 15.33). Capped at the bar's actual low, since
+                # you cannot fill worse than the worst price that traded.
+                atr_now = current_bar["atr"]
+                slip = 0.0
+                if not pd.isna(atr_now) and atr_now > 0:
+                    slip = STOP_SLIPPAGE_ATR_FRACTION * atr_now
+                exit_price = max(position["stop_price"] - slip, current_bar["low"])
                 exit_reason = "stop-loss"
             elif current_bar["high"] >= position["take_profit_price"]:
                 exit_price = position["take_profit_price"]

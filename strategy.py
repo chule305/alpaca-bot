@@ -102,7 +102,22 @@ ROSS_HOOK_PIVOT_LOOKBACK = int(os.getenv("ROSS_HOOK_PIVOT_LOOKBACK", 3))
 ROSS_HOOK_SCAN_BARS = int(os.getenv("ROSS_HOOK_SCAN_BARS", 40))
 
 # Opening Range Breakout -- standard, well-documented intraday pattern.
-USE_ORB = os.getenv("USE_ORB", "true").strip().lower() in ("1", "true", "yes")
+# OFF by default as of 2026-07-28. ORB is the highest-volume strategy in
+# the system and it does not pay for itself once stop slippage is modelled:
+#
+#   scanner-picked stocks: 183 trades, 37% wins, -$474.56
+#   megacaps:               78 trades, 44% wins,   +$0.73  (noise)
+#
+# Turning it off improves BOTH universes, which is why this is a default
+# change and not a per-universe tweak:
+#   scanner: profit factor 0.95 -> 1.08, max drawdown 12.4% -> 8.8%
+#   megacap: profit factor 1.37 -> 1.52, max drawdown  3.0% -> 2.1%
+# It also frees capital for breakout, which improves from $166 to $233.
+#
+# It looked flat rather than bad for a long time because the backtester
+# used to assume stops filled exactly at the stop price; ORB's losers are
+# concentrated in fast-moving names where that assumption is worst.
+USE_ORB = os.getenv("USE_ORB", "false").strip().lower() in ("1", "true", "yes")
 ORB_MINUTES = int(os.getenv("ORB_MINUTES", 15))
 
 # VWAP mean-reversion -- BUY when price is stretched below session VWAP
