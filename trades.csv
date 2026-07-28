@@ -17,3 +17,8 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-28T14:00:20+00:00,2026-07-28,RGEN,BUY,breakout,volume-confirmed breakout above 20-bar high,3,151.2,453.6,143.64,166.32,flat $,99777.9,,15,f1cbf294-ff6c-4e50-841f-6b5bdbe10213,breakout-1785247220,152.07,93.9011,38.7929,1.69146,142.027,136.94,147.707,98134,41424,149.48,150.25,134
 2026-07-28T14:55:37+00:00,2026-07-28,NVDA,BUY,trend_following,trending (ADX 27.1) -> trend-following strategy,2,196.97,393.94,187.12,216.67,flat $,99767.3,,70,17a64fee-37ac-47e2-9f0e-83099dee2704,trend_following-1785250537,196.015,62.8089,27.0522,1.00475,194.691,194.638,194.308,1.872e+06,1.87307e+06,196.14,196.49,196.134
 2026-07-28T15:25:51+00:00,2026-07-28,TSLA,BUY,trend_following,trending (ADX 27.1) -> trend-following strategy,1,305.865,305.865,290.57,336.45,flat $,99778.4,,100,2340c4ca-29e7-4aab-9541-6cc1dcdb89a8,trend_following-1785252351,304.55,52.9297,27.0882,1.53036,303.973,303.92,303.729,443392,722657,305.86,308,308.1
+2026-07-28T19:50:26+00:00,2026-07-28,AMKR,FLATTEN,end_of_day,Flattened before market close,10,,,,,,,,,,,,,,,,,,,,,,
+2026-07-28T19:50:26+00:00,2026-07-28,ITRI,FLATTEN,end_of_day,Flattened before market close,5,,,,,,,,,,,,,,,,,,,,,,
+2026-07-28T19:50:26+00:00,2026-07-28,NVDA,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
+2026-07-28T19:50:26+00:00,2026-07-28,RGEN,FLATTEN,end_of_day,Flattened before market close,3,,,,,,,,,,,,,,,,,,,,,,
+2026-07-28T19:50:26+00:00,2026-07-28,TSLA,FLATTEN,end_of_day,Flattened before market close,1,,,,,,,,,,,,,,,,,,,,,,
