@@ -1,0 +1,422 @@
+2026-07-28 13:27:36,987 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-28 13:27:36,987 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-28 13:27:36,987 | Bar size: 5min | Check interval while market open: 5min
+2026-07-28 13:27:36,987 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-28 13:27:36,987 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-28 13:27:36,987 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-28 13:27:36,987 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-28 13:27:36,987 | Position sizing: flat $500 per trade
+2026-07-28 13:27:36,987 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-28 13:27:36,987 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-28 13:27:36,987 | Loaded saved watchlist from previous run: FBRX, PN, TRAX, TSLA, NVDA
+2026-07-28 13:27:36,987 | Restored daily risk state from previous run: day 2026-07-27, breaker tripped: False
+2026-07-28 13:27:36,987 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-28 13:27:37,137 | Market is closed. Next open: 2026-07-28 15:30:00 CEST (your local time) -- in 0.0 hours.
+2026-07-28 13:30:05,309 | Daily loss circuit breaker: tracking from starting equity $99,795.72 (limit -3%).
+2026-07-28 13:30:05,309 | SCANNER: refreshing watchlist...
+2026-07-28 13:30:06,680 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-28 13:30:07,353 | SCANNER: candidate FBRX -- +39.6% today, $76.50, liquid, 5 recent news item(s)
+2026-07-28 13:30:07,353 | SCANNER: candidate VEEE -- +21.6% today, $15.77, liquid, 1 recent news item(s)
+2026-07-28 13:30:07,353 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-28 13:30:07,354 | SCANNER: new watchlist -> FBRX, VEEE, TSLA, NVDA, COIN
+2026-07-28 13:30:07,431 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:30:08,154 | [COIN] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.90
+2026-07-28 13:30:08,154 | [COIN] ACTION: No trade.
+2026-07-28 13:30:08,172 | [FBRX] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.51
+2026-07-28 13:30:08,173 | [FBRX] ACTION: No trade.
+2026-07-28 13:30:08,199 | [NVDA] trending (ADX 40.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $196.10
+2026-07-28 13:30:08,199 | [NVDA] ACTION: No trade.
+2026-07-28 13:30:08,226 | [TSLA] trending (ADX 39.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $307.04
+2026-07-28 13:30:08,226 | [TSLA] ACTION: No trade.
+2026-07-28 13:30:08,249 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.30
+2026-07-28 13:30:08,277 | [VEEE] Buying 32 share(s) (~$499, flat $ sizing) | stop-loss $14.80 | take-profit $17.14 (fixed %)
+2026-07-28 13:30:08,322 | [VEEE] ACTION: BUY (order id 180d6f75-c3c6-4169-9381-79a2b3cf4d05, strategy: vwap_reversion)
+2026-07-28 13:35:08,628 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:35:10,354 | [COIN] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.59
+2026-07-28 13:35:10,354 | [COIN] ACTION: No trade.
+2026-07-28 13:35:10,372 | [FBRX] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.50
+2026-07-28 13:35:10,372 | [FBRX] ACTION: No trade.
+2026-07-28 13:35:10,400 | [NVDA] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.83
+2026-07-28 13:35:10,400 | [NVDA] ACTION: No trade.
+2026-07-28 13:35:10,427 | [TSLA] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.97
+2026-07-28 13:35:10,427 | [TSLA] ACTION: No trade.
+2026-07-28 13:35:10,450 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 25.0 | Last price: $16.39
+2026-07-28 13:35:10,450 | [VEEE] ACTION: No trade.
+2026-07-28 13:40:10,744 | [VEEE] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-28 13:40:10,744 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:40:11,765 | [COIN] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.22
+2026-07-28 13:40:11,766 | [COIN] ACTION: No trade.
+2026-07-28 13:40:11,784 | [FBRX] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.55
+2026-07-28 13:40:11,784 | [FBRX] ACTION: No trade.
+2026-07-28 13:40:11,811 | [NVDA] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.92
+2026-07-28 13:40:11,811 | [NVDA] ACTION: No trade.
+2026-07-28 13:40:11,838 | [TSLA] trending (ADX 37.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.66
+2026-07-28 13:40:11,838 | [TSLA] ACTION: No trade.
+2026-07-28 13:40:11,861 | [VEEE] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.11
+2026-07-28 13:40:11,861 | [VEEE] ACTION: No trade.
+2026-07-28 13:45:12,074 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:45:13,480 | [COIN] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $161.46
+2026-07-28 13:45:13,480 | [COIN] ACTION: No trade.
+2026-07-28 13:45:13,498 | [FBRX] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.55
+2026-07-28 13:45:13,498 | [FBRX] ACTION: No trade.
+2026-07-28 13:45:13,525 | [NVDA] trending (ADX 38.7) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $194.24
+2026-07-28 13:45:13,525 | [NVDA] ACTION: No trade.
+2026-07-28 13:45:13,552 | [TSLA] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.86
+2026-07-28 13:45:13,552 | [TSLA] ACTION: No trade.
+2026-07-28 13:45:13,575 | [VEEE] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.67
+2026-07-28 13:45:13,575 | [VEEE] ACTION: No trade.
+2026-07-28 13:50:13,820 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:50:14,960 | [COIN] choppy/sideways (ADX 18.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $161.04
+2026-07-28 13:50:14,960 | [COIN] ACTION: No trade.
+2026-07-28 13:50:14,978 | [FBRX] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.56
+2026-07-28 13:50:14,978 | [FBRX] ACTION: No trade.
+2026-07-28 13:50:15,004 | [NVDA] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.41
+2026-07-28 13:50:15,004 | [NVDA] ACTION: No trade.
+2026-07-28 13:50:15,031 | [TSLA] trending (ADX 37.5) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $303.80
+2026-07-28 13:50:15,031 | [TSLA] ACTION: No trade.
+2026-07-28 13:50:15,055 | [VEEE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.30
+2026-07-28 13:50:15,055 | [VEEE] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-28 13:55:15,514 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: COIN, FBRX, NVDA, TSLA, VEEE
+2026-07-28 13:55:16,612 | [COIN] choppy/sideways (ADX 18.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $159.80
+2026-07-28 13:55:16,612 | [COIN] ACTION: No trade.
+2026-07-28 13:55:16,630 | [FBRX] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.55
+2026-07-28 13:55:16,630 | [FBRX] ACTION: No trade.
+2026-07-28 13:55:16,657 | [NVDA] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.30
+2026-07-28 13:55:16,657 | [NVDA] ACTION: No trade.
+2026-07-28 13:55:16,685 | [TSLA] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.15
+2026-07-28 13:55:16,685 | [TSLA] ACTION: No trade.
+2026-07-28 13:55:16,708 | [VEEE] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.92
+2026-07-28 13:55:16,708 | [VEEE] ACTION: No trade.
+2026-07-28 14:00:16,876 | SCANNER: refreshing watchlist...
+2026-07-28 14:00:18,284 | SCANNER: excluded 32 leveraged/inverse ETF(s) from 37 candidate(s).
+2026-07-28 14:00:19,644 | SCANNER: candidate FIRY -- +40.5% today, $11.75, liquid, 2 recent news item(s)
+2026-07-28 14:00:19,644 | SCANNER: candidate AMKR -- -23.9% today, $46.22, liquid, 10 recent news item(s)
+2026-07-28 14:00:19,644 | SCANNER: candidate KNSA -- +21.7% today, $77.30, liquid, 2 recent news item(s)
+2026-07-28 14:00:19,644 | SCANNER: candidate ITRI -- +20.2% today, $101.94, liquid, 3 recent news item(s)
+2026-07-28 14:00:19,644 | SCANNER: candidate RGEN -- +15.6% today, $151.51, liquid, 2 recent news item(s)
+2026-07-28 14:00:19,644 | SCANNER: new watchlist -> FIRY, AMKR, KNSA, ITRI, RGEN
+2026-07-28 14:00:19,718 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:00:20,758 | [AMKR] trending (ADX 52.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.70
+2026-07-28 14:00:20,758 | [AMKR] ACTION: No trade.
+2026-07-28 14:00:20,774 | [FIRY] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.60
+2026-07-28 14:00:20,774 | [FIRY] ACTION: No trade.
+2026-07-28 14:00:20,791 | [ITRI] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.50
+2026-07-28 14:00:20,791 | [ITRI] ACTION: No trade.
+2026-07-28 14:00:20,808 | [KNSA] trending (ADX 39.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.95
+2026-07-28 14:00:20,808 | [KNSA] ACTION: No trade.
+2026-07-28 14:00:20,826 | [RGEN] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $152.07
+2026-07-28 14:00:20,866 | [RGEN] Buying 3 share(s) (~$454, flat $ sizing) | stop-loss $143.64 | take-profit $166.32 (fixed %)
+2026-07-28 14:00:20,951 | [RGEN] ACTION: BUY (order id f1cbf294-ff6c-4e50-841f-6b5bdbe10213, strategy: breakout)
+2026-07-28 14:05:21,235 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:05:22,017 | [AMKR] trending (ADX 54.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.62
+2026-07-28 14:05:22,017 | [AMKR] ACTION: No trade.
+2026-07-28 14:05:22,040 | [FIRY] trending (ADX 33.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.38
+2026-07-28 14:05:22,041 | [FIRY] ACTION: No trade.
+2026-07-28 14:05:22,058 | [ITRI] trending (ADX 56.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.79
+2026-07-28 14:05:22,058 | [ITRI] ACTION: No trade.
+2026-07-28 14:05:22,075 | [KNSA] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.58
+2026-07-28 14:05:22,075 | [KNSA] ACTION: No trade.
+2026-07-28 14:05:22,093 | [RGEN] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $152.65
+2026-07-28 14:05:22,093 | [RGEN] ACTION: No trade.
+2026-07-28 14:10:22,618 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:10:23,377 | [AMKR] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.22
+2026-07-28 14:10:23,377 | [AMKR] ACTION: No trade.
+2026-07-28 14:10:23,394 | [FIRY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $11.75
+2026-07-28 14:10:23,436 | [FIRY] ACTION: No trade -- too volatile to protect. ATR is $0.83 (6.9% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-07-28 14:10:23,453 | [ITRI] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.94
+2026-07-28 14:10:23,454 | [ITRI] ACTION: No trade.
+2026-07-28 14:10:23,471 | [KNSA] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.30
+2026-07-28 14:10:23,471 | [KNSA] ACTION: No trade.
+2026-07-28 14:10:23,489 | [RGEN] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.51
+2026-07-28 14:10:23,489 | [RGEN] ACTION: No trade.
+2026-07-28 14:15:23,802 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:15:24,770 | [AMKR] trending (ADX 59.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.11
+2026-07-28 14:15:24,770 | [AMKR] ACTION: No trade.
+2026-07-28 14:15:24,786 | [FIRY] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.11
+2026-07-28 14:15:24,786 | [FIRY] ACTION: No trade.
+2026-07-28 14:15:24,803 | [ITRI] trending (ADX 58.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.48
+2026-07-28 14:15:24,803 | [ITRI] ACTION: No trade.
+2026-07-28 14:15:24,821 | [KNSA] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.55
+2026-07-28 14:15:24,821 | [KNSA] ACTION: No trade.
+2026-07-28 14:15:24,839 | [RGEN] trending (ADX 49.0) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $153.51
+2026-07-28 14:15:24,839 | [RGEN] ACTION: No trade.
+2026-07-28 14:20:25,187 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:20:25,888 | [AMKR] trending (ADX 60.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.34
+2026-07-28 14:20:25,888 | [AMKR] ACTION: No trade.
+2026-07-28 14:20:25,904 | [FIRY] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.90
+2026-07-28 14:20:25,905 | [FIRY] ACTION: No trade.
+2026-07-28 14:20:25,922 | [ITRI] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.70
+2026-07-28 14:20:25,922 | [ITRI] ACTION: No trade.
+2026-07-28 14:20:25,939 | [KNSA] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.22
+2026-07-28 14:20:25,939 | [KNSA] ACTION: No trade.
+2026-07-28 14:20:25,957 | [RGEN] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $150.74
+2026-07-28 14:20:25,957 | [RGEN] ACTION: No trade.
+2026-07-28 14:25:26,247 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 5 symbols: AMKR, FIRY, ITRI, KNSA, RGEN
+2026-07-28 14:25:26,900 | [AMKR] trending (ADX 62.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.85
+2026-07-28 14:25:26,901 | [AMKR] ACTION: No trade.
+2026-07-28 14:25:26,917 | [FIRY] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.85
+2026-07-28 14:25:26,917 | [FIRY] ACTION: No trade.
+2026-07-28 14:25:26,934 | [ITRI] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.78
+2026-07-28 14:25:26,934 | [ITRI] ACTION: No trade.
+2026-07-28 14:25:26,952 | [KNSA] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.13
+2026-07-28 14:25:26,952 | [KNSA] ACTION: No trade.
+2026-07-28 14:25:26,970 | [RGEN] trending (ADX 53.2) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $150.10
+2026-07-28 14:25:26,970 | [RGEN] ACTION: No trade.
+2026-07-28 14:30:27,152 | SCANNER: refreshing watchlist...
+2026-07-28 14:30:27,469 | SCANNER: excluded 23 leveraged/inverse ETF(s) from 28 candidate(s).
+2026-07-28 14:30:28,156 | SCANNER: candidate ITRI -- +22.0% today, $103.40, liquid, 4 recent news item(s)
+2026-07-28 14:30:28,156 | SCANNER: candidate KNSA -- +20.8% today, $76.74, liquid, 3 recent news item(s)
+2026-07-28 14:30:28,157 | SCANNER: only 2 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-28 14:30:28,157 | SCANNER: new watchlist -> ITRI, KNSA, TSLA, NVDA, COIN
+2026-07-28 14:30:28,252 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:30:29,151 | [COIN] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $161.48
+2026-07-28 14:30:29,151 | [COIN] ACTION: No trade.
+2026-07-28 14:30:29,168 | [ITRI] trending (ADX 62.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.00
+2026-07-28 14:30:29,168 | [ITRI] ACTION: No trade.
+2026-07-28 14:30:29,185 | [KNSA] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.29
+2026-07-28 14:30:29,186 | [KNSA] ACTION: No trade.
+2026-07-28 14:30:29,215 | [NVDA] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.26
+2026-07-28 14:30:29,215 | [NVDA] ACTION: No trade.
+2026-07-28 14:30:29,232 | [RGEN] trending (ADX 55.0) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $150.91
+2026-07-28 14:30:29,233 | [RGEN] ACTION: No trade.
+2026-07-28 14:30:29,259 | [TSLA] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $301.20
+2026-07-28 14:30:29,259 | [TSLA] ACTION: No trade.
+2026-07-28 14:35:29,873 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:35:30,831 | [COIN] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.88
+2026-07-28 14:35:30,831 | [COIN] ACTION: No trade.
+2026-07-28 14:35:30,848 | [ITRI] trending (ADX 62.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.84
+2026-07-28 14:35:30,848 | [ITRI] ACTION: No trade.
+2026-07-28 14:35:30,865 | [KNSA] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.64
+2026-07-28 14:35:30,865 | [KNSA] ACTION: No trade.
+2026-07-28 14:35:30,892 | [NVDA] trending (ADX 30.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.44
+2026-07-28 14:35:30,892 | [NVDA] ACTION: No trade.
+2026-07-28 14:35:30,909 | [RGEN] trending (ADX 56.7) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $150.57
+2026-07-28 14:35:30,909 | [RGEN] ACTION: No trade.
+2026-07-28 14:35:30,937 | [TSLA] trending (ADX 38.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $301.56
+2026-07-28 14:35:30,937 | [TSLA] ACTION: No trade.
+2026-07-28 14:40:31,191 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:40:32,263 | [COIN] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $163.06
+2026-07-28 14:40:32,263 | [COIN] ACTION: No trade.
+2026-07-28 14:40:32,280 | [ITRI] trending (ADX 62.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.40
+2026-07-28 14:40:32,281 | [ITRI] ACTION: No trade.
+2026-07-28 14:40:32,298 | [KNSA] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.74
+2026-07-28 14:40:32,298 | [KNSA] ACTION: No trade.
+2026-07-28 14:40:32,325 | [NVDA] trending (ADX 29.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.09
+2026-07-28 14:40:32,325 | [NVDA] ACTION: No trade.
+2026-07-28 14:40:32,342 | [RGEN] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $149.28
+2026-07-28 14:40:32,343 | [RGEN] ACTION: No trade.
+2026-07-28 14:40:32,370 | [TSLA] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.59
+2026-07-28 14:40:32,370 | [TSLA] ACTION: No trade.
+2026-07-28 14:45:32,651 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:45:34,122 | [COIN] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.83
+2026-07-28 14:45:34,122 | [COIN] ACTION: No trade.
+2026-07-28 14:45:34,139 | [ITRI] trending (ADX 63.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.61
+2026-07-28 14:45:34,139 | [ITRI] ACTION: No trade.
+2026-07-28 14:45:34,156 | [KNSA] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.14
+2026-07-28 14:45:34,156 | [KNSA] ACTION: No trade.
+2026-07-28 14:45:34,183 | [NVDA] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.44
+2026-07-28 14:45:34,183 | [NVDA] ACTION: No trade.
+2026-07-28 14:45:34,201 | [RGEN] trending (ADX 56.2) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $147.54
+2026-07-28 14:45:34,201 | [RGEN] ACTION: No trade.
+2026-07-28 14:45:34,228 | [TSLA] trending (ADX 36.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.00
+2026-07-28 14:45:34,228 | [TSLA] ACTION: No trade.
+2026-07-28 14:50:34,490 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:50:35,709 | [COIN] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $162.90
+2026-07-28 14:50:35,709 | [COIN] ACTION: No trade.
+2026-07-28 14:50:35,726 | [ITRI] trending (ADX 63.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.03
+2026-07-28 14:50:35,726 | [ITRI] ACTION: No trade.
+2026-07-28 14:50:35,743 | [KNSA] trending (ADX 49.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.61
+2026-07-28 14:50:35,744 | [KNSA] ACTION: No trade.
+2026-07-28 14:50:35,770 | [NVDA] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.65
+2026-07-28 14:50:35,770 | [NVDA] ACTION: No trade.
+2026-07-28 14:50:35,788 | [RGEN] trending (ADX 55.3) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $147.88
+2026-07-28 14:50:35,788 | [RGEN] ACTION: No trade.
+2026-07-28 14:50:35,815 | [TSLA] trending (ADX 36.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $301.95
+2026-07-28 14:50:35,815 | [TSLA] ACTION: No trade.
+2026-07-28 14:55:36,037 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: COIN, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 14:55:37,157 | [COIN] choppy/sideways (ADX 20.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $163.62
+2026-07-28 14:55:37,158 | [COIN] ACTION: No trade.
+2026-07-28 14:55:37,174 | [ITRI] trending (ADX 63.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.20
+2026-07-28 14:55:37,175 | [ITRI] ACTION: No trade.
+2026-07-28 14:55:37,192 | [KNSA] trending (ADX 50.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.81
+2026-07-28 14:55:37,192 | [KNSA] ACTION: No trade.
+2026-07-28 14:55:37,218 | [NVDA] trending (ADX 27.1) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $196.01
+2026-07-28 14:55:37,257 | [NVDA] Buying 2 share(s) (~$394, flat $ sizing) | stop-loss $187.12 | take-profit $216.67 (fixed %)
+2026-07-28 14:55:37,294 | [NVDA] ACTION: BUY (order id 17a64fee-37ac-47e2-9f0e-83099dee2704, strategy: trend_following)
+2026-07-28 14:55:37,312 | [RGEN] trending (ADX 54.5) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $148.65
+2026-07-28 14:55:37,312 | [RGEN] ACTION: No trade.
+2026-07-28 14:55:37,339 | [TSLA] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.51
+2026-07-28 14:55:37,339 | [TSLA] ACTION: No trade.
+2026-07-28 15:00:37,545 | SCANNER: refreshing watchlist...
+2026-07-28 15:00:37,894 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-07-28 15:00:38,996 | SCANNER: candidate FIRY -- +45.9% today, $12.20, liquid, 2 recent news item(s)
+2026-07-28 15:00:38,996 | SCANNER: candidate KNSA -- +23.9% today, $78.70, liquid, 3 recent news item(s)
+2026-07-28 15:00:38,996 | SCANNER: candidate ITRI -- +20.2% today, $101.88, liquid, 4 recent news item(s)
+2026-07-28 15:00:38,996 | SCANNER: only 3 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-28 15:00:38,997 | SCANNER: new watchlist -> FIRY, KNSA, ITRI, TSLA, NVDA
+2026-07-28 15:00:39,081 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:00:40,894 | [FIRY] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.89
+2026-07-28 15:00:40,894 | [FIRY] ACTION: No trade.
+2026-07-28 15:00:40,911 | [ITRI] trending (ADX 62.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.67
+2026-07-28 15:00:40,911 | [ITRI] ACTION: No trade.
+2026-07-28 15:00:40,928 | [KNSA] trending (ADX 52.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $80.41
+2026-07-28 15:00:40,928 | [KNSA] ACTION: No trade.
+2026-07-28 15:00:40,955 | [NVDA] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.03
+2026-07-28 15:00:40,955 | [NVDA] ACTION: No trade.
+2026-07-28 15:00:40,973 | [RGEN] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $148.88
+2026-07-28 15:00:40,973 | [RGEN] ACTION: No trade.
+2026-07-28 15:00:40,999 | [TSLA] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.93
+2026-07-28 15:00:41,000 | [TSLA] ACTION: No trade.
+2026-07-28 15:05:41,274 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:05:43,467 | [FIRY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.00
+2026-07-28 15:05:43,501 | [FIRY] ACTION: No trade -- too volatile to protect. ATR is $0.67 (5.6% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-07-28 15:05:43,519 | [ITRI] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.90
+2026-07-28 15:05:43,519 | [ITRI] ACTION: No trade.
+2026-07-28 15:05:43,536 | [KNSA] trending (ADX 52.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.89
+2026-07-28 15:05:43,537 | [KNSA] ACTION: No trade.
+2026-07-28 15:05:43,563 | [NVDA] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.37
+2026-07-28 15:05:43,564 | [NVDA] ACTION: No trade.
+2026-07-28 15:05:43,581 | [RGEN] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $148.38
+2026-07-28 15:05:43,581 | [RGEN] ACTION: No trade.
+2026-07-28 15:05:43,610 | [TSLA] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.02
+2026-07-28 15:05:43,610 | [TSLA] ACTION: No trade.
+2026-07-28 15:10:43,926 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:10:45,868 | [FIRY] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.20
+2026-07-28 15:10:45,868 | [FIRY] ACTION: No trade.
+2026-07-28 15:10:45,886 | [ITRI] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.88
+2026-07-28 15:10:45,886 | [ITRI] ACTION: No trade.
+2026-07-28 15:10:45,921 | [KNSA] trending (ADX 51.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.70
+2026-07-28 15:10:45,921 | [KNSA] ACTION: No trade.
+2026-07-28 15:10:45,948 | [NVDA] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.77
+2026-07-28 15:10:45,948 | [NVDA] ACTION: No trade.
+2026-07-28 15:10:45,966 | [RGEN] trending (ADX 52.1) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $149.04
+2026-07-28 15:10:45,966 | [RGEN] ACTION: No trade.
+2026-07-28 15:10:45,992 | [TSLA] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.05
+2026-07-28 15:10:45,992 | [TSLA] ACTION: No trade.
+2026-07-28 15:15:46,333 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:15:48,076 | [FIRY] trending (ADX 26.4) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $11.93
+2026-07-28 15:15:48,076 | [FIRY] ACTION: No trade.
+2026-07-28 15:15:48,093 | [ITRI] trending (ADX 57.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.96
+2026-07-28 15:15:48,093 | [ITRI] ACTION: No trade.
+2026-07-28 15:15:48,113 | [KNSA] trending (ADX 51.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.85
+2026-07-28 15:15:48,113 | [KNSA] ACTION: No trade.
+2026-07-28 15:15:48,144 | [NVDA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.17
+2026-07-28 15:15:48,144 | [NVDA] ACTION: No trade.
+2026-07-28 15:15:48,161 | [RGEN] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $148.50
+2026-07-28 15:15:48,161 | [RGEN] ACTION: No trade.
+2026-07-28 15:15:48,188 | [TSLA] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.29
+2026-07-28 15:15:48,189 | [TSLA] ACTION: No trade.
+2026-07-28 15:20:48,492 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:20:49,950 | [FIRY] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.90
+2026-07-28 15:20:49,950 | [FIRY] ACTION: No trade.
+2026-07-28 15:20:49,967 | [ITRI] trending (ADX 55.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.37
+2026-07-28 15:20:49,967 | [ITRI] ACTION: No trade.
+2026-07-28 15:20:49,984 | [KNSA] trending (ADX 51.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.80
+2026-07-28 15:20:49,984 | [KNSA] ACTION: No trade.
+2026-07-28 15:20:50,011 | [NVDA] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.34
+2026-07-28 15:20:50,012 | [NVDA] ACTION: No trade.
+2026-07-28 15:20:50,029 | [RGEN] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $149.57
+2026-07-28 15:20:50,029 | [RGEN] ACTION: No trade.
+2026-07-28 15:20:50,056 | [TSLA] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.90
+2026-07-28 15:20:50,056 | [TSLA] ACTION: No trade.
+2026-07-28 15:25:50,291 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:25:51,215 | [FIRY] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.15
+2026-07-28 15:25:51,215 | [FIRY] ACTION: No trade.
+2026-07-28 15:25:51,232 | [ITRI] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.50
+2026-07-28 15:25:51,232 | [ITRI] ACTION: No trade.
+2026-07-28 15:25:51,249 | [KNSA] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.14
+2026-07-28 15:25:51,249 | [KNSA] ACTION: No trade.
+2026-07-28 15:25:51,276 | [NVDA] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.48
+2026-07-28 15:25:51,276 | [NVDA] ACTION: No trade.
+2026-07-28 15:25:51,294 | [RGEN] trending (ADX 51.6) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $150.18
+2026-07-28 15:25:51,294 | [RGEN] ACTION: No trade.
+2026-07-28 15:25:51,322 | [TSLA] trending (ADX 27.1) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $304.55
+2026-07-28 15:25:51,371 | [TSLA] Buying 1 share(s) (~$306, flat $ sizing) | stop-loss $290.57 | take-profit $336.45 (fixed %)
+2026-07-28 15:25:51,414 | [TSLA] ACTION: BUY (order id 2340c4ca-29e7-4aab-9541-6cc1dcdb89a8, strategy: trend_following)
+2026-07-28 15:30:51,585 | SCANNER: refreshing watchlist...
+2026-07-28 15:30:51,799 | SCANNER: excluded 11 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-28 15:30:52,617 | SCANNER: candidate FIRY -- +49.1% today, $12.46, liquid, 2 recent news item(s)
+2026-07-28 15:30:52,617 | SCANNER: candidate KNSA -- +24.8% today, $79.28, liquid, 3 recent news item(s)
+2026-07-28 15:30:52,617 | SCANNER: candidate ITRI -- +20.4% today, $102.08, liquid, 4 recent news item(s)
+2026-07-28 15:30:52,617 | SCANNER: candidate RGEN -- +15.8% today, $151.73, liquid, 3 recent news item(s)
+2026-07-28 15:30:52,617 | SCANNER: only 4 name(s) qualified -- topping the watchlist up to 5 with fallback symbols so there's still enough to work with.
+2026-07-28 15:30:52,618 | SCANNER: new watchlist -> FIRY, KNSA, ITRI, RGEN, TSLA
+2026-07-28 15:30:52,709 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:30:54,665 | [FIRY] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.38
+2026-07-28 15:30:54,665 | [FIRY] ACTION: No trade.
+2026-07-28 15:30:54,682 | [ITRI] trending (ADX 52.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.93
+2026-07-28 15:30:54,682 | [ITRI] ACTION: No trade.
+2026-07-28 15:30:54,700 | [KNSA] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $80.14
+2026-07-28 15:30:54,700 | [KNSA] ACTION: No trade.
+2026-07-28 15:30:54,727 | [NVDA] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.25
+2026-07-28 15:30:54,727 | [NVDA] ACTION: No trade.
+2026-07-28 15:30:54,744 | [RGEN] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.01
+2026-07-28 15:30:54,744 | [RGEN] ACTION: No trade.
+2026-07-28 15:30:54,771 | [TSLA] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $305.37
+2026-07-28 15:30:54,771 | [TSLA] ACTION: No trade.
+2026-07-28 15:35:54,999 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:35:56,100 | [FIRY] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-07-28 15:35:56,100 | [FIRY] ACTION: No trade.
+2026-07-28 15:35:56,118 | [ITRI] trending (ADX 51.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.09
+2026-07-28 15:35:56,118 | [ITRI] ACTION: No trade.
+2026-07-28 15:35:56,135 | [KNSA] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.33
+2026-07-28 15:35:56,135 | [KNSA] ACTION: No trade.
+2026-07-28 15:35:56,162 | [NVDA] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.57
+2026-07-28 15:35:56,162 | [NVDA] ACTION: No trade.
+2026-07-28 15:35:56,180 | [RGEN] trending (ADX 52.2) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.94
+2026-07-28 15:35:56,180 | [RGEN] ACTION: No trade.
+2026-07-28 15:35:56,207 | [TSLA] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.05
+2026-07-28 15:35:56,207 | [TSLA] ACTION: No trade.
+2026-07-28 15:40:56,516 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:40:57,709 | [FIRY] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-07-28 15:40:57,710 | [FIRY] ACTION: No trade.
+2026-07-28 15:40:57,727 | [ITRI] trending (ADX 50.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.08
+2026-07-28 15:40:57,727 | [ITRI] ACTION: No trade.
+2026-07-28 15:40:57,744 | [KNSA] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.28
+2026-07-28 15:40:57,744 | [KNSA] ACTION: No trade.
+2026-07-28 15:40:57,771 | [NVDA] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.72
+2026-07-28 15:40:57,771 | [NVDA] ACTION: No trade.
+2026-07-28 15:40:57,789 | [RGEN] trending (ADX 52.5) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.73
+2026-07-28 15:40:57,789 | [RGEN] ACTION: No trade.
+2026-07-28 15:40:57,816 | [TSLA] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.27
+2026-07-28 15:40:57,816 | [TSLA] ACTION: No trade.
+2026-07-28 15:45:58,031 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:45:59,364 | [FIRY] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.18
+2026-07-28 15:45:59,364 | [FIRY] ACTION: No trade.
+2026-07-28 15:45:59,381 | [ITRI] trending (ADX 49.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.78
+2026-07-28 15:45:59,381 | [ITRI] ACTION: No trade.
+2026-07-28 15:45:59,399 | [KNSA] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.29
+2026-07-28 15:45:59,399 | [KNSA] ACTION: No trade.
+2026-07-28 15:45:59,426 | [NVDA] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.84
+2026-07-28 15:45:59,426 | [NVDA] ACTION: No trade.
+2026-07-28 15:45:59,443 | [RGEN] trending (ADX 53.0) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.46
+2026-07-28 15:45:59,444 | [RGEN] ACTION: No trade.
+2026-07-28 15:45:59,471 | [TSLA] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.29
+2026-07-28 15:45:59,471 | [TSLA] ACTION: No trade.
+2026-07-28 15:50:59,735 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:51:00,841 | [FIRY] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.78
+2026-07-28 15:51:00,841 | [FIRY] ACTION: No trade.
+2026-07-28 15:51:00,858 | [ITRI] trending (ADX 48.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.14
+2026-07-28 15:51:00,858 | [ITRI] ACTION: No trade.
+2026-07-28 15:51:00,875 | [KNSA] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.31
+2026-07-28 15:51:00,875 | [KNSA] ACTION: No trade.
+2026-07-28 15:51:00,903 | [NVDA] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.39
+2026-07-28 15:51:00,903 | [NVDA] ACTION: No trade.
+2026-07-28 15:51:00,921 | [RGEN] trending (ADX 53.4) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.82
+2026-07-28 15:51:00,921 | [RGEN] ACTION: No trade.
+2026-07-28 15:51:00,948 | [TSLA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $306.72
+2026-07-28 15:51:00,948 | [TSLA] ACTION: No trade.
+2026-07-28 15:56:01,253 | Market is open (closes 2026-07-28 22:00:00 CEST your local time). Checking 6 symbols: FIRY, ITRI, KNSA, NVDA, RGEN, TSLA
+2026-07-28 15:56:01,907 | [FIRY] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.46
+2026-07-28 15:56:01,907 | [FIRY] ACTION: No trade.
+2026-07-28 15:56:01,924 | [ITRI] trending (ADX 47.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.06
+2026-07-28 15:56:01,924 | [ITRI] ACTION: No trade.
+2026-07-28 15:56:01,941 | [KNSA] trending (ADX 50.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.38
+2026-07-28 15:56:01,942 | [KNSA] ACTION: No trade.
+2026-07-28 15:56:01,969 | [NVDA] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.74
+2026-07-28 15:56:01,969 | [NVDA] ACTION: No trade.
+2026-07-28 15:56:01,986 | [RGEN] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.72
+2026-07-28 15:56:01,986 | [RGEN] ACTION: No trade.
+2026-07-28 15:56:02,014 | [TSLA] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $307.16
+2026-07-28 15:56:02,014 | [TSLA] ACTION: No trade.
+2026-07-28 15:57:36,988 | Duration window finished.
