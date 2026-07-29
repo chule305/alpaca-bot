@@ -859,3 +859,364 @@
 2026-07-29 20:00:37,441 | Market is closed. Next open: 2026-07-30 15:30:00 CEST (your local time) -- in 17.5 hours.
 2026-07-29 20:00:37,447 | Market is closed for the day -- exiting early instead of idling.
 2026-07-29 20:00:37,447 | Duration window finished.
+2026-07-29 18:44:35,713 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-29 18:44:35,713 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-29 18:44:35,713 | Bar size: 5min | Check interval while market open: 5min
+2026-07-29 18:44:35,713 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-29 18:44:35,713 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-29 18:44:35,713 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-29 18:44:35,714 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-29 18:44:35,714 | Position sizing: flat $500 per trade
+2026-07-29 18:44:35,714 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-29 18:44:35,714 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-29 18:44:35,714 | Loaded saved watchlist from previous run: DFNS, PSN, HURN, BAND, MANH, LMND, BLKB, GRMN, CBZ, LAD, NEO, EXLS
+2026-07-29 18:44:35,714 | Restored daily risk state from previous run: day 2026-07-29, breaker tripped: False
+2026-07-29 18:44:35,714 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-29 18:44:35,920 | SCANNER: refreshing watchlist...
+2026-07-29 18:44:37,442 | SCANNER: excluded 6 leveraged/inverse ETF(s) from 20 candidate(s).
+2026-07-29 18:44:38,488 | SCANNER: candidate HURN -- +40.2% today, $170.18, liquid, 5 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate PSN -- -36.8% today, $39.20, liquid, 7 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate MPLT -- +24.6% today, $15.34, liquid, 1 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate BAND -- -23.9% today, $39.74, liquid, 3 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate MANH -- +23.1% today, $207.04, liquid, 12 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate LMND -- -22.7% today, $47.99, liquid, 5 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate BLKB -- +21.0% today, $43.47, liquid, 4 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate LAD -- +20.0% today, $429.99, liquid, 6 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate GRMN -- +18.5% today, $300.58, liquid, 6 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate EXLS -- +17.7% today, $35.95, liquid, 5 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate CBZ -- +17.7% today, $54.98, liquid, 4 recent news item(s)
+2026-07-29 18:44:38,488 | SCANNER: candidate NEO -- +15.7% today, $15.51, liquid, 5 recent news item(s)
+2026-07-29 18:44:38,489 | SCANNER: new watchlist -> HURN, PSN, MPLT, BAND, MANH, LMND, BLKB, LAD, GRMN, EXLS, CBZ, NEO
+2026-07-29 18:44:38,545 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 18:44:39,553 | [BAND] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.40
+2026-07-29 18:44:39,553 | [BAND] ACTION: No trade.
+2026-07-29 18:44:39,581 | [BLKB] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.24
+2026-07-29 18:44:39,581 | [BLKB] ACTION: No trade.
+2026-07-29 18:44:39,609 | [CBZ] trending (ADX 61.5) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $54.91
+2026-07-29 18:44:39,610 | [CBZ] ACTION: No trade.
+2026-07-29 18:44:39,639 | [EXLS] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.00
+2026-07-29 18:44:39,640 | [EXLS] ACTION: No trade.
+2026-07-29 18:44:39,668 | [GRMN] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $298.02
+2026-07-29 18:44:39,668 | [GRMN] ACTION: No trade.
+2026-07-29 18:44:39,694 | [HURN] trending (ADX 57.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $171.13
+2026-07-29 18:44:39,694 | [HURN] ACTION: No trade.
+2026-07-29 18:44:39,722 | [LAD] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $425.48
+2026-07-29 18:44:39,722 | [LAD] ACTION: No trade.
+2026-07-29 18:44:39,752 | [LMND] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.93
+2026-07-29 18:44:39,753 | [LMND] ACTION: No trade.
+2026-07-29 18:44:39,782 | [MANH] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $207.54
+2026-07-29 18:44:39,782 | [MANH] ACTION: No trade.
+2026-07-29 18:44:39,813 | [MPLT] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.50
+2026-07-29 18:44:39,813 | [MPLT] ACTION: No trade.
+2026-07-29 18:44:39,841 | [NEO] choppy/sideways (ADX 11.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.36
+2026-07-29 18:44:39,841 | [NEO] ACTION: No trade.
+2026-07-29 18:44:39,870 | [PSN] choppy/sideways (ADX 12.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.09
+2026-07-29 18:44:39,870 | [PSN] ACTION: No trade.
+2026-07-29 18:49:40,180 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 18:49:41,158 | [BAND] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.38
+2026-07-29 18:49:41,159 | [BAND] ACTION: No trade.
+2026-07-29 18:49:41,186 | [BLKB] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.16
+2026-07-29 18:49:41,186 | [BLKB] ACTION: No trade.
+2026-07-29 18:49:41,214 | [CBZ] trending (ADX 59.5) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $54.93
+2026-07-29 18:49:41,214 | [CBZ] ACTION: No trade.
+2026-07-29 18:49:41,244 | [EXLS] trending (ADX 39.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.02
+2026-07-29 18:49:41,244 | [EXLS] ACTION: No trade.
+2026-07-29 18:49:41,271 | [GRMN] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $298.00
+2026-07-29 18:49:41,272 | [GRMN] ACTION: No trade.
+2026-07-29 18:49:41,298 | [HURN] trending (ADX 56.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $169.73
+2026-07-29 18:49:41,298 | [HURN] ACTION: No trade.
+2026-07-29 18:49:41,325 | [LAD] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $425.05
+2026-07-29 18:49:41,326 | [LAD] ACTION: No trade.
+2026-07-29 18:49:41,356 | [LMND] choppy/sideways (ADX 20.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.92
+2026-07-29 18:49:41,356 | [LMND] ACTION: No trade.
+2026-07-29 18:49:41,385 | [MANH] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.83
+2026-07-29 18:49:41,385 | [MANH] ACTION: No trade.
+2026-07-29 18:49:41,416 | [MPLT] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.45
+2026-07-29 18:49:41,416 | [MPLT] ACTION: No trade.
+2026-07-29 18:49:41,444 | [NEO] choppy/sideways (ADX 11.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.36
+2026-07-29 18:49:41,444 | [NEO] ACTION: No trade.
+2026-07-29 18:49:41,472 | [PSN] choppy/sideways (ADX 11.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.12
+2026-07-29 18:49:41,472 | [PSN] ACTION: No trade.
+2026-07-29 18:54:41,944 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 18:54:43,387 | [BAND] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.62
+2026-07-29 18:54:43,387 | [BAND] ACTION: No trade.
+2026-07-29 18:54:43,415 | [BLKB] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.45
+2026-07-29 18:54:43,415 | [BLKB] ACTION: No trade.
+2026-07-29 18:54:43,444 | [CBZ] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $54.92
+2026-07-29 18:54:43,444 | [CBZ] ACTION: No trade.
+2026-07-29 18:54:43,473 | [EXLS] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.02
+2026-07-29 18:54:43,473 | [EXLS] ACTION: No trade.
+2026-07-29 18:54:43,501 | [GRMN] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $299.99
+2026-07-29 18:54:43,501 | [GRMN] ACTION: No trade.
+2026-07-29 18:54:43,528 | [HURN] trending (ADX 55.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $170.22
+2026-07-29 18:54:43,528 | [HURN] ACTION: No trade.
+2026-07-29 18:54:43,556 | [LAD] trending (ADX 42.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $428.54
+2026-07-29 18:54:43,556 | [LAD] ACTION: No trade.
+2026-07-29 18:54:43,587 | [LMND] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.75
+2026-07-29 18:54:43,587 | [LMND] ACTION: No trade.
+2026-07-29 18:54:43,617 | [MANH] choppy/sideways (ADX 24.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $208.13
+2026-07-29 18:54:43,617 | [MANH] ACTION: No trade.
+2026-07-29 18:54:43,648 | [MPLT] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.26
+2026-07-29 18:54:43,648 | [MPLT] ACTION: No trade.
+2026-07-29 18:54:43,677 | [NEO] choppy/sideways (ADX 11.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.46
+2026-07-29 18:54:43,677 | [NEO] ACTION: No trade.
+2026-07-29 18:54:43,705 | [PSN] choppy/sideways (ADX 11.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.10
+2026-07-29 18:54:43,705 | [PSN] ACTION: No trade.
+2026-07-29 18:59:44,021 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 18:59:45,017 | [BAND] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: SELL | Shares held: 0.0 | Last price: $39.51
+2026-07-29 18:59:45,017 | [BAND] ACTION: No trade.
+2026-07-29 18:59:45,045 | [BLKB] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.45
+2026-07-29 18:59:45,045 | [BLKB] ACTION: No trade.
+2026-07-29 18:59:45,073 | [CBZ] trending (ADX 56.3) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $54.98
+2026-07-29 18:59:45,073 | [CBZ] ACTION: No trade.
+2026-07-29 18:59:45,102 | [EXLS] trending (ADX 38.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.84
+2026-07-29 18:59:45,102 | [EXLS] ACTION: No trade.
+2026-07-29 18:59:45,131 | [GRMN] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $300.96
+2026-07-29 18:59:45,131 | [GRMN] ACTION: No trade.
+2026-07-29 18:59:45,157 | [HURN] trending (ADX 55.0) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $170.18
+2026-07-29 18:59:45,157 | [HURN] ACTION: No trade.
+2026-07-29 18:59:45,185 | [LAD] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $431.11
+2026-07-29 18:59:45,185 | [LAD] ACTION: No trade.
+2026-07-29 18:59:45,215 | [LMND] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.15
+2026-07-29 18:59:45,215 | [LMND] ACTION: No trade.
+2026-07-29 18:59:45,244 | [MANH] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $207.12
+2026-07-29 18:59:45,244 | [MANH] ACTION: No trade.
+2026-07-29 18:59:45,275 | [MPLT] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.34
+2026-07-29 18:59:45,275 | [MPLT] ACTION: No trade.
+2026-07-29 18:59:45,304 | [NEO] choppy/sideways (ADX 10.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.50
+2026-07-29 18:59:45,304 | [NEO] ACTION: No trade.
+2026-07-29 18:59:45,332 | [PSN] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.15
+2026-07-29 18:59:45,332 | [PSN] ACTION: No trade.
+2026-07-29 19:04:45,646 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:04:47,732 | [BAND] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: SELL | Shares held: 0.0 | Last price: $39.89
+2026-07-29 19:04:47,732 | [BAND] ACTION: No trade.
+2026-07-29 19:04:47,760 | [BLKB] choppy/sideways (ADX 13.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.31
+2026-07-29 19:04:47,760 | [BLKB] ACTION: No trade.
+2026-07-29 19:04:47,788 | [CBZ] trending (ADX 55.4) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.00
+2026-07-29 19:04:47,788 | [CBZ] ACTION: No trade.
+2026-07-29 19:04:47,818 | [EXLS] trending (ADX 37.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.08
+2026-07-29 19:04:47,818 | [EXLS] ACTION: No trade.
+2026-07-29 19:04:47,845 | [GRMN] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $301.21
+2026-07-29 19:04:47,845 | [GRMN] ACTION: No trade.
+2026-07-29 19:04:47,871 | [HURN] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $170.23
+2026-07-29 19:04:47,871 | [HURN] ACTION: No trade.
+2026-07-29 19:04:47,899 | [LAD] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $437.20
+2026-07-29 19:04:47,899 | [LAD] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-07-29 19:04:47,929 | [LMND] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.85
+2026-07-29 19:04:47,929 | [LMND] ACTION: No trade.
+2026-07-29 19:04:47,958 | [MANH] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.38
+2026-07-29 19:04:47,958 | [MANH] ACTION: No trade.
+2026-07-29 19:04:47,989 | [MPLT] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.68
+2026-07-29 19:04:47,989 | [MPLT] ACTION: No trade.
+2026-07-29 19:04:48,017 | [NEO] choppy/sideways (ADX 9.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.53
+2026-07-29 19:04:48,018 | [NEO] ACTION: No trade.
+2026-07-29 19:04:48,046 | [PSN] choppy/sideways (ADX 12.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.21
+2026-07-29 19:04:48,046 | [PSN] ACTION: No trade.
+2026-07-29 19:09:48,382 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 12 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, LMND, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:09:49,663 | [BAND] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.85
+2026-07-29 19:09:49,663 | [BAND] ACTION: No trade.
+2026-07-29 19:09:49,691 | [BLKB] choppy/sideways (ADX 13.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.29
+2026-07-29 19:09:49,691 | [BLKB] ACTION: No trade.
+2026-07-29 19:09:49,719 | [CBZ] Gap Pattern (Type A) continuation, gap held and extended | Signal: BUY | Shares held: 9.0 | Last price: $55.09
+2026-07-29 19:09:49,719 | [CBZ] ACTION: No trade.
+2026-07-29 19:09:49,749 | [EXLS] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.99
+2026-07-29 19:09:49,749 | [EXLS] ACTION: No trade.
+2026-07-29 19:09:49,777 | [GRMN] choppy/sideways (ADX 17.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.98
+2026-07-29 19:09:49,777 | [GRMN] ACTION: No trade.
+2026-07-29 19:09:49,803 | [HURN] trending (ADX 52.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $170.25
+2026-07-29 19:09:49,803 | [HURN] ACTION: No trade.
+2026-07-29 19:09:49,831 | [LAD] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $436.43
+2026-07-29 19:09:49,832 | [LAD] ACTION: No trade.
+2026-07-29 19:09:49,862 | [LMND] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.57
+2026-07-29 19:09:49,862 | [LMND] ACTION: No trade.
+2026-07-29 19:09:49,891 | [MANH] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.49
+2026-07-29 19:09:49,891 | [MANH] ACTION: No trade.
+2026-07-29 19:09:49,922 | [MPLT] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.84
+2026-07-29 19:09:49,922 | [MPLT] ACTION: No trade.
+2026-07-29 19:09:49,951 | [NEO] choppy/sideways (ADX 9.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.55
+2026-07-29 19:09:49,951 | [NEO] ACTION: No trade.
+2026-07-29 19:09:49,996 | [PSN] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.76
+2026-07-29 19:09:49,996 | [PSN] ACTION: No trade.
+2026-07-29 19:14:50,262 | SCANNER: refreshing watchlist...
+2026-07-29 19:14:50,649 | SCANNER: excluded 4 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-07-29 19:14:51,555 | SCANNER: candidate HURN -- +39.1% today, $168.83, liquid, 5 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate PSN -- -35.1% today, $40.27, liquid, 7 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate MPLT -- +29.6% today, $15.95, liquid, 1 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate BAND -- -25.6% today, $38.87, liquid, 3 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate MANH -- +22.4% today, $205.91, liquid, 12 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate BLKB -- +19.7% today, $43.01, liquid, 4 recent news item(s)
+2026-07-29 19:14:51,555 | SCANNER: candidate LAD -- +19.6% today, $428.73, liquid, 6 recent news item(s)
+2026-07-29 19:14:51,556 | SCANNER: candidate GRMN -- +19.0% today, $301.76, liquid, 6 recent news item(s)
+2026-07-29 19:14:51,556 | SCANNER: candidate NEO -- +18.6% today, $15.89, liquid, 5 recent news item(s)
+2026-07-29 19:14:51,556 | SCANNER: candidate CBZ -- +17.8% today, $55.01, liquid, 4 recent news item(s)
+2026-07-29 19:14:51,556 | SCANNER: candidate EXLS -- +17.4% today, $35.83, liquid, 5 recent news item(s)
+2026-07-29 19:14:51,556 | SCANNER: new watchlist -> HURN, PSN, MPLT, BAND, MANH, BLKB, LAD, GRMN, NEO, CBZ, EXLS
+2026-07-29 19:14:51,619 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:14:52,344 | [BAND] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.79
+2026-07-29 19:14:52,344 | [BAND] ACTION: No trade.
+2026-07-29 19:14:52,371 | [BLKB] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.46
+2026-07-29 19:14:52,372 | [BLKB] ACTION: No trade.
+2026-07-29 19:14:52,399 | [CBZ] trending (ADX 55.4) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.05
+2026-07-29 19:14:52,400 | [CBZ] ACTION: No trade.
+2026-07-29 19:14:52,429 | [EXLS] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.85
+2026-07-29 19:14:52,429 | [EXLS] ACTION: No trade.
+2026-07-29 19:14:52,457 | [GRMN] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.38
+2026-07-29 19:14:52,457 | [GRMN] ACTION: No trade.
+2026-07-29 19:14:52,483 | [HURN] trending (ADX 51.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $170.15
+2026-07-29 19:14:52,483 | [HURN] ACTION: No trade.
+2026-07-29 19:14:52,511 | [LAD] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $436.10
+2026-07-29 19:14:52,511 | [LAD] ACTION: No trade.
+2026-07-29 19:14:52,540 | [MANH] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.76
+2026-07-29 19:14:52,540 | [MANH] ACTION: No trade.
+2026-07-29 19:14:52,571 | [MPLT] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.88
+2026-07-29 19:14:52,571 | [MPLT] ACTION: No trade.
+2026-07-29 19:14:52,600 | [NEO] choppy/sideways (ADX 10.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.71
+2026-07-29 19:14:52,600 | [NEO] ACTION: No trade.
+2026-07-29 19:14:52,629 | [PSN] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 12.0 | Last price: $40.26
+2026-07-29 19:14:52,629 | [PSN] ACTION: No trade.
+2026-07-29 19:19:52,942 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:19:53,925 | [BAND] trending (ADX 29.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.65
+2026-07-29 19:19:53,925 | [BAND] ACTION: No trade.
+2026-07-29 19:19:53,954 | [BLKB] choppy/sideways (ADX 12.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.09
+2026-07-29 19:19:53,954 | [BLKB] ACTION: No trade.
+2026-07-29 19:19:53,982 | [CBZ] trending (ADX 54.7) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.01
+2026-07-29 19:19:53,982 | [CBZ] ACTION: No trade.
+2026-07-29 19:19:54,011 | [EXLS] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.85
+2026-07-29 19:19:54,011 | [EXLS] ACTION: No trade.
+2026-07-29 19:19:54,039 | [GRMN] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.95
+2026-07-29 19:19:54,039 | [GRMN] ACTION: No trade.
+2026-07-29 19:19:54,065 | [HURN] trending (ADX 49.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $168.78
+2026-07-29 19:19:54,065 | [HURN] ACTION: No trade.
+2026-07-29 19:19:54,093 | [LAD] trending (ADX 44.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $434.50
+2026-07-29 19:19:54,093 | [LAD] ACTION: No trade.
+2026-07-29 19:19:54,121 | [MANH] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.00
+2026-07-29 19:19:54,122 | [MANH] ACTION: No trade.
+2026-07-29 19:19:54,152 | [MPLT] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.86
+2026-07-29 19:19:54,153 | [MPLT] ACTION: No trade.
+2026-07-29 19:19:54,181 | [NEO] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.71
+2026-07-29 19:19:54,181 | [NEO] ACTION: No trade.
+2026-07-29 19:19:54,209 | [PSN] choppy/sideways (ADX 18.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $40.16
+2026-07-29 19:19:54,209 | [PSN] ACTION: No trade.
+2026-07-29 19:24:54,532 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:24:55,458 | [BAND] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.84
+2026-07-29 19:24:55,458 | [BAND] ACTION: No trade.
+2026-07-29 19:24:55,486 | [BLKB] choppy/sideways (ADX 12.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.18
+2026-07-29 19:24:55,486 | [BLKB] ACTION: No trade.
+2026-07-29 19:24:55,514 | [CBZ] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.01
+2026-07-29 19:24:55,514 | [CBZ] ACTION: No trade.
+2026-07-29 19:24:55,543 | [EXLS] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.76
+2026-07-29 19:24:55,544 | [EXLS] ACTION: No trade.
+2026-07-29 19:24:55,572 | [GRMN] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.33
+2026-07-29 19:24:55,572 | [GRMN] ACTION: No trade.
+2026-07-29 19:24:55,598 | [HURN] trending (ADX 46.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $168.94
+2026-07-29 19:24:55,598 | [HURN] ACTION: No trade.
+2026-07-29 19:24:55,626 | [LAD] trending (ADX 42.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $429.47
+2026-07-29 19:24:55,626 | [LAD] ACTION: No trade.
+2026-07-29 19:24:55,655 | [MANH] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.97
+2026-07-29 19:24:55,655 | [MANH] ACTION: No trade.
+2026-07-29 19:24:55,686 | [MPLT] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.06
+2026-07-29 19:24:55,686 | [MPLT] ACTION: No trade.
+2026-07-29 19:24:55,716 | [NEO] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.75
+2026-07-29 19:24:55,716 | [NEO] ACTION: No trade.
+2026-07-29 19:24:55,744 | [PSN] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $40.12
+2026-07-29 19:24:55,744 | [PSN] ACTION: No trade.
+2026-07-29 19:29:56,291 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:29:57,266 | [BAND] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.91
+2026-07-29 19:29:57,266 | [BAND] ACTION: No trade.
+2026-07-29 19:29:57,294 | [BLKB] choppy/sideways (ADX 13.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.97
+2026-07-29 19:29:57,294 | [BLKB] ACTION: No trade.
+2026-07-29 19:29:57,322 | [CBZ] trending (ADX 53.2) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.03
+2026-07-29 19:29:57,322 | [CBZ] ACTION: No trade.
+2026-07-29 19:29:57,351 | [EXLS] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.83
+2026-07-29 19:29:57,352 | [EXLS] ACTION: No trade.
+2026-07-29 19:29:57,379 | [GRMN] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $300.41
+2026-07-29 19:29:57,379 | [GRMN] ACTION: No trade.
+2026-07-29 19:29:57,406 | [HURN] trending (ADX 43.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $169.21
+2026-07-29 19:29:57,406 | [HURN] ACTION: No trade.
+2026-07-29 19:29:57,434 | [LAD] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $428.31
+2026-07-29 19:29:57,434 | [LAD] ACTION: No trade.
+2026-07-29 19:29:57,463 | [MANH] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.69
+2026-07-29 19:29:57,463 | [MANH] ACTION: No trade.
+2026-07-29 19:29:57,494 | [MPLT] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.01
+2026-07-29 19:29:57,494 | [MPLT] ACTION: No trade.
+2026-07-29 19:29:57,522 | [NEO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $15.88
+2026-07-29 19:29:57,522 | [NEO] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-07-29 19:29:57,551 | [PSN] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 12.0 | Last price: $40.23
+2026-07-29 19:29:57,551 | [PSN] ACTION: No trade.
+2026-07-29 19:34:57,856 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:34:58,810 | [BAND] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.16
+2026-07-29 19:34:58,811 | [BAND] ACTION: No trade.
+2026-07-29 19:34:58,838 | [BLKB] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $43.05
+2026-07-29 19:34:58,838 | [BLKB] ACTION: No trade.
+2026-07-29 19:34:58,866 | [CBZ] trending (ADX 52.4) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.00
+2026-07-29 19:34:58,866 | [CBZ] ACTION: No trade.
+2026-07-29 19:34:58,896 | [EXLS] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.06
+2026-07-29 19:34:58,896 | [EXLS] ACTION: No trade.
+2026-07-29 19:34:58,924 | [GRMN] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $300.46
+2026-07-29 19:34:58,924 | [GRMN] ACTION: No trade.
+2026-07-29 19:34:58,950 | [HURN] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $169.01
+2026-07-29 19:34:58,950 | [HURN] ACTION: No trade.
+2026-07-29 19:34:58,978 | [LAD] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $423.46
+2026-07-29 19:34:58,978 | [LAD] ACTION: No trade.
+2026-07-29 19:34:59,007 | [MANH] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.34
+2026-07-29 19:34:59,007 | [MANH] ACTION: No trade.
+2026-07-29 19:34:59,038 | [MPLT] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.85
+2026-07-29 19:34:59,038 | [MPLT] ACTION: No trade.
+2026-07-29 19:34:59,066 | [NEO] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.74
+2026-07-29 19:34:59,066 | [NEO] ACTION: No trade.
+2026-07-29 19:34:59,095 | [PSN] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 12.0 | Last price: $40.20
+2026-07-29 19:34:59,095 | [PSN] ACTION: No trade.
+2026-07-29 19:39:59,408 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 11 symbols: BAND, BLKB, CBZ, EXLS, GRMN, HURN, LAD, MANH, MPLT, NEO, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:40:00,910 | [BAND] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.17
+2026-07-29 19:40:00,910 | [BAND] ACTION: No trade.
+2026-07-29 19:40:00,938 | [BLKB] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.76
+2026-07-29 19:40:00,938 | [BLKB] ACTION: No trade.
+2026-07-29 19:40:00,966 | [CBZ] trending (ADX 49.6) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $54.91
+2026-07-29 19:40:00,966 | [CBZ] ACTION: No trade.
+2026-07-29 19:40:00,996 | [EXLS] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.04
+2026-07-29 19:40:00,996 | [EXLS] ACTION: No trade.
+2026-07-29 19:40:01,024 | [GRMN] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $300.29
+2026-07-29 19:40:01,024 | [GRMN] ACTION: No trade.
+2026-07-29 19:40:01,050 | [HURN] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $169.53
+2026-07-29 19:40:01,050 | [HURN] ACTION: No trade.
+2026-07-29 19:40:01,078 | [LAD] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $422.69
+2026-07-29 19:40:01,079 | [LAD] ACTION: No trade.
+2026-07-29 19:40:01,107 | [MANH] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.95
+2026-07-29 19:40:01,107 | [MANH] ACTION: No trade.
+2026-07-29 19:40:01,139 | [MPLT] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.78
+2026-07-29 19:40:01,139 | [MPLT] ACTION: No trade.
+2026-07-29 19:40:01,167 | [NEO] choppy/sideways (ADX 14.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.55
+2026-07-29 19:40:01,167 | [NEO] ACTION: No trade.
+2026-07-29 19:40:01,196 | [PSN] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 12.0 | Last price: $40.16
+2026-07-29 19:40:01,196 | [PSN] ACTION: No trade.
+2026-07-29 19:45:01,449 | SCANNER: refreshing watchlist...
+2026-07-29 19:45:02,240 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-07-29 19:45:03,732 | SCANNER: candidate HURN -- +40.2% today, $170.14, liquid, 5 recent news item(s)
+2026-07-29 19:45:03,732 | SCANNER: candidate PSN -- -35.9% today, $39.78, liquid, 7 recent news item(s)
+2026-07-29 19:45:03,732 | SCANNER: candidate BAND -- -29.0% today, $37.09, liquid, 3 recent news item(s)
+2026-07-29 19:45:03,732 | SCANNER: candidate MPLT -- +23.9% today, $15.25, liquid, 1 recent news item(s)
+2026-07-29 19:45:03,732 | SCANNER: candidate MANH -- +22.1% today, $205.38, liquid, 12 recent news item(s)
+2026-07-29 19:45:03,732 | SCANNER: candidate LAD -- +18.3% today, $423.86, liquid, 6 recent news item(s)
+2026-07-29 19:45:03,733 | SCANNER: new watchlist -> HURN, PSN, BAND, MPLT, MANH, LAD
+2026-07-29 19:45:03,788 | Market is open (closes 2026-07-29 22:00:00 CEST your local time). Checking 8 symbols: BAND, BLKB, CBZ, HURN, LAD, MANH, MPLT, PSN (within 90 min of close -- not enough runway left today for a new position)
+2026-07-29 19:45:05,264 | [BAND] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.87
+2026-07-29 19:45:05,264 | [BAND] ACTION: No trade.
+2026-07-29 19:45:05,292 | [BLKB] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 11.0 | Last price: $42.67
+2026-07-29 19:45:05,292 | [BLKB] ACTION: No trade.
+2026-07-29 19:45:05,320 | [CBZ] Gap Pattern (Type A) continuation, gap held and extended | Signal: BUY | Shares held: 9.0 | Last price: $55.01
+2026-07-29 19:45:05,320 | [CBZ] ACTION: No trade.
+2026-07-29 19:45:05,346 | [HURN] trending (ADX 37.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $169.58
+2026-07-29 19:45:05,346 | [HURN] ACTION: No trade.
+2026-07-29 19:45:05,375 | [LAD] trending (ADX 31.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $424.18
+2026-07-29 19:45:05,375 | [LAD] ACTION: No trade.
+2026-07-29 19:45:05,403 | [MANH] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $207.31
+2026-07-29 19:45:05,403 | [MANH] ACTION: No trade.
+2026-07-29 19:45:05,435 | [MPLT] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.77
+2026-07-29 19:45:05,435 | [MPLT] ACTION: No trade.
+2026-07-29 19:45:05,464 | [PSN] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 12.0 | Last price: $39.60
+2026-07-29 19:45:05,464 | [PSN] ACTION: No trade.
+2026-07-29 19:50:05,718 | Within 10 min of close -- flattening all positions for the day.
+2026-07-29 19:50:06,368 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-07-29 20:00:02,078 | Market is closed. Next open: 2026-07-30 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-07-29 20:00:02,133 | Market is closed for the day -- exiting early instead of idling.
+2026-07-29 20:00:02,133 | Duration window finished.

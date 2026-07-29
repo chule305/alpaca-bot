@@ -27,3 +27,7 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-29T13:47:31+00:00,2026-07-29,MANH,BUY,breakout,volume-confirmed breakout above 20-bar high,2,208.41,416.82,197.99,229.25,flat $,98873.7,,0,cd44193c-8ea9-44b7-99aa-b66ea1a27a32,breakout-1785332851,204.02,82.1545,37.8399,2.3566,192.608,189.024,198.307,122021,811.85,193.46,204.02,187
 2026-07-29T14:17:39+00:00,2026-07-29,GRMN,BUY,breakout,volume-confirmed breakout above 20-bar high,1,294.955,294.955,280.21,324.45,flat $,99800.4,,30,cd735b88-8498-4482-9d0e-835f2e67bd95,breakout-1785334659,297.565,78.6902,38.8568,4.5141,286.684,276.772,287.891,54750,22374.5,295.875,291.21,259.75
 2026-07-29T15:18:00+00:00,2026-07-29,PSN,BUY,vwap_reversion,stretched below VWAP and turning back up,12,38.54,462.48,36.61,42.39,flat $,99806.7,,90,130215f2-a8fe-468d-8b67-25a3f5a89ae2,vwap_reversion-1785338280,37.7065,28.1881,48.8474,0.930214,37.5703,39.5404,38.6134,161648,249160,48.48,58.34,62.03
+2026-07-29T19:50:06+00:00,2026-07-29,BLKB,FLATTEN,end_of_day,Flattened before market close,11,,,,,,,,,,,,,,,,,,,,,,
+2026-07-29T19:50:06+00:00,2026-07-29,CBZ,FLATTEN,end_of_day,Flattened before market close,9,,,,,,,,,,,,,,,,,,,,,,
+2026-07-29T19:50:06+00:00,2026-07-29,HURN,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
+2026-07-29T19:50:06+00:00,2026-07-29,PSN,FLATTEN,end_of_day,Flattened before market close,12,,,,,,,,,,,,,,,,,,,,,,
