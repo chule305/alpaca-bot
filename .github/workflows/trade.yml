@@ -145,22 +145,46 @@ jobs:
           fi
           git commit -m "Update bot state [skip ci]"
           # Retry rather than fail: a 150-minute job leaves a wide window
-          # for another job's commit to land first. Conflicts on the
-          # append-only log/CSV files are resolved by the union merge
-          # driver (see .gitattributes) instead of aborting -- on
-          # 2026-07-27 this step failed twice and took 150 minutes of
-          # trading log down with it.
+          # for another job's commit to land first.
+          #
+          # This used to try `git pull --rebase` first, with a merge as
+          # fallback if the rebase conflicted. Two bugs in that, found on
+          # 2026-07-29: (1) watchlist_state.json/daily_risk_state.json are
+          # whole-file snapshots, not append-only like logs/*.log and
+          # trades.csv, so the union merge driver doesn't cover them and a
+          # genuine conflict there had nothing to auto-resolve it; (2) once
+          # the fallback merge ALSO conflicted, nothing cleaned it up --
+          # `git rebase --abort` correctly says "no rebase in progress"
+          # because it was a MERGE, so the conflicted files sat in the
+          # working tree and every later attempt failed instantly with
+          # "unmerged files", identically, all 5 times.
+          #
+          # Fixed by always using a plain merge (never rebase -- rebase
+          # SWAPS the meaning of "ours"/"theirs" to mean "the branch being
+          # rebased onto", i.e. the remote, which would silently prefer the
+          # OTHER job's state over what this run just computed) with
+          # `-X ours` so an unresolvable conflict on a whole-file snapshot
+          # keeps THIS job's numbers -- the most recently computed against
+          # live data. Verified this leaves the union driver in charge of
+          # logs/*.log and trades.csv either way, since a path's own
+          # merge= attribute takes precedence over the -X strategy option.
+          # And every attempt opens by aborting any merge/rebase left over
+          # from the previous one, so a conflict can never wedge the loop.
           for attempt in 1 2 3 4 5; do
+            git merge --abort 2>/dev/null || true
+            git rebase --abort 2>/dev/null || true
+
             if git push; then
               echo "Pushed on attempt $attempt."
               exit 0
             fi
-            echo "Push rejected (attempt $attempt) -- rebasing onto latest and retrying."
-            git pull --rebase --autostash || {
-              echo "Rebase could not be completed automatically; aborting it and retrying."
-              git rebase --abort || true
-              git pull --no-rebase --no-edit || true
-            }
+
+            echo "Push rejected (attempt $attempt) -- merging latest and retrying."
+            git fetch origin master
+            if ! git merge origin/master --no-edit -X ours; then
+              echo "Merge failed outright -- will clean up and retry."
+              git merge --abort 2>/dev/null || true
+            fi
             sleep $((attempt * 5))
           done
           echo "::error::Could not push bot state after 5 attempts."
