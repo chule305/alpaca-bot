@@ -640,3 +640,66 @@ The scanner list was assembled from names the scanner picked in the last
 few days, i.e. stocks known to be volatile NOW. Backtesting them over 90
 days has look-ahead bias in symbol selection. Directionally useful,
 absolutely not a forecast.
+
+## 2026-07-29: bracket mispricing on entry slippage, missing auto-exits, and a git data-loss incident
+
++$39.34 on 7 completed trades (86% win rate) -- a good day, but two real
+gaps surfaced while checking it, plus one incident that was already fixed
+earlier today.
+
+### Real bug: bracket stop/target priced off a stale quote
+HURN's entry was priced from a $149.055 quote, submitted 2 seconds later,
+and filled at $154.30 (+3.5%). The bracket's stop/target are ABSOLUTE
+price levels fixed at submission -- they don't move with the entry, so
+the stop stayed at $141.60: 5% below the QUOTE, but 8.2% below the REAL
+entry. Sizing wasn't affected here (flat-dollar), but a trader who
+thought they were risking 5% were actually exposed to 1.65x that if the
+trade had reversed.
+
+Fixed with `reconcile_bracket_with_real_fill`: polls briefly for the
+confirmed fill, and if it drifted more than `BRACKET_REPRICE_THRESHOLD_PCT`
+(0.3%) from the quote used to price the bracket, replaces both leg orders
+(`replace_order_by_id`) so stop/target sit at the intended % from the REAL
+fill. Also corrects what gets logged to trades.csv -- it recorded
+$149.055, not the $154.30 actually paid.
+
+### Real bug: automatic bracket exits were never recorded
+GRMN and MANH both closed via a plain market SELL (not the bracket legs
+directly -- those got cancelled, which happens when place_sell_order's own
+close_position() call fires from a strategy SELL signal). But most exits
+in this system are NOT that -- they're the stop or take-profit LEG filling
+on its own, which check_symbol never sees, because it only reacts to
+strategy signals, never to fills. That path had never called record_trade
+at all. Added `record_auto_exit`, triggered from the same
+previously_held-vs-now-held diff that already drives the cooldown: looks
+up the most recent closed sell for the symbol (the leg fill) and the most
+recent buy before it (to attribute the strategy), and logs it as
+STOP_HIT/TARGET_HIT/AUTO_EXIT. Verified against today's real GRMN/MANH
+orders.
+
+`extract_strategy` moved from daily_summary.py to trade_recorder.py so
+both trading_bot.py and daily_summary.py can share it -- trading_bot.py
+must never import daily_summary.py directly, since that module raises
+SystemExit at import time if email env vars aren't set.
+
+### Not a new bug: today's missing rows were already-fixed git data loss
+GRMN/MANH's exits, CBZ's entry, and HURN's second entry are ALL missing
+from trades.csv -- but not because record_trade didn't run. Workflow run
+#22 (16:12-18:44 UTC) covers every one of those timestamps; its trading
+step succeeded (so all four WERE recorded to that job's local trades.csv)
+but its commit step hit the exact git-merge-wedge bug fixed earlier today
+(commit e84e6fe) and failed all 5 retries. The whole commit -- correct
+data included -- was destroyed with the ephemeral runner. Confirmed via
+the Actions API, not guessed. No code fix needed beyond what already
+shipped; recorded here so a future "why is data missing" doesn't get
+re-diagnosed from scratch.
+
+### What worked today (n=7, one day -- directional only)
+    trend_following: 1 trade,           +$29.43 (+6.36%)  -- the outlier
+    vwap_reversion:  1 trade,           +$11.15 (+2.41%)
+    breakout:        4 trades, 3 wins,   -$1.69  net (small wins, one -1.67% loss)
+    gap_continuation: 1 trade,           +$0.45
+
+Consistent with the 90-day backtest's ranking (trend_following and
+vwap_reversion ahead of breakout), but one day proves nothing on its own
+-- noted as a data point, not a conclusion.

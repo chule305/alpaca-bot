@@ -88,6 +88,19 @@ CONTEXT_COLUMNS = [
 ]
 
 
+def extract_strategy(client_order_id: str | None) -> str:
+    """client_order_id is "{reason_key}-{unix_timestamp}" (see place_buy_order) -- pull the reason_key back out.
+
+    Lives here (not in daily_summary.py or trading_bot.py) so both can import it
+    without a circular/side-effect dependency -- daily_summary.py raises
+    SystemExit at import time if email env vars aren't set, so trading_bot.py
+    must never import it directly.
+    """
+    if not client_order_id or "-" not in client_order_id:
+        return "unknown"
+    return client_order_id.rsplit("-", 1)[0]
+
+
 def _clean(value):
     """CSV-safe scalar: NaN/None become empty, floats get sane precision."""
     if value is None:

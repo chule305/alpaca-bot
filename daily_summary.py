@@ -33,6 +33,8 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import GetOrdersRequest
+
+from trade_recorder import extract_strategy
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.common.enums import Sort
 
@@ -151,13 +153,6 @@ def fetch_open_positions() -> dict[str, dict]:
     except Exception as e:
         print(f"(Could not fetch open positions -- reporting entry prices only: {e})")
         return {}
-
-
-def extract_strategy(client_order_id: str | None) -> str:
-    """client_order_id is "{reason_key}-{unix_timestamp}" (see place_buy_order) -- pull the reason_key back out."""
-    if not client_order_id or "-" not in client_order_id:
-        return "unknown"
-    return client_order_id.rsplit("-", 1)[0]
 
 
 def pair_round_trip_trades(orders: list) -> tuple[list[dict], list[dict]]:

@@ -263,6 +263,106 @@ def test_scanner_tops_up_a_thin_watchlist():
         tb.active_watchlist, tb.last_scan_time = original
 
 
+def _fake_order(status, filled_avg_price=None, legs=None, order_id="ord-1", symbol="HURN"):
+    return types.SimpleNamespace(id=order_id, symbol=symbol, status=status,
+                                 filled_avg_price=filled_avg_price, legs=legs or [])
+
+
+def _fake_leg(order_type, leg_id):
+    return types.SimpleNamespace(id=leg_id, order_type=order_type)
+
+
+def test_reconcile_bracket_keeps_small_drift_unchanged():
+    """A fill a few cents from the quote is normal and shouldn't trigger
+    a repricing round-trip against the API."""
+    order = _fake_order(tb.OrderStatus.NEW)
+    filled = _fake_order(tb.OrderStatus.FILLED, filled_avg_price="100.10")
+    with patch.object(tb.trading_client, "get_order_by_id", return_value=filled) as mock_get, \
+         patch.object(tb.trading_client, "replace_order_by_id") as mock_replace, \
+         patch.object(tb.time, "sleep"):
+        price, corrected = tb.reconcile_bracket_with_real_fill(order, atr_value=1.0, reference_price=100.00)
+    check("small drift reports the real fill price", price == 100.10)
+    check("small drift does not trigger a reprice", corrected is False)
+    check("no replace_order_by_id calls for small drift", not mock_replace.called)
+
+
+def test_reconcile_bracket_reprices_legs_on_large_drift():
+    """
+    Regression for 2026-07-29: HURN's bracket was priced off a $149.055
+    quote, but the market order filled at $154.30 (+3.5%) two seconds
+    later. The bracket's absolute stop/target levels don't move with the
+    entry, so a stale quote silently changes the trade's real % risk --
+    the stop was 5% below the quote but 8.2% below the real entry. This
+    pins the fix: a large drift must reprice both legs relative to the
+    REAL fill, not the quote.
+    """
+    stop_leg = _fake_leg(tb.OrderType.STOP, "stop-leg-1")
+    target_leg = _fake_leg(tb.OrderType.LIMIT, "target-leg-1")
+    order = _fake_order(tb.OrderStatus.NEW)
+    filled = _fake_order(tb.OrderStatus.FILLED, filled_avg_price="154.30", legs=[stop_leg, target_leg])
+
+    with patch.object(tb.trading_client, "get_order_by_id", return_value=filled), \
+         patch.object(tb.trading_client, "replace_order_by_id") as mock_replace, \
+         patch.object(tb.time, "sleep"):
+        price, corrected = tb.reconcile_bracket_with_real_fill(order, atr_value=2.0, reference_price=149.055)
+
+    check("reports the real fill price, not the stale quote", price == 154.30)
+    check("a 3.5% drift triggers a reprice", corrected is True)
+    check("both legs get replaced", mock_replace.call_count == 2)
+    replaced_ids = {call.args[0] for call in mock_replace.call_args_list}
+    check("the stop leg was one of the replaced orders", "stop-leg-1" in replaced_ids)
+    check("the target leg was one of the replaced orders", "target-leg-1" in replaced_ids)
+
+    expected_stop, expected_target = tb.compute_stop_and_target(154.30, 2.0)
+    for call in mock_replace.call_args_list:
+        req = call.args[1]
+        if call.args[0] == "stop-leg-1":
+            check("the new stop is relative to the REAL fill, not the quote",
+                  abs(req.stop_price - round(expected_stop, 2)) < 0.01)
+        else:
+            check("the new target is relative to the REAL fill, not the quote",
+                  abs(req.limit_price - round(expected_target, 2)) < 0.01)
+
+
+def test_reconcile_bracket_falls_back_when_fill_not_confirmed():
+    """A fill that never confirms within the poll window must not hang
+    the cycle or crash -- it falls back to the quote."""
+    order = _fake_order(tb.OrderStatus.NEW)
+    pending = _fake_order(tb.OrderStatus.NEW)  # never reaches FILLED
+    with patch.object(tb.trading_client, "get_order_by_id", return_value=pending), \
+         patch.object(tb.trading_client, "replace_order_by_id") as mock_replace, \
+         patch.object(tb.time, "sleep"):
+        price, corrected = tb.reconcile_bracket_with_real_fill(order, atr_value=1.0, reference_price=100.00)
+    check("falls back to the reference price when unconfirmed", price == 100.00)
+    check("does not report a correction that never happened", corrected is False)
+    check("never attempts to replace legs without a confirmed fill", not mock_replace.called)
+
+
+def test_reconcile_bracket_survives_a_failed_leg_replace():
+    """One leg's replace call failing (e.g. it already filled/canceled)
+    must not crash the trade -- the other leg still gets its shot."""
+    stop_leg = _fake_leg(tb.OrderType.STOP, "stop-leg-1")
+    target_leg = _fake_leg(tb.OrderType.LIMIT, "target-leg-1")
+    order = _fake_order(tb.OrderStatus.NEW)
+    filled = _fake_order(tb.OrderStatus.FILLED, filled_avg_price="154.30", legs=[stop_leg, target_leg])
+
+    def flaky_replace(order_id, req):
+        if order_id == "stop-leg-1":
+            raise RuntimeError("order already filled")
+
+    with patch.object(tb.trading_client, "get_order_by_id", return_value=filled), \
+         patch.object(tb.trading_client, "replace_order_by_id", side_effect=flaky_replace), \
+         patch.object(tb.time, "sleep"):
+        raised = False
+        try:
+            price, corrected = tb.reconcile_bracket_with_real_fill(order, atr_value=2.0, reference_price=149.055)
+        except Exception:
+            raised = True
+    check("a failed leg replace does not raise", not raised)
+    check("still reports the real fill price", price == 154.30)
+    check("reports not fully corrected when a leg failed", corrected is False)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -382,6 +482,10 @@ if __name__ == "__main__":
         test_check_symbol_gating,
         test_leveraged_etf_name_detection,
         test_scanner_tops_up_a_thin_watchlist,
+        test_reconcile_bracket_keeps_small_drift_unchanged,
+        test_reconcile_bracket_reprices_legs_on_large_drift,
+        test_reconcile_bracket_falls_back_when_fill_not_confirmed,
+        test_reconcile_bracket_survives_a_failed_leg_replace,
         test_symbol_cooldown_blocks_immediate_reentry,
         test_run_for_duration_cycles_while_market_open,
         test_run_for_duration_never_overruns_its_window,

@@ -36,9 +36,11 @@ from dotenv import load_dotenv
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import (
-    MarketOrderRequest, GetOrdersRequest, TakeProfitRequest, StopLossRequest
+    MarketOrderRequest, GetOrdersRequest, TakeProfitRequest, StopLossRequest,
+    GetOrderByIdRequest, ReplaceOrderRequest,
 )
-from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass, QueryOrderStatus, OrderType
+from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass, QueryOrderStatus, OrderType, OrderStatus
+from alpaca.common.enums import Sort
 from alpaca.data.historical import StockHistoricalDataClient, ScreenerClient
 from alpaca.data.historical.news import NewsClient
 from alpaca.data.requests import (
@@ -48,7 +50,7 @@ from alpaca.data.requests import (
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import MostActivesBy, MarketType
 
-from trade_recorder import record_trade, extract_context
+from trade_recorder import record_trade, extract_context, extract_strategy
 from strategy import MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
@@ -753,6 +755,87 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
     return (portfolio_risk_estimate + projected_new_risk) > cap
 
 
+# How far the real fill can drift from the quote used to price the
+# bracket before the stop/target legs get corrected. See
+# reconcile_bracket_with_real_fill for why this exists.
+BRACKET_REPRICE_THRESHOLD_PCT = float(os.getenv("BRACKET_REPRICE_THRESHOLD_PCT", 0.3))
+
+
+def reconcile_bracket_with_real_fill(order, atr_value: float | None, reference_price: float):
+    """
+    A market entry fills at whatever the market gives, which can diverge
+    from the quote used to PRICE the bracket -- the stop/target legs are
+    absolute price levels fixed at submission, so a stale-quote gap
+    silently changes the real % risk of the trade, not just its cost.
+
+    Found live on 2026-07-29: HURN's entry quote was $149.055, submitted
+    2 seconds later, real fill $154.30 (+3.5%). The bracket's stop stayed
+    at $141.60 -- 5% below the QUOTE, but 8.2% below the REAL entry.
+    Sizing wasn't wrong (flat-dollar here), but a trader who thought they
+    were risking 5% were actually risking 1.65x that if it had reversed.
+
+    Polls briefly for the fill (paper fills are normally near-instant,
+    but this must never hang a cycle if one doesn't arrive), and if the
+    real fill drifted more than BRACKET_REPRICE_THRESHOLD_PCT from the
+    reference price, replaces both leg orders so the stop and target are
+    correctly positioned relative to what was ACTUALLY paid rather than
+    the quote from a moment before.
+
+    Returns (real_fill_price, corrected) -- real_fill_price falls back to
+    reference_price if the fill couldn't be confirmed; corrected is True
+    only if the legs were actually repriced.
+    """
+    filled = None
+    for _ in range(6):  # ~3s total -- enough for a paper fill, never worth blocking longer
+        try:
+            fetched = trading_client.get_order_by_id(order.id, GetOrderByIdRequest(nested=True))
+        except Exception as e:
+            log.info(f"[{order.symbol}] Could not check fill status ({e}) -- "
+                      f"using the pre-trade quote for records.")
+            return reference_price, False
+        if fetched.status == OrderStatus.FILLED and fetched.filled_avg_price is not None:
+            filled = fetched
+            break
+        time.sleep(0.5)
+
+    if filled is None or not filled.filled_avg_price:
+        log.info(f"[{order.symbol}] Fill not confirmed yet -- using the pre-trade quote for records; "
+                  f"the bracket legs stay as originally priced.")
+        return reference_price, False
+
+    real_fill_price = float(filled.filled_avg_price)
+    drift_pct = abs(real_fill_price - reference_price) / reference_price * 100
+    if drift_pct <= BRACKET_REPRICE_THRESHOLD_PCT:
+        return real_fill_price, False
+
+    new_stop, new_target = compute_stop_and_target(real_fill_price, atr_value)
+    new_stop = round(new_stop, 2)
+    new_target = round(new_target, 2)
+    log.warning(f"[{order.symbol}] Filled at ${real_fill_price:.2f}, {drift_pct:.1f}% away from the "
+                 f"${reference_price:.2f} quote the bracket was priced from -- repricing stop/target "
+                 f"to stay at the intended % risk (stop -> ${new_stop:.2f}, target -> ${new_target:.2f}).")
+
+    legs = filled.legs or []
+    stop_leg = next((leg for leg in legs if leg.order_type == OrderType.STOP), None)
+    target_leg = next((leg for leg in legs if leg.order_type == OrderType.LIMIT), None)
+    corrected = True
+    if stop_leg is not None:
+        try:
+            trading_client.replace_order_by_id(stop_leg.id, ReplaceOrderRequest(stop_price=new_stop))
+        except Exception as e:
+            log.warning(f"[{order.symbol}] Could not reprice the stop-loss leg ({e}) -- "
+                         f"it stays at its original level.")
+            corrected = False
+    if target_leg is not None:
+        try:
+            trading_client.replace_order_by_id(target_leg.id, ReplaceOrderRequest(limit_price=new_target))
+        except Exception as e:
+            log.warning(f"[{order.symbol}] Could not reprice the take-profit leg ({e}) -- "
+                         f"it stays at its original level.")
+            corrected = False
+    return real_fill_price, corrected
+
+
 def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equity: float | None,
                      reason_key: str = "unknown"):
     """
@@ -847,12 +930,19 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     log.info(f"[{symbol}] Buying {qty} share(s) (~${notional:.0f}, {sizing_style} sizing) | "
               f"stop-loss ${stop_price:.2f} | take-profit ${take_profit_price:.2f} ({stop_style})")
     order = trading_client.submit_order(order_request)
+
+    real_fill_price, corrected = reconcile_bracket_with_real_fill(order, atr_value, reference_price)
+    recorded_stop, recorded_target = stop_price, take_profit_price
+    if corrected:
+        recorded_stop, recorded_target = compute_stop_and_target(real_fill_price, atr_value)
+        recorded_stop, recorded_target = round(recorded_stop, 2), round(recorded_target, 2)
+
     place_buy_order.last_details = {
         "qty": qty,
-        "price": reference_price,
-        "notional": notional,
-        "stop_loss": stop_price,
-        "take_profit": take_profit_price,
+        "price": real_fill_price,
+        "notional": qty * real_fill_price,
+        "stop_loss": recorded_stop,
+        "take_profit": recorded_target,
         "sizing_style": sizing_style,
         "equity": equity,
     }
@@ -992,6 +1082,53 @@ def _trading_day_et() -> str:
     return datetime.now(MARKET_TZ_FOR_LOGS).strftime("%Y-%m-%d")
 
 
+def record_auto_exit(symbol: str) -> None:
+    """
+    Records a position's exit in trades.csv when it closes WITHOUT
+    check_symbol ever seeing a SELL signal -- i.e. a bracket's stop-loss
+    or take-profit leg filling on its own, which is how most exits
+    actually happen (check_symbol only sees the strategy's own exit
+    signal, never a leg fill).
+
+    Found live on 2026-07-29: trades.csv had BUY rows for GRMN and MANH
+    but no exit at all -- both closed via their bracket legs, and
+    nothing was watching for that. Without this, most of a day's trades
+    are missing their outcome entirely, which defeats the point of
+    keeping trades.csv for research.
+
+    Looks up the most recent closed sell for the symbol (the leg fill
+    itself) and the most recent closed buy before it (to attribute the
+    strategy via client_order_id) via Alpaca's own order history --
+    best-effort throughout, since a lookup failure here must never be
+    allowed to disrupt the trading cycle that called it.
+    """
+    try:
+        sells = trading_client.get_orders(filter=GetOrdersRequest(
+            status=QueryOrderStatus.CLOSED, symbols=[symbol],
+            side=OrderSide.SELL, direction=Sort.DESC, limit=3))
+        exit_order = next((o for o in sells if o.filled_at is not None), None)
+        if exit_order is None:
+            return
+
+        buys = trading_client.get_orders(filter=GetOrdersRequest(
+            status=QueryOrderStatus.CLOSED, symbols=[symbol],
+            side=OrderSide.BUY, direction=Sort.DESC, limit=3))
+        entry_order = next(
+            (o for o in buys if o.filled_at is not None and o.filled_at < exit_order.filled_at), None)
+        strategy = extract_strategy(entry_order.client_order_id) if entry_order else "unknown"
+
+        exit_kind = {OrderType.STOP: "STOP_HIT", OrderType.LIMIT: "TARGET_HIT"}.get(
+            exit_order.order_type, "AUTO_EXIT")
+        qty = float(exit_order.filled_qty)
+        price = float(exit_order.filled_avg_price)
+        record_trade(exit_kind, symbol, trading_day_et=_trading_day_et(),
+                     strategy=strategy, reason=f"{exit_kind} (order type {exit_order.order_type})",
+                     qty=qty, price=price, notional=qty * price, order_id=str(exit_order.id))
+    except Exception as e:
+        log.info(f"[{symbol}] Could not record how its position closed ({e}) -- "
+                  f"not critical, continuing.")
+
+
 def flatten_all_positions() -> None:
     """Closes every open position and cancels any pending orders."""
     # Read positions BEFORE closing them -- afterwards there's nothing
@@ -1107,6 +1244,7 @@ def run_one_cycle() -> float:
         symbol_cooldown_until[symbol] = clock.timestamp + timedelta(minutes=SYMBOL_COOLDOWN_MINUTES)
         log.info(f"[{symbol}] Position closed -- no re-entry for {SYMBOL_COOLDOWN_MINUTES:.0f} min "
                   f"(guards against repeatedly buying the same falling stock).")
+        record_auto_exit(symbol)
     if just_closed:
         previously_held = set(open_position_symbols)
         save_daily_risk_state()
