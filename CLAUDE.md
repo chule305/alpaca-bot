@@ -756,3 +756,61 @@ not on top of it -- if the movers scan already filled every slot, the
 lowest-ranked movers picks get trimmed to make room, since the whole
 point is guaranteeing liquidity representation, not adding to an already
 -full list.
+
+## 2026-07-30: three improvement ideas tested, none shipped
+
+User asked when to add crypto, and whether to add more real-time news
+sources or tune strategies to catch smaller price moves. Answered the
+crypto question with reasoning (see README); tested the other two rather
+than taking them on faith, since "seems obviously right" has already
+been wrong once this week (the ADX-gate reversal on 2026-07-27/28).
+
+**More news sources: not pursued, not because of cost, because it's not
+even testable right now.** backtest.py has no concept of news at all --
+the news filter is a LIVE SCANNER concern (which symbols to watch), not
+something the backtester simulates (it evaluates entries within a symbol
+list already chosen). Validating whether MORE news sources would help
+requires reconstructing what the scanner would have picked on past days,
+which is a real project (a scanner-replay harness), not a quick check.
+Adding paid/rate-limited API dependencies on an untested hypothesis isn't
+worth it. If this gets revisited, building that replay harness is the
+actual prerequisite, not the news integration itself.
+
+**Catching "tinier" price moves via faster bars: tested, clearly worse.**
+Ran BAR_MINUTES=1 against the 90-day baseline on both universes:
+
+    megacaps:       PF 1.52 -> 1.26, drawdown 2.1% -> 5.7%, trades 189->400
+    scanner picks:  PF 1.08 -> 1.09 (flat), drawdown 8.8% -> 18.7%, trades 347->674
+
+Scanner-universe total return looks higher at 1-minute bars, but that's
+explained by trading almost twice as much capital through twice as many
+trades at flat quality, while drawdown more than doubled. Same lesson as
+the MIN_STOP_TO_ATR_RATIO finding: finer granularity trades quality for
+quantity, because the rules can't reliably separate signal from noise at
+that resolution. Not shipped.
+
+**trend_following entry confirmation: tested, mixed, not shipped.** Added
+a one-bar confirmation requirement to trend_following's BUY side (same
+pattern already used for breakout_at/orb_at), since it was flagged
+2026-07-28 as the scanner universe's biggest loser (-$274.86, 30% wins).
+Direct before/after, same 90 days:
+
+    scanner picks:  PF 1.10 -> 1.11, drawdown 8.9% -> 7.9%, trend_following -$280.69 -> -$263.17 (52->40 trades)
+    megacaps:       PF 1.52 -> 1.45, drawdown 2.1% -> 2.2%, trend_following +$46.77 -> +$27.91 (57->49 trades)
+
+Helps the scanner universe modestly (fewer whipsaws), but on megacaps
+trend_following is already a WINNER, and delaying entry by one bar cuts
+into real edge, not just noise -- total megacap return drops ~17%. Since
+2026-07-29's S&P 500 backstop guarantees megacap exposure on every live
+watchlist now, this isn't a hypothetical tradeoff between two separate
+symbol lists -- it's a direct hit to real, current, simultaneous
+exposure. A small win on one side doesn't justify a meaningfully worse
+loss on the other. Reverted; strategy.py is unchanged from 2026-07-29.
+
+If this gets revisited, the fix would need to be conditioned on
+something OTHER than "is this a scanner pick" (strategy.py has no
+visibility into which pipeline sourced a symbol, and building that
+plumbing for one unproven idea isn't justified yet) -- e.g. requiring
+confirmation only on weaker crosses (small ADX / small EMA separation)
+and letting strong ones through immediately, which is a genuinely
+separate, untested hypothesis.
