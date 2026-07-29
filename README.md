@@ -361,6 +361,21 @@ sentiment scoring, so it stays fast and simple). It then trades the top
 `SCANNER_MIN_WATCHLIST_SIZE` names qualify, the list is topped up from
 `SYMBOLS` so a thin scan day doesn't leave the bot with nothing to watch.
 
+**S&P 500 liquidity backstop.** The movers scan above ranks by SIZE OF
+MOVE, which structurally excludes megacaps — they rarely move enough in
+a day to place in a top-50 gainers/losers list. But a 90-day backtest
+(2026-07-28, see CLAUDE.md) found this system performs markedly *better*
+on liquid stocks than on its own scanner picks (profit factor 1.52 on
+megacaps vs 1.08 on scanner picks). So when `USE_SP500_UNIVERSE` is on
+(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default 4) of the
+watchlist are always reserved for S&P 500 names, ranked by trailing
+dollar volume — regardless of whether anything in the index happens to
+be a big mover that day. The constituent list is fetched from a
+community-maintained CSV mirror (`SP500_LIST_URL`) and cached in-process
+for `SP500_REFRESH_HOURS` (default 24 — the index changes only a handful
+of times a year). These reserved slots come out of the existing
+`SCANNER_WATCHLIST_SIZE` budget, not on top of it.
+
 Two filters here have bitten this project and are worth understanding:
 
 - **Liquidity is measured in dollars, not shares.** The original version

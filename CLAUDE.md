@@ -703,3 +703,56 @@ re-diagnosed from scratch.
 Consistent with the 90-day backtest's ranking (trend_following and
 vwap_reversion ahead of breakout), but one day proves nothing on its own
 -- noted as a data point, not a conclusion.
+
+## 2026-07-29: S&P 500 liquidity backstop
+
+Consulted with the user before building: two "drastic improvement"
+directions were on the table (broader S&P 500 breadth vs. adding crypto).
+Decision -- both, sequenced: S&P 500 breadth now (low-risk extension of
+what already exists, and the backtest evidence already points at it),
+crypto later as its own larger effort (different asset class, trades
+24/7 with no session boundaries, and the current strategies -- VWAP
+session-reset, ORB, gap continuation -- are all built around a 9:30-4:00
+session and would need real rework, not just a symbol-list change).
+
+Implementation: the movers scan ranks candidates by SIZE OF MOVE, which
+structurally excludes S&P 500 megacaps (they rarely move enough in a day
+to place in a top-50 gainers/losers list) even though 2026-07-28's 90-day
+backtest found this system performs markedly better on them (profit
+factor 1.52 vs 1.08 on the scanner's own picks). Rather than replace the
+movers scan, `USE_SP500_UNIVERSE` reserves `SP500_MIN_WATCHLIST_SLOTS`
+(default 4) watchlist slots specifically for S&P 500 names, ranked by
+trailing dollar volume (the property the backtest tied to performance,
+not size of move -- that's what the movers scan already optimizes for).
+Deliberately skips the news-catalyst filter for these slots: "no recent
+news" flags likely noise on a stock that's already moving a lot, but
+says nothing meaningful about a megacap on an ordinary quiet day.
+
+Constituents come from a community-maintained CSV mirror
+(`datasets/s-and-p-500-companies` on GitHub, served over plain HTTPS, no
+auth/rate limit), fetched dynamically per the user's explicit preference
+over a hardcoded list -- chosen over scraping Wikipedia's table (fragile
+to markup changes) or a paid data API (unnecessary for a list that
+changes a handful of times a year). Cached in-process for
+`SP500_REFRESH_HOURS` (24h) rather than to disk: a single
+`--duration-minutes` job runs many scan cycles, so an in-process cache
+avoids refetching within one job, and a fresh job refetching once every
+~2.5h is cheap enough that persisting it across jobs wasn't worth another
+git-tracked state file. Falls back to the last successfully cached list
+on a failed refresh, and to an empty list (skip the backstop that cycle,
+not the whole scan) if no cache exists yet.
+
+Found and fixed while wiring this in: three separate early `return []`
+statements in the movers pipeline (empty prefiltered list, all-leveraged-
+ETF candidates, nothing meeting the dollar-volume bar) would each have
+skipped the S&P 500 backstop entirely on exactly the kind of quiet day
+it exists to cover. Changed each to fall through with an empty
+`qualified`/`prefiltered` instead of returning, so the backstop always
+gets a chance regardless of how the movers scan fared. Verified live: a
+simulated zero-mover scan still produces a full backstop-only watchlist.
+
+Reserved slots come out of the existing `SCANNER_WATCHLIST_SIZE` budget,
+not on top of it -- if the movers scan already filled every slot, the
+lowest-ranked movers picks get trimmed to make room, since the whole
+point is guaranteeing liquidity representation, not adding to an already
+-full list.

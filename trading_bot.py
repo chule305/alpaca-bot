@@ -23,11 +23,13 @@ is open -- it sleeps the rest of the time and wakes back up automatically.
 """
 
 import os
+import io
 import re
 import time
 import json
 import argparse
 import logging
+import urllib.request
 from datetime import datetime, date, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -145,6 +147,35 @@ EXCLUDE_LEVERAGED_ETFS = os.getenv("EXCLUDE_LEVERAGED_ETFS", "true").strip().low
 # already up/down more than this % today is more likely near-exhausted
 # than just getting started, so it's excluded rather than ranked #1.
 SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 50.0))
+
+# 2026-07-29 finding (see CLAUDE.md): the scanner's "top movers today"
+# picks backtest at profit factor 1.08 over 90 days; the same strategies
+# on liquid megacaps backtest at 1.52. The movers scan is a momentum
+# filter by construction -- it ranks by SIZE OF MOVE, which structurally
+# excludes megacaps (they rarely move enough in a day to place in the
+# top 50 gainers/losers) even though this system trades them better.
+# Rather than replace the movers scan, this reserves a minimum number of
+# watchlist slots for S&P 500 names specifically, so liquidity is always
+# represented regardless of whether anything in the index happens to be
+# a big mover today. USE_SP500_UNIVERSE off returns to the pre-existing
+# movers-only behavior exactly.
+USE_SP500_UNIVERSE = os.getenv("USE_SP500_UNIVERSE", "true").strip().lower() in ("1", "true", "yes")
+SP500_MIN_WATCHLIST_SLOTS = int(os.getenv("SP500_MIN_WATCHLIST_SLOTS", 4))
+# The constituent list barely changes intraday -- a rare few times a year
+# -- so this is a slow-moving reference list, not a scan result. Cached
+# in-process rather than to disk: within one --duration-minutes job the
+# same process runs many scan cycles, so this avoids refetching on every
+# one of them, and a fresh job refetching once every ~2.5h is cheap
+# enough that on-disk persistence isn't worth the extra state file.
+SP500_REFRESH_HOURS = float(os.getenv("SP500_REFRESH_HOURS", 24))
+# A community-maintained, versioned CSV mirror of the S&P 500 constituent
+# list, served over plain HTTPS with no auth/rate limit -- chosen over
+# scraping Wikipedia's table (fragile to markup changes) or a paid data
+# API (unnecessary for a list that changes a handful of times a year).
+SP500_LIST_URL = os.getenv(
+    "SP500_LIST_URL",
+    "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
+)
 
 # Lightweight news-catalyst filter (presence/frequency only, no AI/NLP
 # sentiment scoring -- that would add per-symbol latency and cost inside
@@ -407,6 +438,89 @@ def is_leveraged_etf(symbol: str) -> bool | None:
     return bool(LEVERAGED_ETF_NAME_PATTERN.search(name))
 
 
+_sp500_cache: dict = {"symbols": [], "fetched_at": None}
+
+
+def fetch_sp500_symbols() -> list[str]:
+    """
+    The current S&P 500 constituent tickers, cached in-process for
+    SP500_REFRESH_HOURS. Returns [] on any failure (network, malformed
+    CSV, etc.) rather than raising -- callers should treat that as "S&P
+    500 breadth unavailable this cycle," not as an error worth stopping
+    the scan over. Falls back to the last successfully cached list if a
+    refresh fails, since a slightly stale S&P 500 list is far better
+    than no liquidity backstop at all.
+    """
+    now = datetime.now(timezone.utc)
+    if (_sp500_cache["fetched_at"] is not None
+            and (now - _sp500_cache["fetched_at"]).total_seconds() < SP500_REFRESH_HOURS * 3600):
+        return _sp500_cache["symbols"]
+
+    try:
+        with urllib.request.urlopen(SP500_LIST_URL, timeout=10) as response:
+            text = response.read().decode("utf-8")
+        df = pd.read_csv(io.StringIO(text))
+        symbols = [s.strip().upper() for s in df["Symbol"] if isinstance(s, str) and s.strip()]
+        if not symbols:
+            raise ValueError("parsed list was empty")
+        _sp500_cache["symbols"] = symbols
+        _sp500_cache["fetched_at"] = now
+        log.info(f"S&P 500: refreshed constituent list ({len(symbols)} symbols).")
+        return symbols
+    except Exception as e:
+        if _sp500_cache["symbols"]:
+            log.warning(f"S&P 500: could not refresh constituent list ({e}) -- "
+                         f"using the last cached list ({len(_sp500_cache['symbols'])} symbols).")
+            return _sp500_cache["symbols"]
+        log.warning(f"S&P 500: could not fetch constituent list ({e}) and no cache exists -- "
+                     f"skipping the liquidity backstop this cycle.")
+        return []
+
+
+def fetch_sp500_candidates(already_picked: set[str], needed: int) -> list[str]:
+    """
+    Fills the S&P 500 liquidity backstop (see USE_SP500_UNIVERSE): the
+    top `needed` S&P 500 names NOT already in `already_picked`, ranked by
+    trailing average dollar volume -- the most liquid names first, since
+    that's the property the backtest tied to this system's actual
+    performance, not size of today's move (that's what the movers scan
+    already optimizes for).
+    Deliberately skips the news-catalyst filter that applies to movers:
+    "no recent news" suggests thin/noise volume on a stock that's
+    already moving a lot, but says nothing meaningful about an S&P 500
+    megacap on an ordinary quiet day.
+    """
+    if needed <= 0:
+        return []
+    sp500 = fetch_sp500_symbols()
+    candidates = [s for s in sp500 if s not in already_picked]
+    if not candidates:
+        return []
+
+    try:
+        bars = get_recent_bars_batch(candidates, lookback_days=5)
+    except Exception as e:
+        log.warning(f"S&P 500: could not fetch bars for the liquidity backstop ({e}) -- skipping it this cycle.")
+        return []
+
+    scored = []
+    for symbol in candidates:
+        df = bars.get(symbol)
+        if df is None or df.empty:
+            continue
+        last_price = float(df["close"].iat[-1])
+        if last_price < SCANNER_MIN_PRICE:
+            continue
+        avg_dollar_volume = float((df["close"] * df["volume"]).mean())
+        scored.append((symbol, avg_dollar_volume))
+
+    scored.sort(key=lambda pair: pair[1], reverse=True)
+    picked = [symbol for symbol, _ in scored[:needed]]
+    if picked:
+        log.info(f"S&P 500 liquidity backstop -> {', '.join(picked)}")
+    return picked
+
+
 def scan_for_volatile_stocks() -> list[str]:
     """
     Builds a watchlist automatically using Alpaca's screener data instead
@@ -440,6 +554,11 @@ def scan_for_volatile_stocks() -> list[str]:
             MarketMoversRequest(top=SCANNER_CANDIDATE_POOL, market_type=MarketType.STOCKS)
         )
     except Exception as e:
+        # A genuine screener-endpoint outage, not "nothing qualified
+        # today" -- out of scope for the S&P 500 backstop below, which
+        # assumes the rest of the pipeline (bars, Alpaca connectivity in
+        # general) is working. refresh_watchlist_if_needed's own
+        # SCANNER_MIN_WATCHLIST_SIZE fallback to SYMBOLS covers this case.
         log.error(f"SCANNER: could not fetch screener data: {e}")
         return []
 
@@ -470,7 +589,6 @@ def scan_for_volatile_stocks() -> list[str]:
 
     if not prefiltered:
         log.warning("SCANNER: no candidates survived the price/extension filters.")
-        return []
 
     # Structural leveraged/inverse ETF check against Alpaca's asset names.
     # Deliberately fail-CLOSED (an unverifiable symbol is skipped): the
@@ -495,7 +613,6 @@ def scan_for_volatile_stocks() -> list[str]:
         prefiltered = kept
         if not prefiltered:
             log.warning("SCANNER: every candidate this cycle was a leveraged/inverse ETF.")
-            return []
 
     # Dollar-volume liquidity check on whatever isn't already known liquid.
     needs_check = [m.symbol for m in prefiltered if m.symbol not in known_liquid]
@@ -518,10 +635,9 @@ def scan_for_volatile_stocks() -> list[str]:
                          f"the most-actives list alone for liquidity this cycle.")
 
     qualified = [m for m in prefiltered if m.symbol in liquid_enough]
-    if not qualified:
+    if not qualified and prefiltered:
         log.warning(f"SCANNER: {len(prefiltered)} candidate(s) passed price/extension filters but "
                      f"none met the ${SCANNER_MIN_DOLLAR_VOLUME:,.0f} average dollar-volume bar.")
-        return []
 
     news_counts: dict[str, int] = {}
     if USE_NEWS_FILTER and qualified:
@@ -545,6 +661,25 @@ def scan_for_volatile_stocks() -> list[str]:
             picked.append(m.symbol)
         if len(picked) >= SCANNER_WATCHLIST_SIZE:
             break
+
+    # S&P 500 liquidity backstop -- runs regardless of how the movers scan
+    # did, including when it found nothing at all, since the whole point
+    # is guaranteeing liquidity is represented independent of today's
+    # biggest-movers list. Reserved slots come out of the movers picks'
+    # own budget (not on top of SCANNER_WATCHLIST_SIZE) if the movers scan
+    # already filled every slot, so the backstop can't blow the watchlist
+    # size past what the rest of the system was tuned against.
+    if USE_SP500_UNIVERSE:
+        already_in_backstop_budget = len(set(picked) & set(fetch_sp500_symbols()))
+        slots_open = max(SCANNER_WATCHLIST_SIZE - len(picked), 0)
+        needed = max(SP500_MIN_WATCHLIST_SLOTS - already_in_backstop_budget, 0)
+        needed = min(needed, slots_open)
+        if needed > 0:
+            backstop_picks = fetch_sp500_candidates(set(picked), needed)
+            if len(picked) + len(backstop_picks) > SCANNER_WATCHLIST_SIZE:
+                overflow = len(picked) + len(backstop_picks) - SCANNER_WATCHLIST_SIZE
+                picked = picked[:-overflow] if overflow < len(picked) else []
+            picked.extend(backstop_picks)
 
     return picked
 

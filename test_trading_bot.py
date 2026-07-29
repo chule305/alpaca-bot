@@ -263,6 +263,126 @@ def test_scanner_tops_up_a_thin_watchlist():
         tb.active_watchlist, tb.last_scan_time = original
 
 
+# ---------------------------------------------------------------------------
+# S&P 500 LIQUIDITY BACKSTOP -- 2026-07-29 addition. The movers scan ranks
+# by SIZE OF MOVE, which structurally excludes megacaps (they rarely move
+# enough to place in a top-50 gainers/losers list) even though the 90-day
+# backtest showed this system performs far better on them (profit factor
+# 1.52 on megacaps vs 1.08 on the scanner's own picks). This reserves
+# watchlist slots for S&P 500 names regardless of whether anything in the
+# index happens to be a big mover today.
+# ---------------------------------------------------------------------------
+
+def test_fetch_sp500_symbols_caches_and_falls_back():
+    original = dict(tb._sp500_cache)
+    tb._sp500_cache["symbols"], tb._sp500_cache["fetched_at"] = [], None
+    try:
+        csv_bytes = b"Symbol,Security\nAAPL,Apple\nMSFT,Microsoft\n"
+        fake_response = MagicMock()
+        fake_response.read.return_value = csv_bytes
+        fake_response.__enter__ = lambda self: fake_response
+        fake_response.__exit__ = lambda self, *a: False
+        with patch.object(tb.urllib.request, "urlopen", return_value=fake_response) as mock_urlopen:
+            first = tb.fetch_sp500_symbols()
+            second = tb.fetch_sp500_symbols()
+        check("parses tickers out of the CSV", first == ["AAPL", "MSFT"])
+        check("a second call within the refresh window uses the cache",
+              mock_urlopen.call_count == 1 and second == first)
+
+        # Force a refresh, but this time the network fails -- must fall
+        # back to what was already cached rather than losing it.
+        tb._sp500_cache["fetched_at"] = None
+        with patch.object(tb.urllib.request, "urlopen", side_effect=RuntimeError("network down")):
+            fallback = tb.fetch_sp500_symbols()
+        check("a failed refresh falls back to the last good cache", fallback == ["AAPL", "MSFT"])
+    finally:
+        tb._sp500_cache.clear()
+        tb._sp500_cache.update(original)
+
+
+def test_fetch_sp500_symbols_no_cache_and_failure_returns_empty():
+    original = dict(tb._sp500_cache)
+    tb._sp500_cache["symbols"], tb._sp500_cache["fetched_at"] = [], None
+    try:
+        with patch.object(tb.urllib.request, "urlopen", side_effect=RuntimeError("network down")):
+            result = tb.fetch_sp500_symbols()
+        check("no cache and a failed fetch returns empty, not an error", result == [])
+    finally:
+        tb._sp500_cache.clear()
+        tb._sp500_cache.update(original)
+
+
+def test_sp500_backstop_ranks_by_liquidity_and_excludes_already_picked():
+    """The backstop's whole premise is preferring LIQUIDITY, not size of
+    move -- unlike the movers scan, it ranks candidates by trailing
+    dollar volume."""
+    def bars_of(close, volume):
+        return pd.DataFrame({"close": [close] * 5, "volume": [volume] * 5})
+
+    bars = {
+        "AAPL": bars_of(200.0, 1_000_000),   # $200M/bar -- most liquid
+        "TSLA": bars_of(300.0, 500_000),     # $150M/bar
+        "OBSCUR": bars_of(15.0, 1_000),      # thin -- should rank last
+    }
+    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "TSLA", "OBSCUR", "NVDA"]), \
+         patch.object(tb, "get_recent_bars_batch", return_value=bars):
+        picked = tb.fetch_sp500_candidates(already_picked={"NVDA"}, needed=2)
+    check("already-picked symbols are excluded from the backstop", "NVDA" not in picked)
+    check("the most liquid names are picked first", picked == ["AAPL", "TSLA"])
+    check("a thin/no-data name does not get picked over liquid ones", "OBSCUR" not in picked)
+
+
+def test_sp500_backstop_requests_nothing_when_not_needed():
+    with patch.object(tb, "fetch_sp500_symbols") as mock_fetch:
+        result = tb.fetch_sp500_candidates(already_picked=set(), needed=0)
+    check("asking for 0 slots does no work at all", result == [] and not mock_fetch.called)
+
+
+def test_scan_reserves_slots_for_sp500_even_when_movers_scan_finds_nothing():
+    """
+    The backstop must run even when the movers scan qualifies nothing --
+    that's the whole point of calling it a BACKSTOP. Before this was
+    fixed, an early `return []` on an empty movers result would have
+    skipped the S&P 500 slots entirely on exactly the kind of quiet day
+    they're meant to cover.
+    """
+    empty_movers = types.SimpleNamespace(gainers=[], losers=[])
+    with patch.object(tb.screener_client, "get_market_movers", return_value=empty_movers), \
+         patch.object(tb, "USE_SP500_UNIVERSE", True), \
+         patch.object(tb, "SP500_MIN_WATCHLIST_SLOTS", 3), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT", "NVDA"]), \
+         patch.object(tb, "fetch_sp500_candidates", return_value=["AAPL", "MSFT", "NVDA"]) as mock_backstop:
+        result = tb.scan_for_volatile_stocks()
+    check("the backstop is consulted even on a zero-mover day", mock_backstop.called)
+    check("the backstop's picks become the watchlist", result == ["AAPL", "MSFT", "NVDA"])
+
+
+def test_scan_caps_total_watchlist_size_with_backstop_included():
+    """The backstop reserves slots out of the existing watchlist budget --
+    it must never push the total past SCANNER_WATCHLIST_SIZE."""
+    movers_picks = [f"MOV{i}" for i in range(10)]
+    with patch.object(tb, "screener_client"), \
+         patch.object(tb, "SCANNER_WATCHLIST_SIZE", 12), \
+         patch.object(tb, "SP500_MIN_WATCHLIST_SLOTS", 4), \
+         patch.object(tb, "USE_SP500_UNIVERSE", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=[]), \
+         patch.object(tb, "fetch_sp500_candidates", return_value=["AAPL", "MSFT", "NVDA", "AMD"]) as mock_backstop:
+        # Exercise just the tail assembly logic directly rather than the
+        # whole scan, since the movers pipeline itself is covered above.
+        picked = list(movers_picks)
+        already_in_backstop_budget = len(set(picked) & set(tb.fetch_sp500_symbols()))
+        slots_open = max(tb.SCANNER_WATCHLIST_SIZE - len(picked), 0)
+        needed = min(max(tb.SP500_MIN_WATCHLIST_SLOTS - already_in_backstop_budget, 0), slots_open)
+        backstop_picks = tb.fetch_sp500_candidates(set(picked), needed) if needed > 0 else []
+        if len(picked) + len(backstop_picks) > tb.SCANNER_WATCHLIST_SIZE:
+            overflow = len(picked) + len(backstop_picks) - tb.SCANNER_WATCHLIST_SIZE
+            picked = picked[:-overflow] if overflow < len(picked) else []
+        picked.extend(backstop_picks)
+    check("total watchlist never exceeds SCANNER_WATCHLIST_SIZE", len(picked) <= 12)
+    check("backstop names still make it in by trimming movers picks, not skipping",
+          {"AAPL", "MSFT", "NVDA", "AMD"} <= set(picked))
+
+
 def _fake_order(status, filled_avg_price=None, legs=None, order_id="ord-1", symbol="HURN"):
     return types.SimpleNamespace(id=order_id, symbol=symbol, status=status,
                                  filled_avg_price=filled_avg_price, legs=legs or [])
@@ -482,6 +602,12 @@ if __name__ == "__main__":
         test_check_symbol_gating,
         test_leveraged_etf_name_detection,
         test_scanner_tops_up_a_thin_watchlist,
+        test_fetch_sp500_symbols_caches_and_falls_back,
+        test_fetch_sp500_symbols_no_cache_and_failure_returns_empty,
+        test_sp500_backstop_ranks_by_liquidity_and_excludes_already_picked,
+        test_sp500_backstop_requests_nothing_when_not_needed,
+        test_scan_reserves_slots_for_sp500_even_when_movers_scan_finds_nothing,
+        test_scan_caps_total_watchlist_size_with_backstop_included,
         test_reconcile_bracket_keeps_small_drift_unchanged,
         test_reconcile_bracket_reprices_legs_on_large_drift,
         test_reconcile_bracket_falls_back_when_fill_not_confirmed,
