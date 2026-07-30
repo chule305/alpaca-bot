@@ -31,3 +31,4 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-29T19:50:06+00:00,2026-07-29,CBZ,FLATTEN,end_of_day,Flattened before market close,9,,,,,,,,,,,,,,,,,,,,,,
 2026-07-29T19:50:06+00:00,2026-07-29,HURN,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
 2026-07-29T19:50:06+00:00,2026-07-29,PSN,FLATTEN,end_of_day,Flattened before market close,12,,,,,,,,,,,,,,,,,,,,,,
+2026-07-30T16:45:20+00:00,2026-07-30,ALNY,BUY,vwap_reversion,stretched below VWAP and turning back up,2,204.78,409.56,194.05,224.69,flat $,99827.5,,180,6618238e-6696-4d0f-aac9-dbc79ea4eac9,vwap_reversion-1785429918,203.715,40.6375,46.6,2.86605,203.222,205.812,210.686,135587,104365,211.07,288.149,286.6
