@@ -581,3 +581,322 @@
 2026-07-30 15:49:34,373 | [TREE] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.55
 2026-07-30 15:49:34,373 | [TREE] ACTION: No trade.
 2026-07-30 15:53:34,327 | Duration window finished.
+2026-07-30 18:24:36,944 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-30 18:24:36,944 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-30 18:24:36,944 | Bar size: 5min | Check interval while market open: 5min
+2026-07-30 18:24:36,944 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-30 18:24:36,944 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-30 18:24:36,944 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-30 18:24:36,944 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-30 18:24:36,944 | Position sizing: flat $500 per trade
+2026-07-30 18:24:36,944 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-30 18:24:36,944 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-30 18:24:36,944 | Loaded saved watchlist from previous run: CCB, CMCO, ALNY, TREE, MU, SNDK, NVDA, MSFT
+2026-07-30 18:24:36,945 | Restored daily risk state from previous run: day 2026-07-30, breaker tripped: False
+2026-07-30 18:24:36,945 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-30 18:24:37,188 | SCANNER: refreshing watchlist...
+2026-07-30 18:24:38,123 | SCANNER: excluded 25 leveraged/inverse ETF(s) from 30 candidate(s).
+2026-07-30 18:24:39,156 | SCANNER: candidate CCB -- -41.8% today, $41.15, liquid, 3 recent news item(s)
+2026-07-30 18:24:39,157 | SCANNER: candidate CMCO -- +41.7% today, $20.71, liquid, 6 recent news item(s)
+2026-07-30 18:24:39,157 | SCANNER: candidate ALNY -- -29.2% today, $202.92, liquid, 5 recent news item(s)
+2026-07-30 18:24:39,229 | S&P 500: refreshed constituent list (503 symbols).
+2026-07-30 18:25:04,637 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 18:25:04,640 | SCANNER: new watchlist -> CCB, CMCO, ALNY, MU, SNDK, NVDA, MSFT
+2026-07-30 18:25:04,697 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK
+2026-07-30 18:25:06,859 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $201.92
+2026-07-30 18:25:06,859 | [ALNY] ACTION: No trade.
+2026-07-30 18:25:06,885 | [CCB] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.33
+2026-07-30 18:25:06,886 | [CCB] ACTION: No trade.
+2026-07-30 18:25:06,915 | [CMCO] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.85
+2026-07-30 18:25:06,915 | [CMCO] ACTION: No trade.
+2026-07-30 18:25:06,962 | [MSFT] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $457.82
+2026-07-30 18:25:06,962 | [MSFT] ACTION: No trade.
+2026-07-30 18:25:07,009 | [MU] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $874.02
+2026-07-30 18:25:07,009 | [MU] ACTION: No trade.
+2026-07-30 18:25:07,056 | [NVDA] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.69
+2026-07-30 18:25:07,056 | [NVDA] ACTION: No trade.
+2026-07-30 18:25:07,088 | [RTO] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.92
+2026-07-30 18:25:07,088 | [RTO] ACTION: No trade.
+2026-07-30 18:25:07,138 | [SNDK] choppy/sideways (ADX 20.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1254.42
+2026-07-30 18:25:07,138 | [SNDK] ACTION: No trade.
+2026-07-30 18:30:07,356 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:30:11,060 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $203.05
+2026-07-30 18:30:11,060 | [ALNY] ACTION: No trade.
+2026-07-30 18:30:11,086 | [CCB] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.15
+2026-07-30 18:30:11,086 | [CCB] ACTION: No trade.
+2026-07-30 18:30:11,116 | [CMCO] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.87
+2026-07-30 18:30:11,116 | [CMCO] ACTION: No trade.
+2026-07-30 18:30:11,163 | [MSFT] trending (ADX 44.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $457.82
+2026-07-30 18:30:11,163 | [MSFT] ACTION: No trade.
+2026-07-30 18:30:11,209 | [MU] trending (ADX 31.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $869.08
+2026-07-30 18:30:11,209 | [MU] ACTION: No trade.
+2026-07-30 18:30:11,256 | [NVDA] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.28
+2026-07-30 18:30:11,256 | [NVDA] ACTION: No trade.
+2026-07-30 18:30:11,287 | [RTO] choppy/sideways (ADX 14.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.91
+2026-07-30 18:30:11,287 | [RTO] ACTION: No trade.
+2026-07-30 18:30:11,334 | [SNDK] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1246.09
+2026-07-30 18:30:11,334 | [SNDK] ACTION: No trade.
+2026-07-30 18:35:11,768 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:35:14,409 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $203.30
+2026-07-30 18:35:14,410 | [ALNY] ACTION: No trade.
+2026-07-30 18:35:14,435 | [CCB] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.17
+2026-07-30 18:35:14,435 | [CCB] ACTION: No trade.
+2026-07-30 18:35:14,464 | [CMCO] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.71
+2026-07-30 18:35:14,464 | [CMCO] ACTION: No trade.
+2026-07-30 18:35:14,511 | [MSFT] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $458.11
+2026-07-30 18:35:14,511 | [MSFT] ACTION: No trade.
+2026-07-30 18:35:14,557 | [MU] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $872.66
+2026-07-30 18:35:14,558 | [MU] ACTION: No trade.
+2026-07-30 18:35:14,604 | [NVDA] choppy/sideways (ADX 16.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.50
+2026-07-30 18:35:14,604 | [NVDA] ACTION: No trade.
+2026-07-30 18:35:14,635 | [RTO] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.96
+2026-07-30 18:35:14,635 | [RTO] ACTION: No trade.
+2026-07-30 18:35:14,682 | [SNDK] choppy/sideways (ADX 18.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1254.58
+2026-07-30 18:35:14,682 | [SNDK] ACTION: No trade.
+2026-07-30 18:40:15,065 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:40:17,388 | [ALNY] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $202.90
+2026-07-30 18:40:17,389 | [ALNY] ACTION: No trade.
+2026-07-30 18:40:17,415 | [CCB] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.24
+2026-07-30 18:40:17,415 | [CCB] ACTION: No trade.
+2026-07-30 18:40:17,444 | [CMCO] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.76
+2026-07-30 18:40:17,444 | [CMCO] ACTION: No trade.
+2026-07-30 18:40:17,491 | [MSFT] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $458.18
+2026-07-30 18:40:17,491 | [MSFT] ACTION: No trade.
+2026-07-30 18:40:17,562 | [MU] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $871.73
+2026-07-30 18:40:17,562 | [MU] ACTION: No trade.
+2026-07-30 18:40:17,609 | [NVDA] choppy/sideways (ADX 17.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.49
+2026-07-30 18:40:17,609 | [NVDA] ACTION: No trade.
+2026-07-30 18:40:17,641 | [RTO] choppy/sideways (ADX 12.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.93
+2026-07-30 18:40:17,641 | [RTO] ACTION: No trade.
+2026-07-30 18:40:17,688 | [SNDK] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1259.00
+2026-07-30 18:40:17,689 | [SNDK] ACTION: No trade.
+2026-07-30 18:45:18,059 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:45:20,861 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $203.58
+2026-07-30 18:45:20,861 | [ALNY] ACTION: No trade.
+2026-07-30 18:45:20,886 | [CCB] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.51
+2026-07-30 18:45:20,886 | [CCB] ACTION: No trade.
+2026-07-30 18:45:20,915 | [CMCO] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.68
+2026-07-30 18:45:20,915 | [CMCO] ACTION: No trade.
+2026-07-30 18:45:20,961 | [MSFT] trending (ADX 45.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $457.62
+2026-07-30 18:45:20,962 | [MSFT] ACTION: No trade.
+2026-07-30 18:45:21,008 | [MU] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $869.73
+2026-07-30 18:45:21,008 | [MU] ACTION: No trade.
+2026-07-30 18:45:21,055 | [NVDA] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.42
+2026-07-30 18:45:21,055 | [NVDA] ACTION: No trade.
+2026-07-30 18:45:21,087 | [RTO] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.93
+2026-07-30 18:45:21,087 | [RTO] ACTION: No trade.
+2026-07-30 18:45:21,133 | [SNDK] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1255.04
+2026-07-30 18:45:21,133 | [SNDK] ACTION: No trade.
+2026-07-30 18:50:21,356 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:50:23,627 | [ALNY] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $202.79
+2026-07-30 18:50:23,627 | [ALNY] ACTION: No trade.
+2026-07-30 18:50:23,654 | [CCB] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.96
+2026-07-30 18:50:23,654 | [CCB] ACTION: No trade.
+2026-07-30 18:50:23,684 | [CMCO] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.59
+2026-07-30 18:50:23,684 | [CMCO] ACTION: No trade.
+2026-07-30 18:50:23,731 | [MSFT] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $456.64
+2026-07-30 18:50:23,731 | [MSFT] ACTION: No trade.
+2026-07-30 18:50:23,780 | [MU] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $866.22
+2026-07-30 18:50:23,780 | [MU] ACTION: No trade.
+2026-07-30 18:50:23,828 | [NVDA] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.22
+2026-07-30 18:50:23,828 | [NVDA] ACTION: No trade.
+2026-07-30 18:50:23,861 | [RTO] choppy/sideways (ADX 11.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.93
+2026-07-30 18:50:23,861 | [RTO] ACTION: No trade.
+2026-07-30 18:50:23,910 | [SNDK] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1250.82
+2026-07-30 18:50:23,910 | [SNDK] ACTION: No trade.
+2026-07-30 18:55:24,193 | SCANNER: refreshing watchlist...
+2026-07-30 18:55:24,383 | SCANNER: excluded 22 leveraged/inverse ETF(s) from 27 candidate(s).
+2026-07-30 18:55:24,959 | SCANNER: candidate CCB -- -42.6% today, $40.56, liquid, 3 recent news item(s)
+2026-07-30 18:55:24,960 | SCANNER: candidate CMCO -- +42.4% today, $20.82, liquid, 6 recent news item(s)
+2026-07-30 18:55:24,960 | SCANNER: candidate ALNY -- -29.9% today, $200.83, liquid, 6 recent news item(s)
+2026-07-30 18:56:02,183 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 18:56:02,187 | SCANNER: new watchlist -> CCB, CMCO, ALNY, MU, SNDK, NVDA, MSFT
+2026-07-30 18:56:02,215 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 18:56:03,905 | [ALNY] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $202.31
+2026-07-30 18:56:03,905 | [ALNY] ACTION: No trade.
+2026-07-30 18:56:03,930 | [CCB] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.76
+2026-07-30 18:56:03,930 | [CCB] ACTION: No trade.
+2026-07-30 18:56:03,959 | [CMCO] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.65
+2026-07-30 18:56:03,959 | [CMCO] ACTION: No trade.
+2026-07-30 18:56:04,006 | [MSFT] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $455.94
+2026-07-30 18:56:04,006 | [MSFT] ACTION: No trade.
+2026-07-30 18:56:04,053 | [MU] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $866.72
+2026-07-30 18:56:04,053 | [MU] ACTION: No trade.
+2026-07-30 18:56:04,101 | [NVDA] choppy/sideways (ADX 17.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.32
+2026-07-30 18:56:04,101 | [NVDA] ACTION: No trade.
+2026-07-30 18:56:04,132 | [RTO] choppy/sideways (ADX 11.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.91
+2026-07-30 18:56:04,132 | [RTO] ACTION: No trade.
+2026-07-30 18:56:04,179 | [SNDK] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1249.95
+2026-07-30 18:56:04,180 | [SNDK] ACTION: No trade.
+2026-07-30 19:01:04,535 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:01:07,222 | [ALNY] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $201.71
+2026-07-30 19:01:07,222 | [ALNY] ACTION: No trade.
+2026-07-30 19:01:07,248 | [CCB] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.58
+2026-07-30 19:01:07,248 | [CCB] ACTION: No trade.
+2026-07-30 19:01:07,276 | [CMCO] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.80
+2026-07-30 19:01:07,277 | [CMCO] ACTION: No trade.
+2026-07-30 19:01:07,323 | [MSFT] trending (ADX 42.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $456.35
+2026-07-30 19:01:07,323 | [MSFT] ACTION: No trade.
+2026-07-30 19:01:07,370 | [MU] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $866.13
+2026-07-30 19:01:07,370 | [MU] ACTION: No trade.
+2026-07-30 19:01:07,417 | [NVDA] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.70
+2026-07-30 19:01:07,417 | [NVDA] ACTION: No trade.
+2026-07-30 19:01:07,448 | [RTO] choppy/sideways (ADX 10.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.93
+2026-07-30 19:01:07,448 | [RTO] ACTION: No trade.
+2026-07-30 19:01:07,495 | [SNDK] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1252.15
+2026-07-30 19:01:07,495 | [SNDK] ACTION: No trade.
+2026-07-30 19:06:07,702 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:06:09,971 | [ALNY] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $200.83
+2026-07-30 19:06:09,971 | [ALNY] ACTION: No trade.
+2026-07-30 19:06:09,997 | [CCB] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.56
+2026-07-30 19:06:09,997 | [CCB] ACTION: No trade.
+2026-07-30 19:06:10,026 | [CMCO] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.82
+2026-07-30 19:06:10,027 | [CMCO] ACTION: No trade.
+2026-07-30 19:06:10,073 | [MSFT] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $456.29
+2026-07-30 19:06:10,073 | [MSFT] ACTION: No trade.
+2026-07-30 19:06:10,120 | [MU] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $863.95
+2026-07-30 19:06:10,120 | [MU] ACTION: No trade.
+2026-07-30 19:06:10,167 | [NVDA] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.55
+2026-07-30 19:06:10,167 | [NVDA] ACTION: No trade.
+2026-07-30 19:06:10,198 | [RTO] choppy/sideways (ADX 10.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.91
+2026-07-30 19:06:10,198 | [RTO] ACTION: No trade.
+2026-07-30 19:06:10,244 | [SNDK] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1252.41
+2026-07-30 19:06:10,245 | [SNDK] ACTION: No trade.
+2026-07-30 19:11:10,464 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:11:12,954 | [ALNY] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $200.07
+2026-07-30 19:11:12,954 | [ALNY] ACTION: No trade.
+2026-07-30 19:11:12,980 | [CCB] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.41
+2026-07-30 19:11:12,980 | [CCB] ACTION: No trade.
+2026-07-30 19:11:13,008 | [CMCO] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.82
+2026-07-30 19:11:13,008 | [CMCO] ACTION: No trade.
+2026-07-30 19:11:13,055 | [MSFT] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $456.00
+2026-07-30 19:11:13,055 | [MSFT] ACTION: No trade.
+2026-07-30 19:11:13,102 | [MU] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $866.46
+2026-07-30 19:11:13,102 | [MU] ACTION: No trade.
+2026-07-30 19:11:13,149 | [NVDA] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.52
+2026-07-30 19:11:13,149 | [NVDA] ACTION: No trade.
+2026-07-30 19:11:13,180 | [RTO] choppy/sideways (ADX 9.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.93
+2026-07-30 19:11:13,180 | [RTO] ACTION: No trade.
+2026-07-30 19:11:13,227 | [SNDK] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1255.66
+2026-07-30 19:11:13,227 | [SNDK] ACTION: No trade.
+2026-07-30 19:16:13,408 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:16:17,105 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $200.21
+2026-07-30 19:16:17,105 | [ALNY] ACTION: No trade.
+2026-07-30 19:16:17,130 | [CCB] choppy/sideways (ADX 13.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.65
+2026-07-30 19:16:17,130 | [CCB] ACTION: No trade.
+2026-07-30 19:16:17,159 | [CMCO] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.80
+2026-07-30 19:16:17,159 | [CMCO] ACTION: No trade.
+2026-07-30 19:16:17,206 | [MSFT] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $455.60
+2026-07-30 19:16:17,206 | [MSFT] ACTION: No trade.
+2026-07-30 19:16:17,253 | [MU] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $869.60
+2026-07-30 19:16:17,253 | [MU] ACTION: No trade.
+2026-07-30 19:16:17,299 | [NVDA] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.66
+2026-07-30 19:16:17,300 | [NVDA] ACTION: No trade.
+2026-07-30 19:16:17,331 | [RTO] choppy/sideways (ADX 10.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.04
+2026-07-30 19:16:17,331 | [RTO] ACTION: No trade.
+2026-07-30 19:16:17,379 | [SNDK] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1264.80
+2026-07-30 19:16:17,379 | [SNDK] ACTION: No trade.
+2026-07-30 19:21:17,595 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 8 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:21:20,943 | [ALNY] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $201.94
+2026-07-30 19:21:20,943 | [ALNY] ACTION: No trade.
+2026-07-30 19:21:20,969 | [CCB] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.99
+2026-07-30 19:21:20,969 | [CCB] ACTION: No trade.
+2026-07-30 19:21:20,998 | [CMCO] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.61
+2026-07-30 19:21:20,998 | [CMCO] ACTION: No trade.
+2026-07-30 19:21:21,045 | [MSFT] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $455.24
+2026-07-30 19:21:21,045 | [MSFT] ACTION: No trade.
+2026-07-30 19:21:21,093 | [MU] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.51
+2026-07-30 19:21:21,093 | [MU] ACTION: No trade.
+2026-07-30 19:21:21,140 | [NVDA] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.42
+2026-07-30 19:21:21,140 | [NVDA] ACTION: No trade.
+2026-07-30 19:21:21,171 | [RTO] choppy/sideways (ADX 11.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.96
+2026-07-30 19:21:21,171 | [RTO] ACTION: No trade.
+2026-07-30 19:21:21,219 | [SNDK] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1272.38
+2026-07-30 19:21:21,219 | [SNDK] ACTION: No trade.
+2026-07-30 19:26:21,652 | SCANNER: refreshing watchlist...
+2026-07-30 19:26:21,881 | SCANNER: excluded 21 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-07-30 19:26:22,500 | SCANNER: candidate CCB -- -42.7% today, $40.50, liquid, 3 recent news item(s)
+2026-07-30 19:26:22,500 | SCANNER: candidate ALNY -- -30.1% today, $200.24, liquid, 7 recent news item(s)
+2026-07-30 19:26:49,860 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 19:26:49,864 | SCANNER: new watchlist -> CCB, ALNY, MU, SNDK, NVDA, MSFT
+2026-07-30 19:26:49,892 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:26:51,415 | [ALNY] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $201.35
+2026-07-30 19:26:51,415 | [ALNY] ACTION: No trade.
+2026-07-30 19:26:51,441 | [CCB] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.95
+2026-07-30 19:26:51,441 | [CCB] ACTION: No trade.
+2026-07-30 19:26:51,488 | [MSFT] trending (ADX 33.0) -> trend-following strategy | Signal: SELL | Shares held: 1.0 | Last price: $454.95
+2026-07-30 19:26:51,598 | [MSFT] ACTION: SELL - closing position (order id 5d30853f-eacb-4b44-9a3f-b26490974e98)
+2026-07-30 19:26:51,646 | [MU] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.68
+2026-07-30 19:26:51,646 | [MU] ACTION: No trade.
+2026-07-30 19:26:51,693 | [NVDA] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.59
+2026-07-30 19:26:51,694 | [NVDA] ACTION: No trade.
+2026-07-30 19:26:51,725 | [RTO] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.07
+2026-07-30 19:26:51,725 | [RTO] ACTION: No trade.
+2026-07-30 19:26:51,773 | [SNDK] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1269.42
+2026-07-30 19:26:51,773 | [SNDK] ACTION: No trade.
+2026-07-30 19:31:52,124 | [MSFT] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-30 19:31:52,207 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:31:54,323 | [ALNY] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $201.07
+2026-07-30 19:31:54,323 | [ALNY] ACTION: No trade.
+2026-07-30 19:31:54,349 | [CCB] choppy/sideways (ADX 12.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.53
+2026-07-30 19:31:54,349 | [CCB] ACTION: No trade.
+2026-07-30 19:31:54,395 | [MSFT] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $455.56
+2026-07-30 19:31:54,396 | [MSFT] ACTION: No trade.
+2026-07-30 19:31:54,442 | [MU] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $879.12
+2026-07-30 19:31:54,443 | [MU] ACTION: No trade.
+2026-07-30 19:31:54,489 | [NVDA] choppy/sideways (ADX 17.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.81
+2026-07-30 19:31:54,489 | [NVDA] ACTION: No trade.
+2026-07-30 19:31:54,520 | [RTO] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.09
+2026-07-30 19:31:54,520 | [RTO] ACTION: No trade.
+2026-07-30 19:31:54,568 | [SNDK] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1271.44
+2026-07-30 19:31:54,568 | [SNDK] ACTION: No trade.
+2026-07-30 19:36:54,743 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:36:55,949 | [ALNY] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $200.85
+2026-07-30 19:36:55,949 | [ALNY] ACTION: No trade.
+2026-07-30 19:36:55,974 | [CCB] choppy/sideways (ADX 11.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.71
+2026-07-30 19:36:55,975 | [CCB] ACTION: No trade.
+2026-07-30 19:36:56,021 | [MSFT] trending (ADX 31.1) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $456.66
+2026-07-30 19:36:56,022 | [MSFT] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-07-30 19:36:56,068 | [MU] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.98
+2026-07-30 19:36:56,068 | [MU] ACTION: No trade.
+2026-07-30 19:36:56,115 | [NVDA] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.34
+2026-07-30 19:36:56,115 | [NVDA] ACTION: No trade.
+2026-07-30 19:36:56,146 | [RTO] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.11
+2026-07-30 19:36:56,146 | [RTO] ACTION: No trade.
+2026-07-30 19:36:56,193 | [SNDK] choppy/sideways (ADX 18.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1265.57
+2026-07-30 19:36:56,193 | [SNDK] ACTION: No trade.
+2026-07-30 19:41:56,408 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:41:57,858 | [ALNY] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $200.22
+2026-07-30 19:41:57,858 | [ALNY] ACTION: No trade.
+2026-07-30 19:41:57,883 | [CCB] choppy/sideways (ADX 10.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.74
+2026-07-30 19:41:57,883 | [CCB] ACTION: No trade.
+2026-07-30 19:41:57,929 | [MSFT] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $456.76
+2026-07-30 19:41:57,929 | [MSFT] ACTION: No trade.
+2026-07-30 19:41:57,976 | [MU] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $874.60
+2026-07-30 19:41:57,976 | [MU] ACTION: No trade.
+2026-07-30 19:41:58,041 | [NVDA] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.06
+2026-07-30 19:41:58,041 | [NVDA] ACTION: No trade.
+2026-07-30 19:41:58,072 | [RTO] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.09
+2026-07-30 19:41:58,072 | [RTO] ACTION: No trade.
+2026-07-30 19:41:58,118 | [SNDK] choppy/sideways (ADX 19.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1265.99
+2026-07-30 19:41:58,119 | [SNDK] ACTION: No trade.
+2026-07-30 19:46:58,449 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, RTO, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-07-30 19:46:59,893 | [ALNY] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $198.72
+2026-07-30 19:46:59,893 | [ALNY] ACTION: No trade.
+2026-07-30 19:46:59,919 | [CCB] choppy/sideways (ADX 10.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.51
+2026-07-30 19:46:59,919 | [CCB] ACTION: No trade.
+2026-07-30 19:46:59,965 | [MSFT] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $456.56
+2026-07-30 19:46:59,965 | [MSFT] ACTION: No trade.
+2026-07-30 19:47:00,011 | [MU] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $875.66
+2026-07-30 19:47:00,011 | [MU] ACTION: No trade.
+2026-07-30 19:47:00,058 | [NVDA] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.12
+2026-07-30 19:47:00,058 | [NVDA] ACTION: No trade.
+2026-07-30 19:47:00,089 | [RTO] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 21.0 | Last price: $24.09
+2026-07-30 19:47:00,089 | [RTO] ACTION: No trade.
+2026-07-30 19:47:00,136 | [SNDK] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1269.45
+2026-07-30 19:47:00,136 | [SNDK] ACTION: No trade.
+2026-07-30 19:52:00,316 | Within 10 min of close -- flattening all positions for the day.
+2026-07-30 19:52:00,536 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-07-30 20:00:02,050 | Market is closed. Next open: 2026-07-31 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-07-30 20:00:02,088 | Market is closed for the day -- exiting early instead of idling.
+2026-07-30 20:00:02,089 | Duration window finished.
