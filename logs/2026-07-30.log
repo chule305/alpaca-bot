@@ -586,3 +586,586 @@
 2026-07-30 18:22:56,444 | [SNDK] choppy/sideways (ADX 21.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1255.05
 2026-07-30 18:22:56,444 | [SNDK] ACTION: No trade.
 2026-07-30 18:24:04,565 | Duration window finished.
+2026-07-30 13:23:34,326 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-30 13:23:34,326 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-30 13:23:34,326 | Bar size: 5min | Check interval while market open: 5min
+2026-07-30 13:23:34,326 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-30 13:23:34,327 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-30 13:23:34,327 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-30 13:23:34,327 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-30 13:23:34,327 | Position sizing: flat $500 per trade
+2026-07-30 13:23:34,327 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-30 13:23:34,327 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-30 13:23:34,327 | Loaded saved watchlist from previous run: HURN, PSN, BAND, MPLT, MANH, LAD
+2026-07-30 13:23:34,327 | Restored daily risk state from previous run: day 2026-07-29, breaker tripped: False
+2026-07-30 13:23:34,327 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-30 13:23:34,413 | Market is closed. Next open: 2026-07-30 15:30:00 CEST (your local time) -- in 0.1 hours.
+2026-07-30 13:30:05,141 | Daily loss circuit breaker: tracking from starting equity $99,818.78 (limit -3%).
+2026-07-30 13:30:05,141 | SCANNER: refreshing watchlist...
+2026-07-30 13:30:05,745 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 23 candidate(s).
+2026-07-30 13:30:06,485 | SCANNER: candidate HURN -- +40.4% today, $170.37, liquid, 4 recent news item(s)
+2026-07-30 13:30:06,485 | SCANNER: candidate PSN -- -35.0% today, $40.32, liquid, 5 recent news item(s)
+2026-07-30 13:30:06,485 | SCANNER: candidate BAND -- -29.3% today, $36.95, liquid, 1 recent news item(s)
+2026-07-30 13:30:06,485 | SCANNER: candidate MPLT -- +22.0% today, $15.02, liquid, 1 recent news item(s)
+2026-07-30 13:30:06,485 | SCANNER: candidate MANH -- +21.3% today, $204.02, liquid, 6 recent news item(s)
+2026-07-30 13:30:06,485 | SCANNER: candidate LAD -- +19.3% today, $427.48, liquid, 5 recent news item(s)
+2026-07-30 13:30:06,541 | S&P 500: refreshed constituent list (503 symbols).
+2026-07-30 13:31:46,097 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, AAPL
+2026-07-30 13:31:46,099 | SCANNER: new watchlist -> HURN, PSN, BAND, MPLT, MANH, LAD, MU, NVDA, SNDK, AAPL
+2026-07-30 13:31:46,213 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:31:48,115 | [AAPL] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $336.34
+2026-07-30 13:31:48,116 | [AAPL] ACTION: No trade.
+2026-07-30 13:31:48,144 | [BAND] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.05
+2026-07-30 13:31:48,144 | [BAND] ACTION: No trade.
+2026-07-30 13:31:48,169 | [HURN] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $171.50
+2026-07-30 13:31:48,169 | [HURN] ACTION: No trade.
+2026-07-30 13:31:48,196 | [LAD] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $420.00
+2026-07-30 13:31:48,196 | [LAD] ACTION: No trade.
+2026-07-30 13:31:48,223 | [MANH] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $200.01
+2026-07-30 13:31:48,223 | [MANH] ACTION: No trade.
+2026-07-30 13:31:48,253 | [MPLT] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.30
+2026-07-30 13:31:48,253 | [MPLT] ACTION: No trade.
+2026-07-30 13:31:48,296 | [MU] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $782.15
+2026-07-30 13:31:48,296 | [MU] ACTION: No trade.
+2026-07-30 13:31:48,339 | [NVDA] trending (ADX 31.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.36
+2026-07-30 13:31:48,339 | [NVDA] ACTION: No trade.
+2026-07-30 13:31:48,367 | [PSN] choppy/sideways (ADX 13.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.40
+2026-07-30 13:31:48,367 | [PSN] ACTION: No trade.
+2026-07-30 13:31:48,410 | [SNDK] trending (ADX 48.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1098.26
+2026-07-30 13:31:48,410 | [SNDK] ACTION: No trade.
+2026-07-30 13:36:48,626 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:36:50,170 | [AAPL] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $336.28
+2026-07-30 13:36:50,170 | [AAPL] ACTION: No trade.
+2026-07-30 13:36:50,198 | [BAND] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.31
+2026-07-30 13:36:50,198 | [BAND] ACTION: No trade.
+2026-07-30 13:36:50,222 | [HURN] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $171.50
+2026-07-30 13:36:50,222 | [HURN] ACTION: No trade.
+2026-07-30 13:36:50,248 | [LAD] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $420.00
+2026-07-30 13:36:50,248 | [LAD] ACTION: No trade.
+2026-07-30 13:36:50,275 | [MANH] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $198.01
+2026-07-30 13:36:50,275 | [MANH] ACTION: No trade.
+2026-07-30 13:36:50,304 | [MPLT] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.30
+2026-07-30 13:36:50,304 | [MPLT] ACTION: No trade.
+2026-07-30 13:36:50,347 | [MU] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $787.00
+2026-07-30 13:36:50,347 | [MU] ACTION: No trade.
+2026-07-30 13:36:50,389 | [NVDA] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.74
+2026-07-30 13:36:50,389 | [NVDA] ACTION: No trade.
+2026-07-30 13:36:50,416 | [PSN] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.55
+2026-07-30 13:36:50,417 | [PSN] ACTION: No trade.
+2026-07-30 13:36:50,459 | [SNDK] trending (ADX 48.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1107.08
+2026-07-30 13:36:50,459 | [SNDK] ACTION: No trade.
+2026-07-30 13:41:50,617 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:41:51,901 | [AAPL] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $333.10
+2026-07-30 13:41:51,901 | [AAPL] ACTION: No trade.
+2026-07-30 13:41:51,928 | [BAND] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.20
+2026-07-30 13:41:51,928 | [BAND] ACTION: No trade.
+2026-07-30 13:41:51,952 | [HURN] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $167.00
+2026-07-30 13:41:51,952 | [HURN] ACTION: No trade.
+2026-07-30 13:41:51,978 | [LAD] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $423.20
+2026-07-30 13:41:51,979 | [LAD] ACTION: No trade.
+2026-07-30 13:41:52,005 | [MANH] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.01
+2026-07-30 13:41:52,006 | [MANH] ACTION: No trade.
+2026-07-30 13:41:52,035 | [MPLT] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.23
+2026-07-30 13:41:52,035 | [MPLT] ACTION: No trade.
+2026-07-30 13:41:52,077 | [MU] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $792.74
+2026-07-30 13:41:52,078 | [MU] ACTION: No trade.
+2026-07-30 13:41:52,120 | [NVDA] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.31
+2026-07-30 13:41:52,120 | [NVDA] ACTION: No trade.
+2026-07-30 13:41:52,148 | [PSN] choppy/sideways (ADX 12.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.32
+2026-07-30 13:41:52,148 | [PSN] ACTION: No trade.
+2026-07-30 13:41:52,190 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1136.00
+2026-07-30 13:41:52,210 | [SNDK] Computed position size is 0 shares at $1182.88 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:46:52,356 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:46:54,097 | [AAPL] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $332.74
+2026-07-30 13:46:54,097 | [AAPL] ACTION: No trade.
+2026-07-30 13:46:54,124 | [BAND] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.41
+2026-07-30 13:46:54,124 | [BAND] ACTION: No trade.
+2026-07-30 13:46:54,148 | [HURN] trending (ADX 28.4) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $166.88
+2026-07-30 13:46:54,148 | [HURN] ACTION: No trade.
+2026-07-30 13:46:54,174 | [LAD] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $419.00
+2026-07-30 13:46:54,174 | [LAD] ACTION: No trade.
+2026-07-30 13:46:54,200 | [MANH] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $192.97
+2026-07-30 13:46:54,200 | [MANH] ACTION: No trade.
+2026-07-30 13:46:54,229 | [MPLT] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.35
+2026-07-30 13:46:54,230 | [MPLT] ACTION: No trade.
+2026-07-30 13:46:54,272 | [MU] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $796.13
+2026-07-30 13:46:54,290 | [MU] Computed position size is 0 shares at $816.99 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:46:54,333 | [NVDA] trending (ADX 30.3) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $192.13
+2026-07-30 13:46:54,333 | [NVDA] ACTION: No trade.
+2026-07-30 13:46:54,360 | [PSN] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.30
+2026-07-30 13:46:54,360 | [PSN] ACTION: No trade.
+2026-07-30 13:46:54,402 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1167.88
+2026-07-30 13:46:54,430 | [SNDK] Computed position size is 0 shares at $1202.90 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:51:54,582 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:51:55,608 | [AAPL] trending (ADX 36.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $331.30
+2026-07-30 13:51:55,608 | [AAPL] ACTION: No trade.
+2026-07-30 13:51:55,635 | [BAND] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.51
+2026-07-30 13:51:55,635 | [BAND] ACTION: No trade.
+2026-07-30 13:51:55,659 | [HURN] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $167.88
+2026-07-30 13:51:55,659 | [HURN] ACTION: No trade.
+2026-07-30 13:51:55,684 | [LAD] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $406.84
+2026-07-30 13:51:55,684 | [LAD] ACTION: No trade.
+2026-07-30 13:51:55,711 | [MANH] trending (ADX 38.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.52
+2026-07-30 13:51:55,711 | [MANH] ACTION: No trade.
+2026-07-30 13:51:55,739 | [MPLT] choppy/sideways (ADX 13.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.57
+2026-07-30 13:51:55,740 | [MPLT] ACTION: No trade.
+2026-07-30 13:51:55,781 | [MU] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $805.70
+2026-07-30 13:51:55,802 | [MU] Computed position size is 0 shares at $831.26 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:51:55,844 | [NVDA] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $192.51
+2026-07-30 13:51:55,844 | [NVDA] ACTION: No trade.
+2026-07-30 13:51:55,871 | [PSN] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.21
+2026-07-30 13:51:55,871 | [PSN] ACTION: No trade.
+2026-07-30 13:51:55,913 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1169.02
+2026-07-30 13:51:55,933 | [SNDK] Computed position size is 0 shares at $1215.05 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:56:56,083 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 10 symbols: AAPL, BAND, HURN, LAD, MANH, MPLT, MU, NVDA, PSN, SNDK
+2026-07-30 13:56:57,103 | [AAPL] trending (ADX 38.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $332.18
+2026-07-30 13:56:57,103 | [AAPL] ACTION: No trade.
+2026-07-30 13:56:57,130 | [BAND] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.47
+2026-07-30 13:56:57,130 | [BAND] ACTION: No trade.
+2026-07-30 13:56:57,154 | [HURN] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $169.54
+2026-07-30 13:56:57,154 | [HURN] ACTION: No trade.
+2026-07-30 13:56:57,180 | [LAD] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $397.04
+2026-07-30 13:56:57,180 | [LAD] ACTION: No trade.
+2026-07-30 13:56:57,206 | [MANH] trending (ADX 41.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.24
+2026-07-30 13:56:57,206 | [MANH] ACTION: No trade.
+2026-07-30 13:56:57,235 | [MPLT] choppy/sideways (ADX 13.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.43
+2026-07-30 13:56:57,235 | [MPLT] ACTION: No trade.
+2026-07-30 13:56:57,277 | [MU] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $813.92
+2026-07-30 13:56:57,297 | [MU] Computed position size is 0 shares at $838.47 (flat $ sizing) -- skipping this trade.
+2026-07-30 13:56:57,339 | [NVDA] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $192.44
+2026-07-30 13:56:57,339 | [NVDA] ACTION: No trade.
+2026-07-30 13:56:57,366 | [PSN] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.21
+2026-07-30 13:56:57,366 | [PSN] ACTION: No trade.
+2026-07-30 13:56:57,408 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1188.24
+2026-07-30 13:56:57,427 | [SNDK] Computed position size is 0 shares at $1223.81 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:01:57,664 | SCANNER: refreshing watchlist...
+2026-07-30 14:01:58,494 | SCANNER: excluded 30 leveraged/inverse ETF(s) from 35 candidate(s).
+2026-07-30 14:01:59,335 | SCANNER: candidate CCB -- -40.3% today, $42.20, liquid, 1 recent news item(s)
+2026-07-30 14:01:59,335 | SCANNER: candidate ALNY -- -26.7% today, $210.04, liquid, 2 recent news item(s)
+2026-07-30 14:01:59,335 | SCANNER: candidate TREE -- -23.1% today, $30.32, liquid, 3 recent news item(s)
+2026-07-30 14:02:30,901 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 14:02:30,905 | SCANNER: new watchlist -> CCB, ALNY, TREE, MU, SNDK, NVDA, MSFT
+2026-07-30 14:02:30,954 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:02:33,277 | [ALNY] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $214.82
+2026-07-30 14:02:33,277 | [ALNY] ACTION: No trade.
+2026-07-30 14:02:33,299 | [CCB] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.00
+2026-07-30 14:02:33,299 | [CCB] ACTION: No trade.
+2026-07-30 14:02:33,341 | [MSFT] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $451.46
+2026-07-30 14:02:33,364 | [MSFT] Buying 1 share(s) (~$450, flat $ sizing) | stop-loss $427.15 | take-profit $494.59 (fixed %)
+2026-07-30 14:02:33,973 | [MSFT] ACTION: BUY (order id a78d9e00-8618-42ae-a572-912df88a952b, strategy: breakout)
+2026-07-30 14:02:34,016 | [MU] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $825.60
+2026-07-30 14:02:34,035 | [MU] Computed position size is 0 shares at $842.32 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:02:34,077 | [NVDA] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.37
+2026-07-30 14:02:34,077 | [NVDA] ACTION: No trade.
+2026-07-30 14:02:34,119 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1209.86
+2026-07-30 14:02:34,143 | [SNDK] Computed position size is 0 shares at $1231.52 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:02:34,167 | [TREE] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.77
+2026-07-30 14:02:34,167 | [TREE] ACTION: No trade.
+2026-07-30 14:07:34,319 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:07:35,939 | [ALNY] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $213.80
+2026-07-30 14:07:35,939 | [ALNY] ACTION: No trade.
+2026-07-30 14:07:35,962 | [CCB] trending (ADX 55.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.05
+2026-07-30 14:07:35,962 | [CCB] ACTION: No trade.
+2026-07-30 14:07:36,004 | [MSFT] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $447.17
+2026-07-30 14:07:36,004 | [MSFT] ACTION: No trade.
+2026-07-30 14:07:36,045 | [MU] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $836.35
+2026-07-30 14:07:36,065 | [MU] Computed position size is 0 shares at $827.13 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:07:36,108 | [NVDA] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.15
+2026-07-30 14:07:36,108 | [NVDA] ACTION: No trade.
+2026-07-30 14:07:36,150 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1222.58
+2026-07-30 14:07:36,169 | [SNDK] Computed position size is 0 shares at $1203.27 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:07:36,194 | [TREE] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.65
+2026-07-30 14:07:36,194 | [TREE] ACTION: No trade.
+2026-07-30 14:12:36,350 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:12:37,337 | [ALNY] trending (ADX 55.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.48
+2026-07-30 14:12:37,337 | [ALNY] ACTION: No trade.
+2026-07-30 14:12:37,359 | [CCB] trending (ADX 58.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.87
+2026-07-30 14:12:37,359 | [CCB] ACTION: No trade.
+2026-07-30 14:12:37,401 | [MSFT] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $450.06
+2026-07-30 14:12:37,401 | [MSFT] ACTION: No trade.
+2026-07-30 14:12:37,444 | [MU] trending (ADX 55.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $835.22
+2026-07-30 14:12:37,444 | [MU] ACTION: No trade.
+2026-07-30 14:12:37,486 | [NVDA] trending (ADX 28.8) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $195.53
+2026-07-30 14:12:37,506 | [NVDA] Buying 2 share(s) (~$391, flat $ sizing) | stop-loss $185.68 | take-profit $215.00 (fixed %)
+2026-07-30 14:12:38,124 | [NVDA] ACTION: BUY (order id f85d2cdd-a092-4448-9620-37242920854b, strategy: trend_following)
+2026-07-30 14:12:38,168 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1234.88
+2026-07-30 14:12:38,189 | [SNDK] Computed position size is 0 shares at $1219.02 (flat $ sizing) -- skipping this trade.
+2026-07-30 14:12:38,214 | [TREE] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.39
+2026-07-30 14:12:38,214 | [TREE] ACTION: No trade.
+2026-07-30 14:17:38,378 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:17:40,065 | [ALNY] trending (ADX 55.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.81
+2026-07-30 14:17:40,065 | [ALNY] ACTION: No trade.
+2026-07-30 14:17:40,088 | [CCB] trending (ADX 61.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.96
+2026-07-30 14:17:40,088 | [CCB] ACTION: No trade.
+2026-07-30 14:17:40,130 | [MSFT] trending (ADX 44.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $449.18
+2026-07-30 14:17:40,130 | [MSFT] ACTION: No trade.
+2026-07-30 14:17:40,173 | [MU] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $835.10
+2026-07-30 14:17:40,173 | [MU] ACTION: No trade.
+2026-07-30 14:17:40,216 | [NVDA] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 2.0 | Last price: $196.12
+2026-07-30 14:17:40,216 | [NVDA] ACTION: No trade.
+2026-07-30 14:17:40,259 | [SNDK] trending (ADX 63.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1220.35
+2026-07-30 14:17:40,259 | [SNDK] ACTION: No trade.
+2026-07-30 14:17:40,284 | [TREE] trending (ADX 41.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.50
+2026-07-30 14:17:40,284 | [TREE] ACTION: No trade.
+2026-07-30 14:22:40,436 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:22:41,738 | [ALNY] trending (ADX 56.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $209.99
+2026-07-30 14:22:41,738 | [ALNY] ACTION: No trade.
+2026-07-30 14:22:41,761 | [CCB] trending (ADX 63.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.13
+2026-07-30 14:22:41,761 | [CCB] ACTION: No trade.
+2026-07-30 14:22:41,803 | [MSFT] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $446.79
+2026-07-30 14:22:41,803 | [MSFT] ACTION: No trade.
+2026-07-30 14:22:41,865 | [MU] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $824.30
+2026-07-30 14:22:41,865 | [MU] ACTION: No trade.
+2026-07-30 14:22:41,907 | [NVDA] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.22
+2026-07-30 14:22:41,907 | [NVDA] ACTION: No trade.
+2026-07-30 14:22:41,949 | [SNDK] trending (ADX 62.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1198.58
+2026-07-30 14:22:41,949 | [SNDK] ACTION: No trade.
+2026-07-30 14:22:41,973 | [TREE] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.59
+2026-07-30 14:22:41,974 | [TREE] ACTION: No trade.
+2026-07-30 14:27:42,382 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 7 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK, TREE
+2026-07-30 14:27:43,681 | [ALNY] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.16
+2026-07-30 14:27:43,681 | [ALNY] ACTION: No trade.
+2026-07-30 14:27:43,703 | [CCB] trending (ADX 64.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.80
+2026-07-30 14:27:43,703 | [CCB] ACTION: No trade.
+2026-07-30 14:27:43,745 | [MSFT] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $448.31
+2026-07-30 14:27:43,745 | [MSFT] ACTION: No trade.
+2026-07-30 14:27:43,787 | [MU] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $835.33
+2026-07-30 14:27:43,787 | [MU] ACTION: No trade.
+2026-07-30 14:27:43,829 | [NVDA] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.78
+2026-07-30 14:27:43,829 | [NVDA] ACTION: No trade.
+2026-07-30 14:27:43,870 | [SNDK] trending (ADX 62.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1218.39
+2026-07-30 14:27:43,870 | [SNDK] ACTION: No trade.
+2026-07-30 14:27:43,896 | [TREE] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.68
+2026-07-30 14:27:43,896 | [TREE] ACTION: No trade.
+2026-07-30 14:32:44,021 | SCANNER: refreshing watchlist...
+2026-07-30 14:32:44,250 | SCANNER: excluded 28 leveraged/inverse ETF(s) from 34 candidate(s).
+2026-07-30 14:32:44,886 | SCANNER: candidate CCB -- -41.9% today, $41.04, liquid, 2 recent news item(s)
+2026-07-30 14:32:44,887 | SCANNER: candidate CMCO -- +38.4% today, $20.23, liquid, 4 recent news item(s)
+2026-07-30 14:32:44,887 | SCANNER: candidate ALNY -- -26.9% today, $209.37, liquid, 2 recent news item(s)
+2026-07-30 14:32:44,887 | SCANNER: candidate TREE -- -22.6% today, $30.53, liquid, 3 recent news item(s)
+2026-07-30 14:32:44,887 | SCANNER: candidate RTO -- -19.2% today, $23.78, liquid, 4 recent news item(s)
+2026-07-30 14:33:14,593 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 14:33:14,597 | SCANNER: new watchlist -> CCB, CMCO, ALNY, TREE, RTO, MU, SNDK, NVDA, MSFT
+2026-07-30 14:33:14,643 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:33:16,618 | [ALNY] trending (ADX 58.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $209.14
+2026-07-30 14:33:16,618 | [ALNY] ACTION: No trade.
+2026-07-30 14:33:16,640 | [CCB] trending (ADX 65.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.61
+2026-07-30 14:33:16,640 | [CCB] ACTION: No trade.
+2026-07-30 14:33:16,666 | [CMCO] trending (ADX 62.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.17
+2026-07-30 14:33:16,666 | [CMCO] ACTION: No trade.
+2026-07-30 14:33:16,708 | [MSFT] trending (ADX 45.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $446.31
+2026-07-30 14:33:16,708 | [MSFT] ACTION: No trade.
+2026-07-30 14:33:16,750 | [MU] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $837.62
+2026-07-30 14:33:16,750 | [MU] ACTION: No trade.
+2026-07-30 14:33:16,792 | [NVDA] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.64
+2026-07-30 14:33:16,792 | [NVDA] ACTION: No trade.
+2026-07-30 14:33:16,820 | [RTO] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.83
+2026-07-30 14:33:16,820 | [RTO] ACTION: No trade.
+2026-07-30 14:33:16,862 | [SNDK] trending (ADX 62.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1220.38
+2026-07-30 14:33:16,862 | [SNDK] ACTION: No trade.
+2026-07-30 14:33:16,887 | [TREE] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.49
+2026-07-30 14:33:16,887 | [TREE] ACTION: No trade.
+2026-07-30 14:38:17,222 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:38:18,662 | [ALNY] trending (ADX 58.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $209.26
+2026-07-30 14:38:18,662 | [ALNY] ACTION: No trade.
+2026-07-30 14:38:18,685 | [CCB] trending (ADX 66.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.97
+2026-07-30 14:38:18,685 | [CCB] ACTION: No trade.
+2026-07-30 14:38:18,711 | [CMCO] trending (ADX 62.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.44
+2026-07-30 14:38:18,711 | [CMCO] ACTION: No trade.
+2026-07-30 14:38:18,752 | [MSFT] trending (ADX 46.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $447.39
+2026-07-30 14:38:18,753 | [MSFT] ACTION: No trade.
+2026-07-30 14:38:18,794 | [MU] trending (ADX 58.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $854.10
+2026-07-30 14:38:18,795 | [MU] ACTION: No trade.
+2026-07-30 14:38:18,837 | [NVDA] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.56
+2026-07-30 14:38:18,837 | [NVDA] ACTION: No trade.
+2026-07-30 14:38:18,865 | [RTO] trending (ADX 29.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.70
+2026-07-30 14:38:18,865 | [RTO] ACTION: No trade.
+2026-07-30 14:38:18,907 | [SNDK] trending (ADX 62.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1237.86
+2026-07-30 14:38:18,907 | [SNDK] ACTION: No trade.
+2026-07-30 14:38:18,932 | [TREE] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.46
+2026-07-30 14:38:18,932 | [TREE] ACTION: No trade.
+2026-07-30 14:43:19,086 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:43:20,356 | [ALNY] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $207.36
+2026-07-30 14:43:20,356 | [ALNY] ACTION: No trade.
+2026-07-30 14:43:20,378 | [CCB] trending (ADX 67.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.80
+2026-07-30 14:43:20,378 | [CCB] ACTION: No trade.
+2026-07-30 14:43:20,403 | [CMCO] trending (ADX 62.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.49
+2026-07-30 14:43:20,403 | [CMCO] ACTION: No trade.
+2026-07-30 14:43:20,445 | [MSFT] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $449.89
+2026-07-30 14:43:20,445 | [MSFT] ACTION: No trade.
+2026-07-30 14:43:20,487 | [MU] trending (ADX 59.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $862.92
+2026-07-30 14:43:20,487 | [MU] ACTION: No trade.
+2026-07-30 14:43:20,528 | [NVDA] trending (ADX 29.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.81
+2026-07-30 14:43:20,528 | [NVDA] ACTION: No trade.
+2026-07-30 14:43:20,556 | [RTO] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.77
+2026-07-30 14:43:20,557 | [RTO] ACTION: No trade.
+2026-07-30 14:43:20,598 | [SNDK] trending (ADX 62.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1256.76
+2026-07-30 14:43:20,598 | [SNDK] ACTION: No trade.
+2026-07-30 14:43:20,623 | [TREE] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.52
+2026-07-30 14:43:20,623 | [TREE] ACTION: No trade.
+2026-07-30 14:48:20,770 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:48:22,034 | [ALNY] trending (ADX 59.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.71
+2026-07-30 14:48:22,034 | [ALNY] ACTION: No trade.
+2026-07-30 14:48:22,056 | [CCB] trending (ADX 68.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.53
+2026-07-30 14:48:22,057 | [CCB] ACTION: No trade.
+2026-07-30 14:48:22,083 | [CMCO] trending (ADX 62.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.46
+2026-07-30 14:48:22,083 | [CMCO] ACTION: No trade.
+2026-07-30 14:48:22,125 | [MSFT] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $450.38
+2026-07-30 14:48:22,125 | [MSFT] ACTION: No trade.
+2026-07-30 14:48:22,167 | [MU] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $861.36
+2026-07-30 14:48:22,167 | [MU] ACTION: No trade.
+2026-07-30 14:48:22,209 | [NVDA] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $197.24
+2026-07-30 14:48:22,209 | [NVDA] ACTION: No trade.
+2026-07-30 14:48:22,237 | [RTO] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.82
+2026-07-30 14:48:22,237 | [RTO] ACTION: No trade.
+2026-07-30 14:48:22,279 | [SNDK] trending (ADX 63.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1262.35
+2026-07-30 14:48:22,280 | [SNDK] ACTION: No trade.
+2026-07-30 14:48:22,304 | [TREE] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.71
+2026-07-30 14:48:22,304 | [TREE] ACTION: No trade.
+2026-07-30 14:53:22,452 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:53:23,636 | [ALNY] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $209.25
+2026-07-30 14:53:23,637 | [ALNY] ACTION: No trade.
+2026-07-30 14:53:23,659 | [CCB] trending (ADX 69.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.52
+2026-07-30 14:53:23,659 | [CCB] ACTION: No trade.
+2026-07-30 14:53:23,684 | [CMCO] trending (ADX 61.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.15
+2026-07-30 14:53:23,684 | [CMCO] ACTION: No trade.
+2026-07-30 14:53:23,726 | [MSFT] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $449.93
+2026-07-30 14:53:23,726 | [MSFT] ACTION: No trade.
+2026-07-30 14:53:23,768 | [MU] trending (ADX 60.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $859.68
+2026-07-30 14:53:23,768 | [MU] ACTION: No trade.
+2026-07-30 14:53:23,831 | [NVDA] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $196.28
+2026-07-30 14:53:23,831 | [NVDA] ACTION: No trade.
+2026-07-30 14:53:23,859 | [RTO] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.62
+2026-07-30 14:53:23,859 | [RTO] ACTION: No trade.
+2026-07-30 14:53:23,902 | [SNDK] trending (ADX 63.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1251.44
+2026-07-30 14:53:23,902 | [SNDK] ACTION: No trade.
+2026-07-30 14:53:23,927 | [TREE] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.98
+2026-07-30 14:53:23,927 | [TREE] ACTION: No trade.
+2026-07-30 14:58:24,088 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 14:58:24,824 | [ALNY] trending (ADX 59.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.12
+2026-07-30 14:58:24,824 | [ALNY] ACTION: No trade.
+2026-07-30 14:58:24,846 | [CCB] trending (ADX 70.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.45
+2026-07-30 14:58:24,846 | [CCB] ACTION: No trade.
+2026-07-30 14:58:24,872 | [CMCO] trending (ADX 60.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.09
+2026-07-30 14:58:24,872 | [CMCO] ACTION: No trade.
+2026-07-30 14:58:24,913 | [MSFT] trending (ADX 49.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $451.43
+2026-07-30 14:58:24,914 | [MSFT] ACTION: No trade.
+2026-07-30 14:58:24,955 | [MU] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $852.05
+2026-07-30 14:58:24,956 | [MU] ACTION: No trade.
+2026-07-30 14:58:24,997 | [NVDA] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.98
+2026-07-30 14:58:24,997 | [NVDA] ACTION: No trade.
+2026-07-30 14:58:25,025 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $23.67
+2026-07-30 14:58:25,047 | [RTO] Buying 21 share(s) (~$492, flat $ sizing) | stop-loss $22.24 | take-profit $25.76 (fixed %)
+2026-07-30 14:58:26,666 | [RTO] ACTION: BUY (order id 98509bc3-7a9a-4be6-823d-278c692bde49, strategy: vwap_reversion)
+2026-07-30 14:58:26,709 | [SNDK] trending (ADX 63.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1241.93
+2026-07-30 14:58:26,709 | [SNDK] ACTION: No trade.
+2026-07-30 14:58:26,733 | [TREE] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.69
+2026-07-30 14:58:26,733 | [TREE] ACTION: No trade.
+2026-07-30 15:03:26,863 | SCANNER: refreshing watchlist...
+2026-07-30 15:03:27,010 | SCANNER: excluded 27 leveraged/inverse ETF(s) from 34 candidate(s).
+2026-07-30 15:03:27,508 | SCANNER: candidate CCB -- -44.6% today, $39.13, liquid, 2 recent news item(s)
+2026-07-30 15:03:27,508 | SCANNER: candidate CMCO -- +39.2% today, $20.36, liquid, 4 recent news item(s)
+2026-07-30 15:03:27,509 | SCANNER: candidate ALNY -- -26.7% today, $210.12, liquid, 2 recent news item(s)
+2026-07-30 15:03:27,509 | SCANNER: candidate TREE -- -22.7% today, $30.51, liquid, 3 recent news item(s)
+2026-07-30 15:03:27,509 | SCANNER: candidate RTO -- -20.5% today, $23.39, liquid, 4 recent news item(s)
+2026-07-30 15:03:53,167 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 15:03:53,171 | SCANNER: new watchlist -> CCB, CMCO, ALNY, TREE, RTO, MU, SNDK, NVDA, MSFT
+2026-07-30 15:03:53,251 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:03:53,958 | [ALNY] trending (ADX 59.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.48
+2026-07-30 15:03:53,958 | [ALNY] ACTION: No trade.
+2026-07-30 15:03:53,980 | [CCB] trending (ADX 71.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.51
+2026-07-30 15:03:53,980 | [CCB] ACTION: No trade.
+2026-07-30 15:03:54,005 | [CMCO] trending (ADX 59.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.36
+2026-07-30 15:03:54,005 | [CMCO] ACTION: No trade.
+2026-07-30 15:03:54,047 | [MSFT] trending (ADX 50.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $450.67
+2026-07-30 15:03:54,047 | [MSFT] ACTION: No trade.
+2026-07-30 15:03:54,089 | [MU] trending (ADX 59.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $854.59
+2026-07-30 15:03:54,089 | [MU] ACTION: No trade.
+2026-07-30 15:03:54,130 | [NVDA] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.60
+2026-07-30 15:03:54,131 | [NVDA] ACTION: No trade.
+2026-07-30 15:03:54,158 | [RTO] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.39
+2026-07-30 15:03:54,158 | [RTO] ACTION: No trade.
+2026-07-30 15:03:54,200 | [SNDK] trending (ADX 62.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1254.61
+2026-07-30 15:03:54,200 | [SNDK] ACTION: No trade.
+2026-07-30 15:03:54,224 | [TREE] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.85
+2026-07-30 15:03:54,224 | [TREE] ACTION: No trade.
+2026-07-30 15:08:54,368 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:08:55,219 | [ALNY] trending (ADX 58.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.07
+2026-07-30 15:08:55,220 | [ALNY] ACTION: No trade.
+2026-07-30 15:08:55,242 | [CCB] trending (ADX 72.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.48
+2026-07-30 15:08:55,242 | [CCB] ACTION: No trade.
+2026-07-30 15:08:55,267 | [CMCO] trending (ADX 59.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.38
+2026-07-30 15:08:55,267 | [CMCO] ACTION: No trade.
+2026-07-30 15:08:55,309 | [MSFT] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $449.33
+2026-07-30 15:08:55,309 | [MSFT] ACTION: No trade.
+2026-07-30 15:08:55,351 | [MU] trending (ADX 57.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $843.00
+2026-07-30 15:08:55,351 | [MU] ACTION: No trade.
+2026-07-30 15:08:55,393 | [NVDA] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.88
+2026-07-30 15:08:55,393 | [NVDA] ACTION: No trade.
+2026-07-30 15:08:55,421 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 21.0 | Last price: $23.54
+2026-07-30 15:08:55,421 | [RTO] ACTION: No trade.
+2026-07-30 15:08:55,463 | [SNDK] trending (ADX 61.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1231.25
+2026-07-30 15:08:55,464 | [SNDK] ACTION: No trade.
+2026-07-30 15:08:55,489 | [TREE] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.75
+2026-07-30 15:08:55,489 | [TREE] ACTION: No trade.
+2026-07-30 15:13:55,640 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:13:56,890 | [ALNY] trending (ADX 58.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.65
+2026-07-30 15:13:56,890 | [ALNY] ACTION: No trade.
+2026-07-30 15:13:56,913 | [CCB] trending (ADX 73.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.34
+2026-07-30 15:13:56,913 | [CCB] ACTION: No trade.
+2026-07-30 15:13:56,938 | [CMCO] trending (ADX 58.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.34
+2026-07-30 15:13:56,938 | [CMCO] ACTION: No trade.
+2026-07-30 15:13:56,979 | [MSFT] trending (ADX 48.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $447.21
+2026-07-30 15:13:56,979 | [MSFT] ACTION: No trade.
+2026-07-30 15:13:57,021 | [MU] trending (ADX 55.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $840.58
+2026-07-30 15:13:57,021 | [MU] ACTION: No trade.
+2026-07-30 15:13:57,063 | [NVDA] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.88
+2026-07-30 15:13:57,063 | [NVDA] ACTION: No trade.
+2026-07-30 15:13:57,091 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 21.0 | Last price: $23.54
+2026-07-30 15:13:57,091 | [RTO] ACTION: No trade.
+2026-07-30 15:13:57,133 | [SNDK] trending (ADX 59.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1236.50
+2026-07-30 15:13:57,133 | [SNDK] ACTION: No trade.
+2026-07-30 15:13:57,158 | [TREE] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.76
+2026-07-30 15:13:57,158 | [TREE] ACTION: No trade.
+2026-07-30 15:18:57,305 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:18:58,268 | [ALNY] trending (ADX 58.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $209.58
+2026-07-30 15:18:58,268 | [ALNY] ACTION: No trade.
+2026-07-30 15:18:58,310 | [CCB] trending (ADX 74.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.24
+2026-07-30 15:18:58,310 | [CCB] ACTION: No trade.
+2026-07-30 15:18:58,336 | [CMCO] trending (ADX 58.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.37
+2026-07-30 15:18:58,336 | [CMCO] ACTION: No trade.
+2026-07-30 15:18:58,378 | [MSFT] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $445.90
+2026-07-30 15:18:58,378 | [MSFT] ACTION: No trade.
+2026-07-30 15:18:58,420 | [MU] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $850.49
+2026-07-30 15:18:58,420 | [MU] ACTION: No trade.
+2026-07-30 15:18:58,462 | [NVDA] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.12
+2026-07-30 15:18:58,462 | [NVDA] ACTION: No trade.
+2026-07-30 15:18:58,490 | [RTO] trending (ADX 39.0) -> trend-following strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.39
+2026-07-30 15:18:58,490 | [RTO] ACTION: No trade.
+2026-07-30 15:18:58,532 | [SNDK] trending (ADX 58.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1245.18
+2026-07-30 15:18:58,532 | [SNDK] ACTION: No trade.
+2026-07-30 15:18:58,556 | [TREE] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.55
+2026-07-30 15:18:58,557 | [TREE] ACTION: No trade.
+2026-07-30 15:23:58,700 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:23:59,428 | [ALNY] trending (ADX 58.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $207.88
+2026-07-30 15:23:59,428 | [ALNY] ACTION: No trade.
+2026-07-30 15:23:59,451 | [CCB] trending (ADX 74.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.10
+2026-07-30 15:23:59,451 | [CCB] ACTION: No trade.
+2026-07-30 15:23:59,477 | [CMCO] trending (ADX 57.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.45
+2026-07-30 15:23:59,477 | [CMCO] ACTION: No trade.
+2026-07-30 15:23:59,519 | [MSFT] trending (ADX 44.2) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $445.93
+2026-07-30 15:23:59,520 | [MSFT] ACTION: No trade.
+2026-07-30 15:23:59,562 | [MU] trending (ADX 53.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $851.40
+2026-07-30 15:23:59,562 | [MU] ACTION: No trade.
+2026-07-30 15:23:59,605 | [NVDA] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $195.24
+2026-07-30 15:23:59,605 | [NVDA] ACTION: No trade.
+2026-07-30 15:23:59,633 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 21.0 | Last price: $23.43
+2026-07-30 15:23:59,633 | [RTO] ACTION: No trade.
+2026-07-30 15:23:59,675 | [SNDK] trending (ADX 57.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1247.38
+2026-07-30 15:23:59,675 | [SNDK] ACTION: No trade.
+2026-07-30 15:23:59,700 | [TREE] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.58
+2026-07-30 15:23:59,700 | [TREE] ACTION: No trade.
+2026-07-30 15:28:59,846 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:29:00,884 | [ALNY] trending (ADX 58.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.87
+2026-07-30 15:29:00,884 | [ALNY] ACTION: No trade.
+2026-07-30 15:29:00,906 | [CCB] trending (ADX 75.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.28
+2026-07-30 15:29:00,906 | [CCB] ACTION: No trade.
+2026-07-30 15:29:00,932 | [CMCO] trending (ADX 56.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.21
+2026-07-30 15:29:00,932 | [CMCO] ACTION: No trade.
+2026-07-30 15:29:00,974 | [MSFT] trending (ADX 42.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $444.48
+2026-07-30 15:29:00,974 | [MSFT] ACTION: No trade.
+2026-07-30 15:29:01,017 | [MU] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $847.69
+2026-07-30 15:29:01,017 | [MU] ACTION: No trade.
+2026-07-30 15:29:01,060 | [NVDA] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $194.31
+2026-07-30 15:29:01,060 | [NVDA] ACTION: No trade.
+2026-07-30 15:29:01,088 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 21.0 | Last price: $23.45
+2026-07-30 15:29:01,088 | [RTO] ACTION: No trade.
+2026-07-30 15:29:01,131 | [SNDK] trending (ADX 56.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1231.06
+2026-07-30 15:29:01,131 | [SNDK] ACTION: No trade.
+2026-07-30 15:29:01,156 | [TREE] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.50
+2026-07-30 15:29:01,156 | [TREE] ACTION: No trade.
+2026-07-30 15:34:01,256 | SCANNER: refreshing watchlist...
+2026-07-30 15:34:01,416 | SCANNER: excluded 24 leveraged/inverse ETF(s) from 31 candidate(s).
+2026-07-30 15:34:01,881 | SCANNER: candidate CCB -- -46.2% today, $37.98, liquid, 2 recent news item(s)
+2026-07-30 15:34:01,881 | SCANNER: candidate CMCO -- +41.1% today, $20.62, liquid, 4 recent news item(s)
+2026-07-30 15:34:01,881 | SCANNER: candidate ALNY -- -28.8% today, $204.16, liquid, 2 recent news item(s)
+2026-07-30 15:34:01,881 | SCANNER: candidate TREE -- -22.6% today, $30.53, liquid, 4 recent news item(s)
+2026-07-30 15:34:26,720 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-30 15:34:26,724 | SCANNER: new watchlist -> CCB, CMCO, ALNY, TREE, MU, SNDK, NVDA, MSFT
+2026-07-30 15:34:26,774 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:34:28,479 | [ALNY] trending (ADX 59.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $204.06
+2026-07-30 15:34:28,480 | [ALNY] ACTION: No trade.
+2026-07-30 15:34:28,503 | [CCB] trending (ADX 76.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.83
+2026-07-30 15:34:28,503 | [CCB] ACTION: No trade.
+2026-07-30 15:34:28,528 | [CMCO] trending (ADX 54.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.32
+2026-07-30 15:34:28,528 | [CMCO] ACTION: No trade.
+2026-07-30 15:34:28,571 | [MSFT] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $445.31
+2026-07-30 15:34:28,571 | [MSFT] ACTION: No trade.
+2026-07-30 15:34:28,614 | [MU] trending (ADX 51.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $849.78
+2026-07-30 15:34:28,614 | [MU] ACTION: No trade.
+2026-07-30 15:34:28,657 | [NVDA] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.81
+2026-07-30 15:34:28,657 | [NVDA] ACTION: No trade.
+2026-07-30 15:34:28,685 | [RTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 21.0 | Last price: $23.50
+2026-07-30 15:34:28,685 | [RTO] ACTION: No trade.
+2026-07-30 15:34:28,728 | [SNDK] trending (ADX 54.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1229.55
+2026-07-30 15:34:28,728 | [SNDK] ACTION: No trade.
+2026-07-30 15:34:28,753 | [TREE] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.41
+2026-07-30 15:34:28,753 | [TREE] ACTION: No trade.
+2026-07-30 15:39:29,026 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:39:31,088 | [ALNY] trending (ADX 60.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.65
+2026-07-30 15:39:31,088 | [ALNY] ACTION: No trade.
+2026-07-30 15:39:31,111 | [CCB] trending (ADX 76.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.26
+2026-07-30 15:39:31,111 | [CCB] ACTION: No trade.
+2026-07-30 15:39:31,138 | [CMCO] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.69
+2026-07-30 15:39:31,138 | [CMCO] ACTION: No trade.
+2026-07-30 15:39:31,181 | [MSFT] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $445.44
+2026-07-30 15:39:31,181 | [MSFT] ACTION: No trade.
+2026-07-30 15:39:31,225 | [MU] trending (ADX 50.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $849.85
+2026-07-30 15:39:31,225 | [MU] ACTION: No trade.
+2026-07-30 15:39:31,268 | [NVDA] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.88
+2026-07-30 15:39:31,269 | [NVDA] ACTION: No trade.
+2026-07-30 15:39:31,298 | [RTO] trending (ADX 40.9) -> trend-following strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.66
+2026-07-30 15:39:31,298 | [RTO] ACTION: No trade.
+2026-07-30 15:39:31,341 | [SNDK] trending (ADX 53.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1230.26
+2026-07-30 15:39:31,341 | [SNDK] ACTION: No trade.
+2026-07-30 15:39:31,366 | [TREE] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.46
+2026-07-30 15:39:31,367 | [TREE] ACTION: No trade.
+2026-07-30 15:44:31,524 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:44:32,624 | [ALNY] trending (ADX 60.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $203.90
+2026-07-30 15:44:32,624 | [ALNY] ACTION: No trade.
+2026-07-30 15:44:32,647 | [CCB] trending (ADX 76.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.76
+2026-07-30 15:44:32,647 | [CCB] ACTION: No trade.
+2026-07-30 15:44:32,672 | [CMCO] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.79
+2026-07-30 15:44:32,672 | [CMCO] ACTION: No trade.
+2026-07-30 15:44:32,714 | [MSFT] trending (ADX 37.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $444.49
+2026-07-30 15:44:32,714 | [MSFT] ACTION: No trade.
+2026-07-30 15:44:32,755 | [MU] trending (ADX 48.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $847.31
+2026-07-30 15:44:32,755 | [MU] ACTION: No trade.
+2026-07-30 15:44:32,797 | [NVDA] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.51
+2026-07-30 15:44:32,797 | [NVDA] ACTION: No trade.
+2026-07-30 15:44:32,825 | [RTO] trending (ADX 39.9) -> trend-following strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.68
+2026-07-30 15:44:32,825 | [RTO] ACTION: No trade.
+2026-07-30 15:44:32,866 | [SNDK] trending (ADX 51.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1232.57
+2026-07-30 15:44:32,866 | [SNDK] ACTION: No trade.
+2026-07-30 15:44:32,891 | [TREE] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.50
+2026-07-30 15:44:32,891 | [TREE] ACTION: No trade.
+2026-07-30 15:49:33,042 | Market is open (closes 2026-07-30 22:00:00 CEST your local time). Checking 9 symbols: ALNY, CCB, CMCO, MSFT, MU, NVDA, RTO, SNDK, TREE
+2026-07-30 15:49:34,102 | [ALNY] trending (ADX 61.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.00
+2026-07-30 15:49:34,102 | [ALNY] ACTION: No trade.
+2026-07-30 15:49:34,125 | [CCB] trending (ADX 76.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.17
+2026-07-30 15:49:34,125 | [CCB] ACTION: No trade.
+2026-07-30 15:49:34,151 | [CMCO] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.64
+2026-07-30 15:49:34,151 | [CMCO] ACTION: No trade.
+2026-07-30 15:49:34,193 | [MSFT] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $446.34
+2026-07-30 15:49:34,193 | [MSFT] ACTION: No trade.
+2026-07-30 15:49:34,235 | [MU] trending (ADX 47.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $848.85
+2026-07-30 15:49:34,236 | [MU] ACTION: No trade.
+2026-07-30 15:49:34,278 | [NVDA] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 2.0 | Last price: $193.42
+2026-07-30 15:49:34,278 | [NVDA] ACTION: No trade.
+2026-07-30 15:49:34,306 | [RTO] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 21.0 | Last price: $23.89
+2026-07-30 15:49:34,306 | [RTO] ACTION: No trade.
+2026-07-30 15:49:34,348 | [SNDK] trending (ADX 49.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1241.11
+2026-07-30 15:49:34,348 | [SNDK] ACTION: No trade.
+2026-07-30 15:49:34,373 | [TREE] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.55
+2026-07-30 15:49:34,373 | [TREE] ACTION: No trade.
+2026-07-30 15:53:34,327 | Duration window finished.
