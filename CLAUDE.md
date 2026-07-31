@@ -1005,3 +1005,52 @@ pull mid-run, and open positions are tracked by Alpaca's own resting
 orders, not by anything BAR_MINUTES-dependent -- but held the push per
 the user's stated preference for a clean transition, not because it was
 technically required.
+
+## 2026-07-31: rechecking the CHECK_INTERVAL_MINUTES change found 2 real bugs
+
+User asked to recheck the code before the held push goes out. Good call --
+found two real issues, both stemming from the same root cause: raising
+CHECK_INTERVAL_MINUTES (5 -> 15) changed what "a normal cycle's sleep
+duration" looks like, and two OTHER constants had been silently assuming
+it would stay small.
+
+**Bug 1 (real, safety-relevant): EOD flatten could trigger with ~1 minute
+of margin instead of 10.** The sleep calculation at the end of
+run_one_cycle (`min(CHECK_INTERVAL_MINUTES * 60, seconds_left_today)`) had
+no awareness of FLATTEN_MINUTES_BEFORE_CLOSE. Worst case: a cycle with 16
+minutes left in the session sleeps the full 15-minute interval and wakes
+with only ~1 minute left -- 9 minutes later than the intended 10-minute
+buffer before flattening everything for the day. Verified precisely:
+before the fix, that exact scenario left 60 seconds of margin; the
+intended buffer is 600. Fixed by extracting the sleep computation into
+`compute_next_cycle_sleep()` (also makes it independently unit-testable,
+which it wasn't before) and capping it so the bot never sleeps past the
+point where the flatten window is supposed to start -- works for ANY
+CHECK_INTERVAL_MINUTES, not just today's specific numbers.
+
+**Bug 2 (minor, wasteful not dangerous): LONG_IDLE_SECONDS (900s,
+hardcoded) became numerically identical to the new CHECK_INTERVAL_MINUTES
+(also 900s).** LONG_IDLE_SECONDS gates an extra "is the session actually
+over?" clock check in run_for_duration, meant only for genuinely long
+waits (market closed, sleeping up to an hour) -- not normal operating
+cycles. With CHECK_INTERVAL_MINUTES now equal to it, a completely normal
+open-market cycle started tripping this check every single tick. Not
+dangerous (the check just returns False immediately while the market's
+open) but pure waste, and it defeated the point of having the threshold
+at all. Fixed by deriving it from CHECK_INTERVAL_MINUTES with a margin
+(`CHECK_INTERVAL_MINUTES * 60 + 60`) instead of a hardcoded constant, so
+it can't silently fall out of sync again if this gets tuned further.
+
+Checked and NOT changed: STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE (90 min) has
+the same theoretical "could wake up a bit late" exposure as the flatten
+bug, but it's a soft preference (a position opened ~14 minutes later than
+the ideal 90-minute mark still has ~76 minutes of runway -- nowhere near
+the safety-critical territory that made the flatten timing worth a hard
+fix). The scanner's dollar-volume liquidity check (`bars_per_session =
+(6.5*60)/BAR_MINUTES`) was already written as a ratio that scales with
+BAR_MINUTES automatically, not a hardcoded constant -- no bug there.
+
+Both fixes are live-operational only (trading_bot.py's own duration-mode
+loop) -- backtest.py has no equivalent "sleep and re-check" concept, so
+neither bug touches backtest results or the numbers already reported for
+idea 1.

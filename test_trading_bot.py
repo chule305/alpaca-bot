@@ -686,6 +686,67 @@ def test_symbol_cooldown_blocks_immediate_reentry():
 # be run live is the market-closed early exit.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# compute_next_cycle_sleep -- 2026-07-31. Found while rechecking the
+# CHECK_INTERVAL_MINUTES change (5 -> 15): the old inline sleep calculation
+# had no awareness of FLATTEN_MINUTES_BEFORE_CLOSE, so a wide check
+# interval could sleep straight past the intended flatten-trigger buffer
+# and wake up with almost no margin before the actual market close.
+# ---------------------------------------------------------------------------
+
+def test_compute_next_cycle_sleep_never_overshoots_the_flatten_trigger():
+    """The regression case: 16 minutes left in the session, a 15-minute
+    check interval. The old code slept the full 15 minutes and woke with
+    only ~1 minute left -- 9 minutes later than the intended 10-minute
+    flatten buffer."""
+    with patch.object(tb, "CHECK_INTERVAL_MINUTES", 15), \
+         patch.object(tb, "FLATTEN_MINUTES_BEFORE_CLOSE", 10), \
+         patch.object(tb, "FLATTEN_BEFORE_CLOSE", True):
+        sleep_seconds = tb.compute_next_cycle_sleep(16 * 60)
+    woken_with_seconds_left = 16 * 60 - sleep_seconds
+    # Lands a couple seconds INSIDE the flatten window on purpose (the
+    # "+2" in compute_next_cycle_sleep) so the top-of-cycle check is
+    # guaranteed to catch it rather than landing exactly on a borderline
+    # boundary -- so this checks "close to 10 minutes", not ">= 10".
+    check("wakes close to the intended 10-minute flatten buffer, not the old ~1-minute overshoot",
+          595 <= woken_with_seconds_left <= 600)
+
+
+def test_compute_next_cycle_sleep_unaffected_with_plenty_of_runway():
+    """Far from the close, the cap must never kick in -- normal behavior,
+    sleep the full check interval."""
+    with patch.object(tb, "CHECK_INTERVAL_MINUTES", 15), \
+         patch.object(tb, "FLATTEN_MINUTES_BEFORE_CLOSE", 10), \
+         patch.object(tb, "FLATTEN_BEFORE_CLOSE", True):
+        sleep_seconds = tb.compute_next_cycle_sleep(60 * 60)
+    check("sleeps the full normal check interval when there's plenty of runway",
+          sleep_seconds == 15 * 60)
+
+
+def test_compute_next_cycle_sleep_already_inside_flatten_window():
+    """Already well inside the flatten window (a prior cycle should have
+    caught this already, but the function must still behave sanely if
+    reached here) -- the cap must not force an artificially LONGER sleep
+    than the plain interval would already give."""
+    with patch.object(tb, "CHECK_INTERVAL_MINUTES", 15), \
+         patch.object(tb, "FLATTEN_MINUTES_BEFORE_CLOSE", 10), \
+         patch.object(tb, "FLATTEN_BEFORE_CLOSE", True):
+        sleep_seconds = tb.compute_next_cycle_sleep(5 * 60)
+    check("stays capped at the remaining session time, not stretched out",
+          sleep_seconds <= 5 * 60)
+
+
+def test_compute_next_cycle_sleep_noop_when_flatten_disabled():
+    """With FLATTEN_BEFORE_CLOSE off, the cap must never engage -- there's
+    no flatten window to protect the timing of."""
+    with patch.object(tb, "CHECK_INTERVAL_MINUTES", 15), \
+         patch.object(tb, "FLATTEN_MINUTES_BEFORE_CLOSE", 10), \
+         patch.object(tb, "FLATTEN_BEFORE_CLOSE", False):
+        sleep_seconds = tb.compute_next_cycle_sleep(16 * 60)
+    check("sleeps the plain interval when flatten-before-close is off",
+          sleep_seconds == 15 * 60)
+
+
 def test_run_for_duration_cycles_while_market_open():
     """The whole point of this mode: many cycles per job, not one."""
     calls = []
@@ -786,6 +847,10 @@ if __name__ == "__main__":
         test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol,
         test_daily_trend_confirms_entry_noop_when_filter_disabled,
         test_check_symbol_blocks_buy_when_daily_trend_blocks_entry,
+        test_compute_next_cycle_sleep_never_overshoots_the_flatten_trigger,
+        test_compute_next_cycle_sleep_unaffected_with_plenty_of_runway,
+        test_compute_next_cycle_sleep_already_inside_flatten_window,
+        test_compute_next_cycle_sleep_noop_when_flatten_disabled,
         test_reconcile_bracket_keeps_small_drift_unchanged,
         test_reconcile_bracket_reprices_legs_on_large_drift,
         test_reconcile_bracket_falls_back_when_fill_not_confirmed,

@@ -1403,6 +1403,40 @@ def flatten_all_positions() -> None:
                       qty=details.get("qty"))
 
 
+def compute_next_cycle_sleep(seconds_left_today: float) -> float:
+    """
+    How long to sleep before the next check cycle. Normally just
+    CHECK_INTERVAL_MINUTES, capped at whatever's left in the session --
+    but never allowed to sleep PAST the point where the end-of-day
+    flatten window is supposed to start.
+
+    Found 2026-07-31 while rechecking the CHECK_INTERVAL_MINUTES change
+    (5 -> 15): with a wider interval, a normal-cadence sleep can overshoot
+    FLATTEN_MINUTES_BEFORE_CLOSE's buffer entirely -- e.g. a cycle with
+    16 minutes left in the session sleeps the full 15 and wakes with only
+    ~1 minute left, instead of the intended 10, right before the bot
+    flattens everything for the day. Capping here works for ANY
+    CHECK_INTERVAL_MINUTES, rather than relying on
+    FLATTEN_MINUTES_BEFORE_CLOSE happening to stay bigger than whatever
+    the check interval is set to.
+
+    Extracted out of run_one_cycle specifically so this timing logic is
+    unit-testable on its own -- the rest of run_one_cycle needs a live
+    Alpaca clock and account state to even reach this point.
+    """
+    sleep_seconds = min(CHECK_INTERVAL_MINUTES * 60, seconds_left_today)
+
+    if FLATTEN_BEFORE_CLOSE:
+        seconds_until_flatten_trigger = seconds_left_today - FLATTEN_MINUTES_BEFORE_CLOSE * 60
+        if 0 < seconds_until_flatten_trigger < sleep_seconds:
+            sleep_seconds = seconds_until_flatten_trigger + 2
+
+    if sleep_seconds <= 1:
+        log.info("Market closing very soon -- pausing checks until the next session.")
+        return 30
+    return sleep_seconds
+
+
 def run_one_cycle() -> float:
     """
     Runs exactly one check cycle -- clock check, EOD flatten if needed,
@@ -1538,18 +1572,23 @@ def run_one_cycle() -> float:
         pass
 
     seconds_left_today = seconds_until(clock.next_close, clock.timestamp) if clock.is_open else 0
-    sleep_seconds = min(CHECK_INTERVAL_MINUTES * 60, seconds_left_today)
-
-    if sleep_seconds <= 1:
-        log.info("Market closing very soon -- pausing checks until the next session.")
-        return 30
-    return sleep_seconds
+    return compute_next_cycle_sleep(seconds_left_today)
 
 
 # In --duration-minutes mode, a cycle asking to idle at least this long
 # is worth a quick "is the session actually over?" check before we commit
-# to waiting it out.
-LONG_IDLE_SECONDS = 15 * 60
+# to waiting it out. Derived from CHECK_INTERVAL_MINUTES (with a margin)
+# rather than a fixed constant -- found 2026-07-31 while rechecking the
+# CHECK_INTERVAL_MINUTES change (5 -> 15) that a hardcoded 900s here
+# used to safely exceed every NORMAL cycle's sleep (300s), so this only
+# ever fired for genuinely long waits (market closed, up to 3600s). Once
+# CHECK_INTERVAL_MINUTES itself became 900s, a normal open-market cycle
+# started tripping this on every single tick -- not dangerous (the extra
+# clock check just returns False immediately while the market's open),
+# but pure waste, and it defeated the intent of the check. Tying it to
+# CHECK_INTERVAL_MINUTES means it can't silently fall out of sync again
+# if that value changes in the future.
+LONG_IDLE_SECONDS = CHECK_INTERVAL_MINUTES * 60 + 60
 # ...and if the next open is further away than this, the trading day is
 # done (rather than us just sitting in a pre-open gap), so the run can
 # end early instead of holding a CI runner all night.
