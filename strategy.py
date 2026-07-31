@@ -180,7 +180,22 @@ RVOL_MULTIPLIER = float(os.getenv("RVOL_MULTIPLIER", 3.0))
 # of its own high-low range (a strong close, not just barely green).
 RVOL_MIN_CLOSE_STRENGTH = float(os.getenv("RVOL_MIN_CLOSE_STRENGTH", 0.66))
 
-BAR_MINUTES = int(os.getenv("BAR_MINUTES", 5))
+# Raised from 5 to 15 on 2026-07-31 after a 90-day backtest: fewer,
+# higher-quality decision points beats reacting to every 5-minute wiggle.
+# Improved BOTH universes together (rare enough to be worth noting, most
+# tuning changes trade one off against the other):
+#   megacap: win rate 55% -> 61%, profit factor 1.60 -> 1.87, drawdown 2.0% -> 1.6%
+#   scanner: win rate 46% -> 53%, profit factor 1.18 -> 1.24, drawdown 5.7% -> 3.0% (nearly halved)
+# Verified before shipping that nothing downstream assumes 5-minute bars:
+# the entry blackout window and EOD flatten/stop-new-entries timing are
+# all wall-clock based (Alpaca's real clock, not bar boundaries), so they
+# needed no changes. The one real interaction: MIN_STOP_TO_ATR_RATIO's
+# guard gets meaningfully stricter at a coarser timeframe (15-min ATR
+# runs ~1.8x the 5-min value), which likely explains PART of the
+# improvement on volatile scanner picks -- filtering out more marginal
+# trades, not a side effect fighting the result. See CHECK_INTERVAL_MINUTES
+# in trading_bot.py for the paired change this needs.
+BAR_MINUTES = int(os.getenv("BAR_MINUTES", 15))
 TRADE_AMOUNT_USD = float(os.getenv("TRADE_AMOUNT_USD", 500))
 
 FLATTEN_BEFORE_CLOSE = os.getenv("FLATTEN_BEFORE_CLOSE", "true").strip().lower() in ("1", "true", "yes")

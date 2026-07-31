@@ -960,3 +960,48 @@ bars to whatever's next, any change to one strategy's entry criteria
 needs a FULL-CHAIN test before being trusted, not just an isolated one.
 Isolated tests are still useful for a first pass (cheap, fast signal on
 whether an idea has any merit at all) -- just don't ship off one.
+
+## 2026-07-31: idea 1 built (15-min bars) -- verified safe, held for a clean deploy
+
+Built the 15-minute bar timeframe from the 10-ideas round. Before shipping,
+explicitly checked whether anything downstream assumes 5-minute
+resolution, since this is a genuinely global change (touches every
+indicator, not one function like ideas 3/5):
+
+- Entry blackout window and EOD flatten/stop-new-entries timing: both
+  driven by Alpaca's real wall clock (`clock.timestamp`/`clock.next_close`),
+  verified via code read -- completely independent of BAR_MINUTES, no
+  changes needed.
+- Warmup bar count: verified live, get_recent_bars_batch's 10-day lookback
+  returns 258-511 bars at 15-min resolution against a 26-bar minimum --
+  comfortable margin.
+- MIN_STOP_TO_ATR_RATIO's volatility guard: real effect, not a bug.
+  15-min ATR runs ~1.8x the 5-min value (measured live: NVDA 0.27%->0.48%,
+  TSLA 0.27%->0.50%, TRAX 1.11%->1.92%). The guard (needs >=2x stop/ATR)
+  gets meaningfully stricter as a result -- comfortable margin on
+  megacaps (18x/19x -> 10x), much tighter on volatile names like TRAX
+  (4.5x -> 2.6x, still passing but close). This is likely PART of why the
+  scanner-universe backtest improved, not a flaw: it's correctly filtering
+  more marginal trades at a resolution where each bar naturally carries
+  more noise.
+
+Paired CHECK_INTERVAL_MINUTES (5 -> 15): checking every 5 minutes against
+a bar that only closes every 15 achieves nothing but wasted API calls;
+reaction speed is gated by the bar close either way.
+
+Results (90-day backtest, verified against the actual shipped defaults,
+not just the sweep that first found this):
+
+    megacap: win rate 55% -> 61%, profit factor 1.60 -> 1.87, drawdown 2.0% -> 1.6%
+    scanner: win rate 46% -> 53%, profit factor 1.18 -> 1.24, drawdown 5.7% -> 3.0%
+
+Deployment note: user asked to hold the push until after 2026-07-31's
+close specifically so today's session (already mid-flight when this was
+built, one open VCYT position) stays on 5-minute logic uninterrupted, and
+tomorrow starts clean on 15-minute logic -- avoids muddying the
+before/after comparison for today's results. Confirmed this is safe
+either way: GitHub Actions checks out the repo once per job and doesn't
+pull mid-run, and open positions are tracked by Alpaca's own resting
+orders, not by anything BAR_MINUTES-dependent -- but held the push per
+the user's stated preference for a clean transition, not because it was
+technically required.

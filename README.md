@@ -407,6 +407,28 @@ moment A/B on the full system: megacap profit factor 1.60 → 1.56 (worse),
 scanner 1.18 → 1.30 (better). Same split shape as the multi-timeframe
 filter, same fix.
 
+**Bar timeframe: 15 minutes, not 5.** `BAR_MINUTES` (and the matching
+`CHECK_INTERVAL_MINUTES`) moved from 5 to 15 on 2026-07-31. A 90-day
+backtest found fewer, higher-quality decision points beat reacting to
+every 5-minute wiggle, improving BOTH universes together — rare enough to
+be worth noting, since most tuning changes trade one off against the
+other:
+
+```
+              win rate    profit factor    max drawdown
+megacap:      55% → 61%    1.60 → 1.87      2.0% → 1.6%
+scanner:      46% → 53%    1.18 → 1.24      5.7% → 3.0%
+```
+
+Verified before shipping that nothing downstream assumes 5-minute bars —
+the entry blackout window and end-of-day flatten/stop-new-entries timing
+are all driven by Alpaca's real wall clock, not bar boundaries, so they
+needed no changes. The one real interaction: `MIN_STOP_TO_ATR_RATIO`'s
+volatility guard gets meaningfully stricter at a coarser timeframe
+(15-min ATR runs ~1.8x the 5-min value for the same stock), which likely
+explains part of the improvement on volatile scanner picks — filtering
+out more marginal trades, not a side effect fighting the result.
+
 Two filters here have bitten this project and are worth understanding:
 
 - **Liquidity is measured in dollars, not shares.** The original version

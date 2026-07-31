@@ -92,7 +92,11 @@ SECRET_KEY = (os.getenv("ALPACA_SECRET_KEY") or "").strip()
 # This is only the FALLBACK list used when USE_SCANNER=false or the scan
 # fails; live trading normally uses the scanner's own picks instead.
 SYMBOLS = [s.strip().upper() for s in os.getenv("SYMBOLS", "TSLA,NVDA,COIN,AMD,PLTR").split(",") if s.strip()]
-CHECK_INTERVAL_MINUTES = int(os.getenv("CHECK_INTERVAL_MINUTES", 5))
+# Raised from 5 to 15 alongside strategy.BAR_MINUTES on 2026-07-31 --
+# checking every 5 minutes against a bar that only closes every 15
+# achieves nothing but wasted API calls two-thirds of the time; reaction
+# speed is gated by the bar close either way, not by how often we look.
+CHECK_INTERVAL_MINUTES = int(os.getenv("CHECK_INTERVAL_MINUTES", 15))
 
 USE_SCANNER = os.getenv("USE_SCANNER", "true").strip().lower() in ("1", "true", "yes")
 # Widened/faster defaults from the original 5 stocks refreshed once a day --
