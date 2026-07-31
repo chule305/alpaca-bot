@@ -782,3 +782,744 @@
 2026-07-31 18:24:40,435 | [SNDK] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1250.06
 2026-07-31 18:24:40,435 | [SNDK] ACTION: No trade.
 2026-07-31 18:28:41,811 | Duration window finished.
+2026-07-31 13:28:09,292 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-07-31 13:28:09,292 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 12 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-07-31 13:28:09,292 | Bar size: 5min | Check interval while market open: 5min
+2026-07-31 13:28:09,292 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-07-31 13:28:09,293 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-07-31 13:28:09,293 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-07-31 13:28:09,293 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-07-31 13:28:09,293 | Position sizing: flat $500 per trade
+2026-07-31 13:28:09,293 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-07-31 13:28:09,293 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-07-31 13:28:09,293 | Loaded saved watchlist from previous run: CCB, ALNY, MU, SNDK, NVDA, MSFT
+2026-07-31 13:28:09,293 | Restored daily risk state from previous run: day 2026-07-30, breaker tripped: False
+2026-07-31 13:28:09,293 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-07-31 13:28:09,332 | Market is closed. Next open: 2026-07-31 15:30:00 CEST (your local time) -- in 0.0 hours.
+2026-07-31 13:30:05,081 | Daily loss circuit breaker: tracking from starting equity $99,837.92 (limit -3%).
+2026-07-31 13:30:05,081 | SCANNER: refreshing watchlist...
+2026-07-31 13:30:05,298 | SCANNER: excluded 18 leveraged/inverse ETF(s) from 22 candidate(s).
+2026-07-31 13:30:05,681 | SCANNER: candidate CCB -- -43.5% today, $39.91, liquid, 4 recent news item(s)
+2026-07-31 13:30:05,681 | SCANNER: candidate ALNY -- -28.3% today, $205.48, liquid, 5 recent news item(s)
+2026-07-31 13:30:05,720 | S&P 500: refreshed constituent list (503 symbols).
+2026-07-31 13:31:13,347 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-31 13:31:13,349 | SCANNER: new watchlist -> CCB, ALNY, MU, SNDK, NVDA, MSFT
+2026-07-31 13:31:13,360 | [ALNY] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-31 13:31:13,394 | [NVDA] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-31 13:31:13,410 | [RTO] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-31 13:31:13,427 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:31:16,551 | Multi-timeframe filter: refreshed daily trend for 6 symbol(s).
+2026-07-31 13:31:16,582 | [ALNY] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.75
+2026-07-31 13:31:16,582 | [ALNY] ACTION: No trade.
+2026-07-31 13:31:16,608 | [CCB] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.40
+2026-07-31 13:31:16,608 | [CCB] ACTION: No trade.
+2026-07-31 13:31:16,653 | [MSFT] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $451.17
+2026-07-31 13:31:16,654 | [MSFT] ACTION: No trade.
+2026-07-31 13:31:16,698 | [MU] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $913.27
+2026-07-31 13:31:16,698 | [MU] ACTION: No trade.
+2026-07-31 13:31:16,744 | [NVDA] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $197.58
+2026-07-31 13:31:16,744 | [NVDA] ACTION: No trade.
+2026-07-31 13:31:16,789 | [SNDK] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1363.00
+2026-07-31 13:31:16,789 | [SNDK] ACTION: No trade.
+2026-07-31 13:36:17,034 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:36:20,445 | [ALNY] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.88
+2026-07-31 13:36:20,446 | [ALNY] ACTION: No trade.
+2026-07-31 13:36:20,472 | [CCB] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.00
+2026-07-31 13:36:20,472 | [CCB] ACTION: No trade.
+2026-07-31 13:36:20,517 | [MSFT] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $451.00
+2026-07-31 13:36:20,517 | [MSFT] ACTION: No trade.
+2026-07-31 13:36:20,563 | [MU] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $915.60
+2026-07-31 13:36:20,563 | [MU] ACTION: No trade.
+2026-07-31 13:36:20,609 | [NVDA] trending (ADX 42.8) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $197.59
+2026-07-31 13:36:20,610 | [NVDA] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 13:36:20,656 | [SNDK] choppy/sideways (ADX 18.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1365.01
+2026-07-31 13:36:20,656 | [SNDK] ACTION: No trade.
+2026-07-31 13:41:20,712 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:41:22,306 | [ALNY] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.40
+2026-07-31 13:41:22,306 | [ALNY] ACTION: No trade.
+2026-07-31 13:41:22,331 | [CCB] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.00
+2026-07-31 13:41:22,332 | [CCB] ACTION: No trade.
+2026-07-31 13:41:22,377 | [MSFT] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $450.00
+2026-07-31 13:41:22,377 | [MSFT] ACTION: No trade.
+2026-07-31 13:41:22,422 | [MU] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $919.86
+2026-07-31 13:41:22,422 | [MU] ACTION: No trade.
+2026-07-31 13:41:22,467 | [NVDA] trending (ADX 41.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $198.57
+2026-07-31 13:41:22,467 | [NVDA] ACTION: No trade.
+2026-07-31 13:41:22,513 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1384.80
+2026-07-31 13:41:22,523 | [SNDK] Computed position size is 0 shares at $1333.44 (flat $ sizing) -- skipping this trade.
+2026-07-31 13:46:22,811 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:46:23,903 | [ALNY] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $203.19
+2026-07-31 13:46:23,903 | [ALNY] ACTION: No trade.
+2026-07-31 13:46:23,930 | [CCB] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.61
+2026-07-31 13:46:23,930 | [CCB] ACTION: No trade.
+2026-07-31 13:46:23,977 | [MSFT] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $458.50
+2026-07-31 13:46:23,977 | [MSFT] ACTION: No trade.
+2026-07-31 13:46:24,024 | [MU] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $919.18
+2026-07-31 13:46:24,024 | [MU] ACTION: No trade.
+2026-07-31 13:46:24,070 | [NVDA] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $199.57
+2026-07-31 13:46:24,070 | [NVDA] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 13:46:24,117 | [SNDK] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1373.00
+2026-07-31 13:46:24,117 | [SNDK] ACTION: No trade.
+2026-07-31 13:51:24,182 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:51:25,831 | [ALNY] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $203.74
+2026-07-31 13:51:25,831 | [ALNY] ACTION: No trade.
+2026-07-31 13:51:25,858 | [CCB] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.52
+2026-07-31 13:51:25,858 | [CCB] ACTION: No trade.
+2026-07-31 13:51:25,904 | [MSFT] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $458.43
+2026-07-31 13:51:25,904 | [MSFT] ACTION: No trade.
+2026-07-31 13:51:25,952 | [MU] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $910.34
+2026-07-31 13:51:25,953 | [MU] ACTION: No trade.
+2026-07-31 13:51:26,000 | [NVDA] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $198.57
+2026-07-31 13:51:26,000 | [NVDA] ACTION: No trade.
+2026-07-31 13:51:26,047 | [SNDK] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1334.04
+2026-07-31 13:51:26,047 | [SNDK] ACTION: No trade.
+2026-07-31 13:56:26,104 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 6 symbols: ALNY, CCB, MSFT, MU, NVDA, SNDK
+2026-07-31 13:56:27,822 | [ALNY] choppy/sideways (ADX 14.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.22
+2026-07-31 13:56:27,822 | [ALNY] ACTION: No trade.
+2026-07-31 13:56:27,848 | [CCB] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.34
+2026-07-31 13:56:27,848 | [CCB] ACTION: No trade.
+2026-07-31 13:56:27,895 | [MSFT] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $459.97
+2026-07-31 13:56:27,895 | [MSFT] ACTION: No trade.
+2026-07-31 13:56:27,941 | [MU] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $883.24
+2026-07-31 13:56:27,941 | [MU] ACTION: No trade.
+2026-07-31 13:56:27,986 | [NVDA] trending (ADX 39.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $197.52
+2026-07-31 13:56:27,987 | [NVDA] ACTION: No trade.
+2026-07-31 13:56:28,034 | [SNDK] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1288.05
+2026-07-31 13:56:28,034 | [SNDK] ACTION: No trade.
+2026-07-31 14:01:28,078 | SCANNER: refreshing watchlist...
+2026-07-31 14:01:28,338 | SCANNER: excluded 16 leveraged/inverse ETF(s) from 31 candidate(s).
+2026-07-31 14:01:30,282 | SCANNER: candidate GLUE -- -32.1% today, $15.40, liquid, 1 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate RBLX -- -28.7% today, $34.70, liquid, 15 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate IESC -- +26.5% today, $723.14, liquid, 4 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate PN -- -24.8% today, $17.80, liquid, 4 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate GDDY -- -24.1% today, $75.40, liquid, 7 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate VCYT -- -22.2% today, $46.50, liquid, 3 recent news item(s)
+2026-07-31 14:01:30,282 | SCANNER: candidate ALHC -- -20.4% today, $14.82, liquid, 1 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: candidate RDDT -- -20.0% today, $142.51, liquid, 11 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: candidate AXTI -- +19.4% today, $56.07, liquid, 9 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: candidate PRM -- -19.2% today, $30.07, liquid, 1 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: candidate PWP -- +17.8% today, $17.57, liquid, 1 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: candidate SPXC -- +15.7% today, $230.53, liquid, 1 recent news item(s)
+2026-07-31 14:01:30,283 | SCANNER: new watchlist -> GLUE, RBLX, IESC, PN, GDDY, VCYT, ALHC, RDDT, AXTI, PRM, PWP, SPXC
+2026-07-31 14:01:30,296 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:01:32,474 | Multi-timeframe filter: refreshed daily trend for 12 symbol(s).
+2026-07-31 14:01:32,503 | [ALHC] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.05
+2026-07-31 14:01:32,504 | [ALHC] ACTION: No trade.
+2026-07-31 14:01:32,546 | [AXTI] trending (ADX 44.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.47
+2026-07-31 14:01:32,546 | [AXTI] ACTION: No trade.
+2026-07-31 14:01:32,575 | [GDDY] trending (ADX 66.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $74.98
+2026-07-31 14:01:32,575 | [GDDY] ACTION: No trade.
+2026-07-31 14:01:32,604 | [GLUE] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.72
+2026-07-31 14:01:32,604 | [GLUE] ACTION: No trade.
+2026-07-31 14:01:32,633 | [IESC] trending (ADX 48.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $693.33
+2026-07-31 14:01:32,633 | [IESC] ACTION: No trade.
+2026-07-31 14:01:32,666 | [PN] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.04
+2026-07-31 14:01:32,666 | [PN] ACTION: No trade.
+2026-07-31 14:01:32,695 | [PRM] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $30.46
+2026-07-31 14:01:32,701 | [PRM] ACTION: No trade -- too volatile to protect. ATR is $1.04 (3.5% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-07-31 14:01:32,729 | [PWP] trending (ADX 56.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.09
+2026-07-31 14:01:32,729 | [PWP] ACTION: No trade.
+2026-07-31 14:01:32,764 | [RBLX] trending (ADX 31.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.66
+2026-07-31 14:01:32,764 | [RBLX] ACTION: No trade.
+2026-07-31 14:01:32,803 | [RDDT] trending (ADX 55.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.50
+2026-07-31 14:01:32,803 | [RDDT] ACTION: No trade.
+2026-07-31 14:01:32,832 | [SPXC] trending (ADX 53.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $233.66
+2026-07-31 14:01:32,832 | [SPXC] ACTION: No trade.
+2026-07-31 14:01:32,860 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $45.54
+2026-07-31 14:01:32,867 | [VCYT] Buying 10 share(s) (~$464, flat $ sizing) | stop-loss $44.03 | take-profit $50.99 (fixed %)
+2026-07-31 14:01:33,956 | [VCYT] Filled at $46.69, 0.7% away from the $46.35 quote the bracket was priced from -- repricing stop/target to stay at the intended % risk (stop -> $44.36, target -> $51.36).
+2026-07-31 14:01:34,011 | [VCYT] ACTION: BUY (order id 157ee241-0fb4-49a0-a1c5-675a93fc3364, strategy: vwap_reversion)
+2026-07-31 14:06:34,437 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:06:36,983 | [ALHC] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.28
+2026-07-31 14:06:36,983 | [ALHC] ACTION: No trade.
+2026-07-31 14:06:37,025 | [AXTI] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.68
+2026-07-31 14:06:37,025 | [AXTI] ACTION: No trade.
+2026-07-31 14:06:37,054 | [GDDY] trending (ADX 67.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.80
+2026-07-31 14:06:37,055 | [GDDY] ACTION: No trade.
+2026-07-31 14:06:37,084 | [GLUE] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.42
+2026-07-31 14:06:37,084 | [GLUE] ACTION: No trade.
+2026-07-31 14:06:37,112 | [IESC] trending (ADX 49.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $696.00
+2026-07-31 14:06:37,112 | [IESC] ACTION: No trade.
+2026-07-31 14:06:37,145 | [PN] trending (ADX 25.4) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $17.95
+2026-07-31 14:06:37,152 | [PN] ACTION: No trade -- too volatile to protect. ATR is $0.60 (3.8% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-07-31 14:06:37,181 | [PRM] choppy/sideways (ADX 16.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.10
+2026-07-31 14:06:37,181 | [PRM] ACTION: No trade.
+2026-07-31 14:06:37,209 | [PWP] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.49
+2026-07-31 14:06:37,209 | [PWP] ACTION: No trade.
+2026-07-31 14:06:37,243 | [RBLX] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.45
+2026-07-31 14:06:37,243 | [RBLX] ACTION: No trade.
+2026-07-31 14:06:37,282 | [RDDT] trending (ADX 55.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.12
+2026-07-31 14:06:37,282 | [RDDT] ACTION: No trade.
+2026-07-31 14:06:37,310 | [SPXC] trending (ADX 55.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.82
+2026-07-31 14:06:37,310 | [SPXC] ACTION: No trade.
+2026-07-31 14:06:37,338 | [VCYT] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 10.0 | Last price: $45.45
+2026-07-31 14:06:37,339 | [VCYT] ACTION: No trade.
+2026-07-31 14:11:37,408 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:11:38,403 | [ALHC] trending (ADX 34.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.85
+2026-07-31 14:11:38,403 | [ALHC] ACTION: No trade.
+2026-07-31 14:11:38,447 | [AXTI] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $55.95
+2026-07-31 14:11:38,447 | [AXTI] ACTION: No trade.
+2026-07-31 14:11:38,477 | [GDDY] trending (ADX 66.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.89
+2026-07-31 14:11:38,477 | [GDDY] ACTION: No trade.
+2026-07-31 14:11:38,507 | [GLUE] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.29
+2026-07-31 14:11:38,507 | [GLUE] ACTION: No trade.
+2026-07-31 14:11:38,535 | [IESC] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $729.45
+2026-07-31 14:11:38,535 | [IESC] ACTION: No trade.
+2026-07-31 14:11:38,569 | [PN] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.86
+2026-07-31 14:11:38,569 | [PN] ACTION: No trade.
+2026-07-31 14:11:38,598 | [PRM] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.03
+2026-07-31 14:11:38,598 | [PRM] ACTION: No trade.
+2026-07-31 14:11:38,626 | [PWP] trending (ADX 58.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.59
+2026-07-31 14:11:38,626 | [PWP] ACTION: No trade.
+2026-07-31 14:11:38,661 | [RBLX] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.17
+2026-07-31 14:11:38,661 | [RBLX] ACTION: No trade.
+2026-07-31 14:11:38,699 | [RDDT] trending (ADX 55.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $142.84
+2026-07-31 14:11:38,699 | [RDDT] ACTION: No trade.
+2026-07-31 14:11:38,727 | [SPXC] trending (ADX 56.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.53
+2026-07-31 14:11:38,727 | [SPXC] ACTION: No trade.
+2026-07-31 14:11:38,756 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 10.0 | Last price: $46.26
+2026-07-31 14:11:38,756 | [VCYT] ACTION: No trade.
+2026-07-31 14:16:39,086 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:16:40,239 | [ALHC] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.74
+2026-07-31 14:16:40,239 | [ALHC] ACTION: No trade.
+2026-07-31 14:16:40,281 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $56.30
+2026-07-31 14:16:40,282 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:16:40,310 | [GDDY] trending (ADX 66.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.69
+2026-07-31 14:16:40,310 | [GDDY] ACTION: No trade.
+2026-07-31 14:16:40,339 | [GLUE] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.60
+2026-07-31 14:16:40,339 | [GLUE] ACTION: No trade.
+2026-07-31 14:16:40,367 | [IESC] trending (ADX 52.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $712.18
+2026-07-31 14:16:40,367 | [IESC] ACTION: No trade.
+2026-07-31 14:16:40,400 | [PN] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.20
+2026-07-31 14:16:40,400 | [PN] ACTION: No trade.
+2026-07-31 14:16:40,428 | [PRM] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.73
+2026-07-31 14:16:40,428 | [PRM] ACTION: No trade.
+2026-07-31 14:16:40,455 | [PWP] trending (ADX 60.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.55
+2026-07-31 14:16:40,456 | [PWP] ACTION: No trade.
+2026-07-31 14:16:40,490 | [RBLX] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.50
+2026-07-31 14:16:40,490 | [RBLX] ACTION: No trade.
+2026-07-31 14:16:40,529 | [RDDT] trending (ADX 56.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $140.83
+2026-07-31 14:16:40,529 | [RDDT] ACTION: No trade.
+2026-07-31 14:16:40,556 | [SPXC] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.01
+2026-07-31 14:16:40,556 | [SPXC] ACTION: No trade.
+2026-07-31 14:16:40,584 | [VCYT] trending (ADX 31.2) -> trend-following strategy | Signal: HOLD | Shares held: 10.0 | Last price: $45.80
+2026-07-31 14:16:40,584 | [VCYT] ACTION: No trade.
+2026-07-31 14:21:40,667 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:21:41,625 | [ALHC] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.82
+2026-07-31 14:21:41,625 | [ALHC] ACTION: No trade.
+2026-07-31 14:21:41,668 | [AXTI] trending (ADX 46.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.05
+2026-07-31 14:21:41,668 | [AXTI] ACTION: No trade.
+2026-07-31 14:21:41,697 | [GDDY] trending (ADX 63.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.94
+2026-07-31 14:21:41,697 | [GDDY] ACTION: No trade.
+2026-07-31 14:21:41,726 | [GLUE] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.16
+2026-07-31 14:21:41,726 | [GLUE] ACTION: No trade.
+2026-07-31 14:21:41,753 | [IESC] trending (ADX 54.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $718.79
+2026-07-31 14:21:41,753 | [IESC] ACTION: No trade.
+2026-07-31 14:21:41,786 | [PN] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.64
+2026-07-31 14:21:41,786 | [PN] ACTION: No trade.
+2026-07-31 14:21:41,815 | [PRM] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.64
+2026-07-31 14:21:41,815 | [PRM] ACTION: No trade.
+2026-07-31 14:21:41,842 | [PWP] trending (ADX 61.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.66
+2026-07-31 14:21:41,842 | [PWP] ACTION: No trade.
+2026-07-31 14:21:41,877 | [RBLX] trending (ADX 30.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.30
+2026-07-31 14:21:41,877 | [RBLX] ACTION: No trade.
+2026-07-31 14:21:41,935 | [RDDT] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.88
+2026-07-31 14:21:41,935 | [RDDT] ACTION: No trade.
+2026-07-31 14:21:41,963 | [SPXC] trending (ADX 58.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.69
+2026-07-31 14:21:41,963 | [SPXC] ACTION: No trade.
+2026-07-31 14:21:41,992 | [VCYT] trending (ADX 32.3) -> trend-following strategy | Signal: HOLD | Shares held: 10.0 | Last price: $45.13
+2026-07-31 14:21:41,992 | [VCYT] ACTION: No trade.
+2026-07-31 14:26:42,050 | [VCYT] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-07-31 14:26:42,066 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: ALHC, AXTI, GDDY, GLUE, IESC, PN, PRM, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:26:42,939 | [ALHC] trending (ADX 36.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.83
+2026-07-31 14:26:42,939 | [ALHC] ACTION: No trade.
+2026-07-31 14:26:42,981 | [AXTI] trending (ADX 46.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.00
+2026-07-31 14:26:42,981 | [AXTI] ACTION: No trade.
+2026-07-31 14:26:43,010 | [GDDY] trending (ADX 60.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.83
+2026-07-31 14:26:43,010 | [GDDY] ACTION: No trade.
+2026-07-31 14:26:43,038 | [GLUE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.21
+2026-07-31 14:26:43,039 | [GLUE] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 14:26:43,066 | [IESC] trending (ADX 55.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $726.08
+2026-07-31 14:26:43,066 | [IESC] ACTION: No trade.
+2026-07-31 14:26:43,099 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.80
+2026-07-31 14:26:43,107 | [PN] ACTION: No trade -- too volatile to protect. ATR is $0.63 (4.0% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-07-31 14:26:43,135 | [PRM] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.86
+2026-07-31 14:26:43,135 | [PRM] ACTION: No trade.
+2026-07-31 14:26:43,163 | [PWP] trending (ADX 62.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.60
+2026-07-31 14:26:43,163 | [PWP] ACTION: No trade.
+2026-07-31 14:26:43,197 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.36
+2026-07-31 14:26:43,197 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:26:43,235 | [RDDT] trending (ADX 58.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $136.85
+2026-07-31 14:26:43,236 | [RDDT] ACTION: No trade.
+2026-07-31 14:26:43,263 | [SPXC] trending (ADX 58.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.15
+2026-07-31 14:26:43,263 | [SPXC] ACTION: No trade.
+2026-07-31 14:26:43,291 | [VCYT] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.50
+2026-07-31 14:26:43,292 | [VCYT] ACTION: No trade.
+2026-07-31 14:31:43,643 | SCANNER: refreshing watchlist...
+2026-07-31 14:31:43,767 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 29 candidate(s).
+2026-07-31 14:31:44,279 | SCANNER: candidate PN -- -33.2% today, $15.80, liquid, 2 recent news item(s)
+2026-07-31 14:31:44,279 | SCANNER: candidate GLUE -- -31.1% today, $15.62, liquid, 1 recent news item(s)
+2026-07-31 14:31:44,279 | SCANNER: candidate RBLX -- -28.3% today, $34.90, liquid, 10 recent news item(s)
+2026-07-31 14:31:44,279 | SCANNER: candidate IESC -- +28.0% today, $731.65, liquid, 5 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate AXTI -- +26.1% today, $59.20, liquid, 5 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate VCYT -- -25.8% today, $44.35, liquid, 2 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate RDDT -- -22.1% today, $138.63, liquid, 5 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate GDDY -- -21.4% today, $78.11, liquid, 4 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate PWP -- +21.1% today, $18.05, liquid, 1 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate SPXC -- +15.5% today, $230.20, liquid, 1 recent news item(s)
+2026-07-31 14:31:44,280 | SCANNER: candidate AMZN -- +14.8% today, $270.35, liquid, 24 recent news item(s)
+2026-07-31 14:32:25,558 | S&P 500 liquidity backstop -> MU
+2026-07-31 14:32:25,562 | SCANNER: new watchlist -> PN, GLUE, RBLX, IESC, AXTI, VCYT, RDDT, GDDY, PWP, SPXC, AMZN, MU
+2026-07-31 14:32:25,575 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:32:26,265 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-07-31 14:32:26,311 | [AMZN] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $268.46
+2026-07-31 14:32:26,311 | [AMZN] ACTION: No trade.
+2026-07-31 14:32:26,354 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $58.37
+2026-07-31 14:32:26,354 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:32:26,384 | [GDDY] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.34
+2026-07-31 14:32:26,384 | [GDDY] ACTION: No trade.
+2026-07-31 14:32:26,414 | [GLUE] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.34
+2026-07-31 14:32:26,414 | [GLUE] ACTION: No trade.
+2026-07-31 14:32:26,442 | [IESC] trending (ADX 56.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $732.85
+2026-07-31 14:32:26,442 | [IESC] ACTION: No trade.
+2026-07-31 14:32:26,487 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $850.39
+2026-07-31 14:32:26,510 | [MU] Computed position size is 0 shares at $847.22 (flat $ sizing) -- skipping this trade.
+2026-07-31 14:32:26,544 | [PN] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.00
+2026-07-31 14:32:26,544 | [PN] ACTION: No trade.
+2026-07-31 14:32:26,572 | [PWP] trending (ADX 62.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.77
+2026-07-31 14:32:26,572 | [PWP] ACTION: No trade.
+2026-07-31 14:32:26,608 | [RBLX] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.31
+2026-07-31 14:32:26,608 | [RBLX] ACTION: No trade.
+2026-07-31 14:32:26,647 | [RDDT] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.62
+2026-07-31 14:32:26,647 | [RDDT] ACTION: No trade.
+2026-07-31 14:32:26,677 | [SPXC] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.15
+2026-07-31 14:32:26,677 | [SPXC] ACTION: No trade.
+2026-07-31 14:32:26,705 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.51
+2026-07-31 14:32:26,706 | [VCYT] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 14:37:26,769 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:37:27,717 | [AMZN] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $268.45
+2026-07-31 14:37:27,717 | [AMZN] ACTION: No trade.
+2026-07-31 14:37:27,781 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $59.65
+2026-07-31 14:37:27,781 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:37:27,811 | [GDDY] trending (ADX 54.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.86
+2026-07-31 14:37:27,811 | [GDDY] ACTION: No trade.
+2026-07-31 14:37:27,840 | [GLUE] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.45
+2026-07-31 14:37:27,840 | [GLUE] ACTION: No trade.
+2026-07-31 14:37:27,868 | [IESC] trending (ADX 57.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $722.21
+2026-07-31 14:37:27,868 | [IESC] ACTION: No trade.
+2026-07-31 14:37:27,913 | [MU] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $846.58
+2026-07-31 14:37:27,913 | [MU] ACTION: No trade.
+2026-07-31 14:37:27,946 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.19
+2026-07-31 14:37:27,946 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 14:37:27,974 | [PWP] trending (ADX 63.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.79
+2026-07-31 14:37:27,974 | [PWP] ACTION: No trade.
+2026-07-31 14:37:28,009 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.53
+2026-07-31 14:37:28,009 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:37:28,051 | [RDDT] trending (ADX 60.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $136.40
+2026-07-31 14:37:28,051 | [RDDT] ACTION: No trade.
+2026-07-31 14:37:28,079 | [SPXC] trending (ADX 59.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.18
+2026-07-31 14:37:28,079 | [SPXC] ACTION: No trade.
+2026-07-31 14:37:28,109 | [VCYT] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.12
+2026-07-31 14:37:28,109 | [VCYT] ACTION: No trade.
+2026-07-31 14:42:28,172 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:42:29,046 | [AMZN] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $269.61
+2026-07-31 14:42:29,046 | [AMZN] ACTION: No trade.
+2026-07-31 14:42:29,090 | [AXTI] trending (ADX 40.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.07
+2026-07-31 14:42:29,090 | [AXTI] ACTION: No trade.
+2026-07-31 14:42:29,119 | [GDDY] trending (ADX 51.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.08
+2026-07-31 14:42:29,119 | [GDDY] ACTION: No trade.
+2026-07-31 14:42:29,148 | [GLUE] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.58
+2026-07-31 14:42:29,148 | [GLUE] ACTION: No trade.
+2026-07-31 14:42:29,176 | [IESC] trending (ADX 58.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $730.47
+2026-07-31 14:42:29,176 | [IESC] ACTION: No trade.
+2026-07-31 14:42:29,221 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $852.59
+2026-07-31 14:42:29,229 | [MU] Computed position size is 0 shares at $842.68 (flat $ sizing) -- skipping this trade.
+2026-07-31 14:42:29,262 | [PN] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.93
+2026-07-31 14:42:29,262 | [PN] ACTION: No trade.
+2026-07-31 14:42:29,289 | [PWP] trending (ADX 64.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.91
+2026-07-31 14:42:29,290 | [PWP] ACTION: No trade.
+2026-07-31 14:42:29,324 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.71
+2026-07-31 14:42:29,324 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:42:29,363 | [RDDT] trending (ADX 61.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.60
+2026-07-31 14:42:29,363 | [RDDT] ACTION: No trade.
+2026-07-31 14:42:29,390 | [SPXC] trending (ADX 60.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.65
+2026-07-31 14:42:29,390 | [SPXC] ACTION: No trade.
+2026-07-31 14:42:29,418 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.63
+2026-07-31 14:42:29,418 | [VCYT] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 14:47:29,478 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:47:30,886 | [AMZN] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.65
+2026-07-31 14:47:30,886 | [AMZN] ACTION: No trade.
+2026-07-31 14:47:30,928 | [AXTI] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.07
+2026-07-31 14:47:30,928 | [AXTI] ACTION: No trade.
+2026-07-31 14:47:30,958 | [GDDY] trending (ADX 49.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.74
+2026-07-31 14:47:30,958 | [GDDY] ACTION: No trade.
+2026-07-31 14:47:30,987 | [GLUE] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.68
+2026-07-31 14:47:30,987 | [GLUE] ACTION: No trade.
+2026-07-31 14:47:31,014 | [IESC] trending (ADX 59.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $726.73
+2026-07-31 14:47:31,015 | [IESC] ACTION: No trade.
+2026-07-31 14:47:31,060 | [MU] trending (ADX 37.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $848.71
+2026-07-31 14:47:31,060 | [MU] ACTION: No trade.
+2026-07-31 14:47:31,094 | [PN] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.15
+2026-07-31 14:47:31,094 | [PN] ACTION: No trade.
+2026-07-31 14:47:31,122 | [PWP] trending (ADX 65.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.93
+2026-07-31 14:47:31,122 | [PWP] ACTION: No trade.
+2026-07-31 14:47:31,157 | [RBLX] trending (ADX 30.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.53
+2026-07-31 14:47:31,157 | [RBLX] ACTION: No trade.
+2026-07-31 14:47:31,195 | [RDDT] trending (ADX 61.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.15
+2026-07-31 14:47:31,195 | [RDDT] ACTION: No trade.
+2026-07-31 14:47:31,223 | [SPXC] trending (ADX 59.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $227.92
+2026-07-31 14:47:31,223 | [SPXC] ACTION: No trade.
+2026-07-31 14:47:31,251 | [VCYT] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.34
+2026-07-31 14:47:31,252 | [VCYT] ACTION: No trade.
+2026-07-31 14:52:31,322 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:52:32,519 | [AMZN] trending (ADX 25.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.61
+2026-07-31 14:52:32,519 | [AMZN] ACTION: No trade.
+2026-07-31 14:52:32,562 | [AXTI] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.89
+2026-07-31 14:52:32,562 | [AXTI] ACTION: No trade.
+2026-07-31 14:52:32,593 | [GDDY] trending (ADX 45.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.52
+2026-07-31 14:52:32,593 | [GDDY] ACTION: No trade.
+2026-07-31 14:52:32,625 | [GLUE] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.80
+2026-07-31 14:52:32,625 | [GLUE] ACTION: No trade.
+2026-07-31 14:52:32,653 | [IESC] trending (ADX 60.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $731.53
+2026-07-31 14:52:32,653 | [IESC] ACTION: No trade.
+2026-07-31 14:52:32,699 | [MU] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $845.88
+2026-07-31 14:52:32,699 | [MU] ACTION: No trade.
+2026-07-31 14:52:32,731 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.51
+2026-07-31 14:52:32,731 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 14:52:32,759 | [PWP] trending (ADX 65.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.86
+2026-07-31 14:52:32,759 | [PWP] ACTION: No trade.
+2026-07-31 14:52:32,794 | [RBLX] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.46
+2026-07-31 14:52:32,794 | [RBLX] ACTION: No trade.
+2026-07-31 14:52:32,832 | [RDDT] trending (ADX 61.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.35
+2026-07-31 14:52:32,832 | [RDDT] ACTION: No trade.
+2026-07-31 14:52:32,860 | [SPXC] trending (ADX 58.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $227.00
+2026-07-31 14:52:32,861 | [SPXC] ACTION: No trade.
+2026-07-31 14:52:32,889 | [VCYT] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.24
+2026-07-31 14:52:32,889 | [VCYT] ACTION: No trade.
+2026-07-31 14:57:32,959 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SPXC, VCYT
+2026-07-31 14:57:34,098 | [AMZN] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.31
+2026-07-31 14:57:34,099 | [AMZN] ACTION: No trade.
+2026-07-31 14:57:34,141 | [AXTI] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.64
+2026-07-31 14:57:34,141 | [AXTI] ACTION: No trade.
+2026-07-31 14:57:34,170 | [GDDY] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.36
+2026-07-31 14:57:34,170 | [GDDY] ACTION: No trade.
+2026-07-31 14:57:34,199 | [GLUE] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.04
+2026-07-31 14:57:34,199 | [GLUE] ACTION: No trade.
+2026-07-31 14:57:34,227 | [IESC] trending (ADX 61.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $733.87
+2026-07-31 14:57:34,227 | [IESC] ACTION: No trade.
+2026-07-31 14:57:34,272 | [MU] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $842.26
+2026-07-31 14:57:34,272 | [MU] ACTION: No trade.
+2026-07-31 14:57:34,305 | [PN] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.44
+2026-07-31 14:57:34,305 | [PN] ACTION: No trade.
+2026-07-31 14:57:34,333 | [PWP] trending (ADX 65.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.88
+2026-07-31 14:57:34,333 | [PWP] ACTION: No trade.
+2026-07-31 14:57:34,367 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.84
+2026-07-31 14:57:34,367 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 14:57:34,406 | [RDDT] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.31
+2026-07-31 14:57:34,406 | [RDDT] ACTION: No trade.
+2026-07-31 14:57:34,434 | [SPXC] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $227.84
+2026-07-31 14:57:34,434 | [SPXC] ACTION: No trade.
+2026-07-31 14:57:34,462 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.24
+2026-07-31 14:57:34,462 | [VCYT] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 15:02:34,506 | SCANNER: refreshing watchlist...
+2026-07-31 15:02:34,569 | SCANNER: excluded 11 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-07-31 15:02:35,452 | SCANNER: candidate PN -- -35.0% today, $15.39, liquid, 2 recent news item(s)
+2026-07-31 15:02:35,452 | SCANNER: candidate IESC -- +31.8% today, $753.29, liquid, 5 recent news item(s)
+2026-07-31 15:02:35,452 | SCANNER: candidate GLUE -- -30.1% today, $15.86, liquid, 1 recent news item(s)
+2026-07-31 15:02:35,452 | SCANNER: candidate RBLX -- -28.3% today, $34.90, liquid, 7 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate VCYT -- -26.9% today, $43.73, liquid, 1 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate AXTI -- +25.2% today, $58.79, liquid, 6 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate PWP -- +21.3% today, $18.09, liquid, 1 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate RDDT -- -21.1% today, $140.53, liquid, 6 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate GDDY -- -20.5% today, $79.00, liquid, 6 recent news item(s)
+2026-07-31 15:02:35,453 | SCANNER: candidate AMZN -- +14.9% today, $270.65, liquid, 24 recent news item(s)
+2026-07-31 15:03:17,408 | S&P 500 liquidity backstop -> MU, SNDK
+2026-07-31 15:03:17,412 | SCANNER: new watchlist -> PN, IESC, GLUE, RBLX, VCYT, AXTI, PWP, RDDT, GDDY, AMZN, MU, SNDK
+2026-07-31 15:03:17,432 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:03:18,925 | [AMZN] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.99
+2026-07-31 15:03:18,925 | [AMZN] ACTION: No trade.
+2026-07-31 15:03:18,968 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $58.35
+2026-07-31 15:03:18,968 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:03:18,997 | [GDDY] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.19
+2026-07-31 15:03:18,997 | [GDDY] ACTION: No trade.
+2026-07-31 15:03:19,026 | [GLUE] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.84
+2026-07-31 15:03:19,026 | [GLUE] ACTION: No trade.
+2026-07-31 15:03:19,053 | [IESC] trending (ADX 62.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $744.52
+2026-07-31 15:03:19,053 | [IESC] ACTION: No trade.
+2026-07-31 15:03:19,099 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $847.99
+2026-07-31 15:03:19,105 | [MU] Computed position size is 0 shares at $848.12 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:03:19,138 | [PN] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.15
+2026-07-31 15:03:19,139 | [PN] ACTION: No trade.
+2026-07-31 15:03:19,167 | [PWP] trending (ADX 66.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.98
+2026-07-31 15:03:19,167 | [PWP] ACTION: No trade.
+2026-07-31 15:03:19,202 | [RBLX] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.49
+2026-07-31 15:03:19,202 | [RBLX] ACTION: No trade.
+2026-07-31 15:03:19,240 | [RDDT] trending (ADX 61.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.30
+2026-07-31 15:03:19,240 | [RDDT] ACTION: No trade.
+2026-07-31 15:03:19,285 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1237.97
+2026-07-31 15:03:19,291 | [SNDK] Computed position size is 0 shares at $1257.90 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:03:19,320 | [VCYT] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.05
+2026-07-31 15:03:19,320 | [VCYT] ACTION: No trade.
+2026-07-31 15:08:19,386 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:08:20,802 | [AMZN] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.14
+2026-07-31 15:08:20,802 | [AMZN] ACTION: No trade.
+2026-07-31 15:08:20,844 | [AXTI] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.26
+2026-07-31 15:08:20,844 | [AXTI] ACTION: No trade.
+2026-07-31 15:08:20,873 | [GDDY] trending (ADX 37.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.61
+2026-07-31 15:08:20,874 | [GDDY] ACTION: No trade.
+2026-07-31 15:08:20,903 | [GLUE] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.97
+2026-07-31 15:08:20,903 | [GLUE] ACTION: No trade.
+2026-07-31 15:08:20,930 | [IESC] trending (ADX 63.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $739.52
+2026-07-31 15:08:20,930 | [IESC] ACTION: No trade.
+2026-07-31 15:08:20,975 | [MU] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $846.20
+2026-07-31 15:08:20,975 | [MU] ACTION: No trade.
+2026-07-31 15:08:21,008 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.65
+2026-07-31 15:08:21,008 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:08:21,035 | [PWP] trending (ADX 66.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.95
+2026-07-31 15:08:21,035 | [PWP] ACTION: No trade.
+2026-07-31 15:08:21,070 | [RBLX] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.67
+2026-07-31 15:08:21,070 | [RBLX] ACTION: No trade.
+2026-07-31 15:08:21,108 | [RDDT] trending (ADX 60.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $140.01
+2026-07-31 15:08:21,109 | [RDDT] ACTION: No trade.
+2026-07-31 15:08:21,154 | [SNDK] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1232.57
+2026-07-31 15:08:21,155 | [SNDK] ACTION: No trade.
+2026-07-31 15:08:21,183 | [VCYT] trending (ADX 42.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.82
+2026-07-31 15:08:21,184 | [VCYT] ACTION: No trade.
+2026-07-31 15:13:21,245 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:13:22,629 | [AMZN] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.81
+2026-07-31 15:13:22,629 | [AMZN] ACTION: No trade.
+2026-07-31 15:13:22,672 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $58.60
+2026-07-31 15:13:22,672 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:13:22,701 | [GDDY] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.84
+2026-07-31 15:13:22,701 | [GDDY] ACTION: No trade.
+2026-07-31 15:13:22,730 | [GLUE] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.85
+2026-07-31 15:13:22,730 | [GLUE] ACTION: No trade.
+2026-07-31 15:13:22,758 | [IESC] trending (ADX 64.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $746.99
+2026-07-31 15:13:22,758 | [IESC] ACTION: No trade.
+2026-07-31 15:13:22,803 | [MU] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $845.59
+2026-07-31 15:13:22,803 | [MU] ACTION: No trade.
+2026-07-31 15:13:22,836 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.65
+2026-07-31 15:13:22,836 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:13:22,863 | [PWP] trending (ADX 66.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.07
+2026-07-31 15:13:22,863 | [PWP] ACTION: No trade.
+2026-07-31 15:13:22,898 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.82
+2026-07-31 15:13:22,898 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:13:22,936 | [RDDT] trending (ADX 59.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $140.41
+2026-07-31 15:13:22,936 | [RDDT] ACTION: No trade.
+2026-07-31 15:13:22,981 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1248.04
+2026-07-31 15:13:22,987 | [SNDK] Computed position size is 0 shares at $1238.28 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:13:23,015 | [VCYT] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.71
+2026-07-31 15:13:23,015 | [VCYT] ACTION: No trade.
+2026-07-31 15:18:23,312 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:18:24,529 | [AMZN] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.12
+2026-07-31 15:18:24,530 | [AMZN] ACTION: No trade.
+2026-07-31 15:18:24,572 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $59.14
+2026-07-31 15:18:24,572 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:18:24,601 | [GDDY] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.24
+2026-07-31 15:18:24,601 | [GDDY] ACTION: No trade.
+2026-07-31 15:18:24,630 | [GLUE] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.97
+2026-07-31 15:18:24,631 | [GLUE] ACTION: No trade.
+2026-07-31 15:18:24,658 | [IESC] trending (ADX 65.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $748.10
+2026-07-31 15:18:24,658 | [IESC] ACTION: No trade.
+2026-07-31 15:18:24,704 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $848.50
+2026-07-31 15:18:24,713 | [MU] Computed position size is 0 shares at $837.49 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:18:24,747 | [PN] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.30
+2026-07-31 15:18:24,747 | [PN] ACTION: No trade.
+2026-07-31 15:18:24,775 | [PWP] trending (ADX 66.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.09
+2026-07-31 15:18:24,775 | [PWP] ACTION: No trade.
+2026-07-31 15:18:24,809 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $35.24
+2026-07-31 15:18:24,809 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:18:24,848 | [RDDT] trending (ADX 58.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $140.23
+2026-07-31 15:18:24,848 | [RDDT] ACTION: No trade.
+2026-07-31 15:18:24,893 | [SNDK] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1263.24
+2026-07-31 15:18:24,893 | [SNDK] ACTION: No trade.
+2026-07-31 15:18:24,922 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $43.91
+2026-07-31 15:18:24,922 | [VCYT] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 15:23:24,986 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:23:26,343 | [AMZN] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.05
+2026-07-31 15:23:26,343 | [AMZN] ACTION: No trade.
+2026-07-31 15:23:26,386 | [AXTI] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.25
+2026-07-31 15:23:26,386 | [AXTI] ACTION: No trade.
+2026-07-31 15:23:26,415 | [GDDY] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $78.68
+2026-07-31 15:23:26,416 | [GDDY] ACTION: No trade.
+2026-07-31 15:23:26,445 | [GLUE] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.66
+2026-07-31 15:23:26,445 | [GLUE] ACTION: No trade.
+2026-07-31 15:23:26,473 | [IESC] trending (ADX 66.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $751.80
+2026-07-31 15:23:26,473 | [IESC] ACTION: No trade.
+2026-07-31 15:23:26,518 | [MU] trending (ADX 41.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $844.05
+2026-07-31 15:23:26,518 | [MU] ACTION: No trade.
+2026-07-31 15:23:26,551 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.35
+2026-07-31 15:23:26,551 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:23:26,579 | [PWP] trending (ADX 66.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.17
+2026-07-31 15:23:26,580 | [PWP] ACTION: No trade.
+2026-07-31 15:23:26,616 | [RBLX] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.98
+2026-07-31 15:23:26,616 | [RBLX] ACTION: No trade.
+2026-07-31 15:23:26,657 | [RDDT] trending (ADX 57.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.00
+2026-07-31 15:23:26,657 | [RDDT] ACTION: No trade.
+2026-07-31 15:23:26,704 | [SNDK] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1257.10
+2026-07-31 15:23:26,704 | [SNDK] ACTION: No trade.
+2026-07-31 15:23:26,733 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.12
+2026-07-31 15:23:26,733 | [VCYT] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-07-31 15:28:26,798 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AMZN, AXTI, GDDY, GLUE, IESC, MU, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:28:27,817 | [AMZN] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.61
+2026-07-31 15:28:27,817 | [AMZN] ACTION: No trade.
+2026-07-31 15:28:27,859 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $58.44
+2026-07-31 15:28:27,859 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:28:27,888 | [GDDY] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.10
+2026-07-31 15:28:27,888 | [GDDY] ACTION: No trade.
+2026-07-31 15:28:27,917 | [GLUE] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.79
+2026-07-31 15:28:27,917 | [GLUE] ACTION: No trade.
+2026-07-31 15:28:27,945 | [IESC] trending (ADX 67.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $748.56
+2026-07-31 15:28:27,945 | [IESC] ACTION: No trade.
+2026-07-31 15:28:27,990 | [MU] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $838.27
+2026-07-31 15:28:27,991 | [MU] ACTION: No trade.
+2026-07-31 15:28:28,023 | [PN] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.21
+2026-07-31 15:28:28,023 | [PN] ACTION: No trade.
+2026-07-31 15:28:28,051 | [PWP] trending (ADX 67.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.18
+2026-07-31 15:28:28,051 | [PWP] ACTION: No trade.
+2026-07-31 15:28:28,086 | [RBLX] choppy/sideways (ADX 21.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.56
+2026-07-31 15:28:28,086 | [RBLX] ACTION: No trade.
+2026-07-31 15:28:28,124 | [RDDT] trending (ADX 57.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.29
+2026-07-31 15:28:28,124 | [RDDT] ACTION: No trade.
+2026-07-31 15:28:28,170 | [SNDK] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1236.19
+2026-07-31 15:28:28,170 | [SNDK] ACTION: No trade.
+2026-07-31 15:28:28,198 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.56
+2026-07-31 15:28:28,198 | [VCYT] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:33:28,245 | SCANNER: refreshing watchlist...
+2026-07-31 15:33:28,335 | SCANNER: excluded 11 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-07-31 15:33:28,936 | SCANNER: candidate PN -- -36.2% today, $15.11, liquid, 4 recent news item(s)
+2026-07-31 15:33:28,936 | SCANNER: candidate IESC -- +31.2% today, $749.82, liquid, 5 recent news item(s)
+2026-07-31 15:33:28,936 | SCANNER: candidate GLUE -- -30.1% today, $15.86, liquid, 1 recent news item(s)
+2026-07-31 15:33:28,936 | SCANNER: candidate RBLX -- -30.1% today, $34.04, liquid, 16 recent news item(s)
+2026-07-31 15:33:28,936 | SCANNER: candidate VCYT -- -24.9% today, $44.89, liquid, 3 recent news item(s)
+2026-07-31 15:33:28,936 | SCANNER: candidate RDDT -- -23.8% today, $135.74, liquid, 14 recent news item(s)
+2026-07-31 15:33:28,937 | SCANNER: candidate AXTI -- +23.1% today, $57.77, liquid, 12 recent news item(s)
+2026-07-31 15:33:28,937 | SCANNER: candidate PWP -- +22.1% today, $18.20, liquid, 1 recent news item(s)
+2026-07-31 15:34:00,960 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, MSFT
+2026-07-31 15:34:00,963 | SCANNER: new watchlist -> PN, IESC, GLUE, RBLX, VCYT, RDDT, AXTI, PWP, MU, SNDK, NVDA, MSFT
+2026-07-31 15:34:00,976 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AXTI, GLUE, IESC, MSFT, MU, NVDA, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:34:02,313 | [AXTI] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.36
+2026-07-31 15:34:02,313 | [AXTI] ACTION: No trade.
+2026-07-31 15:34:02,343 | [GLUE] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.79
+2026-07-31 15:34:02,344 | [GLUE] ACTION: No trade.
+2026-07-31 15:34:02,373 | [IESC] trending (ADX 67.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $743.15
+2026-07-31 15:34:02,373 | [IESC] ACTION: No trade.
+2026-07-31 15:34:02,419 | [MSFT] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $456.39
+2026-07-31 15:34:02,419 | [MSFT] ACTION: No trade.
+2026-07-31 15:34:02,467 | [MU] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $837.81
+2026-07-31 15:34:02,467 | [MU] ACTION: No trade.
+2026-07-31 15:34:02,512 | [NVDA] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $196.66
+2026-07-31 15:34:02,513 | [NVDA] ACTION: No trade.
+2026-07-31 15:34:02,546 | [PN] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.11
+2026-07-31 15:34:02,546 | [PN] ACTION: No trade.
+2026-07-31 15:34:02,574 | [PWP] trending (ADX 67.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.16
+2026-07-31 15:34:02,574 | [PWP] ACTION: No trade.
+2026-07-31 15:34:02,608 | [RBLX] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.25
+2026-07-31 15:34:02,608 | [RBLX] ACTION: No trade.
+2026-07-31 15:34:02,647 | [RDDT] trending (ADX 57.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.72
+2026-07-31 15:34:02,647 | [RDDT] ACTION: No trade.
+2026-07-31 15:34:02,693 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1237.88
+2026-07-31 15:34:02,701 | [SNDK] Computed position size is 0 shares at $1207.72 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:34:02,730 | [VCYT] trending (ADX 43.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.42
+2026-07-31 15:34:02,731 | [VCYT] ACTION: No trade.
+2026-07-31 15:39:02,788 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AXTI, GLUE, IESC, MSFT, MU, NVDA, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:39:05,628 | [AXTI] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.02
+2026-07-31 15:39:05,628 | [AXTI] ACTION: No trade.
+2026-07-31 15:39:05,656 | [GLUE] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.78
+2026-07-31 15:39:05,656 | [GLUE] ACTION: No trade.
+2026-07-31 15:39:05,684 | [IESC] trending (ADX 66.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $744.05
+2026-07-31 15:39:05,684 | [IESC] ACTION: No trade.
+2026-07-31 15:39:05,729 | [MSFT] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $457.56
+2026-07-31 15:39:05,729 | [MSFT] ACTION: No trade.
+2026-07-31 15:39:05,774 | [MU] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $827.74
+2026-07-31 15:39:05,774 | [MU] ACTION: No trade.
+2026-07-31 15:39:05,819 | [NVDA] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.83
+2026-07-31 15:39:05,819 | [NVDA] ACTION: No trade.
+2026-07-31 15:39:05,852 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.20
+2026-07-31 15:39:05,852 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:39:05,879 | [PWP] trending (ADX 66.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.14
+2026-07-31 15:39:05,879 | [PWP] ACTION: No trade.
+2026-07-31 15:39:05,913 | [RBLX] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.88
+2026-07-31 15:39:05,914 | [RBLX] ACTION: No trade.
+2026-07-31 15:39:05,952 | [RDDT] trending (ADX 57.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $136.87
+2026-07-31 15:39:05,952 | [RDDT] ACTION: No trade.
+2026-07-31 15:39:05,997 | [SNDK] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1222.50
+2026-07-31 15:39:05,997 | [SNDK] ACTION: No trade.
+2026-07-31 15:39:06,025 | [VCYT] trending (ADX 42.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.05
+2026-07-31 15:39:06,025 | [VCYT] ACTION: No trade.
+2026-07-31 15:44:06,094 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AXTI, GLUE, IESC, MSFT, MU, NVDA, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:44:07,537 | [AXTI] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.40
+2026-07-31 15:44:07,537 | [AXTI] ACTION: No trade.
+2026-07-31 15:44:07,566 | [GLUE] choppy/sideways (ADX 11.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.94
+2026-07-31 15:44:07,566 | [GLUE] ACTION: No trade.
+2026-07-31 15:44:07,594 | [IESC] trending (ADX 65.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $745.68
+2026-07-31 15:44:07,594 | [IESC] ACTION: No trade.
+2026-07-31 15:44:07,639 | [MSFT] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $457.82
+2026-07-31 15:44:07,640 | [MSFT] ACTION: No trade.
+2026-07-31 15:44:07,684 | [MU] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $825.75
+2026-07-31 15:44:07,685 | [MU] ACTION: No trade.
+2026-07-31 15:44:07,729 | [NVDA] choppy/sideways (ADX 17.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.62
+2026-07-31 15:44:07,729 | [NVDA] ACTION: No trade.
+2026-07-31 15:44:07,762 | [PN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.20
+2026-07-31 15:44:07,762 | [PN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:44:07,790 | [PWP] trending (ADX 66.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.16
+2026-07-31 15:44:07,790 | [PWP] ACTION: No trade.
+2026-07-31 15:44:07,825 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $33.97
+2026-07-31 15:44:07,825 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:44:07,864 | [RDDT] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $136.00
+2026-07-31 15:44:07,864 | [RDDT] ACTION: No trade.
+2026-07-31 15:44:07,909 | [SNDK] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1208.31
+2026-07-31 15:44:07,909 | [SNDK] ACTION: No trade.
+2026-07-31 15:44:07,938 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.64
+2026-07-31 15:44:07,938 | [VCYT] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:49:08,167 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AXTI, GLUE, IESC, MSFT, MU, NVDA, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:49:09,425 | [AXTI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.92
+2026-07-31 15:49:09,425 | [AXTI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:49:09,454 | [GLUE] choppy/sideways (ADX 11.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.93
+2026-07-31 15:49:09,454 | [GLUE] ACTION: No trade.
+2026-07-31 15:49:09,482 | [IESC] trending (ADX 64.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $752.89
+2026-07-31 15:49:09,482 | [IESC] ACTION: No trade.
+2026-07-31 15:49:09,528 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $456.86
+2026-07-31 15:49:09,528 | [MSFT] ACTION: No trade.
+2026-07-31 15:49:09,574 | [MU] trending (ADX 45.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $824.46
+2026-07-31 15:49:09,574 | [MU] ACTION: No trade.
+2026-07-31 15:49:09,620 | [NVDA] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.82
+2026-07-31 15:49:09,620 | [NVDA] ACTION: No trade.
+2026-07-31 15:49:09,653 | [PN] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.01
+2026-07-31 15:49:09,653 | [PN] ACTION: No trade.
+2026-07-31 15:49:09,682 | [PWP] trending (ADX 66.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.20
+2026-07-31 15:49:09,682 | [PWP] ACTION: No trade.
+2026-07-31 15:49:09,716 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.24
+2026-07-31 15:49:09,716 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:49:09,755 | [RDDT] trending (ADX 57.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $135.63
+2026-07-31 15:49:09,755 | [RDDT] ACTION: No trade.
+2026-07-31 15:49:09,800 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1216.92
+2026-07-31 15:49:09,806 | [SNDK] Computed position size is 0 shares at $1213.00 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:49:09,834 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $45.23
+2026-07-31 15:49:09,834 | [VCYT] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:54:09,897 | Market is open (closes 2026-07-31 22:00:00 CEST your local time). Checking 12 symbols: AXTI, GLUE, IESC, MSFT, MU, NVDA, PN, PWP, RBLX, RDDT, SNDK, VCYT
+2026-07-31 15:54:11,307 | [AXTI] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.85
+2026-07-31 15:54:11,307 | [AXTI] ACTION: No trade.
+2026-07-31 15:54:11,337 | [GLUE] choppy/sideways (ADX 11.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.09
+2026-07-31 15:54:11,337 | [GLUE] ACTION: No trade.
+2026-07-31 15:54:11,365 | [IESC] trending (ADX 63.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $751.94
+2026-07-31 15:54:11,365 | [IESC] ACTION: No trade.
+2026-07-31 15:54:11,412 | [MSFT] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $458.51
+2026-07-31 15:54:11,412 | [MSFT] ACTION: No trade.
+2026-07-31 15:54:11,459 | [MU] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $824.46
+2026-07-31 15:54:11,459 | [MU] ACTION: No trade.
+2026-07-31 15:54:11,507 | [NVDA] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $196.49
+2026-07-31 15:54:11,507 | [NVDA] ACTION: No trade.
+2026-07-31 15:54:11,541 | [PN] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.95
+2026-07-31 15:54:11,541 | [PN] ACTION: No trade.
+2026-07-31 15:54:11,570 | [PWP] trending (ADX 66.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.32
+2026-07-31 15:54:11,570 | [PWP] ACTION: No trade.
+2026-07-31 15:54:11,605 | [RBLX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $34.35
+2026-07-31 15:54:11,605 | [RBLX] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-07-31 15:54:11,644 | [RDDT] trending (ADX 57.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.00
+2026-07-31 15:54:11,644 | [RDDT] ACTION: No trade.
+2026-07-31 15:54:11,690 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1219.34
+2026-07-31 15:54:11,700 | [SNDK] Computed position size is 0 shares at $1220.96 (flat $ sizing) -- skipping this trade.
+2026-07-31 15:54:11,729 | [VCYT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $45.25
+2026-07-31 15:54:11,729 | [VCYT] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-07-31 15:58:09,293 | Duration window finished.
