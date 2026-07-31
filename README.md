@@ -392,6 +392,21 @@ them, which isn't the same as an improvement. Applying it everywhere
 would have thrown away real edge on the liquid side to fix a problem
 that was never there.
 
+**`vwap_reversion` volume confirmation, scanner picks only.** When
+`USE_VWAP_VOLUME_CONFIRMATION` is on (default), a non-S&P-500 symbol's
+`vwap_reversion` entry also needs volume at least
+`VWAP_REVERSION_MIN_VOLUME_MULT` (default 1.2×) the recent average on the
+entry bar — it was the only enabled strategy with no volume check at all.
+Same S&P 500 exemption, same reason: first tested with `vwap_reversion`
+running alone, which looked like a clean win everywhere (profit factor
+1.74 → 3.53 on liquid names). Tested again in the full priority chain and
+that turned out to be misleading — tightening `vwap_reversion`'s entries
+means fewer of its signals fire, so more bars fall through to
+`trend_following` (next in priority), which is weaker on megacaps. Same-
+moment A/B on the full system: megacap profit factor 1.60 → 1.56 (worse),
+scanner 1.18 → 1.30 (better). Same split shape as the multi-timeframe
+filter, same fix.
+
 Two filters here have bitten this project and are worth understanding:
 
 - **Liquidity is measured in dollars, not shares.** The original version

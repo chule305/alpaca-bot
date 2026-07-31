@@ -356,6 +356,34 @@ def test_vwap_reversion():
           not strat.vwap_reversion_at(short, 10))
 
 
+def test_vwap_reversion_volume_confirms():
+    """
+    vwap_reversion_volume_confirms is a SEPARATE, standalone check (not
+    folded into vwap_reversion_at itself) -- see its docstring for why:
+    it's only applied to scanner picks by trading_bot.py/backtest.py, and
+    "is this an S&P 500 symbol" is an operational concept strategy.py
+    deliberately has no access to. This tests the check in isolation from
+    whether vwap_reversion_at itself would fire.
+    """
+    n = 40
+    ts = ts_range("2024-01-02", "09:30", n)
+    ranging = [100.0 + (1.0 if i % 2 else -1.0) for i in range(n - 2)] + [96.0, 96.6]
+
+    normal_volume = [1000] * (n - 1) + [1000]  # entry bar volume == average
+    enriched_normal = strat.add_indicators(flat_bars(ts, ranging, volumes=normal_volume))
+    check("does NOT confirm when entry-bar volume is merely average",
+          not strat.vwap_reversion_volume_confirms(enriched_normal, n - 1))
+
+    high_volume = [1000] * (n - 1) + [1500]  # entry bar 1.5x the average
+    enriched_high = strat.add_indicators(flat_bars(ts, ranging, volumes=high_volume))
+    check("confirms when entry-bar volume clears VWAP_REVERSION_MIN_VOLUME_MULT",
+          strat.vwap_reversion_volume_confirms(enriched_high, n - 1))
+
+    check("a missing average-volume reading does not confirm (fails closed)",
+          not strat.vwap_reversion_volume_confirms(
+              strat.add_indicators(flat_bars(ts_range("2024-01-02", "09:30", 3), [100.0, 101.0, 102.0])), 1))
+
+
 # ---------------------------------------------------------------------------
 # 8. Relative volume spike
 # ---------------------------------------------------------------------------
@@ -519,6 +547,7 @@ if __name__ == "__main__":
         test_ross_hook,
         test_orb,
         test_vwap_reversion,
+        test_vwap_reversion_volume_confirms,
         test_rvol_spike,
         test_decide_signal_entry_points_agree,
         test_compute_stop_and_target,

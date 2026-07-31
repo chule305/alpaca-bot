@@ -905,3 +905,58 @@ first estimated once the S&P 500 exemption was actually correct rather
 than approximate. Megacap trade count came back at exactly 190 -- bit-for
 -bit identical to the pre-change baseline -- confirming the filter is a
 true no-op there, as designed.
+
+## 2026-07-31: idea 5 built (scanner picks only) -- and a real methodology lesson
+
+Built the vwap_reversion volume-confirmation idea from the 10-ideas round.
+The build itself surfaced something worth remembering for every future
+"test a strategy tweak" round: **testing a signal change in isolation can
+give a different, misleading answer from testing it in the full priority
+chain.**
+
+Original test ran vwap_reversion as the ONLY active strategy and compared
+"with volume filter" vs "without," both isolated. Looked like an
+unambiguous win everywhere -- roughly doubled vwap_reversion's own profit
+factor on liquid names (1.74 -> 3.53). Rebuilt it, verified the shipped
+code, and the FULL-SYSTEM number (all strategies active, real priority
+order) told a different story: a same-moment A/B showed megacap profit
+factor going 1.60 -> 1.56 (worse) while scanner picks went 1.18 -> 1.30
+(better).
+
+The mechanism: vwap_reversion runs first in priority. Tightening its
+entries means fewer of ITS signals fire on any given bar -- but that bar
+doesn't just go untraded, it falls through to whichever strategy is next
+in the chain (trend_following). On megacaps trend_following is weaker,
+so bars that used to go to a now-stricter-but-still-decent vwap_reversion
+were instead being picked up by a worse strategy, dragging the combined
+result down even though vwap_reversion ITSELF got better in isolation.
+On scanner picks this effect either doesn't apply as strongly or is
+outweighed by vwap_reversion's own improvement -- net positive there.
+
+Same split shape as the multi-timeframe filter (idea 3, 2026-07-31
+earlier entry), and the same fix: scanner-picks-only, S&P 500 names
+exempt. Architecture differs from idea 3 though -- the daily-trend filter
+needed an external data fetch (daily bars) so it was always going to live
+outside strategy.py; this one needs no new data (volume/rvol_avg_volume
+are already in add_indicators' output), so the temptation was to just
+bake it into vwap_reversion_at directly. Didn't, for the same reason as
+idea 3: strategy.py has no way to know "is this symbol S&P 500" without
+breaking its pure/network-free design. `vwap_reversion_volume_confirms`
+is a separate, standalone pure function in strategy.py; trading_bot.py's
+check_symbol and backtest.py's simulate() each call it externally, gated
+on reason_key=="vwap_reversion" and non-S&P-500 membership, mirroring
+exactly how the multi-timeframe filter's external gate works.
+
+Verified: megacap trades came back at exactly 190 -- bit-for-bit
+identical to the filter-off run -- confirming the S&P 500 exemption
+makes this a true no-op there. Scanner picks: profit factor 1.18 -> 1.29,
+drawdown 5.7% -> 5.0%.
+
+**Takeaway for future strategy-tuning rounds**: an isolated single-
+strategy backtest answers "is this strategy better on its own," not "is
+the whole system better with this change." Given decide_signal_at is a
+strict priority chain where an earlier strategy firing less often hands
+bars to whatever's next, any change to one strategy's entry criteria
+needs a FULL-CHAIN test before being trusted, not just an isolated one.
+Isolated tests are still useful for a first pass (cheap, fast signal on
+whether an idea has any merit at all) -- just don't ship off one.

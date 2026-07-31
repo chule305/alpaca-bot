@@ -53,7 +53,10 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import MostActivesBy, MarketType
 
 from trade_recorder import record_trade, extract_context, extract_strategy
-from strategy import MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise, compute_daily_trend_map
+from strategy import (
+    MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise, compute_daily_trend_map,
+    vwap_reversion_volume_confirms,
+)
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
@@ -195,6 +198,14 @@ USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").str
 # this doesn't need refreshing anywhere near as often as the 5-minute
 # intraday cycle -- cached like SP500_REFRESH_HOURS for the same reason.
 DAILY_TREND_REFRESH_HOURS = float(os.getenv("DAILY_TREND_REFRESH_HOURS", 4))
+
+# 2026-07-31: vwap_reversion volume confirmation, SCANNER PICKS ONLY --
+# same reasoning and same S&P-500-exempt scoping as the multi-timeframe
+# filter above. See VWAP_REVERSION_MIN_VOLUME_MULT's comment in
+# strategy.py for the full evidence, including the isolated-test pitfall
+# that made this look like a universal win before it was tested in the
+# full priority chain.
+USE_VWAP_VOLUME_CONFIRMATION = os.getenv("USE_VWAP_VOLUME_CONFIRMATION", "true").strip().lower() in ("1", "true", "yes")
 
 # Lightweight news-catalyst filter (presence/frequency only, no AI/NLP
 # sentiment scoring -- that would add per-symbol latency and cost inside
@@ -1219,6 +1230,16 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
     minutes_since_open_now = enriched["minutes_since_open"].iat[i]
     in_lunch_blackout = ENTRY_BLACKOUT_START_MINUTES <= minutes_since_open_now < ENTRY_BLACKOUT_END_MINUTES
 
+    # Scanner-picks-only volume confirmation for vwap_reversion -- see
+    # USE_VWAP_VOLUME_CONFIRMATION's comment. Checked here (not inside
+    # strategy.py) because it needs S&P 500 membership, which is an
+    # operational concept the pure decision file has no access to.
+    vwap_volume_blocks_entry = (
+        USE_VWAP_VOLUME_CONFIRMATION and signal == "BUY" and reason_key == "vwap_reversion"
+        and symbol not in fetch_sp500_symbols()
+        and not vwap_reversion_volume_confirms(enriched, i)
+    )
+
     log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
     notional_opened = 0.0
@@ -1232,6 +1253,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif daily_trend_blocks_entry:
                 log.info(f"[{symbol}] ACTION: No trade (multi-timeframe filter -- "
                           f"the prior day's daily trend isn't confirmed up).")
+            elif vwap_volume_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (vwap_reversion volume filter -- "
+                          f"entry bar's volume didn't confirm).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")

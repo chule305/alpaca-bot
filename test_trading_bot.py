@@ -532,10 +532,102 @@ def test_daily_trend_confirms_entry_noop_when_filter_disabled():
               tb.daily_trend_confirms_entry("QBTS", today) is True)
 
 
-def test_check_symbol_blocks_buy_when_daily_trend_blocks_entry():
+# ---------------------------------------------------------------------------
+# VWAP_REVERSION VOLUME CONFIRMATION -- 2026-07-31, scanner picks only.
+# First tested with vwap_reversion running in ISOLATION and looked like a
+# clean win everywhere; tested again in the full priority chain and turned
+# out to regress megacaps (freed-up bars fall through to weaker
+# trend_following). Same split shape, same fix as the multi-timeframe
+# filter: S&P 500 names always exempt.
+# ---------------------------------------------------------------------------
+
+def test_vwap_volume_filter_exempts_sp500_even_when_volume_is_weak():
     df_input = pd.DataFrame({"close": [100.0]})
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
          patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "vwap_reversion_volume_confirms", return_value=False), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("an S&P 500 symbol buys even with weak volume (exempt)", mock_buy.called)
+    check("the exempt entry reports its notional", notional == 500.0)
+
+
+def test_vwap_volume_filter_blocks_non_sp500_with_weak_volume():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "vwap_reversion_volume_confirms", return_value=False), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a non-S&P-500 symbol is refused when volume doesn't confirm", not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+
+def test_vwap_volume_filter_allows_non_sp500_with_strong_volume():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "vwap_reversion_volume_confirms", return_value=True), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a non-S&P-500 symbol buys once volume confirms", mock_buy.called)
+    check("the confirmed entry reports its notional", notional == 500.0)
+
+
+def test_vwap_volume_filter_only_applies_to_vwap_reversion_signals():
+    """The gate must only fire for vwap_reversion's OWN signal -- a BUY
+    from a different strategy on the same weak-volume bar must not be
+    blocked by a check that has nothing to do with it."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "vwap_reversion_volume_confirms", return_value=False), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a breakout signal is unaffected by the vwap-only volume filter", mock_buy.called)
+    check("the unrelated entry reports its notional", notional == 500.0)
+
+
+def test_vwap_volume_filter_noop_when_disabled():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "vwap_reversion_volume_confirms", return_value=False), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("with the filter disabled, weak volume no longer blocks anything", mock_buy.called)
+    check("the entry reports its notional", notional == 500.0)
+
+
+def test_check_symbol_blocks_buy_when_daily_trend_blocks_entry():
+    df_input = pd.DataFrame({"close": [100.0]})
+    # USE_VWAP_VOLUME_CONFIRMATION forced off: this test is about the
+    # daily-trend filter specifically, and the fixture here (a minimal
+    # make_fake_enriched) doesn't carry the volume columns that OTHER
+    # gate would read -- keeping them isolated is the point.
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
          patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
         notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
                                     at_position_cap=False, current_qty=0.0, equity=10000.0,
@@ -545,6 +637,7 @@ def test_check_symbol_blocks_buy_when_daily_trend_blocks_entry():
 
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
          patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
          patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
         notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
                                     at_position_cap=False, current_qty=0.0, equity=10000.0,
@@ -563,8 +656,12 @@ def test_symbol_cooldown_blocks_immediate_reentry():
     """
     df_input = pd.DataFrame({"close": [100.0]})  # content irrelevant, add_indicators is mocked
 
+    # USE_VWAP_VOLUME_CONFIRMATION forced off: this test is about the
+    # cooldown gate specifically, and the minimal fixture here doesn't
+    # carry the volume columns that other gate would read.
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
          patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
          patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
         notional = tb.check_symbol("VEEE", df_input, entries_paused_reason=None,
                                     at_position_cap=False, current_qty=0.0, equity=10000.0,
@@ -574,6 +671,7 @@ def test_symbol_cooldown_blocks_immediate_reentry():
 
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
          patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
          patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
         notional = tb.check_symbol("VEEE", df_input, entries_paused_reason=None,
                                     at_position_cap=False, current_qty=0.0, equity=10000.0,
@@ -678,6 +776,11 @@ if __name__ == "__main__":
         test_sp500_backstop_requests_nothing_when_not_needed,
         test_scan_reserves_slots_for_sp500_even_when_movers_scan_finds_nothing,
         test_scan_caps_total_watchlist_size_with_backstop_included,
+        test_vwap_volume_filter_exempts_sp500_even_when_volume_is_weak,
+        test_vwap_volume_filter_blocks_non_sp500_with_weak_volume,
+        test_vwap_volume_filter_allows_non_sp500_with_strong_volume,
+        test_vwap_volume_filter_only_applies_to_vwap_reversion_signals,
+        test_vwap_volume_filter_noop_when_disabled,
         test_daily_trend_confirms_entry_exempts_sp500_regardless_of_trend,
         test_daily_trend_confirms_entry_gates_non_sp500_on_real_trend,
         test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol,

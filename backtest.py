@@ -68,7 +68,7 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
-    stop_is_wider_than_noise, compute_daily_trend_map,
+    stop_is_wider_than_noise, compute_daily_trend_map, vwap_reversion_volume_confirms,
     BAR_MINUTES, TRADE_AMOUNT_USD,
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
@@ -102,6 +102,10 @@ STOP_SLIPPAGE_ATR_FRACTION = float(os.getenv("STOP_SLIPPAGE_ATR_FRACTION", 0.5))
 # here (not the TTL-cached version trading_bot.py uses), since a
 # backtest run fetches once and exits rather than running for hours.
 USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").strip().lower() in ("1", "true", "yes")
+# Mirrors trading_bot.py's USE_VWAP_VOLUME_CONFIRMATION -- SCANNER PICKS
+# ONLY, same S&P 500 exemption and same reasoning (see
+# VWAP_REVERSION_MIN_VOLUME_MULT's comment in strategy.py).
+USE_VWAP_VOLUME_CONFIRMATION = os.getenv("USE_VWAP_VOLUME_CONFIRMATION", "true").strip().lower() in ("1", "true", "yes")
 SP500_LIST_URL = os.getenv(
     "SP500_LIST_URL",
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
@@ -218,7 +222,7 @@ def minutes_until_close(timestamp) -> float:
 # ---------------------------------------------------------------------------
 
 def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
-             daily_trend_map: dict | None = None) -> list[dict]:
+             daily_trend_map: dict | None = None, apply_vwap_volume_filter: bool = False) -> list[dict]:
     """
     Walks through the bars one at a time, calling the SAME decision logic
     the live bot uses (decide_signal_at), using only data up to and
@@ -329,6 +333,13 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     continue
 
             signal, reason_key, reason = decide_signal_at(enriched, i)
+            if (signal == "BUY" and apply_vwap_volume_filter and reason_key == "vwap_reversion"
+                    and not vwap_reversion_volume_confirms(enriched, i)):
+                # Scanner-picks-only volume confirmation -- mirrors
+                # trading_bot.py's check_symbol exactly. Caller only
+                # passes apply_vwap_volume_filter=True for non-S&P-500
+                # symbols (see USE_VWAP_VOLUME_CONFIRMATION above).
+                continue
             if signal == "BUY":
                 entry_price = current_bar["close"]
                 stop_price, take_profit_price = compute_stop_and_target(entry_price, current_bar["atr"])
@@ -441,10 +452,15 @@ if __name__ == "__main__":
         print(f"Risk management: stop-loss -{STOP_LOSS_PCT:.0f}% / take-profit +{TAKE_PROFIT_PCT:.0f}%\n")
     print("=" * 70)
 
-    sp500_symbols = fetch_sp500_symbols_once() if USE_MULTI_TIMEFRAME_FILTER else set()
+    needs_sp500_list = USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION
+    sp500_symbols = fetch_sp500_symbols_once() if needs_sp500_list else set()
     if USE_MULTI_TIMEFRAME_FILTER:
         print(f"Multi-timeframe filter: ON, scanner-picks-only ({len(sp500_symbols)} S&P 500 "
-              f"symbol(s) exempt)\n")
+              f"symbol(s) exempt)")
+    if USE_VWAP_VOLUME_CONFIRMATION:
+        print(f"vwap_reversion volume confirmation: ON, scanner-picks-only")
+    if USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION:
+        print()
 
     all_trades = []
 
@@ -462,13 +478,17 @@ if __name__ == "__main__":
 
         print(f"  ({len(bars)} bars loaded)")
 
+        is_scanner_pick = symbol not in sp500_symbols
+
         daily_trend_map = None
-        if USE_MULTI_TIMEFRAME_FILTER and symbol not in sp500_symbols:
+        if USE_MULTI_TIMEFRAME_FILTER and is_scanner_pick:
             daily_trend_map = fetch_daily_trend_map(symbol, args.days)
             if not daily_trend_map:
                 print(f"  (multi-timeframe filter: no daily data for {symbol} -- entries blocked all period)")
 
-        trades = simulate(symbol, bars, starting_equity, daily_trend_map)
+        apply_vwap_volume_filter = USE_VWAP_VOLUME_CONFIRMATION and is_scanner_pick
+
+        trades = simulate(symbol, bars, starting_equity, daily_trend_map, apply_vwap_volume_filter)
         all_trades.extend(trades)
 
         print_stats(compute_stats(trades, starting_equity))

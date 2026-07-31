@@ -140,6 +140,24 @@ VWAP_REVERSION_PCT = float(os.getenv("VWAP_REVERSION_PCT", 1.5))
 # refusing genuinely absurd cases. Deliberately not tighter, because the
 # evidence says tighter costs money.
 VWAP_REVERSION_MAX_ADX = float(os.getenv("VWAP_REVERSION_MAX_ADX", 50))
+# Requires volume at least this many times the recent average on the
+# entry bar -- vwap_reversion was the only enabled strategy with no
+# volume check at all. Added 2026-07-31, SCANNER PICKS ONLY (see
+# vwap_reversion_volume_confirms below for why this can't just live
+# inside vwap_reversion_at itself).
+#
+# First tested vwap_reversion in ISOLATION (as the only active
+# strategy): looked like a clean win everywhere, roughly doubling its
+# own profit factor on liquid names (1.74 -> 3.53). Tested again in the
+# FULL priority chain, same 90 days, and the isolated test turned out to
+# be misleading: tightening vwap_reversion's entries means fewer of its
+# signals fire, so more bars fall through to trend_following (next in
+# priority) -- which is weaker on megacaps, dragging the combined result
+# down even though vwap_reversion itself was better. Same-moment A/B on
+# the full system: megacap PF 1.60 -> 1.56 (worse), scanner PF 1.18 ->
+# 1.30 (better). Same split shape as the multi-timeframe filter, same
+# fix: scanner picks only, S&P 500 names exempt.
+VWAP_REVERSION_MIN_VOLUME_MULT = float(os.getenv("VWAP_REVERSION_MIN_VOLUME_MULT", 1.2))
 
 # Relative volume (RVOL) spike -- an unusual volume surge on a green bar,
 # independent of the breakout strategy's "new high" requirement.
@@ -606,6 +624,28 @@ def vwap_reversion_at(df: pd.DataFrame, i: int) -> bool:
     stretched_below = close_now < vwap * (1 - VWAP_REVERSION_PCT / 100)
     turning_up = close_now > close_prev
     return bool(stretched_below and turning_up)
+
+
+def vwap_reversion_volume_confirms(df: pd.DataFrame, i: int) -> bool:
+    """
+    Standalone volume check for a vwap_reversion entry -- deliberately
+    NOT folded into vwap_reversion_at itself. It only applies to scanner-
+    picked (non-S&P-500) symbols (see VWAP_REVERSION_MIN_VOLUME_MULT's
+    comment for the full evidence), and "is this symbol an S&P 500
+    member" is an operational/live-data concept strategy.py has no
+    access to by design -- it stays a pure, network-free decision file.
+    So this check lives here as a separate, callable function, and
+    trading_bot.py/backtest.py apply it externally (same architecture as
+    the multi-timeframe filter) only for the symbols it's proven to help.
+
+    Fails CLOSED like every other volume/noise guard in this file: no
+    volume reading means no confirmation, not a free pass.
+    """
+    avg_volume = df["rvol_avg_volume"].iat[i]
+    volume_now = df["volume"].iat[i]
+    if pd.isna(avg_volume) or avg_volume == 0:
+        return False
+    return bool(volume_now >= avg_volume * VWAP_REVERSION_MIN_VOLUME_MULT)
 
 
 def rvol_spike_at(df: pd.DataFrame, i: int) -> bool:

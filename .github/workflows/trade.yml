@@ -90,6 +90,7 @@ jobs:
           USE_SP500_UNIVERSE: "true"
           SP500_MIN_WATCHLIST_SLOTS: "4"
           USE_MULTI_TIMEFRAME_FILTER: "true"
+          USE_VWAP_VOLUME_CONFIRMATION: "true"
           DAILY_TREND_REFRESH_HOURS: "4"
           SYMBOL_COOLDOWN_MINUTES: "60"
           MIN_STOP_TO_ATR_RATIO: "2.0"
