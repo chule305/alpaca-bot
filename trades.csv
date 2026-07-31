@@ -40,3 +40,6 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-30T19:52:00+00:00,2026-07-30,ALNY,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
 2026-07-30T19:52:00+00:00,2026-07-30,NVDA,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
 2026-07-30T19:52:00+00:00,2026-07-30,RTO,FLATTEN,end_of_day,Flattened before market close,21,,,,,,,,,,,,,,,,,,,,,,
+2026-07-31T15:59:13+00:00,2026-07-31,ALNY,AUTO_EXIT,vwap_reversion,AUTO_EXIT (order type OrderType.MARKET),2,203.46,406.92,,,,,,,5c274193-6953-4355-88e5-2ed8149fef28,,,,,,,,,,,,,
+2026-07-31T15:59:13+00:00,2026-07-31,NVDA,AUTO_EXIT,trend_following,AUTO_EXIT (order type OrderType.MARKET),2,194.925,389.85,,,,,,,92d7e76b-d703-44de-b162-175b95c05c93,,,,,,,,,,,,,
+2026-07-31T15:59:13+00:00,2026-07-31,RTO,AUTO_EXIT,vwap_reversion,AUTO_EXIT (order type OrderType.MARKET),21,24.19,507.99,,,,,,,2a62efd3-0e03-49f2-9499-43abd804d3a1,,,,,,,,,,,,,
