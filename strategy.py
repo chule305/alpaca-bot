@@ -812,6 +812,50 @@ def stop_is_wider_than_noise(entry_price: float, atr_value: float | None,
     return stop_distance >= MIN_STOP_TO_ATR_RATIO * atr_value
 
 
+def compute_daily_trend_map(daily_bars: pd.DataFrame) -> dict:
+    """
+    Multi-timeframe confirmation building block: given DAILY bars (one
+    row per trading day, NOT the intraday BAR_MINUTES bars everything
+    else here works with), returns a {date: bool} map of whether that
+    date's entries should be considered "trend-confirmed" -- meaning the
+    PRIOR fully-closed day's daily EMA_fast > EMA_slow (an uptrend).
+
+    Shifted by exactly one day on purpose: today's own daily bar is still
+    forming while the market is open, so using it to gate today's
+    intraday entries would be lookahead -- gating a 10am decision on
+    data that only exists at 4pm the same day. Only a day that has
+    already fully closed counts.
+
+    Added 2026-07-31 after a 90-day backtest (see CLAUDE.md) found this
+    filter is a clear win specifically for the kind of volatile, low-cap
+    stocks the live scanner picks -- return +6.5% -> +9.8%, profit
+    factor 1.10 -> 1.27, max drawdown 8.9% -> 4.6% over the same period.
+    On liquid S&P 500-type names it cut trade count in half for a lower
+    total dollar return (each trade taken was higher quality, just far
+    fewer of them), so callers apply this ONLY to non-S&P-500 symbols --
+    see trading_bot.py's USE_MULTI_TIMEFRAME_FILTER / fetch_sp500_symbols
+    for how that scoping is done. This function itself has no opinion on
+    which symbols it should run for -- it's a pure date -> bool mapping.
+
+    A date with no prior-day data (warmup, or a data gap) maps to False,
+    not missing -- callers should treat "unknown" and "downtrend" the
+    same way (both refuse new entries), matching the fail-closed pattern
+    already used by stop_is_wider_than_noise.
+    """
+    if daily_bars is None or daily_bars.empty:
+        return {}
+    df = daily_bars.copy()
+    df["ema_fast"] = df["close"].ewm(span=FAST_MA, adjust=False).mean()
+    df["ema_slow"] = df["close"].ewm(span=SLOW_MA, adjust=False).mean()
+    df["trend_up"] = df["ema_fast"] > df["ema_slow"]
+    df["date"] = _session_date(df)
+    # The trend value ASSOCIATED WITH a given date is the trend as of the
+    # PRIOR row -- i.e. what was already known and fully closed before
+    # that date's own session began.
+    df["trend_up_prior_day"] = df["trend_up"].shift(1)
+    return dict(zip(df["date"], df["trend_up_prior_day"].fillna(False)))
+
+
 def compute_stop_and_target(entry_price: float, atr_value: float | None = None) -> tuple[float, float]:
     """
     Returns (stop_price, take_profit_price) for a new long position.

@@ -52,6 +52,8 @@ IMPORTANT LIMITATIONS (read this before trusting the numbers):
 """
 
 import argparse
+import io
+import urllib.request
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
@@ -66,7 +68,7 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
-    stop_is_wider_than_noise,
+    stop_is_wider_than_noise, compute_daily_trend_map,
     BAR_MINUTES, TRADE_AMOUNT_USD,
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
@@ -93,6 +95,50 @@ DEFAULT_BACKTEST_EQUITY = float(os.getenv("DEFAULT_BACKTEST_EQUITY", 100_000))
 # 0.51-0.54 x ATR). Set to 0 to restore the old perfect-fill assumption,
 # but be aware that assumption systematically flatters volatile stocks.
 STOP_SLIPPAGE_ATR_FRACTION = float(os.getenv("STOP_SLIPPAGE_ATR_FRACTION", 0.5))
+
+# Mirrors trading_bot.py's USE_MULTI_TIMEFRAME_FILTER -- SCANNER PICKS
+# ONLY (non-S&P-500 symbols). See that file's comment for the full
+# reasoning and the 90-day comparison this is based on. A one-shot fetch
+# here (not the TTL-cached version trading_bot.py uses), since a
+# backtest run fetches once and exits rather than running for hours.
+USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").strip().lower() in ("1", "true", "yes")
+SP500_LIST_URL = os.getenv(
+    "SP500_LIST_URL",
+    "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
+)
+
+
+def fetch_sp500_symbols_once() -> set:
+    """One-shot version of trading_bot.py's fetch_sp500_symbols -- no TTL
+    cache needed for a single CLI run. Returns an empty set on failure,
+    which means the multi-timeframe filter degrades to applying to EVERY
+    symbol (the validated-safe direction -- see compute_daily_trend_map)
+    rather than silently skipping it for a run that happens to include a
+    real S&P 500 name."""
+    try:
+        with urllib.request.urlopen(SP500_LIST_URL, timeout=10) as response:
+            text = response.read().decode("utf-8")
+        df = pd.read_csv(io.StringIO(text))
+        return {s.strip().upper() for s in df["Symbol"] if isinstance(s, str) and s.strip()}
+    except Exception as e:
+        print(f"Could not fetch the S&P 500 list ({e}) -- multi-timeframe filter will "
+              f"apply to every symbol this run rather than skipping S&P 500 names.")
+        return set()
+
+
+def fetch_daily_trend_map(symbol: str, days_back: int) -> dict:
+    request = StockBarsRequest(
+        symbol_or_symbols=symbol,
+        timeframe=TimeFrame(1, TimeFrameUnit.Day),
+        start=datetime.now(timezone.utc) - timedelta(days=days_back + 40),  # extra EMA warmup
+    )
+    daily = data_client.get_stock_bars(request).df
+    if daily.empty:
+        return {}
+    daily = daily.reset_index()
+    if "symbol" in daily.columns:
+        daily = daily[daily["symbol"] == symbol].reset_index(drop=True)
+    return compute_daily_trend_map(daily)
 
 
 def get_starting_equity() -> float:
@@ -171,7 +217,8 @@ def minutes_until_close(timestamp) -> float:
 # SIMULATION
 # ---------------------------------------------------------------------------
 
-def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float) -> list[dict]:
+def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
+             daily_trend_map: dict | None = None) -> list[dict]:
     """
     Walks through the bars one at a time, calling the SAME decision logic
     the live bot uses (decide_signal_at), using only data up to and
@@ -271,6 +318,15 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float) -> list[di
                 continue  # too close to the bell to open something new today
             if ENTRY_BLACKOUT_START_MINUTES <= current_bar["minutes_since_open"] < ENTRY_BLACKOUT_END_MINUTES:
                 continue  # historically weak entry window (see strategy.py)
+            if daily_trend_map is not None:
+                # Multi-timeframe confirmation -- mirrors trading_bot.py's
+                # daily_trend_confirms_entry exactly. None here (vs. an
+                # empty dict) means "this symbol is exempt" (an S&P 500
+                # name), so this branch only runs for symbols the filter
+                # actually applies to.
+                today = current_bar["timestamp"].tz_convert(MARKET_TZ).date()
+                if not daily_trend_map.get(today, False):
+                    continue
 
             signal, reason_key, reason = decide_signal_at(enriched, i)
             if signal == "BUY":
@@ -385,6 +441,11 @@ if __name__ == "__main__":
         print(f"Risk management: stop-loss -{STOP_LOSS_PCT:.0f}% / take-profit +{TAKE_PROFIT_PCT:.0f}%\n")
     print("=" * 70)
 
+    sp500_symbols = fetch_sp500_symbols_once() if USE_MULTI_TIMEFRAME_FILTER else set()
+    if USE_MULTI_TIMEFRAME_FILTER:
+        print(f"Multi-timeframe filter: ON, scanner-picks-only ({len(sp500_symbols)} S&P 500 "
+              f"symbol(s) exempt)\n")
+
     all_trades = []
 
     for symbol in symbols:
@@ -401,7 +462,13 @@ if __name__ == "__main__":
 
         print(f"  ({len(bars)} bars loaded)")
 
-        trades = simulate(symbol, bars, starting_equity)
+        daily_trend_map = None
+        if USE_MULTI_TIMEFRAME_FILTER and symbol not in sp500_symbols:
+            daily_trend_map = fetch_daily_trend_map(symbol, args.days)
+            if not daily_trend_map:
+                print(f"  (multi-timeframe filter: no daily data for {symbol} -- entries blocked all period)")
+
+        trades = simulate(symbol, bars, starting_equity, daily_trend_map)
         all_trades.extend(trades)
 
         print_stats(compute_stats(trades, starting_equity))

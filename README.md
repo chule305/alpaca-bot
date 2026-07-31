@@ -376,6 +376,22 @@ for `SP500_REFRESH_HOURS` (default 24 — the index changes only a handful
 of times a year). These reserved slots come out of the existing
 `SCANNER_WATCHLIST_SIZE` budget, not on top of it.
 
+**Multi-timeframe confirmation, scanner picks only.** When
+`USE_MULTI_TIMEFRAME_FILTER` is on (default), a non-S&P-500 symbol needs
+the PRIOR trading day's daily EMA(9) above its EMA(21) — an uptrend, on
+the daily timeframe — before the bot will take a new intraday entry in
+it. S&P 500 names (whether they came from the backstop above or the
+`SYMBOLS` fallback list) are always exempt, regardless of their own daily
+trend. This split is deliberate, not an oversight: a 90-day backtest
+(2026-07-31, see CLAUDE.md) found the filter is a clear win specifically
+on the scanner's own volatile picks (return +4.4% → +7.6%, profit factor
+1.07 → 1.18, max drawdown 8.7% → 5.7% over the same period), but on
+liquid S&P 500 names it cut trade count in half for a *lower* total
+dollar return — each trade taken was higher quality, just far fewer of
+them, which isn't the same as an improvement. Applying it everywhere
+would have thrown away real edge on the liquid side to fix a problem
+that was never there.
+
 Two filters here have bitten this project and are worth understanding:
 
 - **Liquidity is measured in dollars, not shares.** The original version

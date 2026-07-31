@@ -483,6 +483,76 @@ def test_reconcile_bracket_survives_a_failed_leg_replace():
     check("reports not fully corrected when a leg failed", corrected is False)
 
 
+# ---------------------------------------------------------------------------
+# MULTI-TIMEFRAME FILTER -- 2026-07-31, scanner picks only. S&P 500 names
+# must always bypass the filter regardless of daily trend; everything else
+# must be gated on it. This is the whole point of the feature (see
+# CLAUDE.md for the 90-day comparison), so it's the property most worth
+# pinning with a test.
+# ---------------------------------------------------------------------------
+
+def test_daily_trend_confirms_entry_exempts_sp500_regardless_of_trend():
+    from datetime import date
+    today = date(2026, 7, 31)
+    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "_daily_trend_cache", {"AAPL": {"map": {today: False}, "fetched_at": None}}):
+        check("an S&P 500 name is exempt even though its OWN trend is down",
+              tb.daily_trend_confirms_entry("AAPL", today) is True)
+
+
+def test_daily_trend_confirms_entry_gates_non_sp500_on_real_trend():
+    from datetime import date
+    today = date(2026, 7, 31)
+    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "_daily_trend_cache", {
+             "VEEE": {"map": {today: True}, "fetched_at": None},
+             "TRAX": {"map": {today: False}, "fetched_at": None},
+         }):
+        check("a non-S&P-500 name with an up trend is confirmed",
+              tb.daily_trend_confirms_entry("VEEE", today) is True)
+        check("a non-S&P-500 name with a down trend is blocked",
+              tb.daily_trend_confirms_entry("TRAX", today) is False)
+
+
+def test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol():
+    from datetime import date
+    today = date(2026, 7, 31)
+    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL"]), \
+         patch.object(tb, "_daily_trend_cache", {}):
+        check("a symbol with no cached trend at all is blocked, not silently allowed",
+              tb.daily_trend_confirms_entry("QBTS", today) is False)
+
+
+def test_daily_trend_confirms_entry_noop_when_filter_disabled():
+    from datetime import date
+    today = date(2026, 7, 31)
+    with patch.object(tb, "USE_MULTI_TIMEFRAME_FILTER", False), \
+         patch.object(tb, "_daily_trend_cache", {}):
+        check("with the filter off, even an unknown non-S&P-500 symbol is allowed",
+              tb.daily_trend_confirms_entry("QBTS", today) is True)
+
+
+def test_check_symbol_blocks_buy_when_daily_trend_blocks_entry():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, daily_trend_blocks_entry=True)
+    check("a BUY signal is refused when the multi-timeframe filter blocks it", not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "vwap_reversion", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TRAX", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, daily_trend_blocks_entry=False)
+    check("the same signal is taken once the filter confirms", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -608,6 +678,11 @@ if __name__ == "__main__":
         test_sp500_backstop_requests_nothing_when_not_needed,
         test_scan_reserves_slots_for_sp500_even_when_movers_scan_finds_nothing,
         test_scan_caps_total_watchlist_size_with_backstop_included,
+        test_daily_trend_confirms_entry_exempts_sp500_regardless_of_trend,
+        test_daily_trend_confirms_entry_gates_non_sp500_on_real_trend,
+        test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol,
+        test_daily_trend_confirms_entry_noop_when_filter_disabled,
+        test_check_symbol_blocks_buy_when_daily_trend_blocks_entry,
         test_reconcile_bracket_keeps_small_drift_unchanged,
         test_reconcile_bracket_reprices_legs_on_large_drift,
         test_reconcile_bracket_falls_back_when_fill_not_confirmed,

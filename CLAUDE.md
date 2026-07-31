@@ -814,3 +814,94 @@ plumbing for one unproven idea isn't justified yet) -- e.g. requiring
 confirmation only on weaker crosses (small ADX / small EMA separation)
 and letting strong ones through immediately, which is a genuinely
 separate, untested hypothesis.
+
+## 2026-07-31: four improvement ideas backtested, one built (multi-timeframe, scanner picks only)
+
+User asked what would make the bot more profitable, explicitly ruling out
+scaling position size (the $500/trade cap is a real personal constraint,
+not a tuning knob). Researched general trading practice + this project's
+own history, proposed four ideas, backtested all four against the same
+90-day window on both universes before building anything.
+
+    idea                        megacap (PF/DD/return)          scanner (PF/DD/return)
+    baseline                    1.52 / 2.1% / +11.5%             1.10 / 8.9% / +6.5%
+    1. earnings blackout        1.56 / 1.9% / +11.8% (marginal)  1.04 / 9.7% / +2.7%  (WORSE)
+    2. correlation limits       not P&L-backtestable (see below)
+    3. multi-timeframe          1.60 / 1.9% / +6.3%  (mixed)     1.27 / 4.6% / +9.8%  (clear win)
+    4. trailing stop            0.91 / 4.7% / -2.4%  (bad)       0.64 / 23.8% / -23.7% (very bad)
+
+**Idea 1 (earnings blackout)**: approximated via Alpaca's own historical
+news (no real earnings-calendar API key available) -- keyword-scanned
+headlines for "earnings"/"EPS"/"beats estimates" etc. as a proxy for
+likely report dates. Helped megacaps marginally, hurt scanner picks
+(return cut more than half). Working theory: for the volatile small-caps
+this bot trades, "earnings-shaped news" and "the rally the bot is trying
+to catch" often overlap, so the blackout removes good trades along with
+bad ones. Not built.
+
+**Idea 2 (correlation-aware position limits)**: backtest.py tests every
+symbol in complete isolation with its own equity curve -- it has no
+concept of concurrent cross-symbol positions at all (this is already
+documented in its own module docstring). A real P&L test needs a full
+portfolio simulator, not a quick check. What IS real: computed actual
+historical correlation on both universes. Megacaps average 0.32
+correlation with pairs up to 0.58 (AMD-TSLA) -- genuinely material.
+Scanner picks average a lower 0.17 but aren't uniformly safe (FBRX-TRAX
+hit 0.74 purely by coincidence of what the scanner picked that week). Not
+built -- real evidence, but no backtestable dollar impact without a
+bigger rebuild than this warranted yet.
+
+**Idea 4 (trailing stop)**: 2x-ATR trail, no fixed take-profit. Bad
+everywhere, badly: scanner picks lost 23.7% instead of gaining 6.5%,
+profit factor fell to 0.64. The implementation let winners round-trip
+back into losses instead of locking in gains -- a different trail
+distance or a hybrid (partial profit-take + trail the remainder) might
+behave completely differently, but as tested this is a clear rejection,
+not a "needs tuning" maybe.
+
+**Idea 3 (multi-timeframe confirmation) -- built, scanner picks only.**
+Requiring the prior day's daily EMA(9) > EMA(21) before taking an
+intraday entry: unambiguous win on scanner picks (return, win rate,
+profit factor, AND drawdown all improve together -- drawdown roughly
+halves). On megacaps it's a real tradeoff, not a clean win: quality per
+trade improves (win rate 55%->59%, PF 1.52->1.60, drawdown 2.1%->1.9%)
+but total trades roughly halve, so total dollar return drops (+11.5%
+-> +6.3%) purely from fewer bets being taken, not worse ones. Since the
+2026-07-29 S&P 500 backstop guarantees megacap names are on the SAME live
+watchlist as scanner picks every day, "apply everywhere" was never a
+real option -- it would trade away proven megacap edge to fix a problem
+megacaps don't have. Scoped instead by real S&P 500 membership (reusing
+fetch_sp500_symbols(), the exact function built for the backstop): S&P
+500 names are always exempt, everything else is gated.
+
+Architecture: `strategy.compute_daily_trend_map(daily_bars) -> {date:
+bool}` is the pure, synthetic-data-testable piece (shift-by-one-day logic
+proven directly against a hand-computed EMA series in test_strategy.py --
+gating today's entry on yesterday's already-closed trend, never today's
+still-forming one). Everything OPERATIONAL (fetching daily bars, caching,
+checking S&P 500 membership) stays in trading_bot.py/backtest.py, same
+split as the rest of the project: strategy.py has zero network I/O by
+design, and this doesn't change that. trading_bot.py caches per-symbol
+daily trend maps in-process for `DAILY_TREND_REFRESH_HOURS` (4h -- daily
+trend only changes once a day, so this doesn't need 5-minute-cycle
+freshness); backtest.py does a simpler one-shot fetch per run, since it
+doesn't need TTL caching at all.
+
+An unknown/uncached symbol fails CLOSED (blocks the entry), matching
+stop_is_wider_than_noise's established philosophy: the cost of skipping
+one trade over missing data is near zero, the cost of skipping the
+filter's protection over the same missing data is not.
+
+Verified the SHIPPED code (not just the scratch backtest that produced
+the comparison table) reproduces the improvement: re-running backtest.py
+on the real scanner-pick symbols found the numbers moved slightly from
+the original comparison (+7.6%/PF 1.18 vs the originally reported
++9.8%/PF 1.27) -- traced to SMCI actually being a real S&P 500 member
+that the shipped code correctly exempts but the quick scratch experiment
+didn't check for. Re-ran a same-day, same-code on/off comparison instead
+of trusting the earlier number: +4.4%/PF 1.07/DD 8.7% (off) vs
++7.6%/PF 1.18/DD 5.7% (on) -- still a clear, real win, just smaller than
+first estimated once the S&P 500 exemption was actually correct rather
+than approximate. Megacap trade count came back at exactly 190 -- bit-for
+-bit identical to the pre-change baseline -- confirming the filter is a
+true no-op there, as designed.

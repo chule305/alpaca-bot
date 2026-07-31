@@ -53,7 +53,7 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import MostActivesBy, MarketType
 
 from trade_recorder import record_trade, extract_context, extract_strategy
-from strategy import MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise
+from strategy import MIN_STOP_TO_ATR_RATIO, stop_is_wider_than_noise, compute_daily_trend_map
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
@@ -176,6 +176,25 @@ SP500_LIST_URL = os.getenv(
     "SP500_LIST_URL",
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
 )
+
+# 2026-07-31: multi-timeframe confirmation, SCANNER PICKS ONLY. A 90-day
+# backtest found requiring the prior day's daily trend to agree before
+# taking an intraday entry is a clear win specifically for the volatile,
+# low-cap names the movers scan picks (return +6.5% -> +9.8%, profit
+# factor 1.10 -> 1.27, max drawdown 8.9% -> 4.6%) -- but on liquid S&P
+# 500-type names it cut trade count in half for a LOWER total dollar
+# return (higher quality per trade, just far fewer of them taken). Since
+# the S&P 500 liquidity backstop puts both kinds of symbol on the same
+# watchlist every day now, this can't be "on for the whole watchlist" --
+# it has to know which symbols are S&P 500 members (skip) vs everything
+# else (apply), reusing the exact same fetch_sp500_symbols() membership
+# check already built for the backstop. See CLAUDE.md for the full
+# comparison this decision is based on.
+USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").strip().lower() in ("1", "true", "yes")
+# Daily trend only changes once a day (it's driven by daily closes), so
+# this doesn't need refreshing anywhere near as often as the 5-minute
+# intraday cycle -- cached like SP500_REFRESH_HOURS for the same reason.
+DAILY_TREND_REFRESH_HOURS = float(os.getenv("DAILY_TREND_REFRESH_HOURS", 4))
 
 # Lightweight news-catalyst filter (presence/frequency only, no AI/NLP
 # sentiment scoring -- that would add per-symbol latency and cost inside
@@ -519,6 +538,70 @@ def fetch_sp500_candidates(already_picked: set[str], needed: int) -> list[str]:
     if picked:
         log.info(f"S&P 500 liquidity backstop -> {', '.join(picked)}")
     return picked
+
+
+_daily_trend_cache: dict[str, dict] = {}  # symbol -> {"map": {date: bool}, "fetched_at": datetime}
+
+
+def refresh_daily_trend_maps_if_needed(symbols: list[str]) -> None:
+    """
+    Keeps _daily_trend_cache fresh for whatever's currently on the
+    watchlist, in ONE batched request per refresh rather than one call
+    per symbol -- same batching principle as get_recent_bars_batch, so a
+    wider watchlist doesn't cost proportionally more API calls.
+
+    Best-effort throughout: a failed refresh leaves existing cache
+    entries in place (a slightly stale trend map is far better than
+    losing the filter's protection entirely over one bad network call),
+    and a symbol with no cache entry at all is treated as "trend unknown"
+    by the caller, which fails toward blocking the entry -- see
+    compute_daily_trend_map's docstring for why that's the safe default.
+    """
+    if not USE_MULTI_TIMEFRAME_FILTER or not symbols:
+        return
+    now = datetime.now(timezone.utc)
+    stale = [
+        s for s in symbols
+        if s not in _daily_trend_cache
+        or (now - _daily_trend_cache[s]["fetched_at"]).total_seconds() >= DAILY_TREND_REFRESH_HOURS * 3600
+    ]
+    if not stale:
+        return
+    try:
+        request = StockBarsRequest(
+            symbol_or_symbols=stale,
+            timeframe=TimeFrame(1, TimeFrameUnit.Day),
+            # Comfortably covers SLOW_MA(21) trading days of warmup even
+            # across weekends/holidays.
+            start=now - timedelta(days=60),
+        )
+        bars = data_client.get_stock_bars(request).df
+    except Exception as e:
+        log.warning(f"Multi-timeframe filter: could not refresh daily bars for "
+                     f"{len(stale)} symbol(s) ({e}) -- keeping existing cache entries.")
+        return
+    if bars.empty:
+        return
+    bars = bars.reset_index()
+    for symbol, group in bars.groupby("symbol"):
+        trend_map = compute_daily_trend_map(group.drop(columns="symbol").reset_index(drop=True))
+        _daily_trend_cache[symbol] = {"map": trend_map, "fetched_at": now}
+    log.info(f"Multi-timeframe filter: refreshed daily trend for {len(stale)} symbol(s).")
+
+
+def daily_trend_confirms_entry(symbol: str, today) -> bool:
+    """True if `symbol` is clear to take new entries under the
+    multi-timeframe filter -- either the filter doesn't apply to it (an
+    S&P 500 name; see USE_MULTI_TIMEFRAME_FILTER's comment for why), or
+    it applies and the prior day's daily trend was up."""
+    if not USE_MULTI_TIMEFRAME_FILTER:
+        return True
+    if symbol in fetch_sp500_symbols():
+        return True
+    cached = _daily_trend_cache.get(symbol)
+    if cached is None:
+        return False  # unknown trend -- fail toward blocking, not allowing
+    return bool(cached["map"].get(today, False))
 
 
 def scan_for_volatile_stocks() -> list[str]:
@@ -1116,7 +1199,7 @@ def place_sell_order(symbol: str):
 
 def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | None, at_position_cap: bool,
                   current_qty: float, equity: float | None, portfolio_risk_estimate: float,
-                  in_cooldown: bool = False) -> float:
+                  in_cooldown: bool = False, daily_trend_blocks_entry: bool = False) -> float:
     """
     Checks one symbol and acts on its signal. Returns the notional $
     amount of a newly opened position (0.0 if none), so the caller can
@@ -1146,6 +1229,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif in_cooldown:
                 log.info(f"[{symbol}] ACTION: No trade (cooling off for "
                           f"{SYMBOL_COOLDOWN_MINUTES:.0f} min after this symbol's last position closed).")
+            elif daily_trend_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (multi-timeframe filter -- "
+                          f"the prior day's daily trend isn't confirmed up).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
@@ -1400,14 +1486,18 @@ def run_one_cycle() -> float:
     except Exception as e:
         log.error(f"Could not fetch price data for this cycle's watchlist: {e}")
 
+    refresh_daily_trend_maps_if_needed(symbols_to_check)
+    today_et = clock.timestamp.astimezone(MARKET_TZ_FOR_LOGS).date()
+
     for symbol in symbols_to_check:
         at_position_cap = open_count >= MAX_CONCURRENT_POSITIONS
         current_qty = open_positions.get(symbol, {}).get("qty", 0.0)
         cooldown_until = symbol_cooldown_until.get(symbol)
         in_cooldown = cooldown_until is not None and clock.timestamp < cooldown_until
+        daily_trend_blocks_entry = not daily_trend_confirms_entry(symbol, today_et)
         notional = check_symbol(symbol, bars_by_symbol.get(symbol), entries_paused_reason,
                                  at_position_cap, current_qty, equity_estimate, portfolio_risk_estimate,
-                                 in_cooldown=in_cooldown)
+                                 in_cooldown=in_cooldown, daily_trend_blocks_entry=daily_trend_blocks_entry)
         if notional > 0:
             open_count += 1
             if equity_estimate is not None:

@@ -232,6 +232,59 @@ def test_orb():
 # 7. VWAP mean-reversion
 # ---------------------------------------------------------------------------
 
+def test_compute_daily_trend_map():
+    """
+    Regression cover for the 2026-07-31 multi-timeframe filter. Builds
+    synthetic DAILY bars (not the intraday BAR_MINUTES bars every other
+    test here uses) spanning a clear downtrend into a clear uptrend, and
+    checks the trend map is (a) shifted by exactly one day -- a date's
+    entries are gated on the PRIOR day's already-closed trend, never
+    today's own still-forming one -- and (b) fails toward False (blocked)
+    for anything unknown, matching stop_is_wider_than_noise's philosophy.
+    """
+    # +20h so the UTC timestamp lands in the afternoon ET on the SAME
+    # calendar date once _session_date converts it -- midnight UTC would
+    # convert back to the PRIOR ET date and silently shift every key.
+    days = pd.date_range("2024-01-02", periods=40, freq="B", tz="UTC") + pd.Timedelta(hours=20)
+    # Falling for the first 25 sessions, then a sustained rally -- long
+    # enough for EMA(9)/EMA(21) to unambiguously flip.
+    closes = [100.0 - i * 0.8 for i in range(25)] + [80.0 + i * 1.5 for i in range(15)]
+    daily = pd.DataFrame({"timestamp": days, "close": closes})
+
+    trend_map = strat.compute_daily_trend_map(daily)
+
+    check("returns one entry per date in the input", len(trend_map) == len(days))
+
+    first_date = days[0].date()
+    check("the very first date (no prior day at all) is False, not missing",
+          trend_map.get(first_date) is False)
+
+    # Directly prove the one-day shift: manually compute the RAW
+    # (unshifted) trend for every day, then confirm the map's value for
+    # day N equals the raw trend at day N-1 -- not day N's own, which
+    # would be lookahead (today's daily bar is still forming intraday).
+    ema_fast = daily["close"].ewm(span=strat.FAST_MA, adjust=False).mean()
+    ema_slow = daily["close"].ewm(span=strat.SLOW_MA, adjust=False).mean()
+    raw_trend_up = (ema_fast > ema_slow).tolist()
+    mismatches = 0
+    for idx in range(1, len(days)):
+        expected = raw_trend_up[idx - 1]
+        actual = trend_map[days[idx].date()]
+        if actual != expected:
+            mismatches += 1
+    check("every date's value equals the PRIOR day's raw trend, not its own (no lookahead)",
+          mismatches == 0)
+
+    last_date = days[-1].date()
+    check("the trend has clearly flipped up by the end of the rally",
+          trend_map.get(last_date) is True)
+
+    check("an empty daily-bars input returns an empty map, not an error",
+          strat.compute_daily_trend_map(pd.DataFrame()) == {})
+    check("None input returns an empty map, not an error",
+          strat.compute_daily_trend_map(None) == {})
+
+
 def test_stop_must_be_wider_than_noise():
     """
     Regression for 2026-07-27, using that day's real numbers. The bot
@@ -457,6 +510,7 @@ def test_mean_reversion_turning_confirmation():
 
 if __name__ == "__main__":
     tests = [
+        test_compute_daily_trend_map,
         test_stop_must_be_wider_than_noise,
         test_indicator_precompute_matches_growing_window,
         test_breakout,
