@@ -367,7 +367,7 @@ a day to place in a top-50 gainers/losers list. But a 90-day backtest
 (2026-07-28, see CLAUDE.md) found this system performs markedly *better*
 on liquid stocks than on its own scanner picks (profit factor 1.52 on
 megacaps vs 1.08 on scanner picks). So when `USE_SP500_UNIVERSE` is on
-(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default 4) of the
+(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default 6) of the
 watchlist are always reserved for S&P 500 names, ranked by trailing
 dollar volume — regardless of whether anything in the index happens to
 be a big mover that day. The constituent list is fetched from a
@@ -452,13 +452,19 @@ Two filters here have bitten this project and are worth understanding:
 
 ```
 SCANNER_REFRESH_HOURS=0.5
-SCANNER_WATCHLIST_SIZE=12
-SCANNER_CANDIDATE_POOL=100
+SCANNER_WATCHLIST_SIZE=18
+SCANNER_CANDIDATE_POOL=50
 SCANNER_MAX_EXTENSION_PCT=50
 USE_NEWS_FILTER=true
 NEWS_LOOKBACK_HOURS=24
 MIN_NEWS_ITEMS=1
 ```
+
+`SCANNER_CANDIDATE_POOL` is shown at its effective maximum (50) rather
+than a round number like 100 — Alpaca's screener endpoints hard-cap the
+`top` parameter at 50 server-side and reject anything higher, so setting
+this above 50 has no effect (the code clamps it too, but the env var
+example shouldn't imply a value that doesn't do anything).
 
 **Worth being honest about**: ranking by size of today's move means the
 scanner structurally favors stocks that have ALREADY moved a lot — it's

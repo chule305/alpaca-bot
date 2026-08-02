@@ -103,7 +103,33 @@ USE_SCANNER = os.getenv("USE_SCANNER", "true").strip().lower() in ("1", "true", 
 # batched bar-fetching (see get_recent_bars_batch) is what makes checking a
 # much bigger watchlist every cycle cheap on API calls, so the scanner can
 # now afford to look harder and more often.
-SCANNER_WATCHLIST_SIZE = int(os.getenv("SCANNER_WATCHLIST_SIZE", 12))
+#
+# Raised 12 -> 18 on 2026-08-02 after the user asked about widening the
+# bot's search for setups (more stocks -> more chances for the SAME
+# already-validated strategies to find a qualifying entry). Two other
+# ideas from that conversation were checked and rejected first:
+#   - A parallel NASDAQ-100 backstop (mirroring SP500_MIN_WATCHLIST_SLOTS):
+#     checked the real overlap between NASDAQ-100 and S&P 500 constituent
+#     lists -- 88 of 101 NASDAQ-100 names (87%) are already S&P 500
+#     members, so this would add real machinery (fetch/cache/exempt-from-
+#     filters, mirroring the whole SP500 backstop) for just 13 genuinely
+#     new symbols, one of which (MSTR) was already deliberately dropped
+#     from this bot's default universe once before. Not worth building.
+#   - Raising SCANNER_CANDIDATE_POOL: already maxed. Alpaca's screener
+#     endpoints hard-cap "top" at 50 server-side (see that constant's
+#     comment) -- there's no more raw candidate pool to widen.
+# This increase is NOT backtest-validated the way strategy/filter changes
+# normally are here: backtest.py takes a fixed symbol list as input and
+# has no way to replay what the scanner would historically have picked
+# day-by-day, so "does a bigger watchlist actually raise win rate" isn't
+# a backtestable question with the current tooling -- only a structural
+# argument (more coverage of an already-filtered, already-liquid pool,
+# same strategies, same per-symbol risk caps). Kept the increase modest
+# (+50%, not a jump to 30+) for that reason, and scaled
+# SP500_MIN_WATCHLIST_SLOTS alongside it (4 -> 6) so the liquidity
+# backstop stays roughly the same ~1/3 share of the list instead of being
+# diluted by the larger total.
+SCANNER_WATCHLIST_SIZE = int(os.getenv("SCANNER_WATCHLIST_SIZE", 18))
 # Floor on the watchlist size: if a scan legitimately succeeds but finds
 # only a couple of qualifying names (common -- Alpaca caps the candidate
 # pool at 50 gainers + 50 losers, and most extreme movers are either
@@ -167,7 +193,10 @@ SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 50.0))
 # a big mover today. USE_SP500_UNIVERSE off returns to the pre-existing
 # movers-only behavior exactly.
 USE_SP500_UNIVERSE = os.getenv("USE_SP500_UNIVERSE", "true").strip().lower() in ("1", "true", "yes")
-SP500_MIN_WATCHLIST_SLOTS = int(os.getenv("SP500_MIN_WATCHLIST_SLOTS", 4))
+# Scaled up alongside SCANNER_WATCHLIST_SIZE (2026-08-02) so the backstop
+# stays roughly the same ~1/3 share of the watchlist rather than being
+# diluted by the larger total -- see that constant's comment for why.
+SP500_MIN_WATCHLIST_SLOTS = int(os.getenv("SP500_MIN_WATCHLIST_SLOTS", 6))
 # The constituent list barely changes intraday -- a rare few times a year
 # -- so this is a slow-moving reference list, not a scan result. Cached
 # in-process rather than to disk: within one --duration-minutes job the

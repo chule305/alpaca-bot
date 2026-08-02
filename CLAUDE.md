@@ -1114,3 +1114,45 @@ losses in a 7-trade sample isn't enough to override that. Bottom line:
 the fix for this specific problem shipped on 2026-07-31 (commit
 b9b5a44) but never got a live trading day under it before this
 window closed -- Monday 2026-08-03 is the first real test.
+
+## 2026-08-02: widened the scanner's watchlist, and two ideas rejected with real numbers before writing any code
+
+User asked what to do about "giving the bot a lot more trading options" --
+more universes (NASDAQ, gold, etc.) to search through. Checked two
+concrete options before touching code:
+
+**A parallel NASDAQ-100 backstop (rejected).** Fetched both the S&P 500
+and NASDAQ-100 constituent CSVs and computed the actual overlap: 88 of
+101 NASDAQ-100 names (87%) are already S&P 500 members. Building a whole
+second backstop (fetch/cache/exempt-from-filters, mirroring
+SP500_MIN_WATCHLIST_SLOTS end to end) would buy just 13 genuinely new
+symbols: ALNY, ARM, ASML, CCEP, FER, INSM, MELI, MSTR, PDD, SHOP, TEAM,
+TRI, ZS. One of those (MSTR) was already deliberately dropped from this
+bot's default SYMBOLS list once before (2026-07-xx decision, see task
+history). Not enough new coverage to justify the machinery -- rejected.
+
+**Raising SCANNER_CANDIDATE_POOL (impossible, not just rejected).**
+Already documented in trading_bot.py: Alpaca's screener endpoints
+hard-cap the `top` parameter at 50 server-side and the code already
+clamps to it. There's no more raw candidate pool available to widen at
+all, regardless of what the env var says.
+
+**What actually shipped: SCANNER_WATCHLIST_SIZE 12 -> 18,
+SP500_MIN_WATCHLIST_SLOTS 4 -> 6** (kept proportional so the liquidity
+backstop stays ~1/3 of the list). Important honesty check on this one:
+it is NOT backtest-validated the way strategy/filter changes normally
+are here. backtest.py takes a fixed symbol list as input -- it has no
+mechanism to replay what the scanner would historically have picked
+day-by-day, so "does a bigger watchlist raise win rate" isn't a
+backtestable question with the tooling that exists today. The change
+rests on a structural argument only: batched bar-fetching already makes
+a bigger watchlist ~free on API calls, more symbols is strictly more
+chances for the SAME already-validated strategies and filters to find a
+qualifying setup, and per-symbol/portfolio risk caps (MAX_CONCURRENT_
+POSITIONS, MAX_PORTFOLIO_RISK_PCT, MAX_DAILY_LOSS_PCT) don't care how
+big the watchlist is, only how many positions actually open. Kept the
+increase to +50% rather than something larger specifically because that
+argument, while reasonable, isn't proof. Tests: 67/67 pass (none of them
+exercise scanner watchlist SIZE numerically, only the slot-budget math
+with values they patch explicitly, so this was safe to change without
+touching test code).
