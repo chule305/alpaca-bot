@@ -1054,3 +1054,63 @@ Both fixes are live-operational only (trading_bot.py's own duration-mode
 loop) -- backtest.py has no equivalent "sleep and re-check" concept, so
 neither bug touches backtest results or the numbers already reported for
 idea 1.
+
+## 2026-08-02: real live win rate by strategy, a second git data-loss incident, and confirming a fix that was already shipped
+
+Asked to list current strategies' real win rate from the last few trading
+days. trades.csv alone undercounted: reconstructing round-trips from it
+directly found only 5 closed trades in the 2026-07-27 to 07-31 window,
+because FLATTEN log rows never carry a fill price (by design -- logged as
+submitted-intent, not confirmed fill) and the later reconciliation that's
+supposed to backfill the real price didn't fire for most of them. Pulling
+the same window straight from Alpaca's own order history (unaffected by
+any of this, since it doesn't depend on this repo's git state) found the
+real number: **21 closed round-trips**, cross-referenced back to
+trades.csv's strategy tags by symbol+day. Real picture: `trend_following`
+5 trades/60% win, +$30.81; `breakout` 5/60%, -$17.00; `vwap_reversion`
+7/**29%**, **-$81.05** (worst by far); `gap_continuation` 1/100%, +$6.75.
+Two trades (AMKR, CBZ) had no strategy tag at all -- see below.
+
+**Root cause of the AMKR/CBZ gap, confirmed (not guessed).** Cross-checking
+the GitHub Actions API (`/actions/runs`, `/jobs`, `/check-runs/.../
+annotations` -- all readable unauthenticated for a public repo) found both
+missing trades fall exactly inside runs whose "Run one check cycle" step
+**succeeded** but "Commit updated state, logs and trade history" step
+**failed** ("Could not push bot state after 5 attempts"). The trade itself
+was real (Alpaca confirms both fills) and record_trade() almost certainly
+wrote it locally -- it just never survived to origin/master before the
+ephemeral runner was destroyed. This is the same failure class the
+2026-07-27 incident already fixed once (union merge driver for
+logs/*.log and trades.csv) -- that fix handles the MERGE once reached, but
+5 attempts / 75s of total backoff wasn't always enough budget to get
+there in the first place. Fixed by widening the retry loop in trade.yml
+to 10 attempts with a longer, jittered backoff (`attempt * 8 +
+RANDOM % 10`, ~8-9 min total budget) -- affordable because this step only
+runs after the 150-minute trading loop, inside the ~15-minute buffer
+before the job's 165-minute timeout. Jitter specifically because the
+thing being retried against is usually another run of this same
+workflow a few minutes ahead or behind -- a fixed backoff formula lets
+two runs keep re-colliding on the same schedule instead of spreading out.
+Could not confirm the exact git-level error text (raw Actions logs need
+an auth token this environment doesn't have) -- the fix is justified by
+the step-level failure pattern and the mechanism the retry loop already
+exists to handle, not by reading the literal error.
+
+**vwap_reversion's real win rate: already addressed, not yet proven
+live.** Ran the ALREADY-SHIPPED volume confirmation filter
+(`vwap_reversion_volume_confirms`, built earlier this session as idea 5)
+against the real bars for all 7 live vwap_reversion trades in this
+window. It would have blocked 5 of 7 (VEEE 7/27, TRAX, PSN, ALNY, RTO) --
+3 of those were real losses (-$41.40, -$20.13, -$2.64) and 2 were real
+wins it would have missed (+$11.15, +$15.54). Net effect on this exact
+sample: -$81.05 -> -$43.57 -- still negative, but roughly half the
+damage. The 2 trades it would NOT have blocked (VEEE 7/28, VCYT) both had
+strong entry-bar volume (5.2x and 2.8x average) and still lost --
+volume confirmation genuinely doesn't explain those two. Did not add a
+new filter on top (e.g. tightening VWAP_REVERSION_MAX_ADX) without new
+evidence -- the existing ADX=50 threshold is already backtest-tuned with
+an explicit "tighter costs money" finding on record, and 2 residual
+losses in a 7-trade sample isn't enough to override that. Bottom line:
+the fix for this specific problem shipped on 2026-07-31 (commit
+b9b5a44) but never got a live trading day under it before this
+window closed -- Monday 2026-08-03 is the first real test.

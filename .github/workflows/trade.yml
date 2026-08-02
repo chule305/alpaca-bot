@@ -175,7 +175,29 @@ jobs:
           # merge= attribute takes precedence over the -X strategy option.
           # And every attempt opens by aborting any merge/rebase left over
           # from the previous one, so a conflict can never wedge the loop.
-          for attempt in 1 2 3 4 5; do
+          #
+          # 5 attempts (75s of total backoff) turned out not to be enough
+          # budget: on 2026-07-28 and 2026-07-29 this step exhausted all 5
+          # and exited 1 -- confirmed via the Actions API (both runs show
+          # "Run one check cycle" succeeded, only "Commit updated state"
+          # failed) -- which permanently lost that run's local state on the
+          # ephemeral runner. Real cost: AMKR's and CBZ's BUY rows never
+          # made it into trades.csv even though both trades were real,
+          # filled positions on Alpaca -- confirmed by cross-checking
+          # Alpaca's own order history, which has no such gap since it
+          # doesn't depend on this git push succeeding.
+          #
+          # Widened to 10 attempts with a longer, jittered backoff (roughly
+          # 8-9 minutes of total budget) -- cheap insurance since this step
+          # only runs after the 150-minute trading loop, inside the
+          # remaining ~15-minute buffer before the job's 165-minute
+          # timeout kills it outright. Jitter (not just a fixed formula)
+          # matters here specifically because the thing being retried
+          # against is often another run of this SAME workflow a few
+          # minutes ahead or behind -- without it, two runs backing off on
+          # the same schedule can keep re-colliding instead of spreading
+          # out.
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
             git merge --abort 2>/dev/null || true
             git rebase --abort 2>/dev/null || true
 
@@ -190,7 +212,7 @@ jobs:
               echo "Merge failed outright -- will clean up and retry."
               git merge --abort 2>/dev/null || true
             fi
-            sleep $((attempt * 5))
+            sleep $((attempt * 8 + RANDOM % 10))
           done
-          echo "::error::Could not push bot state after 5 attempts."
+          echo "::error::Could not push bot state after 10 attempts."
           exit 1

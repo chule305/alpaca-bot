@@ -628,3 +628,13 @@ Recording is strictly best-effort: every write is wrapped so a disk error
 logs a warning and nothing more. A bot that refused to place an order
 because it couldn't append a CSV row would be a much worse failure than a
 missing row.
+
+Separately, a row can also go missing if the workflow's own "commit
+updated state" step fails to push after trading_bot.py already recorded
+it locally — the runner is destroyed either way, so anything not pushed
+is gone. Confirmed happening twice (2026-07-28, 2026-07-29) when that
+step exhausted its retry budget; the trades were real (visible in
+Alpaca's own order history) but never made it into this file. The retry
+budget was widened on 2026-08-02 to make this rarer, but Alpaca's order
+history remains the authoritative record if a `trades.csv` row ever looks
+like it's missing — see `export_trades.py`.
