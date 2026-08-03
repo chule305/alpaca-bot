@@ -267,3 +267,82 @@
 2026-08-03 16:28:51,784 | [SRAD] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.26
 2026-08-03 16:28:51,784 | [SRAD] ACTION: No trade.
 2026-08-03 16:42:08,209 | Duration window finished.
+2026-08-03 19:13:14,941 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-03 19:13:14,941 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-03 19:13:14,941 | Bar size: 15min | Check interval while market open: 15min
+2026-08-03 19:13:14,941 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-03 19:13:14,941 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-03 19:13:14,942 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-03 19:13:14,942 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-03 19:13:14,942 | Position sizing: flat $500 per trade
+2026-08-03 19:13:14,942 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-03 19:13:14,942 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-03 19:13:14,942 | Loaded saved watchlist from previous run: FCUV, ATKR, INHD, SRAD, MU, MSFT, AAPL, NVDA, AMZN, SNDK
+2026-08-03 19:13:14,942 | Restored daily risk state from previous run: day 2026-08-03, breaker tripped: False
+2026-08-03 19:13:14,942 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-03 19:13:15,176 | SCANNER: refreshing watchlist...
+2026-08-03 19:13:16,918 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 16 candidate(s).
+2026-08-03 19:13:17,434 | SCANNER: candidate INHD -- -42.6% today, $10.34, liquid, 1 recent news item(s)
+2026-08-03 19:13:17,578 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-03 19:13:43,211 | S&P 500 liquidity backstop -> MU, MSFT, AAPL, AMZN, NVDA, SNDK
+2026-08-03 19:13:43,212 | SCANNER: new watchlist -> INHD, MU, MSFT, AAPL, AMZN, NVDA, SNDK
+2026-08-03 19:13:43,286 | Market is open (closes 2026-08-03 22:00:00 CEST your local time). Checking 7 symbols: AAPL, AMZN, INHD, MSFT, MU, NVDA, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-03 19:13:45,584 | Multi-timeframe filter: refreshed daily trend for 7 symbol(s).
+2026-08-03 19:13:45,609 | [AAPL] choppy/sideways (ADX 22.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.21
+2026-08-03 19:13:45,609 | [AAPL] ACTION: No trade.
+2026-08-03 19:13:45,633 | [AMZN] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $284.45
+2026-08-03 19:13:45,633 | [AMZN] ACTION: No trade.
+2026-08-03 19:13:45,650 | [INHD] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.00
+2026-08-03 19:13:45,650 | [INHD] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-03 19:13:45,674 | [MSFT] trending (ADX 47.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.29
+2026-08-03 19:13:45,674 | [MSFT] ACTION: No trade.
+2026-08-03 19:13:45,698 | [MU] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $823.63
+2026-08-03 19:13:45,698 | [MU] ACTION: No trade.
+2026-08-03 19:13:45,722 | [NVDA] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $208.15
+2026-08-03 19:13:45,722 | [NVDA] ACTION: No trade.
+2026-08-03 19:13:45,746 | [SNDK] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1292.60
+2026-08-03 19:13:45,746 | [SNDK] ACTION: No trade.
+2026-08-03 19:28:46,275 | Market is open (closes 2026-08-03 22:00:00 CEST your local time). Checking 7 symbols: AAPL, AMZN, INHD, MSFT, MU, NVDA, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-03 19:28:48,142 | [AAPL] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.90
+2026-08-03 19:28:48,142 | [AAPL] ACTION: No trade.
+2026-08-03 19:28:48,166 | [AMZN] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $283.29
+2026-08-03 19:28:48,166 | [AMZN] ACTION: No trade.
+2026-08-03 19:28:48,185 | [INHD] choppy/sideways (ADX 11.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.34
+2026-08-03 19:28:48,185 | [INHD] ACTION: No trade.
+2026-08-03 19:28:48,209 | [MSFT] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $488.66
+2026-08-03 19:28:48,209 | [MSFT] ACTION: No trade.
+2026-08-03 19:28:48,234 | [MU] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $821.26
+2026-08-03 19:28:48,234 | [MU] ACTION: No trade.
+2026-08-03 19:28:48,258 | [NVDA] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $207.75
+2026-08-03 19:28:48,258 | [NVDA] ACTION: No trade.
+2026-08-03 19:28:48,283 | [SNDK] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1283.35
+2026-08-03 19:28:48,283 | [SNDK] ACTION: No trade.
+2026-08-03 19:43:48,587 | SCANNER: refreshing watchlist...
+2026-08-03 19:43:49,138 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 16 candidate(s).
+2026-08-03 19:43:49,660 | SCANNER: candidate INHD -- -40.8% today, $10.66, liquid, 1 recent news item(s)
+2026-08-03 19:43:49,660 | SCANNER: candidate ATKR -- +28.0% today, $93.39, liquid, 9 recent news item(s)
+2026-08-03 19:44:13,042 | S&P 500 liquidity backstop -> MU, MSFT, AAPL, AMZN, NVDA, SNDK
+2026-08-03 19:44:13,045 | SCANNER: new watchlist -> INHD, ATKR, MU, MSFT, AAPL, AMZN, NVDA, SNDK
+2026-08-03 19:44:13,118 | Market is open (closes 2026-08-03 22:00:00 CEST your local time). Checking 8 symbols: AAPL, AMZN, ATKR, INHD, MSFT, MU, NVDA, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-03 19:44:14,502 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-03 19:44:14,526 | [AAPL] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.05
+2026-08-03 19:44:14,526 | [AAPL] ACTION: No trade.
+2026-08-03 19:44:14,551 | [AMZN] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $284.63
+2026-08-03 19:44:14,551 | [AMZN] ACTION: No trade.
+2026-08-03 19:44:14,570 | [ATKR] trending (ADX 76.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $93.40
+2026-08-03 19:44:14,570 | [ATKR] ACTION: No trade.
+2026-08-03 19:44:14,587 | [INHD] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $10.84
+2026-08-03 19:44:14,587 | [INHD] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-03 19:44:14,611 | [MSFT] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $490.05
+2026-08-03 19:44:14,611 | [MSFT] ACTION: No trade.
+2026-08-03 19:44:14,635 | [MU] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $826.69
+2026-08-03 19:44:14,635 | [MU] ACTION: No trade.
+2026-08-03 19:44:14,659 | [NVDA] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $207.84
+2026-08-03 19:44:14,659 | [NVDA] ACTION: No trade.
+2026-08-03 19:44:14,683 | [SNDK] trending (ADX 37.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1291.18
+2026-08-03 19:44:14,683 | [SNDK] ACTION: No trade.
+2026-08-03 19:50:02,689 | Within 10 min of close -- flattening all positions for the day.
+2026-08-03 19:50:03,006 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-08-03 20:00:02,107 | Market is closed. Next open: 2026-08-04 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-03 20:00:02,177 | Market is closed for the day -- exiting early instead of idling.
+2026-08-03 20:00:02,177 | Duration window finished.

@@ -50,3 +50,5 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-07-31T14:26:42+00:00,2026-07-31,VCYT,STOP_HIT,vwap_reversion,STOP_HIT (order type OrderType.STOP),10,44.11,441.1,,,,,,,fca27850-2ecb-45eb-9edf-fa95151d352e,,,,,,,,,,,,,
 2026-08-03T14:12:32+00:00,2026-08-03,MSFT,BUY,breakout,volume-confirmed breakout above 20-bar high,1,487.64,487.64,463.36,536.53,flat $,99812.1,,15,afb4a423-14a1-4b92-8bb4-7a15160b84b6,breakout-1785766351,489.9,87.8195,62.4048,2.7972,479.825,474.972,484.979,4.77532e+06,557650,489.74,489.94,461.81
 2026-08-03T14:27:35+00:00,2026-08-03,NVDA,BUY,breakout,volume-confirmed breakout above 20-bar high,2,204.79,409.58,194.56,225.28,flat $,99811.1,,30,a58333a1-4f5e-4aa2-abc9-d8b44bc94bb4,breakout-1785767253,204.21,74.4534,23.1326,1.33693,200.401,199.859,201.007,1.00124e+07,891092,202.262,202.69,198.98
+2026-08-03T19:50:03+00:00,2026-08-03,MSFT,FLATTEN,end_of_day,Flattened before market close,1,,,,,,,,,,,,,,,,,,,,,,
+2026-08-03T19:50:03+00:00,2026-08-03,NVDA,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
