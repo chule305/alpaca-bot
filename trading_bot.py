@@ -1407,29 +1407,75 @@ def record_auto_exit(symbol: str) -> None:
                   f"not critical, continuing.")
 
 
-def flatten_all_positions() -> None:
-    """Closes every open position and cancels any pending orders."""
+def flatten_all_positions() -> bool:
+    """
+    Closes every open position individually and cancels pending orders,
+    verifying each close instead of trusting a bulk call not to raise.
+
+    Found live on 2026-08-03: trading_client.close_all_positions(cancel_orders=True)
+    completed with no exception, and this function logged "all positions
+    closed" and wrote FLATTEN rows to trades.csv for MSFT and NVDA -- but
+    the account's real order history showed no closing order was ever
+    placed for either symbol, and both were still open the next day.
+    close_all_positions()'s own docstring explains why this can happen
+    silently: it returns "a list of responses from each closed position
+    containing the status code and order id" -- a per-symbol failure can
+    sit inside that list's status codes without the overall call raising
+    at all, and this function never looked at the list's contents, only
+    whether the call itself threw. Same silent-failure shape as this
+    project's other postmortems (2026-07-24: scanner degrading into an
+    empty-but-successful-looking result).
+
+    Fixed by calling close_position() per symbol instead: per its own
+    docstring it "will throw an error if the position does not exist"
+    -- i.e. a failed close raises for THAT symbol specifically, so it
+    can't be silently absorbed into an unchecked bulk response.
+
+    Returns True only if every open position was confirmed closed. The
+    caller uses this to decide whether it's safe to mark today's flatten
+    as done -- on a partial failure it deliberately is NOT marked done,
+    so the next (seconds away) cycle retries instead of giving up for
+    the rest of the day with open positions and no further attempt.
+    """
     # Read positions BEFORE closing them -- afterwards there's nothing
     # left to describe, and an end-of-day exit is exactly the kind of
     # trade worth being able to analyze separately from a signal-driven
     # one (it's an exit the strategy didn't choose).
     try:
         closing = get_all_open_positions()
-    except Exception:
-        closing = {}
+    except Exception as e:
+        log.error(f"EOD FLATTEN: could not read open positions ({e}) -- aborting, will retry.")
+        return False
+
+    if not closing:
+        log.info("EOD FLATTEN: no open positions to close.")
+        return True
 
     try:
-        trading_client.close_all_positions(cancel_orders=True)
-        log.info("EOD FLATTEN: all positions closed, all pending orders cancelled.")
+        trading_client.cancel_orders()
     except Exception as e:
-        log.error(f"EOD FLATTEN failed: {e}")
-        return
+        log.warning(f"EOD FLATTEN: could not cancel open orders ({e}) -- "
+                     f"continuing to close positions anyway.")
 
     day = _trading_day_et()
+    all_closed = True
     for symbol, details in closing.items():
-        record_trade("FLATTEN", symbol, trading_day_et=day,
-                      strategy="end_of_day", reason="Flattened before market close",
-                      qty=details.get("qty"))
+        try:
+            trading_client.close_position(symbol)
+            record_trade("FLATTEN", symbol, trading_day_et=day,
+                          strategy="end_of_day", reason="Flattened before market close",
+                          qty=details.get("qty"))
+            log.info(f"[{symbol}] EOD FLATTEN: close order submitted for {details.get('qty')} share(s).")
+        except Exception as e:
+            all_closed = False
+            log.error(f"[{symbol}] EOD FLATTEN FAILED: {e} -- position likely still open, will retry.")
+
+    if all_closed:
+        log.info("EOD FLATTEN: all positions closed, all pending orders cancelled.")
+    else:
+        log.error("EOD FLATTEN: one or more positions failed to close -- "
+                   "NOT marking today's flatten as done, will retry next cycle.")
+    return all_closed
 
 
 def compute_next_cycle_sleep(seconds_left_today: float) -> float:
@@ -1515,8 +1561,12 @@ def run_one_cycle() -> float:
     if FLATTEN_BEFORE_CLOSE and seconds_left_today <= FLATTEN_MINUTES_BEFORE_CLOSE * 60:
         if last_flatten_date != today_key:
             log.info(f"Within {FLATTEN_MINUTES_BEFORE_CLOSE} min of close -- flattening all positions for the day.")
-            flatten_all_positions()
-            last_flatten_date = today_key
+            if flatten_all_positions():
+                last_flatten_date = today_key
+            # else: leave last_flatten_date unset. The next cycle is only
+            # seconds away and still inside this same flatten window most
+            # of the time, so it retries instead of silently leaving
+            # positions open for the rest of the day (see flatten_all_positions).
         return min(seconds_left_today, 60) + 2
 
     refresh_watchlist_if_needed(clock.timestamp)
