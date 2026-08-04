@@ -73,7 +73,7 @@ jobs:
           # (not left to code defaults) so a future code change to a
           # default can't silently change what the live bot does. ---
           SYMBOLS: "TSLA,NVDA,COIN,AMD,PLTR"
-          USE_RISK_BASED_SIZING: "false"
+          USE_RISK_BASED_SIZING: "true"
           RISK_PER_TRADE_PCT: "1.0"
           MAX_POSITION_PCT_OF_EQUITY: "25"
           TRADE_AMOUNT_USD: "500"
