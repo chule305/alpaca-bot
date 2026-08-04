@@ -60,3 +60,7 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-04T14:14:30+00:00,2026-08-04,PLTR,BUY,breakout,volume-confirmed breakout above 20-bar high,102,154.63,15772.3,146.87,170.06,"risk-based, 1.0% of $79,404",79403.9,,15,7b8e90ff-a3d3-47dc-a67f-d9e419b3dd94,breakout-1785852869,154.16,80.6343,46.3723,2.23769,147.969,146,149.244,1.01676e+07,1.4148e+06,151.13,152.28,144.455
 2026-08-04T14:29:34+00:00,2026-08-04,AAPL,BUY,breakout,volume-confirmed breakout above 20-bar high,64,306.898,19641.5,291.5,337.52,"risk-based, 1.0% of $99,232",99232.2,,30,92f6c5d4-57e2-423c-bb34-000e1bf7ef6b,breakout-1785853772,305.75,70.4716,16.2013,0.928943,303.892,303.558,303.842,2.12416e+06,572263,305.3,304.8,303.54
 2026-08-04T15:00:18+00:00,2026-08-04,UFPT,STOP_HIT,breakout,STOP_HIT (order type OrderType.STOP),59,316.55,18676.5,,,,,,,e7698e23-9f74-4210-a703-473dac641718,,,,,,,,,,,,,
+2026-08-04T18:44:54+00:00,2026-08-04,AAPL,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),64,310.16,19850.2,,,,,,,2d403baf-716f-424d-a4c9-60ac05cf149c,,,,,,,,,,,,,
+2026-08-04T19:51:05+00:00,2026-08-04,AMZN,FLATTEN,end_of_day,Flattened before market close,71,,,,,,,,,,,,,,,,,,,,,,
+2026-08-04T19:51:05+00:00,2026-08-04,MSFT,FLATTEN,end_of_day,Flattened before market close,40,,,,,,,,,,,,,,,,,,,,,,
+2026-08-04T19:51:05+00:00,2026-08-04,PLTR,FLATTEN,end_of_day,Flattened before market close,102,,,,,,,,,,,,,,,,,,,,,,

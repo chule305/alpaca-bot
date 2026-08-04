@@ -882,3 +882,232 @@
 2026-08-04 20:02:42,756 | Market is closed. Next open: 2026-08-05 15:30:00 CEST (your local time) -- in 17.5 hours.
 2026-08-04 20:02:42,761 | Market is closed for the day -- exiting early instead of idling.
 2026-08-04 20:02:42,762 | Duration window finished.
+2026-08-04 18:44:15,205 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-04 18:44:15,205 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-04 18:44:15,205 | Bar size: 15min | Check interval while market open: 15min
+2026-08-04 18:44:15,205 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-04 18:44:15,205 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-04 18:44:15,205 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-04 18:44:15,205 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-04 18:44:15,205 | Position sizing: risk-based (1.0% of equity per trade, capped at 25% of equity notional)
+2026-08-04 18:44:15,205 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-04 18:44:15,205 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-04 18:44:15,206 | Loaded saved watchlist from previous run: BLZE, BETR, MOVE, W, TSAT, AMRC, PLTR, REZI, LIFE, DFNS, BRKR, MU, MSFT, AAPL, AMZN, NVDA
+2026-08-04 18:44:15,206 | Restored daily risk state from previous run: day 2026-08-04, breaker tripped: False
+2026-08-04 18:44:15,206 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-04 18:44:15,430 | SCANNER: refreshing watchlist...
+2026-08-04 18:44:17,463 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-04 18:44:19,812 | SCANNER: candidate IBTA -- +47.5% today, $36.27, liquid, 7 recent news item(s)
+2026-08-04 18:44:19,812 | SCANNER: candidate BETR -- -40.1% today, $16.36, liquid, 2 recent news item(s)
+2026-08-04 18:44:19,812 | SCANNER: candidate MOVE -- +34.8% today, $14.50, liquid, 5 recent news item(s)
+2026-08-04 18:44:19,812 | SCANNER: candidate TSAT -- +33.6% today, $53.70, liquid, 3 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate BLZE -- +33.5% today, $20.81, liquid, 9 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate PAY -- +30.1% today, $44.91, liquid, 2 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate W -- +29.9% today, $116.02, liquid, 6 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate PLTR -- +29.4% today, $162.59, liquid, 19 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate REZI -- -27.7% today, $26.18, liquid, 1 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate DFNS -- -26.0% today, $45.50, liquid, 2 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate BRKR -- -20.6% today, $51.07, liquid, 5 recent news item(s)
+2026-08-04 18:44:19,813 | SCANNER: candidate CTRI -- -20.1% today, $22.27, liquid, 3 recent news item(s)
+2026-08-04 18:44:19,961 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-04 18:44:54,136 | S&P 500 liquidity backstop -> MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 18:44:54,138 | SCANNER: new watchlist -> IBTA, BETR, MOVE, TSAT, BLZE, PAY, W, PLTR, REZI, DFNS, BRKR, CTRI, MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 18:44:54,207 | [AAPL] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-04 18:44:54,415 | Market is open (closes 2026-08-04 22:00:00 CEST your local time). Checking 17 symbols: AAPL, AMZN, BETR, BLZE, BRKR, CTRI, DFNS, IBTA, MOVE, MSFT, MU, NVDA, PAY, PLTR, REZI, TSAT, W (within 90 min of close -- not enough runway left today for a new position)
+2026-08-04 18:44:58,940 | Multi-timeframe filter: refreshed daily trend for 17 symbol(s).
+2026-08-04 18:44:58,963 | [AAPL] trending (ADX 31.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.32
+2026-08-04 18:44:58,963 | [AAPL] ACTION: No trade.
+2026-08-04 18:44:58,985 | [AMZN] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 71.0 | Last price: $277.99
+2026-08-04 18:44:58,985 | [AMZN] ACTION: No trade.
+2026-08-04 18:44:59,002 | [BETR] trending (ADX 61.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.45
+2026-08-04 18:44:59,002 | [BETR] ACTION: No trade.
+2026-08-04 18:44:59,021 | [BLZE] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.94
+2026-08-04 18:44:59,021 | [BLZE] ACTION: No trade.
+2026-08-04 18:44:59,038 | [BRKR] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.16
+2026-08-04 18:44:59,038 | [BRKR] ACTION: No trade.
+2026-08-04 18:44:59,055 | [CTRI] trending (ADX 64.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $22.65
+2026-08-04 18:44:59,055 | [CTRI] ACTION: No trade.
+2026-08-04 18:44:59,076 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.80
+2026-08-04 18:44:59,077 | [DFNS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 18:44:59,094 | [IBTA] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.09
+2026-08-04 18:44:59,094 | [IBTA] ACTION: No trade.
+2026-08-04 18:44:59,110 | [MOVE] choppy/sideways (ADX 15.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.60
+2026-08-04 18:44:59,110 | [MOVE] ACTION: No trade.
+2026-08-04 18:44:59,131 | [MSFT] trending (ADX 43.5) -> trend-following strategy | Signal: HOLD | Shares held: 40.0 | Last price: $497.33
+2026-08-04 18:44:59,132 | [MSFT] ACTION: No trade.
+2026-08-04 18:44:59,153 | [MU] trending (ADX 44.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $895.78
+2026-08-04 18:44:59,153 | [MU] ACTION: No trade.
+2026-08-04 18:44:59,174 | [NVDA] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.57
+2026-08-04 18:44:59,175 | [NVDA] ACTION: No trade.
+2026-08-04 18:44:59,192 | [PAY] trending (ADX 60.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.15
+2026-08-04 18:44:59,192 | [PAY] ACTION: No trade.
+2026-08-04 18:44:59,213 | [PLTR] trending (ADX 60.6) -> trend-following strategy | Signal: HOLD | Shares held: 102.0 | Last price: $163.11
+2026-08-04 18:44:59,214 | [PLTR] ACTION: No trade.
+2026-08-04 18:44:59,230 | [REZI] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.08
+2026-08-04 18:44:59,230 | [REZI] ACTION: No trade.
+2026-08-04 18:44:59,247 | [TSAT] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $53.74
+2026-08-04 18:44:59,247 | [TSAT] ACTION: No trade.
+2026-08-04 18:44:59,265 | [W] trending (ADX 52.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.16
+2026-08-04 18:44:59,265 | [W] ACTION: No trade.
+2026-08-04 19:00:00,055 | Market is open (closes 2026-08-04 22:00:00 CEST your local time). Checking 17 symbols: AAPL, AMZN, BETR, BLZE, BRKR, CTRI, DFNS, IBTA, MOVE, MSFT, MU, NVDA, PAY, PLTR, REZI, TSAT, W (within 90 min of close -- not enough runway left today for a new position)
+2026-08-04 19:00:04,897 | [AAPL] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.52
+2026-08-04 19:00:04,897 | [AAPL] ACTION: No trade.
+2026-08-04 19:00:04,918 | [AMZN] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 71.0 | Last price: $277.08
+2026-08-04 19:00:04,918 | [AMZN] ACTION: No trade.
+2026-08-04 19:00:04,935 | [BETR] trending (ADX 61.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.96
+2026-08-04 19:00:04,936 | [BETR] ACTION: No trade.
+2026-08-04 19:00:04,954 | [BLZE] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.65
+2026-08-04 19:00:04,954 | [BLZE] ACTION: No trade.
+2026-08-04 19:00:04,971 | [BRKR] trending (ADX 52.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.22
+2026-08-04 19:00:04,971 | [BRKR] ACTION: No trade.
+2026-08-04 19:00:04,988 | [CTRI] trending (ADX 66.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $22.15
+2026-08-04 19:00:04,988 | [CTRI] ACTION: No trade.
+2026-08-04 19:00:05,009 | [DFNS] choppy/sideways (ADX 9.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.00
+2026-08-04 19:00:05,009 | [DFNS] ACTION: No trade.
+2026-08-04 19:00:05,026 | [IBTA] trending (ADX 43.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.25
+2026-08-04 19:00:05,026 | [IBTA] ACTION: No trade.
+2026-08-04 19:00:05,041 | [MOVE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.72
+2026-08-04 19:00:05,041 | [MOVE] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:00:05,062 | [MSFT] trending (ADX 42.1) -> trend-following strategy | Signal: HOLD | Shares held: 40.0 | Last price: $496.29
+2026-08-04 19:00:05,062 | [MSFT] ACTION: No trade.
+2026-08-04 19:00:05,083 | [MU] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $895.42
+2026-08-04 19:00:05,083 | [MU] ACTION: No trade.
+2026-08-04 19:00:05,104 | [NVDA] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.95
+2026-08-04 19:00:05,104 | [NVDA] ACTION: No trade.
+2026-08-04 19:00:05,122 | [PAY] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.41
+2026-08-04 19:00:05,122 | [PAY] ACTION: No trade.
+2026-08-04 19:00:05,144 | [PLTR] trending (ADX 59.9) -> trend-following strategy | Signal: HOLD | Shares held: 102.0 | Last price: $162.87
+2026-08-04 19:00:05,144 | [PLTR] ACTION: No trade.
+2026-08-04 19:00:05,160 | [REZI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $26.21
+2026-08-04 19:00:05,160 | [REZI] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:00:05,177 | [TSAT] trending (ADX 56.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.25
+2026-08-04 19:00:05,177 | [TSAT] ACTION: No trade.
+2026-08-04 19:00:05,195 | [W] trending (ADX 51.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.26
+2026-08-04 19:00:05,195 | [W] ACTION: No trade.
+2026-08-04 19:15:05,488 | SCANNER: refreshing watchlist...
+2026-08-04 19:15:06,052 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-08-04 19:15:08,202 | SCANNER: candidate BETR -- -37.8% today, $16.99, liquid, 2 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate TSAT -- +36.7% today, $54.91, liquid, 3 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate MOVE -- +35.2% today, $14.55, liquid, 5 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate BLZE -- +32.4% today, $20.64, liquid, 10 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate PLTR -- +30.4% today, $163.83, liquid, 32 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate DFNS -- -28.5% today, $43.98, liquid, 2 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate REZI -- -27.4% today, $26.30, liquid, 1 recent news item(s)
+2026-08-04 19:15:08,203 | SCANNER: candidate BRKR -- -20.7% today, $51.00, liquid, 5 recent news item(s)
+2026-08-04 19:15:54,673 | S&P 500 liquidity backstop -> MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 19:15:54,676 | SCANNER: new watchlist -> BETR, TSAT, MOVE, BLZE, PLTR, DFNS, REZI, BRKR, MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 19:15:54,817 | Market is open (closes 2026-08-04 22:00:00 CEST your local time). Checking 13 symbols: AAPL, AMZN, BETR, BLZE, BRKR, DFNS, MOVE, MSFT, MU, NVDA, PLTR, REZI, TSAT (within 90 min of close -- not enough runway left today for a new position)
+2026-08-04 19:15:57,219 | [AAPL] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.72
+2026-08-04 19:15:57,219 | [AAPL] ACTION: No trade.
+2026-08-04 19:15:57,242 | [AMZN] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 71.0 | Last price: $277.50
+2026-08-04 19:15:57,242 | [AMZN] ACTION: No trade.
+2026-08-04 19:15:57,260 | [BETR] trending (ADX 60.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.99
+2026-08-04 19:15:57,260 | [BETR] ACTION: No trade.
+2026-08-04 19:15:57,279 | [BLZE] trending (ADX 25.9) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $20.64
+2026-08-04 19:15:57,279 | [BLZE] ACTION: No trade.
+2026-08-04 19:15:57,297 | [BRKR] trending (ADX 53.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.00
+2026-08-04 19:15:57,297 | [BRKR] ACTION: No trade.
+2026-08-04 19:15:57,319 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $43.98
+2026-08-04 19:15:57,320 | [DFNS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:15:57,336 | [MOVE] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.55
+2026-08-04 19:15:57,336 | [MOVE] ACTION: No trade.
+2026-08-04 19:15:57,358 | [MSFT] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 40.0 | Last price: $497.56
+2026-08-04 19:15:57,358 | [MSFT] ACTION: No trade.
+2026-08-04 19:15:57,380 | [MU] trending (ADX 43.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $898.22
+2026-08-04 19:15:57,380 | [MU] ACTION: No trade.
+2026-08-04 19:15:57,403 | [NVDA] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.68
+2026-08-04 19:15:57,403 | [NVDA] ACTION: No trade.
+2026-08-04 19:15:57,425 | [PLTR] trending (ADX 59.8) -> trend-following strategy | Signal: HOLD | Shares held: 102.0 | Last price: $163.83
+2026-08-04 19:15:57,425 | [PLTR] ACTION: No trade.
+2026-08-04 19:15:57,442 | [REZI] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.30
+2026-08-04 19:15:57,443 | [REZI] ACTION: No trade.
+2026-08-04 19:15:57,460 | [TSAT] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.91
+2026-08-04 19:15:57,460 | [TSAT] ACTION: No trade.
+2026-08-04 19:30:57,903 | Market is open (closes 2026-08-04 22:00:00 CEST your local time). Checking 13 symbols: AAPL, AMZN, BETR, BLZE, BRKR, DFNS, MOVE, MSFT, MU, NVDA, PLTR, REZI, TSAT (within 90 min of close -- not enough runway left today for a new position)
+2026-08-04 19:31:01,764 | [AAPL] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.58
+2026-08-04 19:31:01,765 | [AAPL] ACTION: No trade.
+2026-08-04 19:31:01,787 | [AMZN] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 71.0 | Last price: $277.10
+2026-08-04 19:31:01,787 | [AMZN] ACTION: No trade.
+2026-08-04 19:31:01,805 | [BETR] trending (ADX 59.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.12
+2026-08-04 19:31:01,805 | [BETR] ACTION: No trade.
+2026-08-04 19:31:01,825 | [BLZE] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.58
+2026-08-04 19:31:01,825 | [BLZE] ACTION: No trade.
+2026-08-04 19:31:01,843 | [BRKR] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.06
+2026-08-04 19:31:01,843 | [BRKR] ACTION: No trade.
+2026-08-04 19:31:01,866 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $44.20
+2026-08-04 19:31:01,866 | [DFNS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:31:01,883 | [MOVE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.67
+2026-08-04 19:31:01,883 | [MOVE] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:31:01,906 | [MSFT] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 40.0 | Last price: $496.84
+2026-08-04 19:31:01,906 | [MSFT] ACTION: No trade.
+2026-08-04 19:31:01,929 | [MU] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $894.39
+2026-08-04 19:31:01,929 | [MU] ACTION: No trade.
+2026-08-04 19:31:01,953 | [NVDA] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.49
+2026-08-04 19:31:01,953 | [NVDA] ACTION: No trade.
+2026-08-04 19:31:01,980 | [PLTR] trending (ADX 59.4) -> trend-following strategy | Signal: HOLD | Shares held: 102.0 | Last price: $162.58
+2026-08-04 19:31:01,980 | [PLTR] ACTION: No trade.
+2026-08-04 19:31:01,999 | [REZI] trending (ADX 40.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.31
+2026-08-04 19:31:01,999 | [REZI] ACTION: No trade.
+2026-08-04 19:31:02,017 | [TSAT] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.93
+2026-08-04 19:31:02,017 | [TSAT] ACTION: No trade.
+2026-08-04 19:46:02,319 | SCANNER: refreshing watchlist...
+2026-08-04 19:46:02,611 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-08-04 19:46:06,119 | SCANNER: candidate IBTA -- +45.9% today, $35.86, liquid, 7 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate MOVE -- +38.8% today, $14.94, liquid, 5 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate TSAT -- +37.1% today, $55.10, liquid, 3 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate BETR -- -35.5% today, $17.61, liquid, 2 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate BLZE -- +30.9% today, $20.41, liquid, 9 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate PLTR -- +29.7% today, $162.93, liquid, 21 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate W -- +29.5% today, $115.65, liquid, 6 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate DFNS -- -29.3% today, $43.49, liquid, 2 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate REZI -- -27.2% today, $26.38, liquid, 1 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate BRKR -- -21.1% today, $50.73, liquid, 5 recent news item(s)
+2026-08-04 19:46:06,119 | SCANNER: candidate CTRI -- -20.6% today, $22.12, liquid, 3 recent news item(s)
+2026-08-04 19:47:02,944 | S&P 500 liquidity backstop -> MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 19:47:02,947 | SCANNER: new watchlist -> IBTA, MOVE, TSAT, BETR, BLZE, PLTR, W, DFNS, REZI, BRKR, CTRI, MU, AAPL, AMZN, MSFT, NVDA
+2026-08-04 19:47:03,099 | Market is open (closes 2026-08-04 22:00:00 CEST your local time). Checking 16 symbols: AAPL, AMZN, BETR, BLZE, BRKR, CTRI, DFNS, IBTA, MOVE, MSFT, MU, NVDA, PLTR, REZI, TSAT, W (within 90 min of close -- not enough runway left today for a new position)
+2026-08-04 19:47:07,762 | [AAPL] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $310.27
+2026-08-04 19:47:07,762 | [AAPL] ACTION: No trade.
+2026-08-04 19:47:07,784 | [AMZN] choppy/sideways (ADX 23.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 71.0 | Last price: $278.31
+2026-08-04 19:47:07,784 | [AMZN] ACTION: No trade.
+2026-08-04 19:47:07,802 | [BETR] trending (ADX 55.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.58
+2026-08-04 19:47:07,802 | [BETR] ACTION: No trade.
+2026-08-04 19:47:07,821 | [BLZE] choppy/sideways (ADX 24.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.42
+2026-08-04 19:47:07,821 | [BLZE] ACTION: No trade.
+2026-08-04 19:47:07,839 | [BRKR] trending (ADX 55.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $50.71
+2026-08-04 19:47:07,839 | [BRKR] ACTION: No trade.
+2026-08-04 19:47:07,857 | [CTRI] trending (ADX 69.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $21.96
+2026-08-04 19:47:07,857 | [CTRI] ACTION: No trade.
+2026-08-04 19:47:07,879 | [DFNS] choppy/sideways (ADX 9.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.35
+2026-08-04 19:47:07,879 | [DFNS] ACTION: No trade.
+2026-08-04 19:47:07,897 | [IBTA] trending (ADX 42.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.02
+2026-08-04 19:47:07,897 | [IBTA] ACTION: No trade.
+2026-08-04 19:47:07,913 | [MOVE] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.99
+2026-08-04 19:47:07,913 | [MOVE] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-04 19:47:07,935 | [MSFT] trending (ADX 40.7) -> trend-following strategy | Signal: HOLD | Shares held: 40.0 | Last price: $496.96
+2026-08-04 19:47:07,935 | [MSFT] ACTION: No trade.
+2026-08-04 19:47:07,957 | [MU] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $895.11
+2026-08-04 19:47:07,957 | [MU] ACTION: No trade.
+2026-08-04 19:47:07,979 | [NVDA] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.86
+2026-08-04 19:47:07,980 | [NVDA] ACTION: No trade.
+2026-08-04 19:47:08,002 | [PLTR] trending (ADX 58.6) -> trend-following strategy | Signal: HOLD | Shares held: 102.0 | Last price: $162.70
+2026-08-04 19:47:08,002 | [PLTR] ACTION: No trade.
+2026-08-04 19:47:08,019 | [REZI] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.34
+2026-08-04 19:47:08,019 | [REZI] ACTION: No trade.
+2026-08-04 19:47:08,037 | [TSAT] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $55.24
+2026-08-04 19:47:08,037 | [TSAT] ACTION: No trade.
+2026-08-04 19:47:08,056 | [W] trending (ADX 46.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $115.76
+2026-08-04 19:47:08,056 | [W] ACTION: No trade.
+2026-08-04 19:50:02,577 | Within 10 min of close -- flattening all positions for the day.
+2026-08-04 19:50:02,841 | [AMZN] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"71","held_for_orders":"71","message":"insufficient qty available for order (requested: 71, available: 0)","symbol":"AMZN"} -- position likely still open, will retry.
+2026-08-04 19:50:02,917 | [MSFT] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"40","held_for_orders":"40","message":"insufficient qty available for order (requested: 40, available: 0)","symbol":"MSFT"} -- position likely still open, will retry.
+2026-08-04 19:50:02,993 | [PLTR] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"102","held_for_orders":"102","message":"insufficient qty available for order (requested: 102, available: 0)","symbol":"PLTR"} -- position likely still open, will retry.
+2026-08-04 19:50:02,993 | EOD FLATTEN: one or more positions failed to close -- NOT marking today's flatten as done, will retry next cycle.
+2026-08-04 19:51:05,075 | Within 10 min of close -- flattening all positions for the day.
+2026-08-04 19:51:05,336 | [AMZN] EOD FLATTEN: close order submitted for 71.0 share(s).
+2026-08-04 19:51:05,413 | [MSFT] EOD FLATTEN: close order submitted for 40.0 share(s).
+2026-08-04 19:51:05,505 | [PLTR] EOD FLATTEN: close order submitted for 102.0 share(s).
+2026-08-04 19:51:05,505 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-08-04 20:00:02,113 | Market is closed. Next open: 2026-08-05 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-04 20:00:02,183 | Market is closed for the day -- exiting early instead of idling.
+2026-08-04 20:00:02,184 | Duration window finished.
