@@ -921,3 +921,19 @@
 2026-08-05 15:57:49,797 | [VPG] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.62
 2026-08-05 15:57:49,797 | [VPG] ACTION: No trade.
 2026-08-05 16:09:04,936 | Duration window finished.
+2026-08-05 20:00:45,187 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-05 20:00:45,187 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-05 20:00:45,187 | Bar size: 15min | Check interval while market open: 15min
+2026-08-05 20:00:45,187 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-05 20:00:45,187 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-05 20:00:45,187 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-05 20:00:45,187 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-05 20:00:45,187 | Position sizing: flat $500 per trade
+2026-08-05 20:00:45,188 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-05 20:00:45,188 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-05 20:00:45,188 | Loaded saved watchlist from previous run: BLMN, AMIX, LMB, APPS, MTRN, SEDG, FTK, CRTO, PRGO, MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 20:00:45,188 | Restored daily risk state from previous run: day 2026-08-05, breaker tripped: False
+2026-08-05 20:00:45,188 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-05 20:00:45,342 | Market is closed. Next open: 2026-08-06 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-05 20:00:45,384 | Market is closed for the day -- exiting early instead of idling.
+2026-08-05 20:00:45,384 | Duration window finished.
