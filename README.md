@@ -197,28 +197,36 @@ work for Gmail).
 
 ## Risk management
 
-### Position sizing: risk-based, not a flat dollar amount
+### Position sizing: flat dollar amount by default
 
 ```
-USE_RISK_BASED_SIZING=true
-RISK_PER_TRADE_PCT=1.0
-MAX_POSITION_PCT_OF_EQUITY=25
+USE_RISK_BASED_SIZING=false
+TRADE_AMOUNT_USD=500
 ```
 
-Each position is sized so that if the stop-loss is hit, you lose
-roughly `RISK_PER_TRADE_PCT` of your CURRENT account equity — not a
-flat dollar amount every time. A volatile stock with a wide stop gets
-fewer shares than a calm one with a tight stop for the same dollar
-risk, and sizing scales automatically as your account grows or shrinks.
-`MAX_POSITION_PCT_OF_EQUITY` caps the notional size regardless, so a
-very tight stop can't imply an absurdly large position.
+Every trade spends exactly `TRADE_AMOUNT_USD`, regardless of account
+size or how volatile the stock is. Simple, predictable, and what this
+bot actually runs live.
 
-**This mattered in practice, not just in theory**: under the old flat
-`TRADE_AMOUNT_USD`-per-trade sizing, a single volatile symbol (MSTR) hit
-a 42% single-position drawdown in backtesting. Switching to risk-based
-sizing dropped the SAME kind of backtest's combined max drawdown to
-1.0%. Set `USE_RISK_BASED_SIZING=false` to go back to flat
-`TRADE_AMOUNT_USD`-per-trade sizing if you'd rather have that.
+**Risk-based sizing exists as an option but is off by default, on a
+real lesson learned.** With `USE_RISK_BASED_SIZING=true`, each position
+is sized so a stop-loss hit costs roughly `RISK_PER_TRADE_PCT` of
+current equity instead of a flat dollar amount, and `MAX_POSITION_PCT_
+OF_EQUITY` caps notional size regardless. Backtesting genuinely
+supports it — it cut a single volatile symbol's (MSTR) 42% drawdown to
+1.0% with no measured cost to win rate or profit factor. It was turned
+on live on 2026-08-04 on that evidence. One live day later
+(2026-08-05), real Alpaca order history showed individual positions of
+$15,700–$19,900 on a ~$99,645 account — `MAX_POSITION_PCT_OF_EQUITY=25`
+means up to ~25% of your account in ONE position, which is easy to miss
+when the backtest numbers are all expressed as win rate / profit factor
+/ drawdown-as-a-percentage rather than dollars. That's not a bug in the
+sizing math — it did exactly what it was configured to do — it's a gap
+between what the config says and what it means on an actual account
+size. Reverted to flat sizing the same day. If you turn this back on,
+set `MAX_POSITION_PCT_OF_EQUITY` to a number whose dollar value on YOUR
+account you're actually comfortable with — don't reuse 25 without doing
+that math first.
 
 ### Stop-loss / take-profit
 

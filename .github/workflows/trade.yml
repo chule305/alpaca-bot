@@ -73,9 +73,23 @@ jobs:
           # (not left to code defaults) so a future code change to a
           # default can't silently change what the live bot does. ---
           SYMBOLS: "TSLA,NVDA,COIN,AMD,PLTR"
-          USE_RISK_BASED_SIZING: "true"
+          # Reverted to flat-dollar sizing 2026-08-05, one live day after
+          # risk-based sizing was turned on (2026-08-04). Confirmed via
+          # real Alpaca order history: positions on 2026-08-04 ranged
+          # $15,700-$19,900 each (UFPT, MSFT, PLTR, AAPL, AMZN) against a
+          # ~$99,645 account -- MAX_POSITION_PCT_OF_EQUITY=25 had been
+          # sitting dormant (irrelevant while sizing was flat-dollar) and
+          # became a ~$25k-per-position cap the instant USE_RISK_BASED_
+          # SIZING flipped true, without that dollar consequence being
+          # obvious from the backtest's win-rate/PF/drawdown-as-percentage
+          # numbers alone. Real, if small, cost that day: -$176.78, mostly
+          # one -$1,206.55 trade on UFPT -- a swing that couldn't happen
+          # under $500 flat sizing. MAX_POSITION_PCT_OF_EQUITY dropped
+          # 25 -> 5 alongside the revert so this can't recur unnoticed if
+          # risk-based sizing is ever turned back on deliberately later.
+          USE_RISK_BASED_SIZING: "false"
           RISK_PER_TRADE_PCT: "1.0"
-          MAX_POSITION_PCT_OF_EQUITY: "25"
+          MAX_POSITION_PCT_OF_EQUITY: "5"
           TRADE_AMOUNT_USD: "500"
           MAX_CONCURRENT_POSITIONS: "5"
           MAX_PORTFOLIO_RISK_PCT: "5.0"
