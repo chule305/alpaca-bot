@@ -67,3 +67,8 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-05T16:10:06+00:00,2026-08-05,AMZN,AUTO_EXIT,trend_following,AUTO_EXIT (order type OrderType.MARKET),71,277.73,19718.8,,,,,,,57e610e1-77fd-4bcb-81da-a4e156bc5eec,,,,,,,,,,,,,
 2026-08-05T16:10:06+00:00,2026-08-05,PLTR,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),102,162.416,16566.4,,,,,,,4b40ee42-e2a0-450a-8bc1-b435678d000a,,,,,,,,,,,,,
 2026-08-05T16:10:06+00:00,2026-08-05,MSFT,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),40,494.96,19798.4,,,,,,,be1396b0-841f-4d91-8d28-8ad5e4bd0a82,,,,,,,,,,,,,
+2026-08-05T13:39:08+00:00,2026-08-05,AMZN,AUTO_EXIT,trend_following,AUTO_EXIT (order type OrderType.MARKET),71,277.73,19718.8,,,,,,,57e610e1-77fd-4bcb-81da-a4e156bc5eec,,,,,,,,,,,,,
+2026-08-05T13:39:08+00:00,2026-08-05,MSFT,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),40,494.96,19798.4,,,,,,,be1396b0-841f-4d91-8d28-8ad5e4bd0a82,,,,,,,,,,,,,
+2026-08-05T13:39:08+00:00,2026-08-05,PLTR,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),102,162.416,16566.4,,,,,,,4b40ee42-e2a0-450a-8bc1-b435678d000a,,,,,,,,,,,,,
+2026-08-05T13:54:19+00:00,2026-08-05,ROCK,BUY,breakout,volume-confirmed breakout above 20-bar high,9,55.49,499.41,52.72,61.04,flat $,99645.1,,0,6780f53e-f7e5-426d-9c6a-972e0078affb,breakout-1785938057,53.97,91.6027,54.6772,0.863132,49.4103,48.3662,53.946,55691,15776.5,49.65,57.175,48.06
+2026-08-05T14:10:00+00:00,2026-08-05,NVDA,BUY,breakout,volume-confirmed breakout above 20-bar high,2,221.655,443.31,210.53,243.77,flat $,99640.3,,15,8448fe25-ccc4-4017-b948-e8ecb832fdf2,breakout-1785938999,221.155,80.0476,27.0288,1.24461,217.455,216.462,219.291,1.08464e+07,1.34557e+06,219.9,221.77,216.52
