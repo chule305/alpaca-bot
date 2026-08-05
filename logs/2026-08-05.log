@@ -475,3 +475,236 @@
 2026-08-05 15:57:49,797 | [VPG] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.62
 2026-08-05 15:57:49,797 | [VPG] ACTION: No trade.
 2026-08-05 16:09:04,936 | Duration window finished.
+2026-08-05 18:40:04,840 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-05 18:40:04,840 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-05 18:40:04,840 | Bar size: 15min | Check interval while market open: 15min
+2026-08-05 18:40:04,840 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-05 18:40:04,840 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-05 18:40:04,840 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-05 18:40:04,840 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-05 18:40:04,840 | Position sizing: flat $500 per trade
+2026-08-05 18:40:04,840 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-05 18:40:04,840 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-05 18:40:04,840 | Loaded saved watchlist from previous run: APPS, BLMN, LMB, AMIX, FTK, MTRN, PRGO, VPG, SEDG, MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 18:40:04,840 | Restored daily risk state from previous run: day 2026-08-05, breaker tripped: False
+2026-08-05 18:40:04,840 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-05 18:40:04,987 | SCANNER: refreshing watchlist...
+2026-08-05 18:40:05,775 | SCANNER: excluded 7 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-08-05 18:40:08,663 | SCANNER: candidate AMIX -- -35.0% today, $12.67, liquid, 6 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate BLMN -- +32.9% today, $11.85, liquid, 10 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate LMB -- -32.5% today, $52.09, liquid, 7 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate APPS -- +31.2% today, $12.47, liquid, 10 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate MTRN -- +28.9% today, $292.67, liquid, 3 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate SEDG -- -27.7% today, $35.26, liquid, 5 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate PRGO -- +26.0% today, $13.58, liquid, 4 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate CRTO -- -25.9% today, $16.59, liquid, 3 recent news item(s)
+2026-08-05 18:40:08,663 | SCANNER: candidate FTK -- +25.0% today, $35.27, liquid, 4 recent news item(s)
+2026-08-05 18:40:08,731 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-05 18:41:10,791 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 18:41:10,792 | SCANNER: new watchlist -> AMIX, BLMN, LMB, APPS, MTRN, SEDG, PRGO, CRTO, FTK, MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 18:41:10,822 | Market is open (closes 2026-08-05 22:00:00 CEST your local time). Checking 16 symbols: AAPL, AMD, AMIX, AMZN, APPS, BLMN, CRTO, FTK, LMB, MSFT, MTRN, MU, NVDA, PRGO, ROCK, SEDG (within 90 min of close -- not enough runway left today for a new position)
+2026-08-05 18:41:17,893 | Multi-timeframe filter: refreshed daily trend for 16 symbol(s).
+2026-08-05 18:41:17,912 | [AAPL] choppy/sideways (ADX 17.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.19
+2026-08-05 18:41:17,913 | [AAPL] ACTION: No trade.
+2026-08-05 18:41:17,930 | [AMD] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $488.35
+2026-08-05 18:41:17,931 | [AMD] ACTION: No trade.
+2026-08-05 18:41:17,947 | [AMIX] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.92
+2026-08-05 18:41:17,947 | [AMIX] ACTION: No trade.
+2026-08-05 18:41:17,965 | [AMZN] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.31
+2026-08-05 18:41:17,965 | [AMZN] ACTION: No trade.
+2026-08-05 18:41:17,980 | [APPS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.44
+2026-08-05 18:41:17,980 | [APPS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 18:41:17,994 | [BLMN] trending (ADX 42.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.96
+2026-08-05 18:41:17,994 | [BLMN] ACTION: No trade.
+2026-08-05 18:41:18,007 | [CRTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.80
+2026-08-05 18:41:18,007 | [CRTO] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 18:41:18,021 | [FTK] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.35
+2026-08-05 18:41:18,021 | [FTK] ACTION: No trade.
+2026-08-05 18:41:18,035 | [LMB] trending (ADX 67.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $52.06
+2026-08-05 18:41:18,035 | [LMB] ACTION: No trade.
+2026-08-05 18:41:18,052 | [MSFT] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $489.80
+2026-08-05 18:41:18,052 | [MSFT] ACTION: No trade.
+2026-08-05 18:41:18,066 | [MTRN] trending (ADX 66.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $292.33
+2026-08-05 18:41:18,066 | [MTRN] ACTION: No trade.
+2026-08-05 18:41:18,083 | [MU] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $921.75
+2026-08-05 18:41:18,083 | [MU] ACTION: No trade.
+2026-08-05 18:41:18,101 | [NVDA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $221.73
+2026-08-05 18:41:18,101 | [NVDA] ACTION: No trade.
+2026-08-05 18:41:18,115 | [PRGO] trending (ADX 61.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.40
+2026-08-05 18:41:18,115 | [PRGO] ACTION: No trade.
+2026-08-05 18:41:18,129 | [ROCK] trending (ADX 68.1) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.78
+2026-08-05 18:41:18,129 | [ROCK] ACTION: No trade.
+2026-08-05 18:41:18,145 | [SEDG] trending (ADX 72.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.41
+2026-08-05 18:41:18,145 | [SEDG] ACTION: No trade.
+2026-08-05 18:56:18,318 | Market is open (closes 2026-08-05 22:00:00 CEST your local time). Checking 16 symbols: AAPL, AMD, AMIX, AMZN, APPS, BLMN, CRTO, FTK, LMB, MSFT, MTRN, MU, NVDA, PRGO, ROCK, SEDG (within 90 min of close -- not enough runway left today for a new position)
+2026-08-05 18:56:23,328 | [AAPL] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.62
+2026-08-05 18:56:23,328 | [AAPL] ACTION: No trade.
+2026-08-05 18:56:23,345 | [AMD] trending (ADX 29.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $488.05
+2026-08-05 18:56:23,345 | [AMD] ACTION: No trade.
+2026-08-05 18:56:23,362 | [AMIX] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.54
+2026-08-05 18:56:23,362 | [AMIX] ACTION: No trade.
+2026-08-05 18:56:23,380 | [AMZN] trending (ADX 52.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.18
+2026-08-05 18:56:23,380 | [AMZN] ACTION: No trade.
+2026-08-05 18:56:23,396 | [APPS] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.38
+2026-08-05 18:56:23,396 | [APPS] ACTION: No trade.
+2026-08-05 18:56:23,410 | [BLMN] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.85
+2026-08-05 18:56:23,410 | [BLMN] ACTION: No trade.
+2026-08-05 18:56:23,424 | [CRTO] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.58
+2026-08-05 18:56:23,424 | [CRTO] ACTION: No trade.
+2026-08-05 18:56:23,437 | [FTK] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.20
+2026-08-05 18:56:23,437 | [FTK] ACTION: No trade.
+2026-08-05 18:56:23,451 | [LMB] trending (ADX 66.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $52.23
+2026-08-05 18:56:23,451 | [LMB] ACTION: No trade.
+2026-08-05 18:56:23,468 | [MSFT] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $489.83
+2026-08-05 18:56:23,468 | [MSFT] ACTION: No trade.
+2026-08-05 18:56:23,482 | [MTRN] trending (ADX 66.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $291.42
+2026-08-05 18:56:23,482 | [MTRN] ACTION: No trade.
+2026-08-05 18:56:23,500 | [MU] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $916.93
+2026-08-05 18:56:23,500 | [MU] ACTION: No trade.
+2026-08-05 18:56:23,518 | [NVDA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $221.74
+2026-08-05 18:56:23,518 | [NVDA] ACTION: No trade.
+2026-08-05 18:56:23,532 | [PRGO] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.59
+2026-08-05 18:56:23,532 | [PRGO] ACTION: No trade.
+2026-08-05 18:56:23,546 | [ROCK] trending (ADX 65.7) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.26
+2026-08-05 18:56:23,546 | [ROCK] ACTION: No trade.
+2026-08-05 18:56:23,562 | [SEDG] trending (ADX 73.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.11
+2026-08-05 18:56:23,562 | [SEDG] ACTION: No trade.
+2026-08-05 19:11:23,746 | SCANNER: refreshing watchlist...
+2026-08-05 19:11:24,289 | SCANNER: excluded 8 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-08-05 19:11:26,810 | SCANNER: candidate AMIX -- -37.2% today, $12.25, liquid, 6 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate APPS -- +34.9% today, $12.83, liquid, 11 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate BLMN -- +32.2% today, $11.79, liquid, 10 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate LMB -- -32.1% today, $52.32, liquid, 7 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate SEDG -- -28.0% today, $35.11, liquid, 5 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate MTRN -- +27.4% today, $289.39, liquid, 3 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate FTK -- +26.2% today, $35.61, liquid, 4 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate VPG -- -25.9% today, $74.81, liquid, 4 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate PRGO -- +25.2% today, $13.49, liquid, 4 recent news item(s)
+2026-08-05 19:11:26,810 | SCANNER: candidate WTTR -- +21.0% today, $22.38, liquid, 3 recent news item(s)
+2026-08-05 19:12:21,587 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 19:12:21,589 | SCANNER: new watchlist -> AMIX, APPS, BLMN, LMB, SEDG, MTRN, FTK, VPG, PRGO, WTTR, MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 19:12:21,629 | Market is open (closes 2026-08-05 22:00:00 CEST your local time). Checking 17 symbols: AAPL, AMD, AMIX, AMZN, APPS, BLMN, FTK, LMB, MSFT, MTRN, MU, NVDA, PRGO, ROCK, SEDG, VPG, WTTR (within 90 min of close -- not enough runway left today for a new position)
+2026-08-05 19:12:25,225 | Multi-timeframe filter: refreshed daily trend for 2 symbol(s).
+2026-08-05 19:12:25,243 | [AAPL] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.96
+2026-08-05 19:12:25,243 | [AAPL] ACTION: No trade.
+2026-08-05 19:12:25,260 | [AMD] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $486.84
+2026-08-05 19:12:25,260 | [AMD] ACTION: No trade.
+2026-08-05 19:12:25,276 | [AMIX] choppy/sideways (ADX 18.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.54
+2026-08-05 19:12:25,277 | [AMIX] ACTION: No trade.
+2026-08-05 19:12:25,293 | [AMZN] trending (ADX 53.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.33
+2026-08-05 19:12:25,293 | [AMZN] ACTION: No trade.
+2026-08-05 19:12:25,309 | [APPS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.48
+2026-08-05 19:12:25,309 | [APPS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 19:12:25,323 | [BLMN] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.74
+2026-08-05 19:12:25,323 | [BLMN] ACTION: No trade.
+2026-08-05 19:12:25,337 | [FTK] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.22
+2026-08-05 19:12:25,337 | [FTK] ACTION: No trade.
+2026-08-05 19:12:25,351 | [LMB] trending (ADX 65.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $52.40
+2026-08-05 19:12:25,351 | [LMB] ACTION: No trade.
+2026-08-05 19:12:25,368 | [MSFT] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $489.86
+2026-08-05 19:12:25,368 | [MSFT] ACTION: No trade.
+2026-08-05 19:12:25,383 | [MTRN] trending (ADX 65.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $289.46
+2026-08-05 19:12:25,383 | [MTRN] ACTION: No trade.
+2026-08-05 19:12:25,400 | [MU] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $917.41
+2026-08-05 19:12:25,400 | [MU] ACTION: No trade.
+2026-08-05 19:12:25,417 | [NVDA] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $221.73
+2026-08-05 19:12:25,417 | [NVDA] ACTION: No trade.
+2026-08-05 19:12:25,431 | [PRGO] trending (ADX 61.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.62
+2026-08-05 19:12:25,431 | [PRGO] ACTION: No trade.
+2026-08-05 19:12:25,445 | [ROCK] trending (ADX 63.5) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.78
+2026-08-05 19:12:25,445 | [ROCK] ACTION: No trade.
+2026-08-05 19:12:25,460 | [SEDG] trending (ADX 73.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.92
+2026-08-05 19:12:25,461 | [SEDG] ACTION: No trade.
+2026-08-05 19:12:25,475 | [VPG] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $74.51
+2026-08-05 19:12:25,475 | [VPG] ACTION: No trade.
+2026-08-05 19:12:25,489 | [WTTR] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $22.09
+2026-08-05 19:12:25,489 | [WTTR] ACTION: No trade.
+2026-08-05 19:27:25,694 | Market is open (closes 2026-08-05 22:00:00 CEST your local time). Checking 17 symbols: AAPL, AMD, AMIX, AMZN, APPS, BLMN, FTK, LMB, MSFT, MTRN, MU, NVDA, PRGO, ROCK, SEDG, VPG, WTTR (within 90 min of close -- not enough runway left today for a new position)
+2026-08-05 19:27:29,529 | [AAPL] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.90
+2026-08-05 19:27:29,529 | [AAPL] ACTION: No trade.
+2026-08-05 19:27:29,547 | [AMD] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $488.70
+2026-08-05 19:27:29,547 | [AMD] ACTION: No trade.
+2026-08-05 19:27:29,564 | [AMIX] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.21
+2026-08-05 19:27:29,564 | [AMIX] ACTION: No trade.
+2026-08-05 19:27:29,582 | [AMZN] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.39
+2026-08-05 19:27:29,582 | [AMZN] ACTION: No trade.
+2026-08-05 19:27:29,598 | [APPS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.91
+2026-08-05 19:27:29,598 | [APPS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 19:27:29,612 | [BLMN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $11.81
+2026-08-05 19:27:29,612 | [BLMN] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 19:27:29,627 | [FTK] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.83
+2026-08-05 19:27:29,627 | [FTK] ACTION: No trade.
+2026-08-05 19:27:29,641 | [LMB] trending (ADX 65.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.87
+2026-08-05 19:27:29,641 | [LMB] ACTION: No trade.
+2026-08-05 19:27:29,658 | [MSFT] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $490.81
+2026-08-05 19:27:29,658 | [MSFT] ACTION: No trade.
+2026-08-05 19:27:29,672 | [MTRN] trending (ADX 64.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $292.33
+2026-08-05 19:27:29,672 | [MTRN] ACTION: No trade.
+2026-08-05 19:27:29,689 | [MU] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $921.70
+2026-08-05 19:27:29,689 | [MU] ACTION: No trade.
+2026-08-05 19:27:29,707 | [NVDA] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $221.88
+2026-08-05 19:27:29,707 | [NVDA] ACTION: No trade.
+2026-08-05 19:27:29,721 | [PRGO] trending (ADX 59.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.44
+2026-08-05 19:27:29,722 | [PRGO] ACTION: No trade.
+2026-08-05 19:27:29,735 | [ROCK] trending (ADX 61.7) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $56.02
+2026-08-05 19:27:29,735 | [ROCK] ACTION: No trade.
+2026-08-05 19:27:29,751 | [SEDG] trending (ADX 74.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.08
+2026-08-05 19:27:29,751 | [SEDG] ACTION: No trade.
+2026-08-05 19:27:29,766 | [VPG] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.18
+2026-08-05 19:27:29,766 | [VPG] ACTION: No trade.
+2026-08-05 19:27:29,780 | [WTTR] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $22.20
+2026-08-05 19:27:29,780 | [WTTR] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 19:42:30,109 | SCANNER: refreshing watchlist...
+2026-08-05 19:42:30,347 | SCANNER: excluded 8 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-08-05 19:42:31,731 | SCANNER: candidate AMIX -- -37.4% today, $12.20, liquid, 5 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate APPS -- +35.0% today, $12.84, liquid, 11 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate LMB -- -34.0% today, $50.94, liquid, 7 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate MTRN -- +32.8% today, $301.64, liquid, 3 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate BLMN -- +32.7% today, $11.84, liquid, 10 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate SEDG -- -28.0% today, $35.12, liquid, 6 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate FTK -- +26.9% today, $35.78, liquid, 4 recent news item(s)
+2026-08-05 19:42:31,731 | SCANNER: candidate PRGO -- +25.1% today, $13.48, liquid, 4 recent news item(s)
+2026-08-05 19:43:20,436 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 19:43:20,438 | SCANNER: new watchlist -> AMIX, APPS, LMB, MTRN, BLMN, SEDG, FTK, PRGO, MU, NVDA, MSFT, AAPL, AMZN, AMD
+2026-08-05 19:43:20,472 | Market is open (closes 2026-08-05 22:00:00 CEST your local time). Checking 15 symbols: AAPL, AMD, AMIX, AMZN, APPS, BLMN, FTK, LMB, MSFT, MTRN, MU, NVDA, PRGO, ROCK, SEDG (within 90 min of close -- not enough runway left today for a new position)
+2026-08-05 19:43:25,416 | [AAPL] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.62
+2026-08-05 19:43:25,416 | [AAPL] ACTION: No trade.
+2026-08-05 19:43:25,434 | [AMD] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $485.25
+2026-08-05 19:43:25,434 | [AMD] ACTION: No trade.
+2026-08-05 19:43:25,450 | [AMIX] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $12.36
+2026-08-05 19:43:25,451 | [AMIX] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-05 19:43:25,468 | [AMZN] trending (ADX 54.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.24
+2026-08-05 19:43:25,468 | [AMZN] ACTION: No trade.
+2026-08-05 19:43:25,483 | [APPS] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.91
+2026-08-05 19:43:25,483 | [APPS] ACTION: No trade.
+2026-08-05 19:43:25,497 | [BLMN] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.81
+2026-08-05 19:43:25,497 | [BLMN] ACTION: No trade.
+2026-08-05 19:43:25,511 | [FTK] choppy/sideways (ADX 22.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.82
+2026-08-05 19:43:25,511 | [FTK] ACTION: No trade.
+2026-08-05 19:43:25,524 | [LMB] trending (ADX 64.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.11
+2026-08-05 19:43:25,524 | [LMB] ACTION: No trade.
+2026-08-05 19:43:25,542 | [MSFT] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $489.96
+2026-08-05 19:43:25,542 | [MSFT] ACTION: No trade.
+2026-08-05 19:43:25,555 | [MTRN] trending (ADX 64.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $299.90
+2026-08-05 19:43:25,555 | [MTRN] ACTION: No trade.
+2026-08-05 19:43:25,572 | [MU] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $915.88
+2026-08-05 19:43:25,572 | [MU] ACTION: No trade.
+2026-08-05 19:43:25,589 | [NVDA] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $221.84
+2026-08-05 19:43:25,589 | [NVDA] ACTION: No trade.
+2026-08-05 19:43:25,603 | [PRGO] trending (ADX 58.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.48
+2026-08-05 19:43:25,603 | [PRGO] ACTION: No trade.
+2026-08-05 19:43:25,616 | [ROCK] trending (ADX 59.9) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $55.58
+2026-08-05 19:43:25,616 | [ROCK] ACTION: No trade.
+2026-08-05 19:43:25,632 | [SEDG] trending (ADX 74.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.78
+2026-08-05 19:43:25,632 | [SEDG] ACTION: No trade.
+2026-08-05 19:50:02,161 | Within 10 min of close -- flattening all positions for the day.
+2026-08-05 19:50:02,310 | [NVDA] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"2","held_for_orders":"2","message":"insufficient qty available for order (requested: 2, available: 0)","symbol":"NVDA"} -- position likely still open, will retry.
+2026-08-05 19:50:02,349 | [ROCK] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"9","held_for_orders":"9","message":"insufficient qty available for order (requested: 9, available: 0)","symbol":"ROCK"} -- position likely still open, will retry.
+2026-08-05 19:50:02,349 | EOD FLATTEN: one or more positions failed to close -- NOT marking today's flatten as done, will retry next cycle.
+2026-08-05 19:51:04,385 | Within 10 min of close -- flattening all positions for the day.
+2026-08-05 19:51:04,506 | [NVDA] EOD FLATTEN: close order submitted for 2.0 share(s).
+2026-08-05 19:51:04,561 | [ROCK] EOD FLATTEN: close order submitted for 9.0 share(s).
+2026-08-05 19:51:04,561 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-08-05 20:00:02,060 | Market is closed. Next open: 2026-08-06 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-05 20:00:02,096 | Market is closed for the day -- exiting early instead of idling.
+2026-08-05 20:00:02,096 | Duration window finished.
