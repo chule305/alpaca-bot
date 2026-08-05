@@ -64,3 +64,6 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-04T19:51:05+00:00,2026-08-04,AMZN,FLATTEN,end_of_day,Flattened before market close,71,,,,,,,,,,,,,,,,,,,,,,
 2026-08-04T19:51:05+00:00,2026-08-04,MSFT,FLATTEN,end_of_day,Flattened before market close,40,,,,,,,,,,,,,,,,,,,,,,
 2026-08-04T19:51:05+00:00,2026-08-04,PLTR,FLATTEN,end_of_day,Flattened before market close,102,,,,,,,,,,,,,,,,,,,,,,
+2026-08-05T16:10:06+00:00,2026-08-05,AMZN,AUTO_EXIT,trend_following,AUTO_EXIT (order type OrderType.MARKET),71,277.73,19718.8,,,,,,,57e610e1-77fd-4bcb-81da-a4e156bc5eec,,,,,,,,,,,,,
+2026-08-05T16:10:06+00:00,2026-08-05,PLTR,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),102,162.416,16566.4,,,,,,,4b40ee42-e2a0-450a-8bc1-b435678d000a,,,,,,,,,,,,,
+2026-08-05T16:10:06+00:00,2026-08-05,MSFT,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),40,494.96,19798.4,,,,,,,be1396b0-841f-4d91-8d28-8ad5e4bd0a82,,,,,,,,,,,,,
