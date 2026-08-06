@@ -57,6 +57,21 @@ RSI_OVERBOUGHT = float(os.getenv("RSI_OVERBOUGHT", 75))
 
 ADX_PERIOD = int(os.getenv("ADX_PERIOD", 14))
 ADX_TREND_THRESHOLD = float(os.getenv("ADX_TREND_THRESHOLD", 25))
+# Hysteresis band around ADX_TREND_THRESHOLD, OFF by default -- a single
+# hard cutoff means a stock chopping around ADX 25 (which happens exactly
+# at the boundary between "trending" and "choppy", i.e. often) can flip
+# trend_following <-> mean_reversion bar to bar. Each flip isn't free: it
+# swaps in a strategy with a different exit rule (trend_following_at's
+# death-cross vs. mean_reversion_at's RSI-overbought) mid-position, so a
+# whipsaw at the ADX line can cut a real trend short on a one-bar dip back
+# under 25, or hold a losing mean-reversion trade past where its own rule
+# would have exited because ADX ticked up first. Plausible, not yet
+# proven -- ships toggleable so the backtest gets the final word rather
+# than a theory. See add_indicators()'s adx_trend_regime column for the
+# actual band-crossing computation (must be a precomputed column, not a
+# loop variable, per this file's compute-once pattern).
+USE_ADX_HYSTERESIS = os.getenv("USE_ADX_HYSTERESIS", "false").strip().lower() in ("1", "true", "yes")
+ADX_HYSTERESIS_BAND = float(os.getenv("ADX_HYSTERESIS_BAND", 3))
 
 BREAKOUT_LOOKBACK = int(os.getenv("BREAKOUT_LOOKBACK", 20))
 # The only entry strategy that didn't have an on/off toggle -- added for
@@ -69,6 +84,93 @@ USE_BREAKOUT = os.getenv("USE_BREAKOUT", "true").strip().lower() in ("1", "true"
 # selectively is meant to stop it grabbing bars a stronger strategy
 # (rvol_spike, vwap_reversion) checked later might otherwise have taken.
 BREAKOUT_VOLUME_MULTIPLIER = float(os.getenv("BREAKOUT_VOLUME_MULTIPLIER", 2.0))
+
+# Same-time-of-day historical volume floor instead of a flat trailing
+# average, e.g. a 9:30-10:00am bar only gets compared against OTHER
+# 9:30-10:00am bars from prior sessions, not the whole day's flat
+# BREAKOUT_LOOKBACK-bar average. Motivation: intraday volume follows the
+# well-documented "U-shape" (heaviest right at the open, thinnest around
+# midday, picking back up into the close), so a bar's volume being
+# "unusual" should be judged against what's normal for THAT time of day,
+# not a blended average that doesn't know what time it is.
+#
+# The actual direction of the mispricing this fixes, measured on real data
+# (TSLA, 90 days), is the OPPOSITE of the naive guess: BREAKOUT_LOOKBACK=20
+# bars at BAR_MINUTES=15 is only a 5-hour trailing window, and because it's
+# a continuous rolling window (not reset per session) the early bars of a
+# session are still mostly averaging in the QUIET back half of the PRIOR
+# session, not today's own open. Measured avg volume by 30-min bucket vs.
+# the flat trailing average it's compared against:
+#   9:30-10:00  actual ~3.24M/bar  vs. flat trailing avg ~1.31M  (2.5x)
+#   12:30-1:00  actual ~0.98M/bar  vs. flat trailing avg ~1.69M  (0.6x)
+# So the flat average was actually the LOOSER bar at the open (real volume
+# already runs ~2.5x it before any breakout-specific surge) and the
+# STRICTER one at midday (real volume runs well under it) -- backwards
+# from "elevated morning volume should make the bar easier to read as
+# unusual," but the same root cause: a trailing average blind to time of
+# day misprices "unusual" in both directions. See
+# compute_time_of_day_avg_volume() for how the corrected comparison
+# average is built without lookahead.
+USE_TIME_OF_DAY_VOLUME_NORM = os.getenv("USE_TIME_OF_DAY_VOLUME_NORM", "false").strip().lower() in ("1", "true", "yes")
+# Width of the minutes-since-open bucket used for the historical average
+# above. 30 (not 15, i.e. not 1:1 with BAR_MINUTES) trades a little
+# precision for faster warmup: at BAR_MINUTES=15 a 15-wide bucket gets
+# exactly one bar of history per prior session added to its average, while
+# a 30-wide bucket gets two, roughly halving how many sessions it takes
+# before a bucket's average is built on a meaningful sample.
+#
+# 90-day backtest, both universes, same-symbol-set A/B, everything else at
+# defaults (2026-08-06, see CLAUDE.md):
+#   megacap (TSLA/NVDA/COIN/AMD/PLTR): 99 trades -> 78, win rate 60% -> 62%,
+#     profit factor 1.78 -> 2.37, return +7.5% -> +8.6%, max DD 1.7% -> 1.4%
+#   scanner (FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/RNG/INHD/FCUV/ATKR/SRAD):
+#     96 trades -> 99, win rate 49% -> 48%, profit factor 1.15 -> 1.22,
+#     return +1.3% -> +1.8%, max DD 1.8% -> 1.7%
+# Both universes improve on profit factor, return, and drawdown; megacap
+# trades far less often but at meaningfully higher quality (breakout firing
+# drops from 32 trades to 6 there specifically, per the mispricing above --
+# most of what used to pass as a "breakout" at the open was really just
+# ordinary open-of-day volume, not a real surge). Scanner names are lower-
+# float and don't show the same clean session-boundary effect, so breakout
+# firing there is roughly unchanged (29 -> 32 trades) and the combined
+# improvement comes from elsewhere in the chain reacting to which bars
+# breakout no longer claims first.
+#
+# Left OFF by default per this project's convention of defaulting new
+# toggles off pending a longer track record -- one 90-day window on two
+# small symbol sets is a real result, not a settled one. Improving both
+# universes together on this axis is still notable (see BAR_MINUTES above
+# for the last time that happened).
+TIME_OF_DAY_VOLUME_BUCKET_MINUTES = int(os.getenv("TIME_OF_DAY_VOLUME_BUCKET_MINUTES", 30))
+
+# breakout_recent_high (below) has always been a rolling max of CLOSES,
+# not of HIGHS -- so the "20-bar high" breakout already fires off closes,
+# never off a bare intrabar wick. What it does NOT do by default is use
+# the real chart high (wicks included) as the level to clear -- a rolling
+# max of closes sits at or below that real high, so the level being
+# tested against is softer than "the 20-bar high" actually implies. This
+# toggle swaps the level itself to a rolling max of HIGHS (the level a
+# chart reader would actually draw) while still requiring the bar to
+# CLOSE beyond it, not just wick above it -- i.e. the market has to
+# accept the real breakout level, not fade a level that only looked hard
+# because it was built from closes.
+#
+# OFF by default after backtesting both ways (2026-08-06, TSLA/NVDA/COIN/
+# AMD/PLTR and the FBRX/... scanner universe, 90 days each): it fires
+# fewer-but-stricter breakout trades as intended (megacap 32->21, scanner
+# 29->20), but that didn't translate into a better bot on either universe.
+#   megacap: return +7.6% -> +6.4%, win rate 60% -> 57%, profit factor
+#            1.79 -> 1.66, max drawdown 1.7% -> 1.8% -- worse across the
+#            board, because the trades that stopped being "breakout"
+#            didn't just disappear, they mostly landed on gap_continuation
+#            instead (9 trades/$54 -> 12 trades/$43) at lower quality.
+#   scanner: return +1.3% -> +1.2%, win rate 49% -> 51%, profit factor
+#            1.15 -> 1.16, max drawdown 1.8% -> 2.1% -- essentially flat,
+#            not a clear win either way.
+# Kept toggleable rather than deleted since "the real level should be
+# wick-based" is still a reasonable hypothesis, just not one this data
+# supports turning on.
+USE_CLOSE_BEYOND_LEVEL_CONFIRMATION = os.getenv("USE_CLOSE_BEYOND_LEVEL_CONFIRMATION", "false").strip().lower() in ("1", "true", "yes")
 
 # Smash Day Pattern (Type B) -- a Larry Williams reversal pattern, sourced
 # from Oxford Capital Strategies' public strategy research (B-rated in
@@ -353,6 +455,47 @@ def compute_opening_range(df: pd.DataFrame, session_date: pd.Series, minutes_sin
     return orb_high, orb_low
 
 
+def compute_time_of_day_avg_volume(df: pd.DataFrame, session_date: pd.Series,
+                                    minutes_since_open: pd.Series,
+                                    bucket_minutes: int) -> pd.Series:
+    """
+    For each bar, the historical average volume of OTHER sessions' bars
+    that fall in the same minutes-since-open bucket -- e.g. a 9:30-10:00am
+    bar is judged against prior sessions' 9:30-10:00am bars, not against a
+    flat trailing average spanning every time of day. See
+    USE_TIME_OF_DAY_VOLUME_NORM above for why that distinction matters.
+
+    Lookahead safety: volume is first averaged WITHIN each (session,
+    bucket) pair down to one number, then an EXPANDING mean of that
+    per-session number is taken across sessions, shifted by one session.
+    That shift drops the current session's own bucket entirely -- not just
+    the current bar -- out of its own historical average, so a later bar
+    in the same bucket the same session can never leak into an earlier
+    bar's comparison (or vice versa). Expanding rather than a fixed
+    trailing window because a single backtest run's history is short
+    enough that a fixed N-day lookback would spend much of the window
+    still warming up.
+    """
+    bucket = np.floor(minutes_since_open / bucket_minutes)
+    key = pd.DataFrame({
+        "session_date": session_date.values,
+        "bucket": bucket.values,
+        "volume": df["volume"].values,
+    })
+    per_session_bucket = (
+        key.groupby(["bucket", "session_date"], sort=True)["volume"]
+        .mean()
+        .reset_index()
+    )
+    per_session_bucket["hist_avg"] = (
+        per_session_bucket.groupby("bucket")["volume"]
+        .transform(lambda s: s.shift(1).expanding().mean())
+    )
+    lookup = per_session_bucket.set_index(["bucket", "session_date"])["hist_avg"]
+    bar_key = pd.MultiIndex.from_arrays([bucket.values, session_date.values])
+    return pd.Series(lookup.reindex(bar_key).values, index=df.index)
+
+
 def compute_prior_session_close(df: pd.DataFrame, session_date: pd.Series) -> pd.Series:
     """Each session's rows get the PREVIOUS session's final close (for gap %)."""
     last_close_by_session = df.groupby(session_date)["close"].last()
@@ -393,10 +536,45 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["adx"] = compute_adx(df, ADX_PERIOD, true_range=true_range)
     df["atr"] = compute_atr(true_range, ATR_PERIOD)
 
+    # Sticky ADX regime for USE_ADX_HYSTERESIS (see that constant's
+    # comment for why): a proper Schmitt trigger, not just "ffill the
+    # gaps". ADX has to clear the UPPER band edge to commit to
+    # trend_following or drop below the LOWER edge to commit to
+    # mean_reversion; while it's inside the band it keeps whatever regime
+    # was already active, which is the entire point (the plain
+    # ADX_TREND_THRESHOLD compare below has no memory of that). Computed
+    # as: mark only the bars that actually cross a band edge as
+    # True/False, leave everything inside the band as NaN, then
+    # forward-fill -- a vectorized way of carrying the last DECIDED
+    # regime forward over every bar in between, with no per-bar Python
+    # loop and no mutable state (this file precomputes once, per its
+    # module docstring, rather than tracking state across calls).
+    # Computed unconditionally, same as every other optional-strategy
+    # column here, so USE_ADX_HYSTERESIS is a pure read-time switch.
+    adx_upper = ADX_TREND_THRESHOLD + ADX_HYSTERESIS_BAND
+    adx_lower = ADX_TREND_THRESHOLD - ADX_HYSTERESIS_BAND
+    regime_crossing = pd.Series(np.nan, index=df.index)
+    regime_crossing[df["adx"] >= adx_upper] = 1.0
+    regime_crossing[df["adx"] <= adx_lower] = 0.0
+    sticky_regime = regime_crossing.ffill()
+    # Bars before the FIRST band crossing (warmup, or a symbol whose ADX
+    # never clears the band early on) have no prior regime to stick with
+    # yet -- fall back to the plain single-cutoff read for just those
+    # rows. min_bars_needed and the NaN-ADX warmup check in
+    # _decide_from_indicators already keep these particular rows from
+    # ever being traded on, so this fallback is only there to give the
+    # column a defined value everywhere, not to influence real decisions.
+    sticky_regime = sticky_regime.fillna((df["adx"] >= ADX_TREND_THRESHOLD).astype(float))
+    df["adx_trend_regime"] = sticky_regime.astype(bool)
+
     # Breakout: prior BREAKOUT_LOOKBACK bars' high/avg-volume, excluding
     # the current bar (shift(1) before the rolling window).
     df["breakout_recent_high"] = df["close"].shift(1).rolling(BREAKOUT_LOOKBACK).max()
     df["breakout_avg_volume"] = df["volume"].shift(1).rolling(BREAKOUT_LOOKBACK).mean()
+    # Wick-based counterpart of breakout_recent_high, only consulted when
+    # USE_CLOSE_BEYOND_LEVEL_CONFIRMATION is on -- see that flag's comment
+    # above and breakout_at() below for why the two differ.
+    df["breakout_recent_high_wick"] = df["high"].shift(1).rolling(BREAKOUT_LOOKBACK).max()
 
     # Smash Day setup/trigger, vectorized from the original bar-relative rule.
     df["smash_day_setup"] = df["close"].shift(1) < df["low"].shift(2)
@@ -409,6 +587,13 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["_session_date"] = session_date
     df["minutes_since_open"] = _minutes_since_open(df)
     df["vwap"] = compute_vwap(df, session_date)
+
+    # Always computed (cheap, and matches how orb_high/vwap/etc. above are
+    # computed regardless of their own USE_* toggle) so flipping
+    # USE_TIME_OF_DAY_VOLUME_NORM on doesn't require touching add_indicators.
+    df["breakout_tod_avg_volume"] = compute_time_of_day_avg_volume(
+        df, session_date, df["minutes_since_open"], TIME_OF_DAY_VOLUME_BUCKET_MINUTES
+    )
 
     orb_high, orb_low = compute_opening_range(df, session_date, df["minutes_since_open"], ORB_MINUTES)
     df["orb_high"] = orb_high
@@ -438,12 +623,32 @@ def breakout_at(df: pd.DataFrame, i: int) -> bool:
     still be pushing higher, not just the very first bar to touch the
     level. Same "wait for the move to actually hold" requirement already
     used by vwap_reversion/mean_reversion.
+
+    The comparison is always against CLOSE, never the bar's HIGH, so
+    this never fired off a bare intrabar wick to begin with. What
+    USE_CLOSE_BEYOND_LEVEL_CONFIRMATION changes is which LEVEL gets
+    cleared: off (default), the level is a rolling max of CLOSES, which
+    sits at or below the real chart high; on, it's a rolling max of
+    HIGHS -- the actual N-bar high, wicks included -- so a close above
+    it means the market genuinely accepted that price, not just cleared
+    a softer close-only approximation of it.
     """
     if i < 1:
         return False
-    recent_high = df["breakout_recent_high"].iat[i]
-    avg_volume = df["breakout_avg_volume"].iat[i]
-    prev_recent_high = df["breakout_recent_high"].iat[i - 1]
+    if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION:
+        recent_high = df["breakout_recent_high_wick"].iat[i]
+        prev_recent_high = df["breakout_recent_high_wick"].iat[i - 1]
+    else:
+        recent_high = df["breakout_recent_high"].iat[i]
+        prev_recent_high = df["breakout_recent_high"].iat[i - 1]
+    # See USE_TIME_OF_DAY_VOLUME_NORM above: the flat trailing average is a
+    # stricter bar in the morning and a looser one at lunch purely because
+    # of the intraday U-shaped volume pattern, not because of anything
+    # about the breakout itself.
+    if USE_TIME_OF_DAY_VOLUME_NORM:
+        avg_volume = df["breakout_tod_avg_volume"].iat[i]
+    else:
+        avg_volume = df["breakout_avg_volume"].iat[i]
     if pd.isna(recent_high) or pd.isna(avg_volume) or avg_volume == 0 or pd.isna(prev_recent_high):
         return False
 
@@ -791,7 +996,12 @@ def _decide_from_indicators(df: pd.DataFrame, i: int) -> tuple[str, str, str]:
     if pd.isna(current_adx):
         return "HOLD", "warmup", "warming up (ADX not ready yet)"
 
-    if current_adx >= ADX_TREND_THRESHOLD:
+    if USE_ADX_HYSTERESIS:
+        is_trend = bool(df["adx_trend_regime"].iat[i])
+    else:
+        is_trend = current_adx >= ADX_TREND_THRESHOLD
+
+    if is_trend:
         signal = trend_following_at(df, i)
         reason = f"trending (ADX {current_adx:.1f}) -> trend-following strategy"
         reason_key = "trend_following"

@@ -240,6 +240,33 @@ DAILY_TREND_REFRESH_HOURS = float(os.getenv("DAILY_TREND_REFRESH_HOURS", 4))
 # full priority chain.
 USE_VWAP_VOLUME_CONFIRMATION = os.getenv("USE_VWAP_VOLUME_CONFIRMATION", "true").strip().lower() in ("1", "true", "yes")
 
+# Broad-market regime gate: veto new long entries in EVERY symbol when
+# SPY itself is in a confirmed downtrend on this same BAR_MINUTES
+# timeframe. Reuses the exact ADX/trend machinery strategy.py already
+# computes for every symbol (ADX_TREND_THRESHOLD, the ema_fast/ema_slow
+# pair trend_following_at reads) rather than inventing a new indicator --
+# "trending down" means precisely what it means for any other symbol's
+# own trend_following regime: ADX >= ADX_TREND_THRESHOLD (a confirmed
+# trend, not chop) AND ema_fast < ema_slow (that trend pointing down).
+# Checked here, not inside strategy.py's decision functions, for the same
+# reason the S&P-500-membership gates above (USE_MULTI_TIMEFRAME_FILTER,
+# USE_VWAP_VOLUME_CONFIRMATION) live here: "is a DIFFERENT symbol's tape
+# down" is operational/cross-symbol context, and strategy.py stays a
+# pure, single-symbol, network-free decision file by design.
+#
+# Default FLIPPED TO OFF after a 90-day backtest.py run (2026-08-06) came
+# back net negative on BOTH universes, on every combined metric at once
+# (win rate, total return, profit factor, and max drawdown all worse --
+# see USE_SPY_REGIME_GATE's comment in backtest.py for the full numbers).
+# Vetoing entries whenever SPY's own ADX/EMA read "downtrend" cut trade
+# count by roughly a third in both universes without the surviving
+# trades being any higher quality -- it caught real winners along with
+# the losers it was meant to filter. Kept in code and toggleable, same
+# as USE_RVOL_SPIKE/USE_ROSS_HOOK in strategy.py -- re-test before
+# re-enabling, ideally against a different threshold or index.
+USE_SPY_REGIME_GATE = os.getenv("USE_SPY_REGIME_GATE", "false").strip().lower() in ("1", "true", "yes")
+SPY_REGIME_GATE_SYMBOL = os.getenv("SPY_REGIME_GATE_SYMBOL", "SPY").strip().upper()
+
 # Lightweight news-catalyst filter (presence/frequency only, no AI/NLP
 # sentiment scoring -- that would add per-symbol latency and cost inside
 # a scan loop). A mover with zero recent news is more likely thin-volume
@@ -259,6 +286,124 @@ MIN_NEWS_ITEMS = int(os.getenv("MIN_NEWS_ITEMS", 1))
 MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 5))
 MAX_DAILY_LOSS_PCT = float(os.getenv("MAX_DAILY_LOSS_PCT", 3))
 MAX_PORTFOLIO_RISK_PCT = float(os.getenv("MAX_PORTFOLIO_RISK_PCT", 5.0))
+
+# MAX_PORTFOLIO_RISK_PCT above only ever applies when USE_RISK_BASED_SIZING
+# is on -- would_exceed_portfolio_risk_cap() returns False unconditionally
+# otherwise, because there's no clean way to turn a %-of-equity cap into a
+# per-trade risk estimate when sizing isn't itself %-of-equity. Since the
+# 2026-08-05 revert (see CLAUDE.md), this bot runs FIXED $500-per-position
+# sizing by default, which means the aggregate-risk cap is currently a
+# no-op in the bot's actual default configuration -- nothing bounds how
+# much total $-risk a handful of same-cycle entries can stack up to.
+#
+# USE_PORTFOLIO_HEAT_CAP closes that gap with a FIXED DOLLAR ceiling
+# instead of a percentage one, deliberately. A %-of-equity ceiling is
+# exactly the shape of thing that caused the 2026-08-05 incident:
+# MAX_POSITION_PCT_OF_EQUITY=25 was dormant and harmless for months while
+# USE_RISK_BASED_SIZING was off, then silently became a real ~$25k-per-
+# position cap the moment sizing mode flipped -- the SAME number meant
+# wildly different dollar amounts depending on account size and sizing
+# mode, and nothing surfaced that until real fills showed it. A fixed USD
+# figure can't do that: $200 means $200 regardless of equity or which
+# sizing mode is active, so this composes safely with flat-$ sizing
+# instead of reintroducing a second equity-scaled cap alongside it.
+#
+# Default 200 is roughly 4 positions' worth of a $25 stop-loss risk each
+# (the default $500 flat size at a 5% stop: 500 * 0.05 = $25/position) --
+# enough room to hold a handful of concurrent positions without the cap
+# biting on ordinary operation, but not unlimited. ON by default (unlike
+# most new toggles here) since it is purely restrictive -- it can only
+# ever block a trade, never add exposure, so there is no downside risk to
+# leaving it active.
+USE_PORTFOLIO_HEAT_CAP = os.getenv("USE_PORTFOLIO_HEAT_CAP", "true").strip().lower() in ("1", "true", "yes")
+MAX_PORTFOLIO_HEAT_USD = float(os.getenv("MAX_PORTFOLIO_HEAT_USD", 200))
+
+# Portfolio-CONSTRUCTION control: caps how many currently open positions
+# may share the same sector, checked before a new entry (never affects
+# closing/selling logic). MAX_PORTFOLIO_RISK_PCT/MAX_PORTFOLIO_HEAT_USD
+# already bound aggregate $-at-risk, but say nothing about how
+# concentrated that risk is -- five same-sector positions can each pass
+# their own risk-cap check individually while the account is really
+# making one large correlated bet five times over, and both the scanner
+# and the S&P 500 backstop can independently gravitate toward the same
+# crowded trade (e.g. several semiconductor names all showing up as
+# "today's biggest movers" on the same news cycle).
+#
+# Investigated 2026-07-31 (see CLAUDE.md, "Idea 2") as a correlation-
+# limiting idea and explicitly NOT built at the time: backtest.py runs
+# each symbol in total isolation with its own equity curve, so there was
+# no way to backtest a P&L before/after for a control that only means
+# anything across a shared, concurrent position pool -- that's still
+# true today and this doesn't change it. This is a portfolio-construction
+# control verified via unit tests on its own gating logic (mirroring
+# would_exceed_portfolio_risk_cap below), not a strategy change proven
+# out via backtest P&L.
+#
+# ON by default, same reasoning as USE_PORTFOLIO_HEAT_CAP above -- this
+# only ever blocks a trade, never adds exposure, so there's no downside
+# to leaving it active even though the sector lookup itself (see
+# get_symbol_sector) can be incomplete for unmapped symbols. Unmapped
+# symbols fail OPEN (not blocked), so the worst case of an incomplete
+# SECTOR_MAP is "the cap doesn't apply to this one symbol," never a
+# false block.
+USE_SECTOR_CONCENTRATION_CAP = os.getenv("USE_SECTOR_CONCENTRATION_CAP", "true").strip().lower() in ("1", "true", "yes")
+MAX_POSITIONS_PER_SECTOR = int(os.getenv("MAX_POSITIONS_PER_SECTOR", 2))
+
+# Best-effort GICS-style sector classification for symbols this bot is
+# likely to actually hold: the default fallback list (TSLA/NVDA/COIN/
+# AMD/PLTR), other common megacaps the S&P 500 backstop tends to surface
+# (see fetch_sp500_candidates), and a handful of single-sector ETFs.
+# NOT exhaustive -- the scanner's own picks are often small/micro-caps
+# that simply won't be in here, and that's fine: get_symbol_sector
+# treats an unmapped symbol as "unknown" and the cap fails OPEN for it
+# (see that function's docstring), same fail-open philosophy as
+# is_leveraged_etf's None case. Broad, multi-sector index ETFs (SPY,
+# QQQ, DIA, IWM, ...) are deliberately left OUT of this map rather than
+# assigned a sector -- there isn't a correct single sector to give them,
+# and mapping one anyway would make the cap actively wrong for them
+# instead of just not applying.
+SECTOR_MAP: dict[str, str] = {
+    # Information Technology / Semiconductors
+    "NVDA": "Information Technology", "AMD": "Information Technology",
+    "INTC": "Information Technology", "QCOM": "Information Technology",
+    "AVGO": "Information Technology", "TXN": "Information Technology",
+    "MU": "Information Technology", "AMAT": "Information Technology",
+    "SMCI": "Information Technology", "ARM": "Information Technology",
+    "AAPL": "Information Technology", "MSFT": "Information Technology",
+    "CRM": "Information Technology", "ORCL": "Information Technology",
+    "ADBE": "Information Technology", "CSCO": "Information Technology",
+    "IBM": "Information Technology", "PLTR": "Information Technology",
+    "NOW": "Information Technology", "PANW": "Information Technology",
+    "SOXL": "Information Technology", "SOXS": "Information Technology",
+    # Communication Services
+    "GOOGL": "Communication Services", "GOOG": "Communication Services",
+    "META": "Communication Services", "NFLX": "Communication Services",
+    "DIS": "Communication Services", "T": "Communication Services",
+    "VZ": "Communication Services", "TMUS": "Communication Services",
+    # Consumer Discretionary
+    "TSLA": "Consumer Discretionary", "AMZN": "Consumer Discretionary",
+    "HD": "Consumer Discretionary", "NKE": "Consumer Discretionary",
+    "MCD": "Consumer Discretionary", "SBUX": "Consumer Discretionary",
+    "LOW": "Consumer Discretionary", "BKNG": "Consumer Discretionary",
+    # Financials
+    "COIN": "Financials", "JPM": "Financials", "V": "Financials",
+    "MA": "Financials", "BAC": "Financials", "WFC": "Financials",
+    "GS": "Financials", "MS": "Financials", "C": "Financials",
+    "AXP": "Financials", "SCHW": "Financials",
+    # Health Care
+    "UNH": "Health Care", "JNJ": "Health Care", "LLY": "Health Care",
+    "PFE": "Health Care", "MRK": "Health Care", "ABBV": "Health Care",
+    "ABT": "Health Care", "TMO": "Health Care", "DHR": "Health Care",
+    # Energy
+    "XOM": "Energy", "CVX": "Energy", "COP": "Energy", "SLB": "Energy",
+    # Industrials
+    "BA": "Industrials", "CAT": "Industrials", "GE": "Industrials",
+    "MMM": "Industrials", "UPS": "Industrials", "HON": "Industrials",
+    "RTX": "Industrials", "LMT": "Industrials",
+    # Consumer Staples
+    "WMT": "Consumer Staples", "PG": "Consumer Staples", "KO": "Consumer Staples",
+    "PEP": "Consumer Staples", "COST": "Consumer Staples", "PM": "Consumer Staples",
+}
 
 # Best-effort list of common leveraged/inverse ETFs. These are structurally
 # built to move 2-3x their underlying index, so they show up constantly in
@@ -648,6 +793,54 @@ def daily_trend_confirms_entry(symbol: str, today) -> bool:
     return bool(cached["map"].get(today, False))
 
 
+def spy_regime_confirms_entry() -> bool:
+    """
+    True if new long entries are clear to take this cycle under the SPY
+    regime gate -- either the gate is off, or SPY_REGIME_GATE_SYMBOL's OWN
+    latest bar does NOT show a confirmed downtrend on this same
+    BAR_MINUTES timeframe (ADX >= ADX_TREND_THRESHOLD AND fast EMA < slow
+    EMA -- see USE_SPY_REGIME_GATE's comment above for the full
+    reasoning). Same true-means-ok framing as daily_trend_confirms_entry
+    above, so both gates plug into check_symbol's chain the same way:
+    `blocks_entry = not confirms_entry(...)`.
+
+    Computed ONCE per cycle by the caller (SPY isn't itself a tradeable
+    watchlist symbol, just a market-regime read), not once per symbol
+    checked.
+
+    Fails OPEN (returns True, i.e. doesn't block) on any fetch/data
+    failure or while SPY's own indicators are still warming up -- SPY
+    itself failing to fetch says something's off with market data
+    broadly, which isn't a specific enough reason to pause every other
+    symbol's entries on a filter that was never actually evaluated.
+    """
+    if not USE_SPY_REGIME_GATE:
+        return True
+    try:
+        bars_by_symbol = get_recent_bars_batch([SPY_REGIME_GATE_SYMBOL])
+    except Exception as e:
+        log.warning(f"SPY regime gate: could not fetch {SPY_REGIME_GATE_SYMBOL} bars ({e}) -- not blocking this cycle.")
+        return True
+    bars = bars_by_symbol.get(SPY_REGIME_GATE_SYMBOL)
+    if bars is None or bars.empty:
+        log.warning(f"SPY regime gate: no {SPY_REGIME_GATE_SYMBOL} data this cycle -- not blocking.")
+        return True
+
+    enriched = add_indicators(bars)
+    i = len(enriched) - 1
+    adx = enriched["adx"].iat[i]
+    ema_fast = enriched["ema_fast"].iat[i]
+    ema_slow = enriched["ema_slow"].iat[i]
+    if pd.isna(adx) or pd.isna(ema_fast) or pd.isna(ema_slow):
+        return True  # SPY's own indicators still warming up -- nothing to gate on yet
+
+    spy_bearish = bool(adx >= ADX_TREND_THRESHOLD and ema_fast < ema_slow)
+    if spy_bearish:
+        log.info(f"SPY regime gate: {SPY_REGIME_GATE_SYMBOL} in a confirmed downtrend "
+                  f"(ADX {adx:.1f}, ema_fast < ema_slow) -- new long entries paused this cycle.")
+    return not spy_bearish
+
+
 def scan_for_volatile_stocks() -> list[str]:
     """
     Builds a watchlist automatically using Alpaca's screener data instead
@@ -1017,6 +1210,131 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
     return (portfolio_risk_estimate + projected_new_risk) > cap
 
 
+def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, equity: float | None) -> float:
+    """
+    Best-effort $-at-risk of a position that WOULD be opened right now --
+    (entry - stop) * qty -- computed with the exact same
+    compute_stop_and_target/compute_position_size helpers place_buy_order
+    itself uses for sizing, so the heat-cap gate below is checking against
+    a number that actually matches what would really be opened, under
+    EITHER sizing mode (flat-$ or risk-based). Uses the last completed
+    bar's close rather than a fresh quote -- place_buy_order re-checks
+    that right before submitting -- since this only has to be close
+    enough to gate on, not penny-perfect; a stale close moving the qty
+    estimate by a share or two doesn't matter next to a $200 cap.
+    Returns 0.0 if last_price is invalid rather than raising, so a bad
+    quote fails toward "no estimated risk" (a laxer gate), matching how
+    every other best-effort estimate in this file degrades.
+    """
+    if last_price is None or last_price <= 0:
+        return 0.0
+    stop_price, _ = compute_stop_and_target(last_price, atr_value)
+    risk_per_share = max(last_price - stop_price, 0.0)
+    if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
+        qty = compute_position_size(equity, last_price, stop_price)
+    else:
+        qty = int(TRADE_AMOUNT_USD // last_price)
+    return risk_per_share * qty
+
+
+def would_exceed_portfolio_heat_cap(portfolio_heat_estimate: float, projected_new_risk_usd: float) -> bool:
+    """
+    Whether opening one more position would push aggregate open $-risk
+    over MAX_PORTFOLIO_HEAT_USD -- a FIXED dollar ceiling, unlike
+    would_exceed_portfolio_risk_cap()'s %-of-equity one. See
+    USE_PORTFOLIO_HEAT_CAP's comment for why fixed dollars specifically:
+    this must keep working (and mean the same thing) regardless of
+    account size or which position-sizing mode is active, which a
+    percentage-of-equity cap does not.
+    """
+    if not USE_PORTFOLIO_HEAT_CAP:
+        return False
+    return (portfolio_heat_estimate + projected_new_risk_usd) > MAX_PORTFOLIO_HEAT_USD
+
+
+# Sector never changes intraday, so cache by symbol like _asset_name_cache
+# above -- including negative ("unknown") results, so a symbol this bot
+# keeps re-checking every cycle (it's on the watchlist but never mapped)
+# doesn't cost a lookup every single time.
+_sector_cache: dict[str, str | None] = {}
+
+
+def get_symbol_sector(symbol: str) -> str | None:
+    """
+    Best-effort sector classification for `symbol`, or None if it can't
+    be determined. SECTOR_MAP (see its own comment) is checked FIRST,
+    not Alpaca's API -- confirmed against alpaca-py 0.43.5 (the version
+    actually installed here) that trading.models.Asset has no
+    sector/industry field at all, only class/exchange/tradable/
+    marginable/shortable/fractionable/etc., so calling get_asset() up
+    front would mean a real network round-trip per new symbol for data
+    the SDK structurally cannot return today. Falls back to get_asset()
+    -- checked defensively via getattr, not assumed -- only for symbols
+    the map doesn't cover, so this picks up a sector/industry field for
+    free with no code change here if a future alpaca-py version adds one.
+
+    Returns None for anything neither source covers. Callers MUST treat
+    None as "unknown, fail open" (skip the sector check for this
+    symbol), not as a reason to block a trade -- this bot's watchlist is
+    wide and changes daily (scanner picks, S&P 500 backstop), and most
+    of the scanner's own picks are small/micro-caps that were never
+    going to be in a hardcoded map. The cost of skipping the
+    concentration check for one unmapped symbol is near zero; the cost
+    of blocking real trades over incomplete sector metadata is not --
+    same fail-open reasoning as get_current_portfolio_risk_usd skipping
+    positions with no matching stop order, just applied to a lookup
+    instead of an order.
+    """
+    if symbol in _sector_cache:
+        return _sector_cache[symbol]
+
+    sector = SECTOR_MAP.get(symbol)
+    if sector is None:
+        try:
+            asset = trading_client.get_asset(symbol)
+            sector = getattr(asset, "sector", None) or getattr(asset, "industry", None) or None
+        except Exception:
+            sector = None
+
+    _sector_cache[symbol] = sector
+    return sector
+
+
+def sector_concentration_blocks_entry(candidate_symbol: str, open_position_symbols: set[str]) -> bool:
+    """
+    True if opening `candidate_symbol` would push the same-sector open
+    position count to MAX_POSITIONS_PER_SECTOR or beyond. This is a
+    portfolio-CONSTRUCTION control -- it needs visibility into every
+    other currently open position at once, which strategy.py's pure,
+    single-symbol decision functions deliberately don't have (see that
+    module's docstring) -- so it lives here and is checked externally,
+    the same split already used for MAX_CONCURRENT_POSITIONS and the
+    portfolio risk cap above.
+
+    Only meaningful for NEW entries: callers gate this on the same
+    `signal == "BUY" and current_qty == 0` branch as the other entry
+    checks in check_symbol, so an existing position's own SELL/exit
+    logic never passes through here at all.
+
+    Fails OPEN (returns False, never blocks) if the candidate's own
+    sector is unknown, or if the feature is off -- see
+    get_symbol_sector's docstring for why. An unknown OPEN position's
+    sector is simply not counted toward the total (rather than blocking
+    the whole check), so one unmapped small-cap sitting in the portfolio
+    can't silently disable the cap for every other, mappable symbol.
+    """
+    if not USE_SECTOR_CONCENTRATION_CAP:
+        return False
+    candidate_sector = get_symbol_sector(candidate_symbol)
+    if candidate_sector is None:
+        return False
+    same_sector_open = sum(
+        1 for symbol in open_position_symbols
+        if get_symbol_sector(symbol) == candidate_sector
+    )
+    return same_sector_open >= MAX_POSITIONS_PER_SECTOR
+
+
 # How far the real fill can drift from the quote used to price the
 # bracket before the stop/target legs get corrected. See
 # reconcile_bracket_with_real_fill for why this exists.
@@ -1243,13 +1561,15 @@ def place_sell_order(symbol: str):
 
 def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | None, at_position_cap: bool,
                   current_qty: float, equity: float | None, portfolio_risk_estimate: float,
-                  in_cooldown: bool = False, daily_trend_blocks_entry: bool = False) -> float:
+                  in_cooldown: bool = False, daily_trend_blocks_entry: bool = False,
+                  spy_regime_blocks_entry: bool = False, sector_cap_blocks_entry: bool = False) -> float:
     """
     Checks one symbol and acts on its signal. Returns the notional $
     amount of a newly opened position (0.0 if none), so the caller can
-    track MAX_CONCURRENT_POSITIONS, the portfolio risk cap, and the
-    running equity estimate live across a single cycle without an extra
-    API call per symbol.
+    track MAX_CONCURRENT_POSITIONS, the sector concentration cap, the
+    portfolio risk caps (both the %-of-equity one and the fixed-dollar
+    heat cap), and the running equity estimate live across a single
+    cycle without an extra API call per symbol.
     """
     if df is None or df.empty:
         log.warning(f"[{symbol}] No price data returned, skipping this check.")
@@ -1286,6 +1606,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif daily_trend_blocks_entry:
                 log.info(f"[{symbol}] ACTION: No trade (multi-timeframe filter -- "
                           f"the prior day's daily trend isn't confirmed up).")
+            elif spy_regime_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (SPY regime gate -- "
+                          f"the broad market is in a confirmed downtrend).")
             elif vwap_volume_blocks_entry:
                 log.info(f"[{symbol}] ACTION: No trade (vwap_reversion volume filter -- "
                           f"entry bar's volume didn't confirm).")
@@ -1294,9 +1617,16 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
             elif at_position_cap:
                 log.info(f"[{symbol}] ACTION: No trade (at MAX_CONCURRENT_POSITIONS={MAX_CONCURRENT_POSITIONS} cap).")
+            elif sector_cap_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (at MAX_POSITIONS_PER_SECTOR="
+                          f"{MAX_POSITIONS_PER_SECTOR} cap for its sector).")
             elif would_exceed_portfolio_risk_cap(equity, portfolio_risk_estimate):
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT="
                           f"{MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate risk cap).")
+            elif would_exceed_portfolio_heat_cap(
+                    portfolio_risk_estimate, estimate_new_position_risk_usd(last_price, atr_value, equity)):
+                log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_HEAT_USD="
+                          f"${MAX_PORTFOLIO_HEAT_USD:,.0f} fixed-dollar aggregate risk cap).")
             else:
                 order, notional = place_buy_order(symbol, last_price, atr_value, equity, reason_key)
                 if order is not None:
@@ -1612,7 +1942,16 @@ def run_one_cycle() -> float:
         save_daily_risk_state()
     else:
         previously_held = set(open_position_symbols)
-    portfolio_risk_estimate = get_current_portfolio_risk_usd(open_positions) if USE_RISK_BASED_SIZING else 0.0
+    # Computed whenever EITHER portfolio-level cap is active: the %-of-
+    # equity one (USE_RISK_BASED_SIZING) or the fixed-dollar heat cap
+    # (USE_PORTFOLIO_HEAT_CAP). Both gates check the exact same underlying
+    # quantity -- real $-at-risk summed from every open position's actual
+    # bracket stop order -- just against two different shapes of ceiling,
+    # so there's one shared computation here rather than fetching it twice.
+    portfolio_risk_estimate = (
+        get_current_portfolio_risk_usd(open_positions)
+        if (USE_RISK_BASED_SIZING or USE_PORTFOLIO_HEAT_CAP) else 0.0
+    )
     equity_estimate = equity_now
 
     symbols_to_check = sorted(set(active_watchlist) | open_position_symbols)
@@ -1630,19 +1969,43 @@ def run_one_cycle() -> float:
     refresh_daily_trend_maps_if_needed(symbols_to_check)
     today_et = clock.timestamp.astimezone(MARKET_TZ_FOR_LOGS).date()
 
+    # Computed ONCE per cycle (a market-wide read, not per-symbol) --
+    # see spy_regime_confirms_entry's docstring for why this can't just
+    # live inside check_symbol like the per-symbol gates do.
+    spy_regime_blocks_entry_this_cycle = not spy_regime_confirms_entry()
+
+    # Tracked live and updated as positions open below (same pattern as
+    # open_count/portfolio_risk_estimate) so two same-sector BUYs landing
+    # in the SAME cycle still trip the cap on the second one, not just
+    # ones that were already open at the top of the cycle.
+    open_symbols_this_cycle = set(open_position_symbols)
+
     for symbol in symbols_to_check:
         at_position_cap = open_count >= MAX_CONCURRENT_POSITIONS
         current_qty = open_positions.get(symbol, {}).get("qty", 0.0)
         cooldown_until = symbol_cooldown_until.get(symbol)
         in_cooldown = cooldown_until is not None and clock.timestamp < cooldown_until
         daily_trend_blocks_entry = not daily_trend_confirms_entry(symbol, today_et)
+        sector_cap_blocks_entry = sector_concentration_blocks_entry(symbol, open_symbols_this_cycle)
         notional = check_symbol(symbol, bars_by_symbol.get(symbol), entries_paused_reason,
                                  at_position_cap, current_qty, equity_estimate, portfolio_risk_estimate,
-                                 in_cooldown=in_cooldown, daily_trend_blocks_entry=daily_trend_blocks_entry)
+                                 in_cooldown=in_cooldown, daily_trend_blocks_entry=daily_trend_blocks_entry,
+                                 spy_regime_blocks_entry=spy_regime_blocks_entry_this_cycle,
+                                 sector_cap_blocks_entry=sector_cap_blocks_entry)
         if notional > 0:
             open_count += 1
+            open_symbols_this_cycle.add(symbol)
+            # Uses the REAL stop/qty place_buy_order just chose (available
+            # on its last_details attribute, no extra API call) rather than
+            # re-deriving an estimate -- this has to be correct under BOTH
+            # sizing modes now that the fixed-dollar heat cap also reads
+            # portfolio_risk_estimate, and equity*RISK_PER_TRADE_PCT/100
+            # (the old formula here) is only a valid risk estimate under
+            # risk-based sizing, not flat-$ sizing.
+            details = place_buy_order.last_details
+            actual_new_risk = max(details.get("price", 0.0) - details.get("stop_loss", 0.0), 0.0) * details.get("qty", 0)
+            portfolio_risk_estimate += actual_new_risk
             if equity_estimate is not None:
-                portfolio_risk_estimate += equity_estimate * RISK_PER_TRADE_PCT / 100
                 equity_estimate -= notional
 
     try:
@@ -1782,6 +2145,11 @@ if __name__ == "__main__":
     log.info(f"Position limits: max {MAX_CONCURRENT_POSITIONS} concurrent positions | "
               f"max {MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate portfolio risk | "
               f"daily loss circuit breaker at -{MAX_DAILY_LOSS_PCT:.0f}% (pauses new entries only)")
+    if USE_PORTFOLIO_HEAT_CAP:
+        log.info(f"Portfolio heat cap: max ${MAX_PORTFOLIO_HEAT_USD:,.0f} aggregate $-at-risk across all open positions")
+    if USE_SECTOR_CONCENTRATION_CAP:
+        log.info(f"Sector concentration cap: max {MAX_POSITIONS_PER_SECTOR} open positions per sector "
+                  f"(new entries only; symbols with no known sector are exempt)")
     if FLATTEN_BEFORE_CLOSE:
         log.info(f"End-of-day mode: positions will be auto-closed {FLATTEN_MINUTES_BEFORE_CLOSE} min before market close.")
     else:

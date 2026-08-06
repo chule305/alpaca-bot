@@ -73,6 +73,7 @@ from strategy import (
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
+    ADX_TREND_THRESHOLD,
 )
 
 load_dotenv()
@@ -111,6 +112,42 @@ SP500_LIST_URL = os.getenv(
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
 )
 
+# Broad-market regime gate: veto new long entries in EVERY symbol when
+# SPY itself is in a confirmed downtrend on this same BAR_MINUTES
+# timeframe. Deliberately reuses the exact ADX/trend machinery
+# strategy.py already computes for every symbol (ADX_TREND_THRESHOLD,
+# the ema_fast/ema_slow pair trend_following_at reads) rather than
+# inventing a new indicator -- "trending down" here means precisely what
+# it means for any other symbol's own trend_following regime: ADX >=
+# ADX_TREND_THRESHOLD (a confirmed trend, not chop) AND ema_fast <
+# ema_slow (that trend pointing down). Applied externally, not inside
+# strategy.py's decision functions, for the same reason the S&P-500-
+# membership gates above (USE_MULTI_TIMEFRAME_FILTER,
+# USE_VWAP_VOLUME_CONFIRMATION) live here: "is a DIFFERENT symbol's tape
+# down" is operational/cross-symbol context, and strategy.py stays a
+# pure, single-symbol, network-free decision file by design.
+#
+# Default FLIPPED TO OFF after a 90-day backtest (2026-08-06) came back
+# net negative on BOTH universes, on every combined metric at once --
+# not a tradeoff, a clean loss:
+#
+#              trades   win rate   total return   profit factor   max DD
+#   megacap:   99->69    60%->58%   +7.6%->+4.9%    1.79->1.74     1.7%->1.8%
+#   scanner:   96->70    49%->46%   +1.3%->+0.9%    1.15->1.12     1.8%->2.6%
+#
+# The theory (don't fight the broad market's own tape) is reasonable,
+# but ADX>=25-and-falling-EMAs on SPY specifically didn't turn out to be
+# a clean enough read of "bad time to open a long" -- it vetoed real
+# winners along with the losers it was meant to catch, cut trade count
+# by roughly a third in both universes, and left profit factor and max
+# drawdown no better (worse, on the scanner side) than just taking every
+# signal. Kept in code and toggleable, same as USE_RVOL_SPIKE/
+# USE_ROSS_HOOK above -- one 90-day window on two symbol sets isn't the
+# final word, and a different ADX threshold or a broader index (QQQ?)
+# might tell a different story. Re-test before re-enabling.
+USE_SPY_REGIME_GATE = os.getenv("USE_SPY_REGIME_GATE", "false").strip().lower() in ("1", "true", "yes")
+SPY_REGIME_GATE_SYMBOL = os.getenv("SPY_REGIME_GATE_SYMBOL", "SPY").strip().upper()
+
 
 def fetch_sp500_symbols_once() -> set:
     """One-shot version of trading_bot.py's fetch_sp500_symbols -- no TTL
@@ -143,6 +180,56 @@ def fetch_daily_trend_map(symbol: str, days_back: int) -> dict:
     if "symbol" in daily.columns:
         daily = daily[daily["symbol"] == symbol].reset_index(drop=True)
     return compute_daily_trend_map(daily)
+
+
+def fetch_spy_regime_bars(days_back: int) -> pd.DataFrame | None:
+    """
+    SPY's OWN bars over the same date range and BAR_MINUTES timeframe
+    being tested, enriched via add_indicators() ONCE per run -- every
+    symbol's simulate() call reuses this same dataframe rather than each
+    one re-fetching/re-computing SPY's regime for itself. Returns None on
+    a fetch failure or empty response; callers treat that as "gate
+    disabled this run" (fail OPEN), not "block everything" -- SPY itself
+    failing to fetch means something is wrong with market data broadly,
+    which isn't a reason to silently veto every other symbol's entries on
+    a filter that was never actually evaluated.
+    """
+    try:
+        bars = fetch_historical_bars(SPY_REGIME_GATE_SYMBOL, days_back)
+    except Exception as e:
+        print(f"SPY regime gate: could not fetch {SPY_REGIME_GATE_SYMBOL} bars ({e}) -- gate disabled this run.")
+        return None
+    if bars.empty:
+        print(f"SPY regime gate: no {SPY_REGIME_GATE_SYMBOL} data returned -- gate disabled this run.")
+        return None
+    return add_indicators(bars)
+
+
+def compute_spy_bearish_at_bars(spy_enriched: pd.DataFrame, bar_timestamps: pd.Series) -> np.ndarray:
+    """
+    For each timestamp in bar_timestamps (one symbol's own bars), looks
+    up whether SPY's OWN regime was reading a confirmed downtrend as of
+    the most recent SPY bar at or before that timestamp -- an as-of
+    backward join, not an equality join, because a thinly-traded scanner
+    pick can be missing bars SPY has (a halt, a data gap), so timestamps
+    between the two series don't always line up exactly. "Backward" is
+    what keeps this lookahead-free: a symbol's bar can only ever see
+    SPY's already-closed bars, never a future one.
+    """
+    spy_regime = spy_enriched[["timestamp", "adx", "ema_fast", "ema_slow"]].copy()
+    spy_regime["spy_bearish_trend"] = (
+        (spy_regime["adx"] >= ADX_TREND_THRESHOLD) & (spy_regime["ema_fast"] < spy_regime["ema_slow"])
+    )
+    aligned = pd.merge_asof(
+        pd.DataFrame({"timestamp": bar_timestamps}),
+        spy_regime[["timestamp", "spy_bearish_trend"]],
+        on="timestamp", direction="backward",
+    )
+    # No prior SPY bar yet (this symbol's history starts before SPY's, or
+    # SPY was still warming up its own ADX/EMA) -- unknown reads as "not
+    # bearish" so the gate degrades to a no-op rather than a lookahead-
+    # free but wrong "always block" for the warmup period.
+    return aligned["spy_bearish_trend"].fillna(False).to_numpy()
 
 
 def get_starting_equity() -> float:
@@ -222,7 +309,8 @@ def minutes_until_close(timestamp) -> float:
 # ---------------------------------------------------------------------------
 
 def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
-             daily_trend_map: dict | None = None, apply_vwap_volume_filter: bool = False) -> list[dict]:
+             daily_trend_map: dict | None = None, apply_vwap_volume_filter: bool = False,
+             spy_regime_bars: pd.DataFrame | None = None) -> list[dict]:
     """
     Walks through the bars one at a time, calling the SAME decision logic
     the live bot uses (decide_signal_at), using only data up to and
@@ -241,6 +329,12 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     normal-priced stock, to the point that most trades round down to 0
     shares and get skipped. See get_starting_equity() below.
 
+    spy_regime_bars: SPY's own add_indicators()-enriched bars (see
+    fetch_spy_regime_bars), precomputed ONCE per run and passed in here
+    for every symbol -- only consulted when USE_SPY_REGIME_GATE is on.
+    None means either the gate is off or SPY's bars couldn't be fetched;
+    either way this symbol's entries are ungated by it.
+
     Returns a list of completed trades.
     """
     trades = []
@@ -248,6 +342,10 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     enriched = add_indicators(bars)
     n = len(enriched)
     equity = starting_equity
+
+    spy_bearish_now = None
+    if USE_SPY_REGIME_GATE and spy_regime_bars is not None and not spy_regime_bars.empty:
+        spy_bearish_now = compute_spy_bearish_at_bars(spy_regime_bars, enriched["timestamp"])
 
     for i in range(n):
         if i < 1:
@@ -331,6 +429,13 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 today = current_bar["timestamp"].tz_convert(MARKET_TZ).date()
                 if not daily_trend_map.get(today, False):
                     continue
+            if spy_bearish_now is not None and spy_bearish_now[i]:
+                # Broad-market regime gate: SPY itself is trending down on
+                # this same timeframe right now -- veto a NEW long here
+                # regardless of what this symbol's own signal says.
+                # Existing positions are untouched (this block only runs
+                # when position is None).
+                continue
 
             signal, reason_key, reason = decide_signal_at(enriched, i)
             if (signal == "BUY" and apply_vwap_volume_filter and reason_key == "vwap_reversion"
@@ -462,6 +567,14 @@ if __name__ == "__main__":
     if USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION:
         print()
 
+    spy_regime_bars = None
+    if USE_SPY_REGIME_GATE:
+        print(f"SPY regime gate: ON (blocks new entries in every symbol while "
+              f"{SPY_REGIME_GATE_SYMBOL}'s own {BAR_MINUTES}-min ADX >= {ADX_TREND_THRESHOLD:.0f} "
+              f"and its fast EMA < slow EMA)")
+        spy_regime_bars = fetch_spy_regime_bars(args.days)
+        print()
+
     all_trades = []
 
     for symbol in symbols:
@@ -488,7 +601,8 @@ if __name__ == "__main__":
 
         apply_vwap_volume_filter = USE_VWAP_VOLUME_CONFIRMATION and is_scanner_pick
 
-        trades = simulate(symbol, bars, starting_equity, daily_trend_map, apply_vwap_volume_filter)
+        trades = simulate(symbol, bars, starting_equity, daily_trend_map, apply_vwap_volume_filter,
+                           spy_regime_bars)
         all_trades.extend(trades)
 
         print_stats(compute_stats(trades, starting_equity))

@@ -1201,3 +1201,106 @@ User reported the bot "traded with all the money, not the $500 we agreed" and as
 - Megacap: 5-min 57% WR / PF 1.62 / DD 0.6%; 15-min (current) 59% WR / PF 1.81 / DD 0.4%; 30-min 53% WR / PF 1.88 / DD 0.3%. 15-min beats 5-min on all three metrics simultaneously -- not a mixed result.
 - Scanner: 5-min 47% WR / PF 1.26 / DD 0.8% / +1.2% return (200 trades); 15-min (current) 52% WR / PF 1.23 / DD 0.4% / +0.4% return (95 trades); 30-min 54% WR / PF 1.29 / DD 0.2% / +0.2% return (37 trades). Genuinely mixed here: 5-min's higher RAW return comes from trading roughly 2x more often, not from better decisions -- win rate and drawdown are both worse, the same over-trading shape already rejected for `rvol_spike` and the original `orb` reading.
 - Conclusion: kept 15-min. The 2026-08-04 loss was not a bar-timeframe problem -- it was a position-sizing problem. A -1.2% adverse move on UFPT produced a $1,206.55 loss only because the position was $19,883, not $500; the signal itself firing and reversing is normal, expected strategy variance that happens at any timeframe.
+
+## 2026-08-06: research sweep + 6 candidates built, backtested, and merged
+
+User asked to research broad improvements (not just strategies -- signals,
+screening, precision, risk, exits, anything) and to actually build and test
+what came out of it. Two-phase approach: a 6-way parallel research sweep
+(56 real, sourced ideas across signals/precision/screening/risk/exits/meta
+angles), then implementation + backtesting of a 6-candidate shortlist
+picked from that research, each built independently in its own isolated
+plain-directory copy of the repo (git worktree isolation was tried first
+and failed for the same reason the 2026-08-04 session already documented:
+it needs the *orchestrating* session's own working directory to be a git
+repo, which it isn't here either) -- then manually merged back into one
+codebase, since 6 independent copies aren't a deployable result on their
+own. All numbers below are from real 90-day backtests, not estimates.
+
+**Adopted, ON by default:**
+- **Portfolio heat cap (`USE_PORTFOLIO_HEAT_CAP`, default true,
+  `MAX_PORTFOLIO_HEAT_USD=200`).** Fixed-dollar aggregate open-risk
+  ceiling -- deliberately NOT a %-of-equity cap, to avoid exactly the
+  2026-08-05 failure mode (same number, different real dollar meaning
+  depending on sizing mode/account size). `MAX_PORTFOLIO_RISK_PCT`
+  already existed but only ever applies under `USE_RISK_BASED_SIZING`,
+  which is off by default -- so before this, there was literally no
+  aggregate risk cap under the bot's actual default configuration.
+  Portfolio-construction control, not a single-symbol signal --
+  backtest.py simulates each symbol independently with its own capital,
+  so there's no P&L before/after for this (same reasoning as
+  `MAX_CONCURRENT_POSITIONS` already being live-only). Verified via 3 new
+  unit tests instead. Enabled by default because it's purely
+  restrictive -- it can only ever block a trade, never add exposure, so
+  there's no downside to leaving it on.
+- **Sector concentration cap (`USE_SECTOR_CONCENTRATION_CAP`, default
+  true, `MAX_POSITIONS_PER_SECTOR=2`).** This is "Idea 2" from
+  2026-07-31, revisited -- explicitly not built then for the same
+  backtest-can't-measure-it reason, still true today. A hardcoded
+  ~55-symbol `SECTOR_MAP` in `trading_bot.py`, fails OPEN (never blocks)
+  on unmapped symbols since most scanner picks are small/micro-caps that
+  were never going to be in it. Verified via 12 new unit tests. Same
+  "purely restrictive, safe to default on" reasoning as the heat cap.
+
+**Built, tested, kept OFF by default -- one real win, not yet flipped on:**
+- **Time-of-day-normalized breakout volume
+  (`USE_TIME_OF_DAY_VOLUME_NORM`, default false,
+  `TIME_OF_DAY_VOLUME_BUCKET_MINUTES=30`).** The strongest result of the
+  6. Compares each bar's volume against the historical average for that
+  SAME minutes-since-open bucket instead of a flat trailing average.
+  Genuine improvement on profit factor, return, AND drawdown on BOTH
+  universes: megacap PF 1.78->2.37, DD 1.7%->1.4%, return +7.5%->+8.6%;
+  scanner PF 1.15->1.22, DD 1.8%->1.7%, return +1.3%->+1.8%. Re-verified
+  a second time after merging alongside the other 5 candidates (not just
+  in isolation, per this project's 2026-07-31 lesson) -- numbers held:
+  megacap 62% WR/PF 2.32/DD 1.4%/+8.4%, scanner 48% WR/PF 1.21/DD
+  1.8%/+1.8%. The mechanism found is the OPPOSITE of the original
+  hypothesis: BREAKOUT_LOOKBACK=20 bars at BAR_MINUTES=15 is only a
+  5-hour rolling window that doesn't reset per session, so early bars of
+  a new session are still mostly averaging in the QUIET back half of the
+  PRIOR session -- meaning the flat average was actually the LOOSER bar
+  at the open (real volume runs ~2.5x it before any real surge) and the
+  STRICTER one at midday, not the reverse. Kept off by default per this
+  project's convention of a longer track record before flipping a
+  default, and because one 90-day window on two small universes,
+  however clean, isn't a settled result -- **this is the single
+  candidate most worth enabling next**, once there's more live data or
+  the user decides the evidence is enough.
+
+**Built, tested, kept OFF -- real backtest evidence says no:**
+- **SPY broad-market regime gate (`USE_SPY_REGIME_GATE`).** Net negative
+  on every metric on both universes at once (megacap PF 1.79->1.74,
+  scanner PF 1.15->1.12, scanner DD 1.8%->2.6%) -- cut trade count ~1/3
+  without the survivors being any higher quality. The idea itself (don't
+  fight the broad tape) is reasonable; SPY's own ADX/EMA regime reading
+  on this bot's 15-min bars over this window wasn't a clean enough
+  signal for "bad time to open a long" to earn its keep.
+- **Close-beyond-level breakout confirmation
+  (`USE_CLOSE_BEYOND_LEVEL_CONFIRMATION`).** The original hypothesis
+  (breakout might be checking HIGH instead of CLOSE) was wrong --
+  `breakout_at` already compared CLOSE against a rolling max, always
+  has. The in-scope version tested (wick-based HIGH as the level, still
+  requiring a CLOSE beyond it) made megacap worse on every metric except
+  trade count (PF 1.79->1.66) and was a wash on scanner. Trades that
+  stopped qualifying as breakout mostly got reallocated to
+  gap_continuation at lower quality, not eliminated.
+- **ADX regime-switch hysteresis (`USE_ADX_HYSTERESIS`,
+  `ADX_HYSTERESIS_BAND=3`).** Made every metric worse on both universes
+  (megacap WR 60%->56%/PF 1.79->1.68, scanner WR 49%->48%/PF
+  1.15->1.10), and counterintuitively trade count went UP, not down --
+  the sticky band delays regime flips rather than suppressing them, and
+  since regime state gates both entries AND exits for open positions, a
+  delayed flip cascades into the whole downstream entry/exit sequence
+  for every later bar, not just the flip itself.
+
+All 6 kept in the code (toggleable, off where rejected) rather than
+deleted, matching this project's existing convention (`USE_RVOL_SPIKE`,
+`USE_ROSS_HOOK`) -- the evidence against them is specific to this
+90-day window and this exact strategy mix, not proof the ideas can never
+work. Full merged test suite: 91/91 pass (67 original + 24 new). Default-
+config backtest re-run after merging (all 4 rejected/pending toggles at
+their off default) reproduces the pre-merge baseline numbers almost
+exactly (100 vs 99 trades megacap, identical WR/PF/DD -- the 1-trade
+difference is normal day-to-day drift since backtest.py always uses "last
+90 days from today"), confirming the merge introduced no accidental
+default-behavior change or cross-candidate interaction.

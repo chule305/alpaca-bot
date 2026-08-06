@@ -121,6 +121,123 @@ def test_get_current_portfolio_risk_usd():
 
 
 # ---------------------------------------------------------------------------
+# 2b. Portfolio HEAT cap (fixed dollars, not %-of-equity) -- see
+#     USE_PORTFOLIO_HEAT_CAP's comment in trading_bot.py for why this has
+#     to be a fixed dollar figure rather than reusing the existing
+#     %-of-equity cap: that one only ever applies under risk-based sizing,
+#     so with this bot's actual default (flat $500-per-position sizing)
+#     there is otherwise no aggregate cap on open risk at all.
+# ---------------------------------------------------------------------------
+
+def test_estimate_new_position_risk_usd():
+    """
+    Pure function, no mocking needed. Checks that the estimate is built
+    from the SAME helpers place_buy_order itself uses for sizing
+    (compute_stop_and_target + compute_position_size/flat-$ math) under
+    both sizing modes, rather than a made-up approximation -- otherwise
+    the heat-cap gate below would be checking against a number that
+    doesn't match what would actually be opened.
+    """
+    last_price = 100.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        expected_flat_qty = int(tb.TRADE_AMOUNT_USD // last_price)
+        expected_flat_risk = max(last_price - stop_price, 0.0) * expected_flat_qty
+        got_flat = tb.estimate_new_position_risk_usd(last_price, atr_value, equity=10000.0)
+        check("flat-$ mode sizes off TRADE_AMOUNT_USD // price, matching place_buy_order's own flat sizing",
+              np.isclose(got_flat, expected_flat_risk), f"got {got_flat}, expected {expected_flat_risk}")
+
+        check("flat-$ mode ignores equity entirely -- same result whether equity is known or not",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, None), expected_flat_risk))
+
+        tb.USE_RISK_BASED_SIZING = True
+        equity = 10000.0
+        expected_rb_qty = tb.compute_position_size(equity, last_price, stop_price)
+        expected_rb_risk = max(last_price - stop_price, 0.0) * expected_rb_qty
+        got_rb = tb.estimate_new_position_risk_usd(last_price, atr_value, equity)
+        check("risk-based mode sizes off compute_position_size, matching place_buy_order's own risk-based sizing",
+              np.isclose(got_rb, expected_rb_risk), f"got {got_rb}, expected {expected_rb_risk}")
+
+        check("risk-based mode with equity unknown this cycle falls back to flat-$ sizing "
+              "(can't compute a risk-based qty without equity)",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, None), expected_flat_risk))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+
+    check("invalid last_price (0) returns 0.0 rather than raising or dividing by zero",
+          tb.estimate_new_position_risk_usd(0.0, atr_value, 10000.0) == 0.0)
+    check("missing last_price (None) returns 0.0 rather than raising",
+          tb.estimate_new_position_risk_usd(None, atr_value, 10000.0) == 0.0)
+
+
+def test_would_exceed_portfolio_heat_cap():
+    original_toggle = tb.USE_PORTFOLIO_HEAT_CAP
+    original_cap = tb.MAX_PORTFOLIO_HEAT_USD
+    try:
+        tb.USE_PORTFOLIO_HEAT_CAP = True
+        tb.MAX_PORTFOLIO_HEAT_USD = 200.0
+
+        check("current heat well under the cap plus a small new position -- not blocked",
+              not tb.would_exceed_portfolio_heat_cap(150.0, 40.0))
+        check("current heat + new position lands EXACTLY on the cap -- not blocked (only strictly over blocks)",
+              not tb.would_exceed_portfolio_heat_cap(150.0, 50.0))
+        check("current heat + new position would land $0.01 over the cap -- blocked",
+              tb.would_exceed_portfolio_heat_cap(150.0, 50.01))
+        check("zero current heat, a new position alone already exceeds the cap on its own -- blocked",
+              tb.would_exceed_portfolio_heat_cap(0.0, 200.01))
+
+        tb.USE_PORTFOLIO_HEAT_CAP = False
+        check("disabled toggle never blocks, no matter how far over the (still-configured) cap this would be",
+              not tb.would_exceed_portfolio_heat_cap(10000.0, 10000.0))
+    finally:
+        tb.USE_PORTFOLIO_HEAT_CAP = original_toggle
+        tb.MAX_PORTFOLIO_HEAT_USD = original_cap
+
+
+def test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling():
+    """
+    Same mocked-orders setup as test_get_current_portfolio_risk_usd (real
+    open positions with real bracket stop orders), but exercised against
+    the fixed-dollar heat cap instead of the %-of-equity one: aggregate
+    open risk starts near MAX_PORTFOLIO_HEAT_USD, and a new entry that
+    would push the total over the ceiling gets blocked while one that
+    stays under is allowed.
+    """
+    open_positions = {
+        "AAA": {"qty": 10.0, "avg_entry_price": 100.0},   # stop $95 -> $50 at risk
+        "BBB": {"qty": 5.0, "avg_entry_price": 50.0},      # stop $48 -> $10 at risk
+    }
+    fake_orders = [
+        make_order("AAA", OrderType.STOP, 95.0),
+        make_order("BBB", OrderType.STOP, 48.0),
+    ]
+    fake_client = MagicMock()
+    fake_client.get_orders.return_value = fake_orders
+
+    original_toggle = tb.USE_PORTFOLIO_HEAT_CAP
+    original_cap = tb.MAX_PORTFOLIO_HEAT_USD
+    try:
+        tb.USE_PORTFOLIO_HEAT_CAP = True
+        tb.MAX_PORTFOLIO_HEAT_USD = 90.0  # current open risk $60 (AAA $50 + BBB $10) -- $30 of headroom left
+
+        with patch.object(tb, "trading_client", fake_client):
+            current_heat = tb.get_current_portfolio_risk_usd(open_positions)
+        check("aggregate open risk from the two positions' real stop orders sums to $60",
+              np.isclose(current_heat, 60.0), f"got {current_heat}")
+
+        check("a new position risking $29 stays under the $90 cap ($60 + $29 = $89) -- allowed",
+              not tb.would_exceed_portfolio_heat_cap(current_heat, 29.0))
+        check("a new position risking $31 would push aggregate risk to $91, over the $90 cap -- blocked",
+              tb.would_exceed_portfolio_heat_cap(current_heat, 31.0))
+    finally:
+        tb.USE_PORTFOLIO_HEAT_CAP = original_toggle
+        tb.MAX_PORTFOLIO_HEAT_USD = original_cap
+
+
+# ---------------------------------------------------------------------------
 # 3. Daily risk state persists across a simulated restart
 # ---------------------------------------------------------------------------
 
@@ -203,6 +320,224 @@ def test_check_symbol_gating():
         notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
                                     at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("a SELL signal on a held position calls place_sell_order (and reports 0 notional opened)",
+          mock_sell.called and notional == 0.0)
+
+
+def test_check_symbol_gating_portfolio_heat_cap():
+    """
+    Same gating-order pattern as test_check_symbol_gating's portfolio
+    risk-cap case above, but for the fixed-dollar heat cap: blocks a BUY
+    when would_exceed_portfolio_heat_cap says the new position would push
+    aggregate risk over the ceiling, and lets one through when it doesn't
+    -- confirming check_symbol actually wires the gate in (the gate's own
+    threshold logic is covered separately by test_would_exceed_portfolio_heat_cap).
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "would_exceed_portfolio_heat_cap", return_value=True), \
+         patch.object(tb, "place_buy_order") as mock_buy:
+        notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=190.0)
+    check("the portfolio heat cap blocks a BUY signal that would exceed it",
+          notional == 0.0 and not mock_buy.called)
+
+    fake_order = types.SimpleNamespace(id="heat-cap-ok-order-id")
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "would_exceed_portfolio_heat_cap", return_value=False), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=10.0)
+    check("a BUY signal that stays under the heat cap proceeds to place_buy_order",
+          mock_buy.called and notional == 500.0)
+
+
+# ---------------------------------------------------------------------------
+# 5. SECTOR CONCENTRATION CAP -- portfolio-CONSTRUCTION control (how many of
+# the currently open positions may share a sector), not a single-symbol
+# entry signal. Investigated 2026-07-31 as "Idea 2" (correlation-limiting)
+# and explicitly not built at the time because backtest.py runs each symbol
+# in isolation with its own equity curve -- there's no P&L before/after to
+# backtest for a control that only means anything across a shared,
+# concurrent position pool. That's still true; these tests cover the gating
+# logic directly (mirroring test_would_exceed_portfolio_risk_cap and
+# test_get_current_portfolio_risk_usd above), not a P&L claim.
+# ---------------------------------------------------------------------------
+
+def test_get_symbol_sector_uses_hardcoded_map_first():
+    """SECTOR_MAP is checked before ever touching the network -- confirms
+    the map lookup alone is enough for a symbol it covers, with no
+    get_asset call at all."""
+    tb._sector_cache.clear()
+    with patch.object(tb, "trading_client") as mock_client:
+        sector = tb.get_symbol_sector("NVDA")
+    check("a mapped symbol resolves to its SECTOR_MAP entry",
+          sector == tb.SECTOR_MAP["NVDA"])
+    check("a mapped symbol never calls Alpaca's asset API at all",
+          not mock_client.get_asset.called)
+
+
+def test_get_symbol_sector_falls_back_to_alpaca_asset_metadata():
+    """A symbol NOT in SECTOR_MAP falls back to get_asset() -- checked
+    defensively via getattr, since alpaca-py's Asset model has no
+    sector field today but this must still pick one up if the API ever
+    returns one."""
+    tb._sector_cache.clear()
+    fake_asset = types.SimpleNamespace(sector="Real Estate")
+    with patch.object(tb, "trading_client") as mock_client:
+        mock_client.get_asset.return_value = fake_asset
+        sector = tb.get_symbol_sector("NOTINMAP")
+    check("an unmapped symbol falls back to Alpaca's asset metadata",
+          sector == "Real Estate")
+    check("the fallback actually calls get_asset for the unmapped symbol",
+          mock_client.get_asset.called)
+
+
+def test_get_symbol_sector_unknown_when_neither_source_has_it():
+    """No map entry, and get_asset() raises (network down, unknown
+    symbol, etc.) -- must return None, not raise, so the cap fails open
+    rather than crashing a check cycle."""
+    tb._sector_cache.clear()
+    with patch.object(tb, "trading_client") as mock_client:
+        mock_client.get_asset.side_effect = Exception("unknown symbol")
+        sector = tb.get_symbol_sector("TOTALLYUNKNOWN")
+    check("an unmappable, unfetchable symbol resolves to None, not an exception", sector is None)
+
+
+def test_get_symbol_sector_caches_including_negative_results():
+    """Sector doesn't change intraday, so a symbol looked up once
+    (found OR not found) should never trigger a second get_asset call --
+    same reasoning as is_leveraged_etf's _asset_name_cache."""
+    tb._sector_cache.clear()
+    with patch.object(tb, "trading_client") as mock_client:
+        mock_client.get_asset.side_effect = Exception("down")
+        first = tb.get_symbol_sector("REPEATED")
+        second = tb.get_symbol_sector("REPEATED")
+    check("first and second lookups agree", first == second is None)
+    check("a cached 'unknown' result is not re-fetched on the next call",
+          mock_client.get_asset.call_count == 1)
+
+
+def test_sector_concentration_blocks_entry_disabled_by_default():
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", False), \
+         patch.object(tb, "get_symbol_sector", return_value="Information Technology"):
+        blocked = tb.sector_concentration_blocks_entry("NVDA", {"AMD", "INTC", "QCOM"})
+    check("the cap never blocks anything while the feature is off", blocked is False)
+
+
+def test_sector_concentration_blocks_entry_blocks_a_sixth_same_sector_candidate():
+    """The scenario from the task: 5 open positions already in the same
+    sector -- a 6th same-sector candidate must be blocked."""
+    open_positions = {"AAA", "BBB", "CCC", "DDD", "EEE"}  # 5 same-sector, mocked below
+    sectors = {s: "Information Technology" for s in open_positions}
+    sectors["CANDIDATE"] = "Information Technology"
+
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", True), \
+         patch.object(tb, "MAX_POSITIONS_PER_SECTOR", 2), \
+         patch.object(tb, "get_symbol_sector", side_effect=lambda s: sectors.get(s)):
+        blocked = tb.sector_concentration_blocks_entry("CANDIDATE", open_positions)
+    check("a 6th same-sector candidate is blocked once the sector is already at/over the cap",
+          blocked is True)
+
+
+def test_sector_concentration_blocks_entry_allows_a_different_sector_candidate():
+    """Same 5 open same-sector positions -- a DIFFERENT-sector candidate
+    must NOT be blocked by a cap that has nothing to do with its sector."""
+    open_positions = {"AAA", "BBB", "CCC", "DDD", "EEE"}
+    sectors = {s: "Information Technology" for s in open_positions}
+    sectors["CANDIDATE"] = "Health Care"
+
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", True), \
+         patch.object(tb, "MAX_POSITIONS_PER_SECTOR", 2), \
+         patch.object(tb, "get_symbol_sector", side_effect=lambda s: sectors.get(s)):
+        blocked = tb.sector_concentration_blocks_entry("CANDIDATE", open_positions)
+    check("a different-sector candidate is not blocked by another sector's concentration",
+          blocked is False)
+
+
+def test_sector_concentration_blocks_entry_allows_exactly_up_to_the_cap():
+    """Below the cap must still allow a trade -- this pins the boundary
+    (>=, not >) so the cap can't silently allow one extra position past
+    MAX_POSITIONS_PER_SECTOR."""
+    sectors = {"AAA": "Financials", "OTHER_FIN": "Financials", "CANDIDATE": "Financials"}
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", True), \
+         patch.object(tb, "MAX_POSITIONS_PER_SECTOR", 2), \
+         patch.object(tb, "get_symbol_sector", side_effect=lambda s: sectors.get(s)):
+        blocked_at_one = tb.sector_concentration_blocks_entry("CANDIDATE", {"AAA"})
+        blocked_at_two = tb.sector_concentration_blocks_entry("CANDIDATE", {"AAA", "OTHER_FIN"})
+    check("one existing same-sector position (below a cap of 2) does not block a second",
+          blocked_at_one is False)
+    check("two existing same-sector positions (at a cap of 2) blocks a third",
+          blocked_at_two is True)
+
+
+def test_sector_concentration_blocks_entry_fails_open_on_unknown_candidate_sector():
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", True), \
+         patch.object(tb, "MAX_POSITIONS_PER_SECTOR", 1), \
+         patch.object(tb, "get_symbol_sector", return_value=None):
+        blocked = tb.sector_concentration_blocks_entry("MYSTERYSYMBOL", {"AAA", "BBB", "CCC"})
+    check("an unmappable candidate is never blocked -- fail open, not fail closed", blocked is False)
+
+
+def test_sector_concentration_blocks_entry_unmapped_open_positions_dont_count():
+    """An open position whose sector can't be determined must not count
+    toward the total for a DIFFERENT, mappable sector -- it's simply
+    excluded, not treated as a wildcard match."""
+    sectors = {"KNOWN_SAME_SECTOR": "Energy", "CANDIDATE": "Energy"}
+    # UNKNOWN1/UNKNOWN2 deliberately absent from `sectors` -> get_symbol_sector
+    # returns None for them via .get()'s default.
+    with patch.object(tb, "USE_SECTOR_CONCENTRATION_CAP", True), \
+         patch.object(tb, "MAX_POSITIONS_PER_SECTOR", 2), \
+         patch.object(tb, "get_symbol_sector", side_effect=lambda s: sectors.get(s)):
+        blocked = tb.sector_concentration_blocks_entry(
+            "CANDIDATE", {"KNOWN_SAME_SECTOR", "UNKNOWN1", "UNKNOWN2"})
+    check("unmapped open positions are excluded from the sector count, not counted as matches",
+          blocked is False)
+
+
+def test_check_symbol_blocks_buy_when_sector_cap_blocks_entry():
+    """check_symbol's OWN gating: a BUY signal must be refused when the
+    caller says the sector cap blocks it, and taken once it doesn't --
+    same pattern as test_symbol_cooldown_blocks_immediate_reentry and
+    test_check_symbol_blocks_buy_when_daily_trend_blocks_entry above."""
+    df_input = pd.DataFrame({"close": [100.0]})
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, sector_cap_blocks_entry=True)
+    check("a BUY signal is refused when the sector concentration cap blocks it",
+          not mock_buy.called)
+    check("a sector-cap-blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, sector_cap_blocks_entry=False)
+    check("the same signal is taken once the sector cap doesn't block it", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
+def test_check_symbol_sector_cap_does_not_apply_to_sell_signals():
+    """The cap must gate NEW entries only -- an existing position's own
+    SELL/exit logic must go through even with sector_cap_blocks_entry=True,
+    since that flag should never even be consulted on the SELL branch."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("SELL", "trend_following", "test sell")), \
+         patch.object(tb, "place_sell_order", return_value=types.SimpleNamespace(id="sell-id")) as mock_sell:
+        notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, sector_cap_blocks_entry=True)
+    check("a SELL signal still closes the position even though sector_cap_blocks_entry=True",
           mock_sell.called and notional == 0.0)
 
 
@@ -646,6 +981,102 @@ def test_check_symbol_blocks_buy_when_daily_trend_blocks_entry():
     check("a taken entry reports its notional", notional == 500.0)
 
 
+# ---------------------------------------------------------------------------
+# SPY REGIME GATE -- broad-market veto, off by default. Mirrors the
+# multi-timeframe filter's true-means-ok framing (spy_regime_confirms_entry),
+# and check_symbol takes the already-negated bool the same way it takes
+# daily_trend_blocks_entry.
+# ---------------------------------------------------------------------------
+
+def make_fake_spy_enriched(adx: float, ema_fast: float, ema_slow: float) -> pd.DataFrame:
+    """A one-row stand-in for add_indicators()'s output on SPY's own bars,
+    with just the columns spy_regime_confirms_entry reads."""
+    return pd.DataFrame({"adx": [adx], "ema_fast": [ema_fast], "ema_slow": [ema_slow]})
+
+
+def test_spy_regime_confirms_entry_noop_when_gate_disabled():
+    with patch.object(tb, "USE_SPY_REGIME_GATE", False), \
+         patch.object(tb, "get_recent_bars_batch") as mock_fetch:
+        result = tb.spy_regime_confirms_entry()
+    check("with the gate off, entries are confirmed without even fetching SPY", result is True)
+    check("no SPY fetch happens when the gate is disabled", not mock_fetch.called)
+
+
+def test_spy_regime_confirms_entry_blocks_on_confirmed_spy_downtrend():
+    fake_bars = pd.DataFrame({"close": [500.0]})
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"SPY": fake_bars}), \
+         patch.object(tb, "add_indicators", return_value=make_fake_spy_enriched(30.0, 495.0, 500.0)):
+        result = tb.spy_regime_confirms_entry()
+    check("SPY ADX above threshold AND fast EMA below slow EMA blocks new entries", result is False)
+
+
+def test_spy_regime_confirms_entry_allows_when_spy_trending_up():
+    fake_bars = pd.DataFrame({"close": [500.0]})
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"SPY": fake_bars}), \
+         patch.object(tb, "add_indicators", return_value=make_fake_spy_enriched(30.0, 505.0, 500.0)):
+        result = tb.spy_regime_confirms_entry()
+    check("a confirmed trend that's UP (fast EMA above slow) does not block entries", result is True)
+
+
+def test_spy_regime_confirms_entry_allows_when_spy_choppy():
+    fake_bars = pd.DataFrame({"close": [500.0]})
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"SPY": fake_bars}), \
+         patch.object(tb, "add_indicators", return_value=make_fake_spy_enriched(10.0, 495.0, 500.0)):
+        result = tb.spy_regime_confirms_entry()
+    check("EMA pointing down but ADX below ADX_TREND_THRESHOLD (chop, not a confirmed trend) "
+          "does not block entries", result is True)
+
+
+def test_spy_regime_confirms_entry_fails_open_on_fetch_failure():
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", side_effect=RuntimeError("API down")):
+        result = tb.spy_regime_confirms_entry()
+    check("a failed SPY fetch fails OPEN (doesn't block), not closed -- SPY itself failing to "
+          "fetch says something's off with market data broadly, not a reason to pause everything",
+          result is True)
+
+
+def test_spy_regime_confirms_entry_fails_open_on_missing_data():
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={}):
+        result = tb.spy_regime_confirms_entry()
+    check("no SPY data returned this cycle fails open", result is True)
+
+
+def test_spy_regime_confirms_entry_fails_open_during_warmup():
+    fake_bars = pd.DataFrame({"close": [500.0]})
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"SPY": fake_bars}), \
+         patch.object(tb, "add_indicators", return_value=make_fake_spy_enriched(np.nan, np.nan, np.nan)):
+        result = tb.spy_regime_confirms_entry()
+    check("SPY's own indicators still warming up (NaN) fails open, not closed", result is True)
+
+
+def test_check_symbol_blocks_buy_when_spy_regime_blocks_entry():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TSLA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, spy_regime_blocks_entry=True)
+    check("a BUY signal is refused when the SPY regime gate blocks it, "
+          "even for a strategy unrelated to VWAP/daily-trend", not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("TSLA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0, spy_regime_blocks_entry=False)
+    check("the same signal is taken once the SPY regime gate confirms", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -827,8 +1258,24 @@ if __name__ == "__main__":
     tests = [
         test_would_exceed_portfolio_risk_cap,
         test_get_current_portfolio_risk_usd,
+        test_estimate_new_position_risk_usd,
+        test_would_exceed_portfolio_heat_cap,
+        test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
+        test_check_symbol_gating_portfolio_heat_cap,
+        test_get_symbol_sector_uses_hardcoded_map_first,
+        test_get_symbol_sector_falls_back_to_alpaca_asset_metadata,
+        test_get_symbol_sector_unknown_when_neither_source_has_it,
+        test_get_symbol_sector_caches_including_negative_results,
+        test_sector_concentration_blocks_entry_disabled_by_default,
+        test_sector_concentration_blocks_entry_blocks_a_sixth_same_sector_candidate,
+        test_sector_concentration_blocks_entry_allows_a_different_sector_candidate,
+        test_sector_concentration_blocks_entry_allows_exactly_up_to_the_cap,
+        test_sector_concentration_blocks_entry_fails_open_on_unknown_candidate_sector,
+        test_sector_concentration_blocks_entry_unmapped_open_positions_dont_count,
+        test_check_symbol_blocks_buy_when_sector_cap_blocks_entry,
+        test_check_symbol_sector_cap_does_not_apply_to_sell_signals,
         test_leveraged_etf_name_detection,
         test_scanner_tops_up_a_thin_watchlist,
         test_fetch_sp500_symbols_caches_and_falls_back,
@@ -847,6 +1294,14 @@ if __name__ == "__main__":
         test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol,
         test_daily_trend_confirms_entry_noop_when_filter_disabled,
         test_check_symbol_blocks_buy_when_daily_trend_blocks_entry,
+        test_spy_regime_confirms_entry_noop_when_gate_disabled,
+        test_spy_regime_confirms_entry_blocks_on_confirmed_spy_downtrend,
+        test_spy_regime_confirms_entry_allows_when_spy_trending_up,
+        test_spy_regime_confirms_entry_allows_when_spy_choppy,
+        test_spy_regime_confirms_entry_fails_open_on_fetch_failure,
+        test_spy_regime_confirms_entry_fails_open_on_missing_data,
+        test_spy_regime_confirms_entry_fails_open_during_warmup,
+        test_check_symbol_blocks_buy_when_spy_regime_blocks_entry,
         test_compute_next_cycle_sleep_never_overshoots_the_flatten_trigger,
         test_compute_next_cycle_sleep_unaffected_with_plenty_of_runway,
         test_compute_next_cycle_sleep_already_inside_flatten_window,

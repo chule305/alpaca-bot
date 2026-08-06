@@ -277,6 +277,55 @@ risk-based sizing, the aggregate can't blow past this cap no matter how
 correlated the underlying stocks turn out to be, without needing to
 compute correlation directly.
 
+**`MAX_PORTFOLIO_RISK_PCT` only ever applies when `USE_RISK_BASED_SIZING=true`.**
+With this bot's actual default (flat `TRADE_AMOUNT_USD` sizing), there is
+otherwise no aggregate cap on open risk at all — a burst of same-cycle
+entries in correlated names could stack up unlimited combined risk. This
+toggle caps it, in FIXED DOLLARS rather than a percentage, on by default:
+
+```
+USE_PORTFOLIO_HEAT_CAP=true
+MAX_PORTFOLIO_HEAT_USD=200
+```
+
+A percentage-of-equity ceiling here would risk repeating the exact
+2026-08-05 incident above — the same number meaning a harmless amount
+under one sizing mode and a large real dollar figure under another.
+`MAX_PORTFOLIO_HEAT_USD` sidesteps that by being a plain dollar figure:
+before opening a new position, the bot adds up (entry − stop) × qty
+across every currently open position PLUS what the new one would add, and
+skips the entry if that total would exceed this ceiling. 200 is roughly 4
+positions' worth of a $25 stop-loss risk each — the default $500 flat
+size at a 5% stop (`500 × 5% = $25`/position) — leaving room for a
+handful of concurrent positions without being unlimited. On by default
+(unlike most new toggles in this project) because it's purely
+restrictive: it can only ever block a trade, never add exposure, so
+there's no downside to leaving it active.
+
+```
+USE_SECTOR_CONCENTRATION_CAP=true
+MAX_POSITIONS_PER_SECTOR=2
+```
+
+`USE_SECTOR_CONCENTRATION_CAP` (on by default, same reasoning as the heat
+cap above) caps how many **open** positions may share the same sector,
+checked only when opening a **new** position — it never affects
+closing/selling an existing one. `MAX_PORTFOLIO_RISK_PCT`/
+`MAX_PORTFOLIO_HEAT_USD` already bound aggregate $-at-risk, but say
+nothing about how *concentrated* that risk is: five same-sector
+positions can each pass their own risk-cap check individually while the
+account is really making one large correlated bet five times over, and
+the scanner and the S&P 500 backstop can both independently gravitate
+toward the same crowded trade (e.g. several semiconductor names all
+showing up as "today's biggest movers" on the same news cycle). Sector
+is looked up from a small hardcoded map of common large-caps/ETFs
+(`SECTOR_MAP` in `trading_bot.py`) — a symbol with no known sector is
+exempt from the cap (fails open) rather than blocked, since most of the
+scanner's own picks are small/micro-caps that were never going to be in
+a hardcoded map, and the cost of skipping this one check for an unmapped
+symbol is far lower than the cost of blocking real trades over
+incomplete metadata.
+
 `MAX_DAILY_LOSS_PCT` is a daily circuit breaker: once account equity is
 down more than this % versus where it started the trading day, the bot
 stops opening **new** positions for the rest of the day. Existing
@@ -285,12 +334,13 @@ pre-close entry cutoff below) — this only blocks fresh entries. This
 state is saved to `daily_risk_state.json` and restored on restart, so a
 crash mid-bad-day can't silently un-trip an already-tripped breaker.
 
-**Limits on this page (position cap, portfolio risk cap, daily loss
-breaker) only work while `trading_bot.py` is actually running** — they
-live in the bot's own loop, not on Alpaca's servers (Alpaca has no
-account-level equivalent to set). The stop-loss/take-profit on each
-individual position is different: that's a real order sitting on
-Alpaca's side, so it stays protective even if the bot crashes.
+**Limits on this page (position cap, sector cap, portfolio risk cap,
+portfolio heat cap, daily loss breaker) only work while `trading_bot.py`
+is actually running** — they live in the bot's own loop, not on Alpaca's
+servers (Alpaca has no account-level equivalent to set). The
+stop-loss/take-profit on each individual position is different: that's a
+real order sitting on Alpaca's side, so it stays protective even if the
+bot crashes.
 
 ## Handling extreme moves and messy data
 
@@ -414,6 +464,28 @@ means fewer of its signals fire, so more bars fall through to
 moment A/B on the full system: megacap profit factor 1.60 → 1.56 (worse),
 scanner 1.18 → 1.30 (better). Same split shape as the multi-timeframe
 filter, same fix.
+
+**SPY regime gate** *(off by default — `USE_SPY_REGIME_GATE=false`, tested and rejected)*.
+When on, this vetoes new long entries in EVERY symbol whenever SPY itself
+is in a confirmed downtrend on this same `BAR_MINUTES` timeframe — reusing
+the exact same ADX/EMA machinery every symbol's own trend-following regime
+already runs on (SPY's ADX ≥ `ADX_TREND_THRESHOLD` AND its fast EMA below
+its slow EMA), just read off SPY's own bars instead of a new indicator.
+The theory — don't fight the broad market's own tape — is reasonable, but
+a 90-day backtest (2026-08-06) came back net negative on BOTH universes,
+on every combined metric at once:
+
+```
+             trades   win rate   total return   profit factor   max DD
+megacap:     99→69    60%→58%    +7.6%→+4.9%     1.79→1.74      1.7%→1.8%
+scanner:     96→70    49%→46%    +1.3%→+0.9%     1.15→1.12      1.8%→2.6%
+```
+
+It cut trade count by roughly a third in both universes without the
+surviving trades being any higher quality — it caught real winners along
+with the losers it was meant to filter. Kept in code and toggleable, same
+as `USE_RVOL_SPIKE`/`USE_ROSS_HOOK` above — re-test before re-enabling,
+ideally against a different ADX threshold or a broader index than SPY.
 
 **Bar timeframe: 15 minutes, not 5.** `BAR_MINUTES` (and the matching
 `CHECK_INTERVAL_MINUTES`) moved from 5 to 15 on 2026-07-31. A 90-day
