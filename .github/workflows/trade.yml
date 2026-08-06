@@ -126,6 +126,8 @@ jobs:
           RSI_OVERBOUGHT: "75"
           BREAKOUT_LOOKBACK: "20"
           BREAKOUT_VOLUME_MULTIPLIER: "2.0"
+          USE_TIME_OF_DAY_VOLUME_NORM: "true"
+          TIME_OF_DAY_VOLUME_BUCKET_MINUTES: "30"
           USE_BREAKOUT: "true"
           USE_GAP_PATTERN: "true"
           USE_SMASH_DAY_PATTERN: "false"

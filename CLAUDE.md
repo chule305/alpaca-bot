@@ -1218,6 +1218,30 @@ codebase, since 6 independent copies aren't a deployable result on their
 own. All numbers below are from real 90-day backtests, not estimates.
 
 **Adopted, ON by default:**
+- **Time-of-day-normalized breakout volume
+  (`USE_TIME_OF_DAY_VOLUME_NORM`, default true,
+  `TIME_OF_DAY_VOLUME_BUCKET_MINUTES=30`).** The strongest result of the
+  6. Compares each bar's volume against the historical average for that
+  SAME minutes-since-open bucket instead of a flat trailing average.
+  Genuine improvement on profit factor, return, AND drawdown on BOTH
+  universes: megacap PF 1.78->2.37, DD 1.7%->1.4%, return +7.5%->+8.6%;
+  scanner PF 1.15->1.22, DD 1.8%->1.7%, return +1.3%->+1.8%. Re-verified
+  a second time after merging alongside the other 5 candidates (not just
+  in isolation, per this project's 2026-07-31 lesson) -- numbers held:
+  megacap 62% WR/PF 2.32/DD 1.4%/+8.4%, scanner 48% WR/PF 1.21/DD
+  1.8%/+1.8%. The mechanism found is the OPPOSITE of the original
+  hypothesis: BREAKOUT_LOOKBACK=20 bars at BAR_MINUTES=15 is only a
+  5-hour rolling window that doesn't reset per session, so early bars of
+  a new session are still mostly averaging in the QUIET back half of the
+  PRIOR session -- meaning the flat average was actually the LOOSER bar
+  at the open (real volume runs ~2.5x it before any real surge) and the
+  STRICTER one at midday, not the reverse. Initially shipped OFF pending
+  a longer track record; turned ON the same day (2026-08-06) by explicit
+  user decision after seeing both verification runs agree -- ahead of
+  this project's usual convention, and worth remembering if this specific
+  one doesn't hold up: it's one 90-day window on two small universes, not
+  a long track record, and the early flip was a conscious trade-off, not
+  a default.
 - **Portfolio heat cap (`USE_PORTFOLIO_HEAT_CAP`, default true,
   `MAX_PORTFOLIO_HEAT_USD=200`).** Fixed-dollar aggregate open-risk
   ceiling -- deliberately NOT a %-of-equity cap, to avoid exactly the
@@ -1241,31 +1265,6 @@ own. All numbers below are from real 90-day backtests, not estimates.
   on unmapped symbols since most scanner picks are small/micro-caps that
   were never going to be in it. Verified via 12 new unit tests. Same
   "purely restrictive, safe to default on" reasoning as the heat cap.
-
-**Built, tested, kept OFF by default -- one real win, not yet flipped on:**
-- **Time-of-day-normalized breakout volume
-  (`USE_TIME_OF_DAY_VOLUME_NORM`, default false,
-  `TIME_OF_DAY_VOLUME_BUCKET_MINUTES=30`).** The strongest result of the
-  6. Compares each bar's volume against the historical average for that
-  SAME minutes-since-open bucket instead of a flat trailing average.
-  Genuine improvement on profit factor, return, AND drawdown on BOTH
-  universes: megacap PF 1.78->2.37, DD 1.7%->1.4%, return +7.5%->+8.6%;
-  scanner PF 1.15->1.22, DD 1.8%->1.7%, return +1.3%->+1.8%. Re-verified
-  a second time after merging alongside the other 5 candidates (not just
-  in isolation, per this project's 2026-07-31 lesson) -- numbers held:
-  megacap 62% WR/PF 2.32/DD 1.4%/+8.4%, scanner 48% WR/PF 1.21/DD
-  1.8%/+1.8%. The mechanism found is the OPPOSITE of the original
-  hypothesis: BREAKOUT_LOOKBACK=20 bars at BAR_MINUTES=15 is only a
-  5-hour rolling window that doesn't reset per session, so early bars of
-  a new session are still mostly averaging in the QUIET back half of the
-  PRIOR session -- meaning the flat average was actually the LOOSER bar
-  at the open (real volume runs ~2.5x it before any real surge) and the
-  STRICTER one at midday, not the reverse. Kept off by default per this
-  project's convention of a longer track record before flipping a
-  default, and because one 90-day window on two small universes,
-  however clean, isn't a settled result -- **this is the single
-  candidate most worth enabling next**, once there's more live data or
-  the user decides the evidence is enough.
 
 **Built, tested, kept OFF -- real backtest evidence says no:**
 - **SPY broad-market regime gate (`USE_SPY_REGIME_GATE`).** Net negative

@@ -111,7 +111,7 @@ BREAKOUT_VOLUME_MULTIPLIER = float(os.getenv("BREAKOUT_VOLUME_MULTIPLIER", 2.0))
 # day misprices "unusual" in both directions. See
 # compute_time_of_day_avg_volume() for how the corrected comparison
 # average is built without lookahead.
-USE_TIME_OF_DAY_VOLUME_NORM = os.getenv("USE_TIME_OF_DAY_VOLUME_NORM", "false").strip().lower() in ("1", "true", "yes")
+USE_TIME_OF_DAY_VOLUME_NORM = os.getenv("USE_TIME_OF_DAY_VOLUME_NORM", "true").strip().lower() in ("1", "true", "yes")
 # Width of the minutes-since-open bucket used for the historical average
 # above. 30 (not 15, i.e. not 1:1 with BAR_MINUTES) trades a little
 # precision for faster warmup: at BAR_MINUTES=15 a 15-wide bucket gets
@@ -136,11 +136,12 @@ USE_TIME_OF_DAY_VOLUME_NORM = os.getenv("USE_TIME_OF_DAY_VOLUME_NORM", "false").
 # improvement comes from elsewhere in the chain reacting to which bars
 # breakout no longer claims first.
 #
-# Left OFF by default per this project's convention of defaulting new
-# toggles off pending a longer track record -- one 90-day window on two
-# small symbol sets is a real result, not a settled one. Improving both
-# universes together on this axis is still notable (see BAR_MINUTES above
-# for the last time that happened).
+# Turned ON by default 2026-08-06, same day it was built -- the user's own
+# call after seeing the numbers, ahead of this project's usual "let it sit
+# a while first" convention (see the isolated-then-combined re-verification
+# above; both runs agreed). Worth remembering if this one doesn't hold up:
+# it shipped on a single 90-day window on two small symbol sets, not a long
+# track record, and that trade-off was made consciously, not by default.
 TIME_OF_DAY_VOLUME_BUCKET_MINUTES = int(os.getenv("TIME_OF_DAY_VOLUME_BUCKET_MINUTES", 30))
 
 # breakout_recent_high (below) has always been a rolling max of CLOSES,

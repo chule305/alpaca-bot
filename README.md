@@ -63,7 +63,16 @@ each call):
 4. **A fresh breakout, confirmed by volume.** Price pushed above its
    recent range AND trading volume is unusually high (a stricter volume
    threshold than it started with, after backtesting showed the
-   original was too loose).
+   original was too loose). "Unusually high" is judged against the
+   historical average for that SAME time of day (`USE_TIME_OF_DAY_
+   VOLUME_NORM`, on by default), not a flat trailing average — a bar's
+   volume being "unusual" should be judged against what's normal for
+   that time of day, since intraday volume follows a well-documented
+   U-shape (heaviest at the open, thinnest at midday). 90-day backtest,
+   both universes: profit factor, return, and drawdown all improved
+   together (see CLAUDE.md for the numbers) — enabled 2026-08-06 on a
+   single 90-day window's evidence, sooner than this project's usual
+   longer-track-record convention, by explicit user decision.
 5. **Relative volume (RVOL) spike** *(off by default — `USE_RVOL_SPIKE=false`)*.
    An unusual volume surge on a green bar that also closes strong (not
    just barely green). Net negative in two straight backtests, the
