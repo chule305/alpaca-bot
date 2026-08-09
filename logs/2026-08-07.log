@@ -1,0 +1,1369 @@
+2026-08-07 15:07:55,600 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 15:07:55,600 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 15:07:55,600 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 15:07:55,600 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 15:07:55,600 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 15:07:55,600 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 15:07:55,600 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 15:07:55,600 | Position sizing: flat $500 per trade
+2026-08-07 15:07:55,600 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 15:07:55,600 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 15:07:55,600 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 15:07:55,600 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 15:07:55,601 | Loaded saved watchlist from previous run: ONT, BLLN, AEVA, UTI, INSM, WPP, CHYM, PAYC, TRIP, HUBS, MU, NVDA, MSFT, SNDK, AMD, AAPL
+2026-08-07 15:07:55,601 | Restored daily risk state from previous run: day 2026-08-06, breaker tripped: False
+2026-08-07 15:07:55,601 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 15:07:55,751 | Daily loss circuit breaker: tracking from starting equity $99,650.95 (limit -3%).
+2026-08-07 15:07:55,751 | SCANNER: refreshing watchlist...
+2026-08-07 15:07:56,670 | SCANNER: excluded 8 leveraged/inverse ETF(s) from 22 candidate(s).
+2026-08-07 15:07:58,829 | SCANNER: candidate DOCS -- +46.7% today, $30.30, liquid, 5 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate QNST -- +35.7% today, $20.65, liquid, 2 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate CRSR -- +35.3% today, $14.36, liquid, 3 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate PUBM -- +34.2% today, $18.09, liquid, 6 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate SEZL -- -34.0% today, $117.90, liquid, 7 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate TEAM -- +31.0% today, $144.35, liquid, 13 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate FIGS -- +30.4% today, $14.66, liquid, 5 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate TWLO -- +28.4% today, $247.98, liquid, 8 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate QDEL -- -24.7% today, $12.29, liquid, 4 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate LASR -- -21.7% today, $59.06, liquid, 4 recent news item(s)
+2026-08-07 15:07:58,829 | SCANNER: candidate TTD -- -19.5% today, $14.22, liquid, 15 recent news item(s)
+2026-08-07 15:07:58,921 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-07 15:08:54,792 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:08:54,794 | SCANNER: new watchlist -> DOCS, QNST, CRSR, PUBM, SEZL, TEAM, FIGS, TWLO, QDEL, LASR, TTD, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:08:54,883 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 15:08:59,793 | Multi-timeframe filter: refreshed daily trend for 19 symbol(s).
+2026-08-07 15:08:59,940 | [AMD] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.89
+2026-08-07 15:08:59,940 | [AMD] ACTION: No trade.
+2026-08-07 15:08:59,969 | [CHYM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.95
+2026-08-07 15:08:59,970 | [CHYM] ACTION: No trade.
+2026-08-07 15:09:00,026 | [CRSR] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.19
+2026-08-07 15:09:00,026 | [CRSR] ACTION: No trade.
+2026-08-07 15:09:00,082 | [DOCS] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.40
+2026-08-07 15:09:00,082 | [DOCS] ACTION: No trade.
+2026-08-07 15:09:00,143 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.95
+2026-08-07 15:09:00,143 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 15:09:00,175 | [HUBS] trending (ADX 42.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $211.65
+2026-08-07 15:09:00,175 | [HUBS] ACTION: No trade.
+2026-08-07 15:09:00,234 | [LASR] trending (ADX 45.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.57
+2026-08-07 15:09:00,234 | [LASR] ACTION: No trade.
+2026-08-07 15:09:00,262 | [MGNI] choppy/sideways (ADX 12.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.02
+2026-08-07 15:09:00,262 | [MGNI] ACTION: No trade.
+2026-08-07 15:09:00,295 | [MSFT] trending (ADX 36.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.69
+2026-08-07 15:09:00,295 | [MSFT] ACTION: No trade.
+2026-08-07 15:09:00,328 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $857.48
+2026-08-07 15:09:00,358 | [MU] Computed position size is 0 shares at $865.71 (flat $ sizing) -- skipping this trade.
+2026-08-07 15:09:00,392 | [NVDA] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.18
+2026-08-07 15:09:00,392 | [NVDA] ACTION: No trade.
+2026-08-07 15:09:00,447 | [PUBM] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.19
+2026-08-07 15:09:00,447 | [PUBM] ACTION: No trade.
+2026-08-07 15:09:00,502 | [QDEL] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.25
+2026-08-07 15:09:00,502 | [QDEL] ACTION: No trade.
+2026-08-07 15:09:00,558 | [QNST] trending (ADX 36.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.71
+2026-08-07 15:09:00,558 | [QNST] ACTION: No trade.
+2026-08-07 15:09:00,616 | [SEZL] trending (ADX 36.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.10
+2026-08-07 15:09:00,616 | [SEZL] ACTION: No trade.
+2026-08-07 15:09:00,676 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1203.00
+2026-08-07 15:09:00,707 | [SNDK] Computed position size is 0 shares at $1219.59 (flat $ sizing) -- skipping this trade.
+2026-08-07 15:09:00,767 | [TEAM] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $144.35
+2026-08-07 15:09:00,767 | [TEAM] ACTION: No trade.
+2026-08-07 15:09:00,800 | [TTD] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 35.0 | Last price: $14.49
+2026-08-07 15:09:00,800 | [TTD] ACTION: No trade.
+2026-08-07 15:09:00,856 | [TWLO] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $247.23
+2026-08-07 15:09:00,856 | [TWLO] ACTION: No trade.
+2026-08-07 15:24:01,238 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 15:24:06,419 | [AMD] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.05
+2026-08-07 15:24:06,419 | [AMD] ACTION: No trade.
+2026-08-07 15:24:06,447 | [CHYM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.83
+2026-08-07 15:24:06,447 | [CHYM] ACTION: No trade.
+2026-08-07 15:24:06,477 | [CRSR] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.24
+2026-08-07 15:24:06,477 | [CRSR] ACTION: No trade.
+2026-08-07 15:24:06,505 | [DOCS] trending (ADX 46.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.25
+2026-08-07 15:24:06,505 | [DOCS] ACTION: No trade.
+2026-08-07 15:24:06,532 | [FIGS] trending (ADX 47.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.25
+2026-08-07 15:24:06,532 | [FIGS] ACTION: No trade.
+2026-08-07 15:24:06,563 | [HUBS] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $209.68
+2026-08-07 15:24:06,563 | [HUBS] ACTION: No trade.
+2026-08-07 15:24:06,591 | [LASR] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.23
+2026-08-07 15:24:06,591 | [LASR] ACTION: No trade.
+2026-08-07 15:24:06,619 | [MGNI] choppy/sideways (ADX 11.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.92
+2026-08-07 15:24:06,619 | [MGNI] ACTION: No trade.
+2026-08-07 15:24:06,652 | [MSFT] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $502.67
+2026-08-07 15:24:06,652 | [MSFT] ACTION: No trade.
+2026-08-07 15:24:06,684 | [MU] trending (ADX 29.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $865.75
+2026-08-07 15:24:06,684 | [MU] ACTION: No trade.
+2026-08-07 15:24:06,717 | [NVDA] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.59
+2026-08-07 15:24:06,717 | [NVDA] ACTION: No trade.
+2026-08-07 15:24:06,744 | [PUBM] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.07
+2026-08-07 15:24:06,744 | [PUBM] ACTION: No trade.
+2026-08-07 15:24:06,771 | [QDEL] trending (ADX 36.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.50
+2026-08-07 15:24:06,771 | [QDEL] ACTION: No trade.
+2026-08-07 15:24:06,798 | [QNST] trending (ADX 36.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.66
+2026-08-07 15:24:06,798 | [QNST] ACTION: No trade.
+2026-08-07 15:24:06,825 | [SEZL] trending (ADX 37.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.09
+2026-08-07 15:24:06,826 | [SEZL] ACTION: No trade.
+2026-08-07 15:24:06,858 | [SNDK] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1218.89
+2026-08-07 15:24:06,858 | [SNDK] ACTION: No trade.
+2026-08-07 15:24:06,889 | [TEAM] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $144.00
+2026-08-07 15:24:06,889 | [TEAM] ACTION: No trade.
+2026-08-07 15:24:06,926 | [TTD] trending (ADX 48.8) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.14
+2026-08-07 15:24:06,926 | [TTD] ACTION: No trade.
+2026-08-07 15:24:06,954 | [TWLO] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $250.88
+2026-08-07 15:24:06,954 | [TWLO] ACTION: No trade.
+2026-08-07 15:39:07,099 | SCANNER: refreshing watchlist...
+2026-08-07 15:39:07,515 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-07 15:39:09,213 | SCANNER: candidate DOCS -- +37.3% today, $28.36, liquid, 5 recent news item(s)
+2026-08-07 15:39:09,213 | SCANNER: candidate QNST -- +35.1% today, $20.57, liquid, 2 recent news item(s)
+2026-08-07 15:39:09,213 | SCANNER: candidate PUBM -- +34.8% today, $18.17, liquid, 7 recent news item(s)
+2026-08-07 15:39:09,213 | SCANNER: candidate SEZL -- -34.1% today, $117.61, liquid, 7 recent news item(s)
+2026-08-07 15:39:09,213 | SCANNER: candidate CRSR -- +31.7% today, $13.97, liquid, 2 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate TWLO -- +29.9% today, $250.99, liquid, 10 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate TEAM -- +29.9% today, $143.12, liquid, 11 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate FIGS -- +26.3% today, $14.20, liquid, 4 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate QDEL -- -22.5% today, $12.65, liquid, 4 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate TTD -- -21.1% today, $13.94, liquid, 15 recent news item(s)
+2026-08-07 15:39:09,214 | SCANNER: candidate LASR -- -20.4% today, $60.01, liquid, 2 recent news item(s)
+2026-08-07 15:39:59,239 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:39:59,242 | SCANNER: new watchlist -> DOCS, QNST, PUBM, SEZL, CRSR, TWLO, TEAM, FIGS, QDEL, TTD, LASR, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:39:59,328 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 15:40:04,809 | [AMD] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $482.25
+2026-08-07 15:40:04,809 | [AMD] ACTION: No trade.
+2026-08-07 15:40:04,837 | [CHYM] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.73
+2026-08-07 15:40:04,837 | [CHYM] ACTION: No trade.
+2026-08-07 15:40:04,867 | [CRSR] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.08
+2026-08-07 15:40:04,867 | [CRSR] ACTION: No trade.
+2026-08-07 15:40:04,895 | [DOCS] trending (ADX 44.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.13
+2026-08-07 15:40:04,895 | [DOCS] ACTION: No trade.
+2026-08-07 15:40:04,923 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.28
+2026-08-07 15:40:04,923 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 15:40:04,953 | [HUBS] trending (ADX 42.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $206.79
+2026-08-07 15:40:04,953 | [HUBS] ACTION: No trade.
+2026-08-07 15:40:04,982 | [LASR] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.03
+2026-08-07 15:40:04,982 | [LASR] ACTION: No trade.
+2026-08-07 15:40:05,010 | [MGNI] choppy/sideways (ADX 11.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.99
+2026-08-07 15:40:05,010 | [MGNI] ACTION: No trade.
+2026-08-07 15:40:05,042 | [MSFT] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.99
+2026-08-07 15:40:05,042 | [MSFT] ACTION: No trade.
+2026-08-07 15:40:05,075 | [MU] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $873.35
+2026-08-07 15:40:05,075 | [MU] ACTION: No trade.
+2026-08-07 15:40:05,107 | [NVDA] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.20
+2026-08-07 15:40:05,108 | [NVDA] ACTION: No trade.
+2026-08-07 15:40:05,135 | [PUBM] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.06
+2026-08-07 15:40:05,135 | [PUBM] ACTION: No trade.
+2026-08-07 15:40:05,162 | [QDEL] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.80
+2026-08-07 15:40:05,162 | [QDEL] ACTION: No trade.
+2026-08-07 15:40:05,189 | [QNST] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.53
+2026-08-07 15:40:05,189 | [QNST] ACTION: No trade.
+2026-08-07 15:40:05,217 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $117.69
+2026-08-07 15:40:05,217 | [SEZL] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 15:40:05,250 | [SNDK] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1236.92
+2026-08-07 15:40:05,250 | [SNDK] ACTION: No trade.
+2026-08-07 15:40:05,281 | [TEAM] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.66
+2026-08-07 15:40:05,281 | [TEAM] ACTION: No trade.
+2026-08-07 15:40:05,313 | [TTD] trending (ADX 47.1) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.93
+2026-08-07 15:40:05,313 | [TTD] ACTION: No trade.
+2026-08-07 15:40:05,342 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $251.10
+2026-08-07 15:40:05,342 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 15:55:05,606 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 15:55:12,506 | [AMD] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.64
+2026-08-07 15:55:12,506 | [AMD] ACTION: No trade.
+2026-08-07 15:55:12,535 | [CHYM] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.43
+2026-08-07 15:55:12,535 | [CHYM] ACTION: No trade.
+2026-08-07 15:55:12,564 | [CRSR] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.96
+2026-08-07 15:55:12,564 | [CRSR] ACTION: No trade.
+2026-08-07 15:55:12,616 | [DOCS] trending (ADX 41.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.21
+2026-08-07 15:55:12,616 | [DOCS] ACTION: No trade.
+2026-08-07 15:55:12,644 | [FIGS] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.27
+2026-08-07 15:55:12,644 | [FIGS] ACTION: No trade.
+2026-08-07 15:55:12,674 | [HUBS] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $205.57
+2026-08-07 15:55:12,674 | [HUBS] ACTION: No trade.
+2026-08-07 15:55:12,703 | [LASR] trending (ADX 45.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.00
+2026-08-07 15:55:12,703 | [LASR] ACTION: No trade.
+2026-08-07 15:55:12,731 | [MGNI] choppy/sideways (ADX 11.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.07
+2026-08-07 15:55:12,731 | [MGNI] ACTION: No trade.
+2026-08-07 15:55:12,764 | [MSFT] trending (ADX 39.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.66
+2026-08-07 15:55:12,764 | [MSFT] ACTION: No trade.
+2026-08-07 15:55:12,797 | [MU] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $872.31
+2026-08-07 15:55:12,797 | [MU] ACTION: No trade.
+2026-08-07 15:55:12,829 | [NVDA] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.35
+2026-08-07 15:55:12,830 | [NVDA] ACTION: No trade.
+2026-08-07 15:55:12,857 | [PUBM] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.18
+2026-08-07 15:55:12,857 | [PUBM] ACTION: No trade.
+2026-08-07 15:55:12,884 | [QDEL] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.73
+2026-08-07 15:55:12,884 | [QDEL] ACTION: No trade.
+2026-08-07 15:55:12,911 | [QNST] trending (ADX 35.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.63
+2026-08-07 15:55:12,911 | [QNST] ACTION: No trade.
+2026-08-07 15:55:12,939 | [SEZL] trending (ADX 40.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.67
+2026-08-07 15:55:12,939 | [SEZL] ACTION: No trade.
+2026-08-07 15:55:12,972 | [SNDK] trending (ADX 30.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1229.93
+2026-08-07 15:55:12,972 | [SNDK] ACTION: No trade.
+2026-08-07 15:55:13,003 | [TEAM] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.68
+2026-08-07 15:55:13,003 | [TEAM] ACTION: No trade.
+2026-08-07 15:55:13,035 | [TTD] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.07
+2026-08-07 15:55:13,036 | [TTD] ACTION: No trade.
+2026-08-07 15:55:13,064 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $252.54
+2026-08-07 15:55:13,064 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 16:10:13,208 | SCANNER: refreshing watchlist...
+2026-08-07 16:10:13,536 | SCANNER: excluded 16 leveraged/inverse ETF(s) from 28 candidate(s).
+2026-08-07 16:10:15,343 | SCANNER: candidate QNST -- +35.4% today, $20.61, liquid, 1 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate SEZL -- -34.7% today, $116.64, liquid, 7 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate DOCS -- +34.3% today, $27.75, liquid, 6 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate PUBM -- +34.1% today, $18.08, liquid, 6 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate CRSR -- +32.6% today, $14.07, liquid, 2 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate TWLO -- +31.1% today, $253.25, liquid, 10 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate TEAM -- +30.6% today, $143.91, liquid, 11 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate FIGS -- +27.4% today, $14.32, liquid, 4 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate QDEL -- -21.6% today, $12.80, liquid, 3 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate TTD -- -21.2% today, $13.93, liquid, 14 recent news item(s)
+2026-08-07 16:10:15,343 | SCANNER: candidate LASR -- -20.5% today, $59.99, liquid, 2 recent news item(s)
+2026-08-07 16:11:33,192 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 16:11:33,195 | SCANNER: new watchlist -> QNST, SEZL, DOCS, PUBM, CRSR, TWLO, TEAM, FIGS, QDEL, TTD, LASR, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 16:11:33,449 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 16:11:40,099 | [AMD] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $483.38
+2026-08-07 16:11:40,100 | [AMD] ACTION: No trade.
+2026-08-07 16:11:40,128 | [CHYM] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.32
+2026-08-07 16:11:40,128 | [CHYM] ACTION: No trade.
+2026-08-07 16:11:40,158 | [CRSR] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.92
+2026-08-07 16:11:40,158 | [CRSR] ACTION: No trade.
+2026-08-07 16:11:40,186 | [DOCS] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.17
+2026-08-07 16:11:40,186 | [DOCS] ACTION: No trade.
+2026-08-07 16:11:40,236 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.29
+2026-08-07 16:11:40,236 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 16:11:40,267 | [HUBS] trending (ADX 40.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $204.70
+2026-08-07 16:11:40,267 | [HUBS] ACTION: No trade.
+2026-08-07 16:11:40,296 | [LASR] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.64
+2026-08-07 16:11:40,296 | [LASR] ACTION: No trade.
+2026-08-07 16:11:40,324 | [MGNI] choppy/sideways (ADX 10.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.10
+2026-08-07 16:11:40,324 | [MGNI] ACTION: No trade.
+2026-08-07 16:11:40,357 | [MSFT] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.58
+2026-08-07 16:11:40,357 | [MSFT] ACTION: No trade.
+2026-08-07 16:11:40,390 | [MU] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $875.57
+2026-08-07 16:11:40,390 | [MU] ACTION: No trade.
+2026-08-07 16:11:40,423 | [NVDA] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.82
+2026-08-07 16:11:40,423 | [NVDA] ACTION: No trade.
+2026-08-07 16:11:40,450 | [PUBM] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.08
+2026-08-07 16:11:40,450 | [PUBM] ACTION: No trade.
+2026-08-07 16:11:40,477 | [QDEL] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.76
+2026-08-07 16:11:40,477 | [QDEL] ACTION: No trade.
+2026-08-07 16:11:40,504 | [QNST] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.61
+2026-08-07 16:11:40,504 | [QNST] ACTION: No trade.
+2026-08-07 16:11:40,532 | [SEZL] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.58
+2026-08-07 16:11:40,532 | [SEZL] ACTION: No trade.
+2026-08-07 16:11:40,564 | [SNDK] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1231.31
+2026-08-07 16:11:40,564 | [SNDK] ACTION: No trade.
+2026-08-07 16:11:40,595 | [TEAM] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.50
+2026-08-07 16:11:40,595 | [TEAM] ACTION: No trade.
+2026-08-07 16:11:40,627 | [TTD] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.01
+2026-08-07 16:11:40,628 | [TTD] ACTION: No trade.
+2026-08-07 16:11:40,656 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $252.89
+2026-08-07 16:11:40,656 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 16:26:40,928 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 16:26:47,142 | [AMD] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $483.25
+2026-08-07 16:26:47,142 | [AMD] ACTION: No trade.
+2026-08-07 16:26:47,171 | [CHYM] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.83
+2026-08-07 16:26:47,171 | [CHYM] ACTION: No trade.
+2026-08-07 16:26:47,200 | [CRSR] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.97
+2026-08-07 16:26:47,200 | [CRSR] ACTION: No trade.
+2026-08-07 16:26:47,229 | [DOCS] trending (ADX 37.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.58
+2026-08-07 16:26:47,229 | [DOCS] ACTION: No trade.
+2026-08-07 16:26:47,256 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.35
+2026-08-07 16:26:47,256 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 16:26:47,287 | [HUBS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 2.0 | Last price: $204.90
+2026-08-07 16:26:47,287 | [HUBS] ACTION: No trade.
+2026-08-07 16:26:47,316 | [LASR] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.77
+2026-08-07 16:26:47,316 | [LASR] ACTION: No trade.
+2026-08-07 16:26:47,344 | [MGNI] choppy/sideways (ADX 10.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.94
+2026-08-07 16:26:47,344 | [MGNI] ACTION: No trade.
+2026-08-07 16:26:47,377 | [MSFT] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.43
+2026-08-07 16:26:47,377 | [MSFT] ACTION: No trade.
+2026-08-07 16:26:47,409 | [MU] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $875.56
+2026-08-07 16:26:47,409 | [MU] ACTION: No trade.
+2026-08-07 16:26:47,442 | [NVDA] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.60
+2026-08-07 16:26:47,442 | [NVDA] ACTION: No trade.
+2026-08-07 16:26:47,470 | [PUBM] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.13
+2026-08-07 16:26:47,470 | [PUBM] ACTION: No trade.
+2026-08-07 16:26:47,497 | [QDEL] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.82
+2026-08-07 16:26:47,498 | [QDEL] ACTION: No trade.
+2026-08-07 16:26:47,525 | [QNST] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.64
+2026-08-07 16:26:47,525 | [QNST] ACTION: No trade.
+2026-08-07 16:26:47,553 | [SEZL] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.91
+2026-08-07 16:26:47,553 | [SEZL] ACTION: No trade.
+2026-08-07 16:26:47,587 | [SNDK] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1235.28
+2026-08-07 16:26:47,587 | [SNDK] ACTION: No trade.
+2026-08-07 16:26:47,619 | [TEAM] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $144.29
+2026-08-07 16:26:47,619 | [TEAM] ACTION: No trade.
+2026-08-07 16:26:47,652 | [TTD] trending (ADX 41.8) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.95
+2026-08-07 16:26:47,652 | [TTD] ACTION: No trade.
+2026-08-07 16:26:47,681 | [TWLO] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $252.50
+2026-08-07 16:26:47,681 | [TWLO] ACTION: No trade.
+2026-08-07 16:41:47,820 | SCANNER: refreshing watchlist...
+2026-08-07 16:41:48,457 | SCANNER: excluded 16 leveraged/inverse ETF(s) from 29 candidate(s).
+2026-08-07 16:41:50,099 | SCANNER: candidate QNST -- +36.5% today, $20.78, liquid, 1 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate SEZL -- -35.9% today, $114.41, liquid, 7 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate PUBM -- +35.9% today, $18.32, liquid, 6 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate DOCS -- +34.8% today, $27.84, liquid, 5 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate TEAM -- +32.7% today, $146.16, liquid, 11 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate CRSR -- +31.5% today, $13.95, liquid, 2 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate TWLO -- +30.9% today, $252.96, liquid, 10 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate FIGS -- +28.5% today, $14.44, liquid, 4 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate LASR -- -22.7% today, $58.34, liquid, 2 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate QDEL -- -22.6% today, $12.64, liquid, 3 recent news item(s)
+2026-08-07 16:41:50,099 | SCANNER: candidate TTD -- -20.7% today, $14.02, liquid, 15 recent news item(s)
+2026-08-07 16:42:47,344 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 16:42:47,347 | SCANNER: new watchlist -> QNST, SEZL, PUBM, DOCS, TEAM, CRSR, TWLO, FIGS, LASR, QDEL, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 16:42:47,432 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 16:42:50,551 | [AMD] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.36
+2026-08-07 16:42:50,552 | [AMD] ACTION: No trade.
+2026-08-07 16:42:50,580 | [CHYM] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.53
+2026-08-07 16:42:50,580 | [CHYM] ACTION: No trade.
+2026-08-07 16:42:50,610 | [CRSR] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.89
+2026-08-07 16:42:50,610 | [CRSR] ACTION: No trade.
+2026-08-07 16:42:50,638 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $28.11
+2026-08-07 16:42:50,638 | [DOCS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 16:42:50,665 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.46
+2026-08-07 16:42:50,665 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 16:42:50,696 | [HUBS] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $205.88
+2026-08-07 16:42:50,696 | [HUBS] ACTION: No trade.
+2026-08-07 16:42:50,725 | [LASR] trending (ADX 45.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.43
+2026-08-07 16:42:50,725 | [LASR] ACTION: No trade.
+2026-08-07 16:42:50,753 | [MGNI] choppy/sideways (ADX 10.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.98
+2026-08-07 16:42:50,753 | [MGNI] ACTION: No trade.
+2026-08-07 16:42:50,808 | [MSFT] trending (ADX 41.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.00
+2026-08-07 16:42:50,808 | [MSFT] ACTION: No trade.
+2026-08-07 16:42:50,841 | [MU] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $864.93
+2026-08-07 16:42:50,841 | [MU] ACTION: No trade.
+2026-08-07 16:42:50,873 | [NVDA] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.46
+2026-08-07 16:42:50,874 | [NVDA] ACTION: No trade.
+2026-08-07 16:42:50,901 | [PUBM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.22
+2026-08-07 16:42:50,901 | [PUBM] ACTION: No trade.
+2026-08-07 16:42:50,929 | [QDEL] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.65
+2026-08-07 16:42:50,929 | [QDEL] ACTION: No trade.
+2026-08-07 16:42:50,955 | [QNST] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.84
+2026-08-07 16:42:50,955 | [QNST] ACTION: No trade.
+2026-08-07 16:42:50,983 | [SEZL] trending (ADX 43.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $115.72
+2026-08-07 16:42:50,983 | [SEZL] ACTION: No trade.
+2026-08-07 16:42:51,016 | [SNDK] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1224.89
+2026-08-07 16:42:51,016 | [SNDK] ACTION: No trade.
+2026-08-07 16:42:51,048 | [TEAM] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.94
+2026-08-07 16:42:51,048 | [TEAM] ACTION: No trade.
+2026-08-07 16:42:51,081 | [TTD] trending (ADX 39.9) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.93
+2026-08-07 16:42:51,081 | [TTD] ACTION: No trade.
+2026-08-07 16:42:51,109 | [TWLO] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $253.47
+2026-08-07 16:42:51,109 | [TWLO] ACTION: No trade.
+2026-08-07 16:57:51,707 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 16:57:55,553 | [AMD] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.29
+2026-08-07 16:57:55,554 | [AMD] ACTION: No trade.
+2026-08-07 16:57:55,582 | [CHYM] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.46
+2026-08-07 16:57:55,582 | [CHYM] ACTION: No trade.
+2026-08-07 16:57:55,611 | [CRSR] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.97
+2026-08-07 16:57:55,612 | [CRSR] ACTION: No trade.
+2026-08-07 16:57:55,640 | [DOCS] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.91
+2026-08-07 16:57:55,640 | [DOCS] ACTION: No trade.
+2026-08-07 16:57:55,668 | [FIGS] trending (ADX 36.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.37
+2026-08-07 16:57:55,668 | [FIGS] ACTION: No trade.
+2026-08-07 16:57:55,698 | [HUBS] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $207.92
+2026-08-07 16:57:55,698 | [HUBS] ACTION: No trade.
+2026-08-07 16:57:55,727 | [LASR] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.29
+2026-08-07 16:57:55,727 | [LASR] ACTION: No trade.
+2026-08-07 16:57:55,755 | [MGNI] choppy/sideways (ADX 9.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.14
+2026-08-07 16:57:55,755 | [MGNI] ACTION: No trade.
+2026-08-07 16:57:55,788 | [MSFT] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $502.36
+2026-08-07 16:57:55,788 | [MSFT] ACTION: No trade.
+2026-08-07 16:57:55,821 | [MU] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $867.75
+2026-08-07 16:57:55,821 | [MU] ACTION: No trade.
+2026-08-07 16:57:55,853 | [NVDA] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.41
+2026-08-07 16:57:55,853 | [NVDA] ACTION: No trade.
+2026-08-07 16:57:55,880 | [PUBM] choppy/sideways (ADX 21.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.26
+2026-08-07 16:57:55,880 | [PUBM] ACTION: No trade.
+2026-08-07 16:57:55,908 | [QDEL] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.66
+2026-08-07 16:57:55,908 | [QDEL] ACTION: No trade.
+2026-08-07 16:57:55,934 | [QNST] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.77
+2026-08-07 16:57:55,935 | [QNST] ACTION: No trade.
+2026-08-07 16:57:55,962 | [SEZL] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $114.56
+2026-08-07 16:57:55,963 | [SEZL] ACTION: No trade.
+2026-08-07 16:57:55,995 | [SNDK] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1229.26
+2026-08-07 16:57:55,995 | [SNDK] ACTION: No trade.
+2026-08-07 16:57:56,026 | [TEAM] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $146.47
+2026-08-07 16:57:56,026 | [TEAM] ACTION: No trade.
+2026-08-07 16:57:56,058 | [TTD] trending (ADX 38.4) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.06
+2026-08-07 16:57:56,058 | [TTD] ACTION: No trade.
+2026-08-07 16:57:56,087 | [TWLO] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $252.86
+2026-08-07 16:57:56,087 | [TWLO] ACTION: No trade.
+2026-08-07 17:12:56,467 | SCANNER: refreshing watchlist...
+2026-08-07 17:12:56,710 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 28 candidate(s).
+2026-08-07 17:12:58,096 | SCANNER: candidate ATGL -- +44.9% today, $10.87, liquid, 1 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate QNST -- +37.2% today, $20.89, liquid, 2 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate SEZL -- -35.1% today, $115.80, liquid, 5 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate DOCS -- +32.7% today, $27.41, liquid, 5 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate PUBM -- +32.6% today, $17.87, liquid, 6 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate TEAM -- +31.7% today, $145.09, liquid, 12 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate TWLO -- +30.5% today, $252.20, liquid, 11 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate CRSR -- +29.6% today, $13.75, liquid, 2 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate FIGS -- +26.3% today, $14.19, liquid, 3 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate LASR -- -24.4% today, $57.00, liquid, 3 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate QDEL -- -22.8% today, $12.61, liquid, 3 recent news item(s)
+2026-08-07 17:12:58,097 | SCANNER: candidate TTD -- -22.0% today, $13.78, liquid, 14 recent news item(s)
+2026-08-07 17:13:52,354 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 17:13:52,357 | SCANNER: new watchlist -> ATGL, QNST, SEZL, DOCS, PUBM, TEAM, TWLO, CRSR, FIGS, LASR, QDEL, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 17:13:52,456 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 20 symbols: AMD, ATGL, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 17:13:56,223 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-07 17:13:56,257 | [AMD] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.78
+2026-08-07 17:13:56,257 | [AMD] ACTION: No trade.
+2026-08-07 17:13:56,304 | [ATGL] warming up (23/26 bars collected) | Signal: HOLD | Shares held: 0.0 | Last price: $12.33
+2026-08-07 17:13:56,305 | [ATGL] ACTION: No trade.
+2026-08-07 17:13:56,333 | [CHYM] trending (ADX 30.6) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.45
+2026-08-07 17:13:56,333 | [CHYM] ACTION: No trade.
+2026-08-07 17:13:56,362 | [CRSR] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.05
+2026-08-07 17:13:56,362 | [CRSR] ACTION: No trade.
+2026-08-07 17:13:56,390 | [DOCS] trending (ADX 30.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.27
+2026-08-07 17:13:56,390 | [DOCS] ACTION: No trade.
+2026-08-07 17:13:56,417 | [FIGS] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.29
+2026-08-07 17:13:56,418 | [FIGS] ACTION: No trade.
+2026-08-07 17:13:56,448 | [HUBS] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $207.94
+2026-08-07 17:13:56,448 | [HUBS] ACTION: No trade.
+2026-08-07 17:13:56,476 | [LASR] trending (ADX 46.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.84
+2026-08-07 17:13:56,476 | [LASR] ACTION: No trade.
+2026-08-07 17:13:56,504 | [MGNI] choppy/sideways (ADX 9.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.19
+2026-08-07 17:13:56,504 | [MGNI] ACTION: No trade.
+2026-08-07 17:13:56,536 | [MSFT] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.83
+2026-08-07 17:13:56,536 | [MSFT] ACTION: No trade.
+2026-08-07 17:13:56,569 | [MU] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $870.71
+2026-08-07 17:13:56,569 | [MU] ACTION: No trade.
+2026-08-07 17:13:56,601 | [NVDA] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.90
+2026-08-07 17:13:56,601 | [NVDA] ACTION: No trade.
+2026-08-07 17:13:56,629 | [PUBM] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.99
+2026-08-07 17:13:56,629 | [PUBM] ACTION: No trade.
+2026-08-07 17:13:56,657 | [QDEL] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.51
+2026-08-07 17:13:56,657 | [QDEL] ACTION: No trade.
+2026-08-07 17:13:56,685 | [QNST] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.64
+2026-08-07 17:13:56,685 | [QNST] ACTION: No trade.
+2026-08-07 17:13:56,712 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $115.28
+2026-08-07 17:13:56,713 | [SEZL] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:13:56,746 | [SNDK] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1231.22
+2026-08-07 17:13:56,746 | [SNDK] ACTION: No trade.
+2026-08-07 17:13:56,777 | [TEAM] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.13
+2026-08-07 17:13:56,777 | [TEAM] ACTION: No trade.
+2026-08-07 17:13:56,810 | [TTD] trending (ADX 37.3) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.93
+2026-08-07 17:13:56,810 | [TTD] ACTION: No trade.
+2026-08-07 17:13:56,838 | [TWLO] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $252.42
+2026-08-07 17:13:56,838 | [TWLO] ACTION: No trade.
+2026-08-07 17:28:57,062 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 20 symbols: AMD, ATGL, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 17:29:01,756 | [AMD] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.10
+2026-08-07 17:29:01,756 | [AMD] ACTION: No trade.
+2026-08-07 17:29:01,776 | [ATGL] warming up (24/26 bars collected) | Signal: HOLD | Shares held: 0.0 | Last price: $11.32
+2026-08-07 17:29:01,776 | [ATGL] ACTION: No trade.
+2026-08-07 17:29:01,804 | [CHYM] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.34
+2026-08-07 17:29:01,804 | [CHYM] ACTION: No trade.
+2026-08-07 17:29:01,834 | [CRSR] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.80
+2026-08-07 17:29:01,834 | [CRSR] ACTION: No trade.
+2026-08-07 17:29:01,862 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $27.43
+2026-08-07 17:29:01,862 | [DOCS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 17:29:01,889 | [FIGS] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.24
+2026-08-07 17:29:01,889 | [FIGS] ACTION: No trade.
+2026-08-07 17:29:01,920 | [HUBS] trending (ADX 37.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $208.31
+2026-08-07 17:29:01,920 | [HUBS] ACTION: No trade.
+2026-08-07 17:29:01,949 | [LASR] trending (ADX 47.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.70
+2026-08-07 17:29:01,949 | [LASR] ACTION: No trade.
+2026-08-07 17:29:01,977 | [MGNI] choppy/sideways (ADX 8.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.18
+2026-08-07 17:29:01,977 | [MGNI] ACTION: No trade.
+2026-08-07 17:29:02,010 | [MSFT] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.60
+2026-08-07 17:29:02,010 | [MSFT] ACTION: No trade.
+2026-08-07 17:29:02,043 | [MU] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $867.78
+2026-08-07 17:29:02,043 | [MU] ACTION: No trade.
+2026-08-07 17:29:02,075 | [NVDA] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.81
+2026-08-07 17:29:02,076 | [NVDA] ACTION: No trade.
+2026-08-07 17:29:02,103 | [PUBM] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.85
+2026-08-07 17:29:02,103 | [PUBM] ACTION: No trade.
+2026-08-07 17:29:02,131 | [QDEL] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.60
+2026-08-07 17:29:02,131 | [QDEL] ACTION: No trade.
+2026-08-07 17:29:02,158 | [QNST] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.93
+2026-08-07 17:29:02,158 | [QNST] ACTION: No trade.
+2026-08-07 17:29:02,185 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $116.11
+2026-08-07 17:29:02,186 | [SEZL] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:29:02,218 | [SNDK] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1226.34
+2026-08-07 17:29:02,218 | [SNDK] ACTION: No trade.
+2026-08-07 17:29:02,250 | [TEAM] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.40
+2026-08-07 17:29:02,250 | [TEAM] ACTION: No trade.
+2026-08-07 17:29:02,283 | [TTD] trending (ADX 35.4) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.78
+2026-08-07 17:29:02,283 | [TTD] ACTION: No trade.
+2026-08-07 17:29:02,311 | [TWLO] trending (ADX 53.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $252.57
+2026-08-07 17:29:02,312 | [TWLO] ACTION: No trade.
+2026-08-07 17:37:55,601 | Duration window finished.
+2026-08-07 12:37:30,451 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 12:37:30,451 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 12:37:30,451 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 12:37:30,451 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 12:37:30,451 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 12:37:30,451 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 12:37:30,451 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 12:37:30,451 | Position sizing: flat $500 per trade
+2026-08-07 12:37:30,451 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 12:37:30,452 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 12:37:30,452 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 12:37:30,452 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 12:37:30,452 | Loaded saved watchlist from previous run: ONT, BLLN, AEVA, UTI, INSM, WPP, CHYM, PAYC, TRIP, HUBS, MU, NVDA, MSFT, SNDK, AMD, AAPL
+2026-08-07 12:37:30,452 | Restored daily risk state from previous run: day 2026-08-06, breaker tripped: False
+2026-08-07 12:37:30,452 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 12:37:30,690 | Market is closed. Next open: 2026-08-07 15:30:00 CEST (your local time) -- in 0.9 hours.
+2026-08-07 13:30:05,459 | Daily loss circuit breaker: tracking from starting equity $99,648.26 (limit -3%).
+2026-08-07 13:30:05,459 | SCANNER: refreshing watchlist...
+2026-08-07 13:30:07,523 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-08-07 13:30:09,707 | SCANNER: candidate BLLN -- -38.9% today, $91.65, liquid, 1 recent news item(s)
+2026-08-07 13:30:09,707 | SCANNER: candidate UTI -- -34.2% today, $27.87, liquid, 2 recent news item(s)
+2026-08-07 13:30:09,707 | SCANNER: candidate INSM -- +33.9% today, $132.55, liquid, 5 recent news item(s)
+2026-08-07 13:30:09,707 | SCANNER: candidate ONT -- -33.3% today, $15.09, liquid, 3 recent news item(s)
+2026-08-07 13:30:09,707 | SCANNER: candidate PAYS -- +29.3% today, $12.40, liquid, 2 recent news item(s)
+2026-08-07 13:30:09,707 | SCANNER: candidate AEVA -- +28.8% today, $25.26, liquid, 2 recent news item(s)
+2026-08-07 13:30:09,708 | SCANNER: candidate SITM -- +26.6% today, $687.50, liquid, 5 recent news item(s)
+2026-08-07 13:30:09,708 | SCANNER: candidate WPP -- +25.9% today, $25.95, liquid, 2 recent news item(s)
+2026-08-07 13:30:09,708 | SCANNER: candidate TRIP -- -25.5% today, $10.42, liquid, 2 recent news item(s)
+2026-08-07 13:30:09,846 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-07 13:31:55,246 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AAPL, AMD
+2026-08-07 13:31:55,248 | SCANNER: new watchlist -> BLLN, UTI, INSM, ONT, PAYS, AEVA, SITM, WPP, TRIP, MU, NVDA, MSFT, SNDK, AAPL, AMD
+2026-08-07 13:31:55,879 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AAPL, AEVA, AMD, BLLN, CHYM, HUBS, INSM, MGNI, MSFT, MU, NVDA, ONT, PAYS, PRAX, SITM, SNDK, TRIP, UTI, WPP
+2026-08-07 13:32:01,759 | Multi-timeframe filter: refreshed daily trend for 19 symbol(s).
+2026-08-07 13:32:02,103 | [AAPL] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.45
+2026-08-07 13:32:02,103 | [AAPL] ACTION: No trade.
+2026-08-07 13:32:02,213 | [AEVA] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.00
+2026-08-07 13:32:02,213 | [AEVA] ACTION: No trade.
+2026-08-07 13:32:02,251 | [AMD] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.00
+2026-08-07 13:32:02,251 | [AMD] ACTION: No trade.
+2026-08-07 13:32:02,356 | [BLLN] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $93.03
+2026-08-07 13:32:02,356 | [BLLN] ACTION: No trade.
+2026-08-07 13:32:02,390 | [CHYM] choppy/sideways (ADX 14.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.39
+2026-08-07 13:32:02,390 | [CHYM] ACTION: No trade.
+2026-08-07 13:32:02,427 | [HUBS] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $208.80
+2026-08-07 13:32:02,427 | [HUBS] ACTION: No trade.
+2026-08-07 13:32:02,533 | [INSM] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $134.09
+2026-08-07 13:32:02,533 | [INSM] ACTION: No trade.
+2026-08-07 13:32:02,567 | [MGNI] choppy/sideways (ADX 17.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.73
+2026-08-07 13:32:02,568 | [MGNI] ACTION: No trade.
+2026-08-07 13:32:02,606 | [MSFT] choppy/sideways (ADX 18.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 1.0 | Last price: $499.13
+2026-08-07 13:32:02,606 | [MSFT] ACTION: No trade.
+2026-08-07 13:32:02,647 | [MU] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $903.68
+2026-08-07 13:32:02,647 | [MU] ACTION: No trade.
+2026-08-07 13:32:02,691 | [NVDA] choppy/sideways (ADX 22.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.60
+2026-08-07 13:32:02,692 | [NVDA] ACTION: No trade.
+2026-08-07 13:32:02,796 | [ONT] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.90
+2026-08-07 13:32:02,796 | [ONT] ACTION: No trade.
+2026-08-07 13:32:02,901 | [PAYS] choppy/sideways (ADX 22.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.59
+2026-08-07 13:32:02,901 | [PAYS] ACTION: No trade.
+2026-08-07 13:32:02,933 | [PRAX] trending (ADX 36.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $369.63
+2026-08-07 13:32:02,933 | [PRAX] ACTION: No trade.
+2026-08-07 13:32:03,042 | [SITM] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $707.00
+2026-08-07 13:32:03,042 | [SITM] ACTION: No trade.
+2026-08-07 13:32:03,153 | [SNDK] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1308.92
+2026-08-07 13:32:03,154 | [SNDK] ACTION: No trade.
+2026-08-07 13:32:03,258 | [TRIP] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.62
+2026-08-07 13:32:03,258 | [TRIP] ACTION: No trade.
+2026-08-07 13:32:03,362 | [UTI] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.03
+2026-08-07 13:32:03,362 | [UTI] ACTION: No trade.
+2026-08-07 13:32:03,467 | [WPP] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.23
+2026-08-07 13:32:03,467 | [WPP] ACTION: No trade.
+2026-08-07 13:47:04,016 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AAPL, AEVA, AMD, BLLN, CHYM, HUBS, INSM, MGNI, MSFT, MU, NVDA, ONT, PAYS, PRAX, SITM, SNDK, TRIP, UTI, WPP
+2026-08-07 13:47:11,505 | [AAPL] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.78
+2026-08-07 13:47:11,505 | [AAPL] ACTION: No trade.
+2026-08-07 13:47:11,540 | [AEVA] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.40
+2026-08-07 13:47:11,540 | [AEVA] ACTION: No trade.
+2026-08-07 13:47:11,578 | [AMD] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $490.12
+2026-08-07 13:47:11,578 | [AMD] ACTION: No trade.
+2026-08-07 13:47:11,611 | [BLLN] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $91.56
+2026-08-07 13:47:11,611 | [BLLN] ACTION: No trade.
+2026-08-07 13:47:11,644 | [CHYM] choppy/sideways (ADX 16.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.19
+2026-08-07 13:47:11,644 | [CHYM] ACTION: No trade.
+2026-08-07 13:47:11,680 | [HUBS] trending (ADX 31.3) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $204.13
+2026-08-07 13:47:11,680 | [HUBS] ACTION: No trade.
+2026-08-07 13:47:11,713 | [INSM] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $131.47
+2026-08-07 13:47:11,713 | [INSM] ACTION: No trade.
+2026-08-07 13:47:11,746 | [MGNI] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.82
+2026-08-07 13:47:11,746 | [MGNI] ACTION: No trade.
+2026-08-07 13:47:11,784 | [MSFT] choppy/sideways (ADX 21.9) -> mean-reversion strategy | Signal: SELL | Shares held: 1.0 | Last price: $503.48
+2026-08-07 13:47:11,964 | [MSFT] ACTION: SELL - closing position (order id 6394bb92-cee3-45ea-b66a-a390a6990fcc)
+2026-08-07 13:47:12,003 | [MU] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $886.50
+2026-08-07 13:47:12,003 | [MU] ACTION: No trade.
+2026-08-07 13:47:12,041 | [NVDA] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.28
+2026-08-07 13:47:12,041 | [NVDA] ACTION: No trade.
+2026-08-07 13:47:12,073 | [ONT] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.34
+2026-08-07 13:47:12,073 | [ONT] ACTION: No trade.
+2026-08-07 13:47:12,105 | [PAYS] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.52
+2026-08-07 13:47:12,105 | [PAYS] ACTION: No trade.
+2026-08-07 13:47:12,136 | [PRAX] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $374.45
+2026-08-07 13:47:12,136 | [PRAX] ACTION: No trade.
+2026-08-07 13:47:12,169 | [SITM] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $760.92
+2026-08-07 13:47:12,170 | [SITM] ACTION: No trade.
+2026-08-07 13:47:12,207 | [SNDK] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1264.68
+2026-08-07 13:47:12,207 | [SNDK] ACTION: No trade.
+2026-08-07 13:47:12,240 | [TRIP] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.63
+2026-08-07 13:47:12,240 | [TRIP] ACTION: No trade.
+2026-08-07 13:47:12,271 | [UTI] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.91
+2026-08-07 13:47:12,271 | [UTI] ACTION: No trade.
+2026-08-07 13:47:12,304 | [WPP] choppy/sideways (ADX 14.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.16
+2026-08-07 13:47:12,304 | [WPP] ACTION: No trade.
+2026-08-07 14:02:12,830 | SCANNER: refreshing watchlist...
+2026-08-07 14:02:15,276 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 30 candidate(s).
+2026-08-07 14:02:17,289 | SCANNER: candidate FIGS -- +35.9% today, $15.27, liquid, 5 recent news item(s)
+2026-08-07 14:02:17,289 | SCANNER: candidate CRSR -- +34.2% today, $14.24, liquid, 3 recent news item(s)
+2026-08-07 14:02:17,289 | SCANNER: candidate SEZL -- -31.7% today, $121.93, liquid, 7 recent news item(s)
+2026-08-07 14:02:17,289 | SCANNER: candidate TEAM -- +30.4% today, $143.62, liquid, 12 recent news item(s)
+2026-08-07 14:02:17,289 | SCANNER: candidate QDEL -- -29.2% today, $11.55, liquid, 5 recent news item(s)
+2026-08-07 14:02:17,290 | SCANNER: candidate TWLO -- +23.7% today, $238.91, liquid, 9 recent news item(s)
+2026-08-07 14:02:17,290 | SCANNER: candidate PSIX -- +21.6% today, $40.15, liquid, 4 recent news item(s)
+2026-08-07 14:02:17,290 | SCANNER: candidate TTD -- -21.2% today, $13.91, liquid, 15 recent news item(s)
+2026-08-07 14:02:17,290 | SCANNER: candidate LASR -- -18.9% today, $61.15, liquid, 5 recent news item(s)
+2026-08-07 14:03:48,017 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 14:03:48,020 | SCANNER: new watchlist -> FIGS, CRSR, SEZL, TEAM, QDEL, TWLO, PSIX, TTD, LASR, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 14:03:48,348 | [MSFT] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-07 14:03:48,592 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PRAX, PSIX, QDEL, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 14:03:54,193 | Multi-timeframe filter: refreshed daily trend for 9 symbol(s).
+2026-08-07 14:03:54,233 | [AMD] trending (ADX 25.2) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $486.87
+2026-08-07 14:03:54,233 | [AMD] ACTION: No trade.
+2026-08-07 14:03:54,267 | [CHYM] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.47
+2026-08-07 14:03:54,267 | [CHYM] ACTION: No trade.
+2026-08-07 14:03:54,376 | [CRSR] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $14.49
+2026-08-07 14:03:54,449 | [CRSR] ACTION: No trade -- too volatile to protect. ATR is $0.44 (3.1% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-07 14:03:54,559 | [FIGS] trending (ADX 51.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.32
+2026-08-07 14:03:54,559 | [FIGS] ACTION: No trade.
+2026-08-07 14:03:54,596 | [HUBS] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $205.07
+2026-08-07 14:03:54,597 | [HUBS] ACTION: No trade.
+2026-08-07 14:03:54,706 | [LASR] trending (ADX 39.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.83
+2026-08-07 14:03:54,706 | [LASR] ACTION: No trade.
+2026-08-07 14:03:54,740 | [MGNI] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.05
+2026-08-07 14:03:54,740 | [MGNI] ACTION: No trade.
+2026-08-07 14:03:54,779 | [MSFT] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.77
+2026-08-07 14:03:54,779 | [MSFT] ACTION: No trade.
+2026-08-07 14:03:54,818 | [MU] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $865.81
+2026-08-07 14:03:54,818 | [MU] ACTION: No trade.
+2026-08-07 14:03:54,858 | [NVDA] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.50
+2026-08-07 14:03:54,858 | [NVDA] ACTION: No trade.
+2026-08-07 14:03:54,890 | [PRAX] trending (ADX 34.4) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $368.14
+2026-08-07 14:03:54,890 | [PRAX] ACTION: No trade.
+2026-08-07 14:03:54,997 | [PSIX] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.41
+2026-08-07 14:03:54,998 | [PSIX] ACTION: No trade.
+2026-08-07 14:03:55,104 | [QDEL] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.54
+2026-08-07 14:03:55,104 | [QDEL] ACTION: No trade.
+2026-08-07 14:03:55,212 | [SEZL] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $122.31
+2026-08-07 14:03:55,213 | [SEZL] ACTION: No trade.
+2026-08-07 14:03:55,253 | [SNDK] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1221.03
+2026-08-07 14:03:55,253 | [SNDK] ACTION: No trade.
+2026-08-07 14:03:55,367 | [TEAM] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $144.31
+2026-08-07 14:03:55,367 | [TEAM] ACTION: No trade.
+2026-08-07 14:03:55,479 | [TTD] trending (ADX 52.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.65
+2026-08-07 14:03:55,479 | [TTD] ACTION: No trade.
+2026-08-07 14:03:55,590 | [TWLO] trending (ADX 56.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $237.51
+2026-08-07 14:03:55,590 | [TWLO] ACTION: No trade.
+2026-08-07 14:18:56,138 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PRAX, PSIX, QDEL, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 14:18:59,717 | [AMD] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.92
+2026-08-07 14:18:59,717 | [AMD] ACTION: No trade.
+2026-08-07 14:18:59,750 | [CHYM] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.11
+2026-08-07 14:18:59,750 | [CHYM] ACTION: No trade.
+2026-08-07 14:18:59,805 | [CRSR] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.99
+2026-08-07 14:18:59,805 | [CRSR] ACTION: No trade.
+2026-08-07 14:18:59,839 | [FIGS] trending (ADX 50.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.13
+2026-08-07 14:18:59,840 | [FIGS] ACTION: No trade.
+2026-08-07 14:18:59,876 | [HUBS] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.22
+2026-08-07 14:18:59,876 | [HUBS] ACTION: No trade.
+2026-08-07 14:18:59,910 | [LASR] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.27
+2026-08-07 14:18:59,910 | [LASR] ACTION: No trade.
+2026-08-07 14:18:59,943 | [MGNI] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 20.0 | Last price: $25.33
+2026-08-07 14:18:59,943 | [MGNI] ACTION: No trade.
+2026-08-07 14:18:59,981 | [MSFT] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.76
+2026-08-07 14:18:59,981 | [MSFT] ACTION: No trade.
+2026-08-07 14:19:00,019 | [MU] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $850.17
+2026-08-07 14:19:00,019 | [MU] ACTION: No trade.
+2026-08-07 14:19:00,058 | [NVDA] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.41
+2026-08-07 14:19:00,058 | [NVDA] ACTION: No trade.
+2026-08-07 14:19:00,089 | [PRAX] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $362.51
+2026-08-07 14:19:00,089 | [PRAX] ACTION: No trade.
+2026-08-07 14:19:00,124 | [PSIX] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.06
+2026-08-07 14:19:00,124 | [PSIX] ACTION: No trade.
+2026-08-07 14:19:00,157 | [QDEL] trending (ADX 40.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.16
+2026-08-07 14:19:00,157 | [QDEL] ACTION: No trade.
+2026-08-07 14:19:00,191 | [SEZL] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $120.25
+2026-08-07 14:19:00,191 | [SEZL] ACTION: No trade.
+2026-08-07 14:19:00,229 | [SNDK] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1191.57
+2026-08-07 14:19:00,229 | [SNDK] ACTION: No trade.
+2026-08-07 14:19:00,266 | [TEAM] trending (ADX 31.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $149.20
+2026-08-07 14:19:00,266 | [TEAM] ACTION: No trade.
+2026-08-07 14:19:00,304 | [TTD] trending (ADX 51.3) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $14.13
+2026-08-07 14:19:00,393 | [TTD] Buying 35 share(s) (~$496, flat $ sizing) | stop-loss $13.46 | take-profit $15.59 (fixed %)
+2026-08-07 14:19:01,708 | [TTD] ACTION: BUY (order id 53a9e66f-ed6d-4bb9-a078-a9800141ca8f, strategy: trend_following)
+2026-08-07 14:19:01,743 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $241.50
+2026-08-07 14:19:01,743 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 14:34:02,354 | SCANNER: refreshing watchlist...
+2026-08-07 14:34:03,159 | SCANNER: excluded 19 leveraged/inverse ETF(s) from 32 candidate(s).
+2026-08-07 14:34:04,271 | SCANNER: candidate FIGS -- +36.5% today, $15.34, liquid, 6 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate TEAM -- +35.6% today, $149.38, liquid, 13 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate QNST -- +35.2% today, $20.58, liquid, 3 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate CRSR -- +33.9% today, $14.21, liquid, 3 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate SEZL -- -33.8% today, $118.21, liquid, 7 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate TWLO -- +26.6% today, $244.49, liquid, 10 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate QDEL -- -23.7% today, $12.45, liquid, 5 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate LASR -- -22.0% today, $58.85, liquid, 4 recent news item(s)
+2026-08-07 14:34:04,271 | SCANNER: candidate TTD -- -19.6% today, $14.21, liquid, 15 recent news item(s)
+2026-08-07 14:35:35,818 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 14:35:35,821 | SCANNER: new watchlist -> FIGS, TEAM, QNST, CRSR, SEZL, TWLO, QDEL, LASR, TTD, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 14:35:36,310 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PRAX, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 14:35:43,520 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-07 14:35:43,558 | [AMD] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $482.86
+2026-08-07 14:35:43,558 | [AMD] ACTION: No trade.
+2026-08-07 14:35:43,592 | [CHYM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.51
+2026-08-07 14:35:43,592 | [CHYM] ACTION: No trade.
+2026-08-07 14:35:43,626 | [CRSR] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.16
+2026-08-07 14:35:43,626 | [CRSR] ACTION: No trade.
+2026-08-07 14:35:43,659 | [FIGS] trending (ADX 51.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.35
+2026-08-07 14:35:43,659 | [FIGS] ACTION: No trade.
+2026-08-07 14:35:43,696 | [HUBS] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.82
+2026-08-07 14:35:43,696 | [HUBS] ACTION: No trade.
+2026-08-07 14:35:43,730 | [LASR] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.51
+2026-08-07 14:35:43,730 | [LASR] ACTION: No trade.
+2026-08-07 14:35:43,763 | [MGNI] choppy/sideways (ADX 13.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.33
+2026-08-07 14:35:43,763 | [MGNI] ACTION: No trade.
+2026-08-07 14:35:43,802 | [MSFT] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $504.10
+2026-08-07 14:35:43,802 | [MSFT] ACTION: No trade.
+2026-08-07 14:35:43,841 | [MU] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $861.76
+2026-08-07 14:35:43,841 | [MU] ACTION: No trade.
+2026-08-07 14:35:43,880 | [NVDA] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.35
+2026-08-07 14:35:43,880 | [NVDA] ACTION: No trade.
+2026-08-07 14:35:43,911 | [PRAX] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $360.26
+2026-08-07 14:35:43,911 | [PRAX] ACTION: No trade.
+2026-08-07 14:35:43,944 | [QDEL] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-08-07 14:35:43,944 | [QDEL] ACTION: No trade.
+2026-08-07 14:35:44,069 | [QNST] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $20.55
+2026-08-07 14:35:44,069 | [QNST] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 14:35:44,103 | [SEZL] trending (ADX 32.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.76
+2026-08-07 14:35:44,103 | [SEZL] ACTION: No trade.
+2026-08-07 14:35:44,141 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1208.00
+2026-08-07 14:35:44,141 | [SNDK] ACTION: No trade (at MAX_CONCURRENT_POSITIONS=5 cap).
+2026-08-07 14:35:44,178 | [TEAM] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $149.07
+2026-08-07 14:35:44,178 | [TEAM] ACTION: No trade.
+2026-08-07 14:35:44,216 | [TTD] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.08
+2026-08-07 14:35:44,216 | [TTD] ACTION: No trade.
+2026-08-07 14:35:44,249 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $242.88
+2026-08-07 14:35:44,249 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 14:50:44,799 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PRAX, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 14:50:50,886 | [AMD] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $476.89
+2026-08-07 14:50:50,886 | [AMD] ACTION: No trade.
+2026-08-07 14:50:50,921 | [CHYM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.70
+2026-08-07 14:50:50,921 | [CHYM] ACTION: No trade.
+2026-08-07 14:50:50,956 | [CRSR] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.07
+2026-08-07 14:50:50,956 | [CRSR] ACTION: No trade.
+2026-08-07 14:50:50,990 | [FIGS] trending (ADX 50.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.93
+2026-08-07 14:50:50,990 | [FIGS] ACTION: No trade.
+2026-08-07 14:50:51,027 | [HUBS] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 2.0 | Last price: $213.95
+2026-08-07 14:50:51,027 | [HUBS] ACTION: No trade.
+2026-08-07 14:50:51,063 | [LASR] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.88
+2026-08-07 14:50:51,063 | [LASR] ACTION: No trade.
+2026-08-07 14:50:51,097 | [MGNI] choppy/sideways (ADX 12.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.23
+2026-08-07 14:50:51,097 | [MGNI] ACTION: No trade.
+2026-08-07 14:50:51,136 | [MSFT] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $502.83
+2026-08-07 14:50:51,136 | [MSFT] ACTION: No trade.
+2026-08-07 14:50:51,175 | [MU] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $854.89
+2026-08-07 14:50:51,175 | [MU] ACTION: No trade.
+2026-08-07 14:50:51,214 | [NVDA] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.81
+2026-08-07 14:50:51,214 | [NVDA] ACTION: No trade.
+2026-08-07 14:50:51,245 | [PRAX] trending (ADX 28.9) -> trend-following strategy | Signal: SELL | Shares held: 1.0 | Last price: $357.46
+2026-08-07 14:50:51,395 | [PRAX] ACTION: SELL - closing position (order id 2d35ca4a-95e6-4dfa-895f-6ccca10a64f1)
+2026-08-07 14:50:51,429 | [QDEL] trending (ADX 38.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.28
+2026-08-07 14:50:51,430 | [QDEL] ACTION: No trade.
+2026-08-07 14:50:51,462 | [QNST] trending (ADX 36.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.52
+2026-08-07 14:50:51,462 | [QNST] ACTION: No trade.
+2026-08-07 14:50:51,496 | [SEZL] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.72
+2026-08-07 14:50:51,496 | [SEZL] ACTION: No trade.
+2026-08-07 14:50:51,534 | [SNDK] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1195.65
+2026-08-07 14:50:51,534 | [SNDK] ACTION: No trade.
+2026-08-07 14:50:51,571 | [TEAM] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $147.75
+2026-08-07 14:50:51,571 | [TEAM] ACTION: No trade.
+2026-08-07 14:50:51,609 | [TTD] trending (ADX 49.7) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $14.29
+2026-08-07 14:50:51,609 | [TTD] ACTION: No trade.
+2026-08-07 14:50:51,643 | [TWLO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $248.36
+2026-08-07 14:50:51,643 | [TWLO] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 15:05:51,961 | SCANNER: refreshing watchlist...
+2026-08-07 15:05:52,336 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 24 candidate(s).
+2026-08-07 15:05:55,089 | SCANNER: candidate DOCS -- +46.9% today, $30.34, liquid, 5 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate QNST -- +35.2% today, $20.58, liquid, 2 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate CRSR -- +34.4% today, $14.26, liquid, 3 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate SEZL -- -34.4% today, $117.20, liquid, 7 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate PUBM -- +33.8% today, $18.04, liquid, 6 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate FIGS -- +31.1% today, $14.73, liquid, 5 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate TEAM -- +30.9% today, $144.20, liquid, 13 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate TWLO -- +28.6% today, $248.35, liquid, 8 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate QDEL -- -24.8% today, $12.28, liquid, 4 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate LASR -- -21.9% today, $58.92, liquid, 4 recent news item(s)
+2026-08-07 15:05:55,090 | SCANNER: candidate TTD -- -19.5% today, $14.23, liquid, 15 recent news item(s)
+2026-08-07 15:07:18,009 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:07:18,012 | SCANNER: new watchlist -> DOCS, QNST, CRSR, SEZL, PUBM, FIGS, TEAM, TWLO, QDEL, LASR, TTD, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 15:07:18,326 | [PRAX] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-07 15:07:18,580 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 15:07:24,665 | Multi-timeframe filter: refreshed daily trend for 2 symbol(s).
+2026-08-07 15:07:24,705 | [AMD] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.89
+2026-08-07 15:07:24,705 | [AMD] ACTION: No trade.
+2026-08-07 15:07:24,740 | [CHYM] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 16.0 | Last price: $30.95
+2026-08-07 15:07:24,740 | [CHYM] ACTION: No trade.
+2026-08-07 15:07:24,776 | [CRSR] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.19
+2026-08-07 15:07:24,776 | [CRSR] ACTION: No trade.
+2026-08-07 15:07:24,883 | [DOCS] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.40
+2026-08-07 15:07:24,884 | [DOCS] ACTION: No trade.
+2026-08-07 15:07:24,917 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.95
+2026-08-07 15:07:24,917 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 15:07:24,954 | [HUBS] trending (ADX 42.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $211.65
+2026-08-07 15:07:24,954 | [HUBS] ACTION: No trade.
+2026-08-07 15:07:24,988 | [LASR] trending (ADX 45.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.57
+2026-08-07 15:07:24,988 | [LASR] ACTION: No trade.
+2026-08-07 15:07:25,022 | [MGNI] choppy/sideways (ADX 12.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.02
+2026-08-07 15:07:25,022 | [MGNI] ACTION: No trade.
+2026-08-07 15:07:25,061 | [MSFT] trending (ADX 36.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $503.69
+2026-08-07 15:07:25,061 | [MSFT] ACTION: No trade.
+2026-08-07 15:07:25,100 | [MU] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $857.48
+2026-08-07 15:07:25,173 | [MU] Computed position size is 0 shares at $866.28 (flat $ sizing) -- skipping this trade.
+2026-08-07 15:07:25,213 | [NVDA] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.18
+2026-08-07 15:07:25,213 | [NVDA] ACTION: No trade.
+2026-08-07 15:07:25,320 | [PUBM] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.19
+2026-08-07 15:07:25,320 | [PUBM] ACTION: No trade.
+2026-08-07 15:07:25,354 | [QDEL] trending (ADX 38.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.25
+2026-08-07 15:07:25,354 | [QDEL] ACTION: No trade.
+2026-08-07 15:07:25,387 | [QNST] trending (ADX 36.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.71
+2026-08-07 15:07:25,387 | [QNST] ACTION: No trade.
+2026-08-07 15:07:25,422 | [SEZL] trending (ADX 36.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.10
+2026-08-07 15:07:25,422 | [SEZL] ACTION: No trade.
+2026-08-07 15:07:25,462 | [SNDK] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $1203.00
+2026-08-07 15:07:25,536 | [SNDK] Computed position size is 0 shares at $1218.12 (flat $ sizing) -- skipping this trade.
+2026-08-07 15:07:25,575 | [TEAM] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $144.35
+2026-08-07 15:07:25,575 | [TEAM] ACTION: No trade.
+2026-08-07 15:07:25,615 | [TTD] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 35.0 | Last price: $14.49
+2026-08-07 15:07:25,615 | [TTD] ACTION: No trade.
+2026-08-07 15:07:25,650 | [TWLO] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $247.23
+2026-08-07 15:07:25,650 | [TWLO] ACTION: No trade.
+2026-08-07 15:07:30,452 | Duration window finished.
+2026-08-07 20:00:42,225 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 20:00:42,225 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 20:00:42,225 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 20:00:42,225 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 20:00:42,225 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 20:00:42,225 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 20:00:42,225 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 20:00:42,226 | Position sizing: flat $500 per trade
+2026-08-07 20:00:42,226 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 20:00:42,226 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 20:00:42,226 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 20:00:42,226 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 20:00:42,226 | Loaded saved watchlist from previous run: ATGL, QNST, SEZL, DOCS, PUBM, TEAM, TWLO, CRSR, FIGS, LASR, QDEL, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 20:00:42,226 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 20:00:42,226 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 20:00:42,266 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 65.5 hours.
+2026-08-07 20:00:42,271 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 20:00:42,271 | Duration window finished.
+2026-08-07 17:38:34,923 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 17:38:34,923 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 17:38:34,923 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 17:38:34,923 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 17:38:34,923 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 17:38:34,923 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 17:38:34,923 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 17:38:34,923 | Position sizing: flat $500 per trade
+2026-08-07 17:38:34,923 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 17:38:34,923 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 17:38:34,923 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 17:38:34,923 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 17:38:34,923 | Loaded saved watchlist from previous run: DOCS, QNST, CRSR, SEZL, PUBM, FIGS, TEAM, TWLO, QDEL, LASR, TTD, MU, NVDA, MSFT, SNDK, AMD
+2026-08-07 17:38:34,924 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 17:38:34,924 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 17:38:35,006 | SCANNER: refreshing watchlist...
+2026-08-07 17:38:35,722 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 29 candidate(s).
+2026-08-07 17:38:36,882 | SCANNER: candidate DOCS -- +38.6% today, $28.63, liquid, 7 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate QNST -- +35.5% today, $20.62, liquid, 1 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate SEZL -- -35.1% today, $115.90, liquid, 5 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate TEAM -- +34.8% today, $148.54, liquid, 12 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate PUBM -- +32.9% today, $17.91, liquid, 6 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate TWLO -- +30.7% today, $252.47, liquid, 12 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate CRSR -- +30.7% today, $13.86, liquid, 2 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate FIGS -- +27.8% today, $14.36, liquid, 2 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate LASR -- -25.5% today, $56.20, liquid, 3 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate QDEL -- -23.6% today, $12.46, liquid, 3 recent news item(s)
+2026-08-07 17:38:36,882 | SCANNER: candidate TTD -- -21.8% today, $13.81, liquid, 16 recent news item(s)
+2026-08-07 17:38:36,964 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-07 17:39:23,061 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 17:39:23,063 | SCANNER: new watchlist -> DOCS, QNST, SEZL, TEAM, PUBM, TWLO, CRSR, FIGS, LASR, QDEL, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 17:39:23,130 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 17:39:28,718 | Multi-timeframe filter: refreshed daily trend for 19 symbol(s).
+2026-08-07 17:39:28,833 | [AMD] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.44
+2026-08-07 17:39:28,833 | [AMD] ACTION: No trade.
+2026-08-07 17:39:28,862 | [CHYM] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.30
+2026-08-07 17:39:28,862 | [CHYM] ACTION: No trade.
+2026-08-07 17:39:28,912 | [CRSR] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.89
+2026-08-07 17:39:28,912 | [CRSR] ACTION: No trade.
+2026-08-07 17:39:28,962 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $28.23
+2026-08-07 17:39:28,962 | [DOCS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 17:39:29,010 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.29
+2026-08-07 17:39:29,011 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:39:29,042 | [HUBS] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $208.15
+2026-08-07 17:39:29,042 | [HUBS] ACTION: No trade.
+2026-08-07 17:39:29,092 | [LASR] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.35
+2026-08-07 17:39:29,092 | [LASR] ACTION: No trade.
+2026-08-07 17:39:29,120 | [MGNI] choppy/sideways (ADX 8.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.22
+2026-08-07 17:39:29,121 | [MGNI] ACTION: No trade.
+2026-08-07 17:39:29,154 | [MSFT] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.76
+2026-08-07 17:39:29,154 | [MSFT] ACTION: No trade.
+2026-08-07 17:39:29,187 | [MU] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $873.26
+2026-08-07 17:39:29,187 | [MU] ACTION: No trade.
+2026-08-07 17:39:29,220 | [NVDA] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.82
+2026-08-07 17:39:29,221 | [NVDA] ACTION: No trade.
+2026-08-07 17:39:29,269 | [PUBM] choppy/sideways (ADX 18.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.92
+2026-08-07 17:39:29,269 | [PUBM] ACTION: No trade.
+2026-08-07 17:39:29,317 | [QDEL] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.63
+2026-08-07 17:39:29,317 | [QDEL] ACTION: No trade.
+2026-08-07 17:39:29,364 | [QNST] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.67
+2026-08-07 17:39:29,364 | [QNST] ACTION: No trade.
+2026-08-07 17:39:29,413 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $116.15
+2026-08-07 17:39:29,413 | [SEZL] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:39:29,467 | [SNDK] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1233.44
+2026-08-07 17:39:29,467 | [SNDK] ACTION: No trade.
+2026-08-07 17:39:29,518 | [TEAM] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $147.42
+2026-08-07 17:39:29,518 | [TEAM] ACTION: No trade.
+2026-08-07 17:39:29,550 | [TTD] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.84
+2026-08-07 17:39:29,551 | [TTD] ACTION: No trade.
+2026-08-07 17:39:29,599 | [TWLO] trending (ADX 53.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $252.04
+2026-08-07 17:39:29,599 | [TWLO] ACTION: No trade.
+2026-08-07 17:54:29,784 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 17:54:32,727 | [AMD] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.37
+2026-08-07 17:54:32,727 | [AMD] ACTION: No trade.
+2026-08-07 17:54:32,756 | [CHYM] stretched below VWAP and turning back up | Signal: BUY | Shares held: 16.0 | Last price: $29.45
+2026-08-07 17:54:32,756 | [CHYM] ACTION: No trade.
+2026-08-07 17:54:32,786 | [CRSR] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.76
+2026-08-07 17:54:32,786 | [CRSR] ACTION: No trade.
+2026-08-07 17:54:32,814 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $29.05
+2026-08-07 17:54:32,814 | [DOCS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 17:54:32,842 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.35
+2026-08-07 17:54:32,842 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:54:32,873 | [HUBS] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.48
+2026-08-07 17:54:32,873 | [HUBS] ACTION: No trade.
+2026-08-07 17:54:32,901 | [LASR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.27
+2026-08-07 17:54:32,902 | [LASR] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 17:54:32,930 | [MGNI] choppy/sideways (ADX 8.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.22
+2026-08-07 17:54:32,930 | [MGNI] ACTION: No trade.
+2026-08-07 17:54:32,962 | [MSFT] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.53
+2026-08-07 17:54:32,963 | [MSFT] ACTION: No trade.
+2026-08-07 17:54:32,996 | [MU] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $871.03
+2026-08-07 17:54:32,996 | [MU] ACTION: No trade.
+2026-08-07 17:54:33,029 | [NVDA] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.06
+2026-08-07 17:54:33,029 | [NVDA] ACTION: No trade.
+2026-08-07 17:54:33,056 | [PUBM] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.95
+2026-08-07 17:54:33,057 | [PUBM] ACTION: No trade.
+2026-08-07 17:54:33,084 | [QDEL] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-08-07 17:54:33,084 | [QDEL] ACTION: No trade.
+2026-08-07 17:54:33,111 | [QNST] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.68
+2026-08-07 17:54:33,111 | [QNST] ACTION: No trade.
+2026-08-07 17:54:33,139 | [SEZL] trending (ADX 46.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.11
+2026-08-07 17:54:33,139 | [SEZL] ACTION: No trade.
+2026-08-07 17:54:33,172 | [SNDK] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1231.68
+2026-08-07 17:54:33,172 | [SNDK] ACTION: No trade.
+2026-08-07 17:54:33,204 | [TEAM] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.87
+2026-08-07 17:54:33,204 | [TEAM] ACTION: No trade.
+2026-08-07 17:54:33,236 | [TTD] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.84
+2026-08-07 17:54:33,236 | [TTD] ACTION: No trade.
+2026-08-07 17:54:33,266 | [TWLO] trending (ADX 52.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $251.62
+2026-08-07 17:54:33,266 | [TWLO] ACTION: No trade.
+2026-08-07 18:09:33,452 | SCANNER: refreshing watchlist...
+2026-08-07 18:09:33,561 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-07 18:09:35,457 | SCANNER: candidate DOCS -- +40.6% today, $29.05, liquid, 7 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate TEAM -- +37.2% today, $151.20, liquid, 12 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate QNST -- +37.1% today, $20.86, liquid, 1 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate SEZL -- -35.2% today, $115.68, liquid, 5 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate CRSR -- +32.6% today, $14.07, liquid, 2 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate PUBM -- +32.5% today, $17.86, liquid, 6 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate TWLO -- +28.8% today, $248.86, liquid, 12 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate FIGS -- +27.2% today, $14.30, liquid, 2 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate QDEL -- -24.8% today, $12.28, liquid, 3 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate LASR -- -24.1% today, $57.24, liquid, 3 recent news item(s)
+2026-08-07 18:09:35,457 | SCANNER: candidate TTD -- -21.6% today, $13.85, liquid, 16 recent news item(s)
+2026-08-07 18:10:54,303 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 18:10:54,305 | SCANNER: new watchlist -> DOCS, TEAM, QNST, SEZL, CRSR, PUBM, TWLO, FIGS, QDEL, LASR, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 18:10:54,439 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 18:11:02,649 | [AMD] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.06
+2026-08-07 18:11:02,649 | [AMD] ACTION: No trade.
+2026-08-07 18:11:02,677 | [CHYM] stretched below VWAP and turning back up | Signal: BUY | Shares held: 16.0 | Last price: $29.51
+2026-08-07 18:11:02,677 | [CHYM] ACTION: No trade.
+2026-08-07 18:11:02,708 | [CRSR] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.90
+2026-08-07 18:11:02,708 | [CRSR] ACTION: No trade.
+2026-08-07 18:11:02,737 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $29.29
+2026-08-07 18:11:02,737 | [DOCS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-07 18:11:02,764 | [FIGS] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.31
+2026-08-07 18:11:02,765 | [FIGS] ACTION: No trade.
+2026-08-07 18:11:02,795 | [HUBS] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.47
+2026-08-07 18:11:02,795 | [HUBS] ACTION: No trade.
+2026-08-07 18:11:02,824 | [LASR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.30
+2026-08-07 18:11:02,824 | [LASR] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 18:11:02,852 | [MGNI] choppy/sideways (ADX 8.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.16
+2026-08-07 18:11:02,852 | [MGNI] ACTION: No trade.
+2026-08-07 18:11:02,885 | [MSFT] trending (ADX 30.9) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $500.35
+2026-08-07 18:11:02,885 | [MSFT] ACTION: No trade.
+2026-08-07 18:11:02,918 | [MU] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $871.64
+2026-08-07 18:11:02,918 | [MU] ACTION: No trade.
+2026-08-07 18:11:02,950 | [NVDA] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.09
+2026-08-07 18:11:02,950 | [NVDA] ACTION: No trade.
+2026-08-07 18:11:02,977 | [PUBM] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.86
+2026-08-07 18:11:02,978 | [PUBM] ACTION: No trade.
+2026-08-07 18:11:03,005 | [QDEL] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.30
+2026-08-07 18:11:03,005 | [QDEL] ACTION: No trade.
+2026-08-07 18:11:03,032 | [QNST] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.67
+2026-08-07 18:11:03,032 | [QNST] ACTION: No trade.
+2026-08-07 18:11:03,060 | [SEZL] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $115.85
+2026-08-07 18:11:03,060 | [SEZL] ACTION: No trade.
+2026-08-07 18:11:03,093 | [SNDK] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1227.69
+2026-08-07 18:11:03,093 | [SNDK] ACTION: No trade.
+2026-08-07 18:11:03,124 | [TEAM] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.71
+2026-08-07 18:11:03,124 | [TEAM] ACTION: No trade.
+2026-08-07 18:11:03,156 | [TTD] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.81
+2026-08-07 18:11:03,156 | [TTD] ACTION: No trade.
+2026-08-07 18:11:03,185 | [TWLO] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $250.25
+2026-08-07 18:11:03,185 | [TWLO] ACTION: No trade.
+2026-08-07 18:26:03,631 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD, TWLO
+2026-08-07 18:26:09,450 | [AMD] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.41
+2026-08-07 18:26:09,450 | [AMD] ACTION: No trade.
+2026-08-07 18:26:09,479 | [CHYM] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.41
+2026-08-07 18:26:09,479 | [CHYM] ACTION: No trade.
+2026-08-07 18:26:09,508 | [CRSR] choppy/sideways (ADX 24.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.10
+2026-08-07 18:26:09,508 | [CRSR] ACTION: No trade.
+2026-08-07 18:26:09,536 | [DOCS] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.81
+2026-08-07 18:26:09,536 | [DOCS] ACTION: No trade.
+2026-08-07 18:26:09,564 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.32
+2026-08-07 18:26:09,564 | [FIGS] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-07 18:26:09,595 | [HUBS] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $211.77
+2026-08-07 18:26:09,595 | [HUBS] ACTION: No trade.
+2026-08-07 18:26:09,623 | [LASR] trending (ADX 47.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.10
+2026-08-07 18:26:09,624 | [LASR] ACTION: No trade.
+2026-08-07 18:26:09,652 | [MGNI] choppy/sideways (ADX 8.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.17
+2026-08-07 18:26:09,652 | [MGNI] ACTION: No trade.
+2026-08-07 18:26:09,685 | [MSFT] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.15
+2026-08-07 18:26:09,686 | [MSFT] ACTION: No trade.
+2026-08-07 18:26:09,718 | [MU] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $870.02
+2026-08-07 18:26:09,718 | [MU] ACTION: No trade.
+2026-08-07 18:26:09,751 | [NVDA] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.95
+2026-08-07 18:26:09,751 | [NVDA] ACTION: No trade.
+2026-08-07 18:26:09,778 | [PUBM] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.07
+2026-08-07 18:26:09,779 | [PUBM] ACTION: No trade.
+2026-08-07 18:26:09,806 | [QDEL] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.31
+2026-08-07 18:26:09,806 | [QDEL] ACTION: No trade.
+2026-08-07 18:26:09,833 | [QNST] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.94
+2026-08-07 18:26:09,833 | [QNST] ACTION: No trade.
+2026-08-07 18:26:09,861 | [SEZL] trending (ADX 47.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $115.67
+2026-08-07 18:26:09,861 | [SEZL] ACTION: No trade.
+2026-08-07 18:26:09,893 | [SNDK] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1224.47
+2026-08-07 18:26:09,893 | [SNDK] ACTION: No trade.
+2026-08-07 18:26:09,924 | [TEAM] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $151.25
+2026-08-07 18:26:09,924 | [TEAM] ACTION: No trade.
+2026-08-07 18:26:09,957 | [TTD] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.90
+2026-08-07 18:26:09,957 | [TTD] ACTION: No trade.
+2026-08-07 18:26:09,985 | [TWLO] trending (ADX 48.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $248.36
+2026-08-07 18:26:09,985 | [TWLO] ACTION: No trade.
+2026-08-07 18:41:10,089 | SCANNER: refreshing watchlist...
+2026-08-07 18:41:10,212 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-08-07 18:41:11,367 | SCANNER: candidate DOCS -- +38.2% today, $28.56, liquid, 9 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate TEAM -- +37.3% today, $151.22, liquid, 15 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate SEZL -- -35.7% today, $114.77, liquid, 7 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate QNST -- +35.6% today, $20.64, liquid, 2 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate PUBM -- +33.8% today, $18.03, liquid, 7 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate CRSR -- +33.2% today, $14.13, liquid, 3 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate FIGS -- +28.0% today, $14.38, liquid, 4 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate QDEL -- -24.3% today, $12.35, liquid, 4 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate LASR -- -22.8% today, $58.26, liquid, 3 recent news item(s)
+2026-08-07 18:41:11,367 | SCANNER: candidate TTD -- -21.7% today, $13.84, liquid, 18 recent news item(s)
+2026-08-07 18:42:26,834 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 18:42:26,837 | SCANNER: new watchlist -> DOCS, TEAM, SEZL, QNST, PUBM, CRSR, FIGS, QDEL, LASR, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 18:42:26,951 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD (within 90 min of close -- not enough runway left today for a new position)
+2026-08-07 18:42:30,701 | [AMD] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.11
+2026-08-07 18:42:30,701 | [AMD] ACTION: No trade.
+2026-08-07 18:42:30,730 | [CHYM] stretched below VWAP and turning back up | Signal: BUY | Shares held: 16.0 | Last price: $29.48
+2026-08-07 18:42:30,730 | [CHYM] ACTION: No trade.
+2026-08-07 18:42:30,760 | [CRSR] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.20
+2026-08-07 18:42:30,760 | [CRSR] ACTION: No trade.
+2026-08-07 18:42:30,788 | [DOCS] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.62
+2026-08-07 18:42:30,789 | [DOCS] ACTION: No trade.
+2026-08-07 18:42:30,816 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.36
+2026-08-07 18:42:30,816 | [FIGS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:42:30,848 | [HUBS] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $211.47
+2026-08-07 18:42:30,848 | [HUBS] ACTION: No trade.
+2026-08-07 18:42:30,876 | [LASR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.76
+2026-08-07 18:42:30,877 | [LASR] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:42:30,904 | [MGNI] choppy/sideways (ADX 8.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.31
+2026-08-07 18:42:30,905 | [MGNI] ACTION: No trade.
+2026-08-07 18:42:30,937 | [MSFT] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.69
+2026-08-07 18:42:30,937 | [MSFT] ACTION: No trade.
+2026-08-07 18:42:30,970 | [MU] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $868.57
+2026-08-07 18:42:30,970 | [MU] ACTION: No trade.
+2026-08-07 18:42:31,003 | [NVDA] choppy/sideways (ADX 18.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.94
+2026-08-07 18:42:31,003 | [NVDA] ACTION: No trade.
+2026-08-07 18:42:31,031 | [PUBM] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.12
+2026-08-07 18:42:31,031 | [PUBM] ACTION: No trade.
+2026-08-07 18:42:31,058 | [QDEL] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.32
+2026-08-07 18:42:31,058 | [QDEL] ACTION: No trade.
+2026-08-07 18:42:31,086 | [QNST] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.77
+2026-08-07 18:42:31,086 | [QNST] ACTION: No trade.
+2026-08-07 18:42:31,115 | [SEZL] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $114.99
+2026-08-07 18:42:31,115 | [SEZL] ACTION: No trade.
+2026-08-07 18:42:31,147 | [SNDK] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1224.36
+2026-08-07 18:42:31,147 | [SNDK] ACTION: No trade.
+2026-08-07 18:42:31,178 | [TEAM] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $152.10
+2026-08-07 18:42:31,179 | [TEAM] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:42:31,211 | [TTD] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.90
+2026-08-07 18:42:31,211 | [TTD] ACTION: No trade.
+2026-08-07 18:57:31,361 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD (within 90 min of close -- not enough runway left today for a new position)
+2026-08-07 18:57:34,554 | [AMD] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.34
+2026-08-07 18:57:34,554 | [AMD] ACTION: No trade.
+2026-08-07 18:57:34,582 | [CHYM] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.29
+2026-08-07 18:57:34,583 | [CHYM] ACTION: No trade.
+2026-08-07 18:57:34,612 | [CRSR] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.12
+2026-08-07 18:57:34,612 | [CRSR] ACTION: No trade.
+2026-08-07 18:57:34,662 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $28.67
+2026-08-07 18:57:34,662 | [DOCS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:57:34,690 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.38
+2026-08-07 18:57:34,690 | [FIGS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:57:34,720 | [HUBS] trending (ADX 40.6) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.76
+2026-08-07 18:57:34,720 | [HUBS] ACTION: No trade.
+2026-08-07 18:57:34,749 | [LASR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.86
+2026-08-07 18:57:34,749 | [LASR] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:57:34,777 | [MGNI] choppy/sideways (ADX 8.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.14
+2026-08-07 18:57:34,777 | [MGNI] ACTION: No trade.
+2026-08-07 18:57:34,810 | [MSFT] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.95
+2026-08-07 18:57:34,810 | [MSFT] ACTION: No trade.
+2026-08-07 18:57:34,842 | [MU] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $867.90
+2026-08-07 18:57:34,843 | [MU] ACTION: No trade.
+2026-08-07 18:57:34,875 | [NVDA] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.90
+2026-08-07 18:57:34,875 | [NVDA] ACTION: No trade.
+2026-08-07 18:57:34,903 | [PUBM] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.11
+2026-08-07 18:57:34,903 | [PUBM] ACTION: No trade.
+2026-08-07 18:57:34,930 | [QDEL] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.31
+2026-08-07 18:57:34,930 | [QDEL] ACTION: No trade.
+2026-08-07 18:57:34,957 | [QNST] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.65
+2026-08-07 18:57:34,957 | [QNST] ACTION: No trade.
+2026-08-07 18:57:34,985 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $115.46
+2026-08-07 18:57:34,985 | [SEZL] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 18:57:35,018 | [SNDK] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1222.50
+2026-08-07 18:57:35,018 | [SNDK] ACTION: No trade.
+2026-08-07 18:57:35,050 | [TEAM] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $150.60
+2026-08-07 18:57:35,050 | [TEAM] ACTION: No trade.
+2026-08-07 18:57:35,082 | [TTD] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.84
+2026-08-07 18:57:35,082 | [TTD] ACTION: No trade.
+2026-08-07 19:12:35,205 | SCANNER: refreshing watchlist...
+2026-08-07 19:12:35,355 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-07 19:12:35,834 | SCANNER: candidate DOCS -- +38.9% today, $28.70, liquid, 9 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate QNST -- +37.8% today, $20.98, liquid, 2 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate TEAM -- +37.3% today, $151.29, liquid, 15 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate CRSR -- +35.5% today, $14.38, liquid, 3 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate SEZL -- -35.2% today, $115.61, liquid, 7 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate PUBM -- +34.7% today, $18.16, liquid, 7 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate FIGS -- +28.4% today, $14.43, liquid, 4 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate LASR -- -24.2% today, $57.17, liquid, 3 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate QDEL -- -24.2% today, $12.38, liquid, 4 recent news item(s)
+2026-08-07 19:12:35,835 | SCANNER: candidate TTD -- -21.8% today, $13.81, liquid, 18 recent news item(s)
+2026-08-07 19:13:46,776 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 19:13:46,780 | SCANNER: new watchlist -> DOCS, QNST, TEAM, CRSR, SEZL, PUBM, FIGS, LASR, QDEL, TTD, MU, NVDA, SNDK, MSFT, AMD
+2026-08-07 19:13:46,824 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD (within 90 min of close -- not enough runway left today for a new position)
+2026-08-07 19:13:50,622 | [AMD] trending (ADX 37.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.52
+2026-08-07 19:13:50,622 | [AMD] ACTION: No trade.
+2026-08-07 19:13:50,651 | [CHYM] trending (ADX 36.0) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.29
+2026-08-07 19:13:50,651 | [CHYM] ACTION: No trade.
+2026-08-07 19:13:50,681 | [CRSR] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.27
+2026-08-07 19:13:50,682 | [CRSR] ACTION: No trade.
+2026-08-07 19:13:50,711 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $28.67
+2026-08-07 19:13:50,711 | [DOCS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:13:50,739 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.47
+2026-08-07 19:13:50,739 | [FIGS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:13:50,771 | [HUBS] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.41
+2026-08-07 19:13:50,771 | [HUBS] ACTION: No trade.
+2026-08-07 19:13:50,800 | [LASR] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.58
+2026-08-07 19:13:50,800 | [LASR] ACTION: No trade.
+2026-08-07 19:13:50,829 | [MGNI] choppy/sideways (ADX 7.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.99
+2026-08-07 19:13:50,829 | [MGNI] ACTION: No trade.
+2026-08-07 19:13:50,863 | [MSFT] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.92
+2026-08-07 19:13:50,863 | [MSFT] ACTION: No trade.
+2026-08-07 19:13:50,897 | [MU] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $873.83
+2026-08-07 19:13:50,897 | [MU] ACTION: No trade.
+2026-08-07 19:13:50,931 | [NVDA] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.29
+2026-08-07 19:13:50,932 | [NVDA] ACTION: No trade.
+2026-08-07 19:13:50,960 | [PUBM] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.11
+2026-08-07 19:13:50,960 | [PUBM] ACTION: No trade.
+2026-08-07 19:13:50,989 | [QDEL] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.25
+2026-08-07 19:13:50,989 | [QDEL] ACTION: No trade.
+2026-08-07 19:13:51,017 | [QNST] trending (ADX 33.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.64
+2026-08-07 19:13:51,017 | [QNST] ACTION: No trade.
+2026-08-07 19:13:51,047 | [SEZL] trending (ADX 48.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $114.96
+2026-08-07 19:13:51,047 | [SEZL] ACTION: No trade.
+2026-08-07 19:13:51,080 | [SNDK] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1230.35
+2026-08-07 19:13:51,080 | [SNDK] ACTION: No trade.
+2026-08-07 19:13:51,111 | [TEAM] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $150.80
+2026-08-07 19:13:51,111 | [TEAM] ACTION: No trade.
+2026-08-07 19:13:51,144 | [TTD] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.86
+2026-08-07 19:13:51,144 | [TTD] ACTION: No trade.
+2026-08-07 19:28:51,308 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 18 symbols: AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD (within 90 min of close -- not enough runway left today for a new position)
+2026-08-07 19:28:53,571 | [AMD] trending (ADX 36.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.77
+2026-08-07 19:28:53,571 | [AMD] ACTION: No trade.
+2026-08-07 19:28:53,601 | [CHYM] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.19
+2026-08-07 19:28:53,601 | [CHYM] ACTION: No trade.
+2026-08-07 19:28:53,632 | [CRSR] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.38
+2026-08-07 19:28:53,632 | [CRSR] ACTION: No trade.
+2026-08-07 19:28:53,661 | [DOCS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $28.68
+2026-08-07 19:28:53,661 | [DOCS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:28:53,689 | [FIGS] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.47
+2026-08-07 19:28:53,689 | [FIGS] ACTION: No trade.
+2026-08-07 19:28:53,721 | [HUBS] trending (ADX 39.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $210.44
+2026-08-07 19:28:53,721 | [HUBS] ACTION: No trade.
+2026-08-07 19:28:53,751 | [LASR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $57.68
+2026-08-07 19:28:53,751 | [LASR] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:28:53,780 | [MGNI] choppy/sideways (ADX 7.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $25.06
+2026-08-07 19:28:53,780 | [MGNI] ACTION: No trade.
+2026-08-07 19:28:53,813 | [MSFT] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.11
+2026-08-07 19:28:53,813 | [MSFT] ACTION: No trade.
+2026-08-07 19:28:53,848 | [MU] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.22
+2026-08-07 19:28:53,848 | [MU] ACTION: No trade.
+2026-08-07 19:28:53,882 | [NVDA] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.85
+2026-08-07 19:28:53,882 | [NVDA] ACTION: No trade.
+2026-08-07 19:28:53,910 | [PUBM] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.18
+2026-08-07 19:28:53,911 | [PUBM] ACTION: No trade.
+2026-08-07 19:28:53,938 | [QDEL] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-08-07 19:28:53,939 | [QDEL] ACTION: No trade.
+2026-08-07 19:28:53,966 | [QNST] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.94
+2026-08-07 19:28:53,967 | [QNST] ACTION: No trade.
+2026-08-07 19:28:53,997 | [SEZL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $116.25
+2026-08-07 19:28:53,997 | [SEZL] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:28:54,031 | [SNDK] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1226.78
+2026-08-07 19:28:54,031 | [SNDK] ACTION: No trade.
+2026-08-07 19:28:54,063 | [TEAM] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $151.41
+2026-08-07 19:28:54,063 | [TEAM] ACTION: No trade.
+2026-08-07 19:28:54,097 | [TTD] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.79
+2026-08-07 19:28:54,097 | [TTD] ACTION: No trade.
+2026-08-07 19:43:54,201 | SCANNER: refreshing watchlist...
+2026-08-07 19:43:54,416 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-08-07 19:43:55,610 | SCANNER: candidate QNST -- +38.3% today, $21.05, liquid, 5 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate TEAM -- +36.0% today, $149.79, liquid, 21 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate DOCS -- +36.0% today, $28.09, liquid, 13 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate CRSR -- +34.7% today, $14.29, liquid, 6 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate SEZL -- -34.2% today, $117.39, liquid, 8 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate PUBM -- +32.9% today, $17.92, liquid, 10 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate FIGS -- +29.1% today, $14.51, liquid, 5 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate QDEL -- -24.3% today, $12.36, liquid, 6 recent news item(s)
+2026-08-07 19:43:55,611 | SCANNER: candidate LASR -- -24.2% today, $57.16, liquid, 6 recent news item(s)
+2026-08-07 19:44:52,297 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 19:44:52,300 | SCANNER: new watchlist -> QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 19:44:52,347 | Market is open (closes 2026-08-07 22:00:00 CEST your local time). Checking 19 symbols: AAPL, AMD, CHYM, CRSR, DOCS, FIGS, HUBS, LASR, MGNI, MSFT, MU, NVDA, PUBM, QDEL, QNST, SEZL, SNDK, TEAM, TTD (within 90 min of close -- not enough runway left today for a new position)
+2026-08-07 19:44:57,198 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-07 19:44:57,232 | [AAPL] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $313.28
+2026-08-07 19:44:57,232 | [AAPL] ACTION: No trade.
+2026-08-07 19:44:57,266 | [AMD] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.12
+2026-08-07 19:44:57,266 | [AMD] ACTION: No trade.
+2026-08-07 19:44:57,296 | [CHYM] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 16.0 | Last price: $29.03
+2026-08-07 19:44:57,296 | [CHYM] ACTION: No trade.
+2026-08-07 19:44:57,327 | [CRSR] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $14.48
+2026-08-07 19:44:57,327 | [CRSR] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:44:57,356 | [DOCS] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.90
+2026-08-07 19:44:57,356 | [DOCS] ACTION: No trade.
+2026-08-07 19:44:57,385 | [FIGS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.54
+2026-08-07 19:44:57,385 | [FIGS] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-07 19:44:57,417 | [HUBS] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $209.09
+2026-08-07 19:44:57,417 | [HUBS] ACTION: No trade.
+2026-08-07 19:44:57,447 | [LASR] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $57.45
+2026-08-07 19:44:57,447 | [LASR] ACTION: No trade.
+2026-08-07 19:44:57,477 | [MGNI] choppy/sideways (ADX 6.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 20.0 | Last price: $24.99
+2026-08-07 19:44:57,477 | [MGNI] ACTION: No trade.
+2026-08-07 19:44:57,511 | [MSFT] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.18
+2026-08-07 19:44:57,511 | [MSFT] ACTION: No trade.
+2026-08-07 19:44:57,545 | [MU] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $876.24
+2026-08-07 19:44:57,545 | [MU] ACTION: No trade.
+2026-08-07 19:44:57,579 | [NVDA] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.04
+2026-08-07 19:44:57,579 | [NVDA] ACTION: No trade.
+2026-08-07 19:44:57,608 | [PUBM] choppy/sideways (ADX 13.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.98
+2026-08-07 19:44:57,608 | [PUBM] ACTION: No trade.
+2026-08-07 19:44:57,637 | [QDEL] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.35
+2026-08-07 19:44:57,637 | [QDEL] ACTION: No trade.
+2026-08-07 19:44:57,665 | [QNST] trending (ADX 33.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $21.02
+2026-08-07 19:44:57,665 | [QNST] ACTION: No trade.
+2026-08-07 19:44:57,694 | [SEZL] trending (ADX 47.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.20
+2026-08-07 19:44:57,694 | [SEZL] ACTION: No trade.
+2026-08-07 19:44:57,728 | [SNDK] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1224.45
+2026-08-07 19:44:57,728 | [SNDK] ACTION: No trade.
+2026-08-07 19:44:57,761 | [TEAM] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $149.12
+2026-08-07 19:44:57,761 | [TEAM] ACTION: No trade.
+2026-08-07 19:44:57,794 | [TTD] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 35.0 | Last price: $13.81
+2026-08-07 19:44:57,795 | [TTD] ACTION: No trade.
+2026-08-07 19:50:02,108 | Within 10 min of close -- flattening all positions for the day.
+2026-08-07 19:50:02,180 | [CHYM] EOD FLATTEN: close order submitted for 16.0 share(s).
+2026-08-07 19:50:02,220 | [HUBS] EOD FLATTEN: close order submitted for 2.0 share(s).
+2026-08-07 19:50:02,242 | [MGNI] EOD FLATTEN: close order submitted for 20.0 share(s).
+2026-08-07 19:50:02,266 | [TTD] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"35","held_for_orders":"35","message":"insufficient qty available for order (requested: 35, available: 0)","symbol":"TTD"} -- position likely still open, will retry.
+2026-08-07 19:50:02,266 | EOD FLATTEN: one or more positions failed to close -- NOT marking today's flatten as done, will retry next cycle.
+2026-08-07 19:51:04,286 | Within 10 min of close -- flattening all positions for the day.
+2026-08-07 19:51:04,358 | [TTD] EOD FLATTEN: close order submitted for 35.0 share(s).
+2026-08-07 19:51:04,358 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-08-07 20:00:02,028 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 65.5 hours.
+2026-08-07 20:00:02,051 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 20:00:02,051 | Duration window finished.
+2026-08-07 20:10:14,442 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 20:10:14,443 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 20:10:14,443 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 20:10:14,443 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 20:10:14,443 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 20:10:14,443 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 20:10:14,443 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 20:10:14,443 | Position sizing: flat $500 per trade
+2026-08-07 20:10:14,443 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 20:10:14,443 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 20:10:14,443 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 20:10:14,443 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 20:10:14,443 | Loaded saved watchlist from previous run: QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 20:10:14,444 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 20:10:14,444 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 20:10:14,668 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 65.3 hours.
+2026-08-07 20:10:14,733 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 20:10:14,733 | Duration window finished.
+2026-08-07 20:59:26,366 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 20:59:26,366 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 20:59:26,366 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 20:59:26,366 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 20:59:26,366 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 20:59:26,366 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 20:59:26,366 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 20:59:26,366 | Position sizing: flat $500 per trade
+2026-08-07 20:59:26,367 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 20:59:26,367 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 20:59:26,367 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 20:59:26,367 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 20:59:26,367 | Loaded saved watchlist from previous run: QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 20:59:26,367 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 20:59:26,367 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 20:59:26,785 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 64.5 hours.
+2026-08-07 20:59:26,842 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 20:59:26,842 | Duration window finished.
+2026-08-07 21:38:38,973 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 21:38:38,973 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 21:38:38,973 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 21:38:38,973 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 21:38:38,973 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 21:38:38,973 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 21:38:38,973 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 21:38:38,973 | Position sizing: flat $500 per trade
+2026-08-07 21:38:38,973 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 21:38:38,973 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 21:38:38,973 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 21:38:38,974 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 21:38:38,974 | Loaded saved watchlist from previous run: QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 21:38:38,974 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 21:38:38,974 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 21:38:39,071 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 63.9 hours.
+2026-08-07 21:38:39,095 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 21:38:39,095 | Duration window finished.
+2026-08-07 22:16:07,449 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-07 22:16:07,449 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-07 22:16:07,449 | Bar size: 15min | Check interval while market open: 15min
+2026-08-07 22:16:07,449 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-07 22:16:07,449 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-07 22:16:07,449 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-07 22:16:07,449 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-07 22:16:07,449 | Position sizing: flat $500 per trade
+2026-08-07 22:16:07,449 | Position limits: max 5 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-07 22:16:07,449 | Portfolio heat cap: max $200 aggregate $-at-risk across all open positions
+2026-08-07 22:16:07,450 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-07 22:16:07,450 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-07 22:16:07,450 | Loaded saved watchlist from previous run: QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-07 22:16:07,450 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-07 22:16:07,450 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-07 22:16:07,532 | Market is closed. Next open: 2026-08-10 15:30:00 CEST (your local time) -- in 63.2 hours.
+2026-08-07 22:16:07,552 | Market is closed for the day -- exiting early instead of idling.
+2026-08-07 22:16:07,552 | Duration window finished.
