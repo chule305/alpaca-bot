@@ -294,7 +294,20 @@ MIN_NEWS_ITEMS = int(os.getenv("MIN_NEWS_ITEMS", 1))
 # regardless of this number, so widening this doesn't widen the account's
 # real worst-case exposure, it just lets more small, independent bets run
 # at the same time.
-MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 10))
+#
+# Raised again, 10 -> 18, on 2026-08-09 after the user clarified what
+# "use the full $100k" actually meant: not a bigger single trade (already
+# declined, see above), but not being artificially capped from putting
+# the account's capital to work in aggregate either. Checked the real
+# number first rather than guessing: this paper account's buying power is
+# ~$398k (4x margin) against ~$99.6k equity -- capital was never actually
+# the constraint, even at the old cap of 10. MAX_CONCURRENT_POSITIONS was
+# always a deliberate RISK ceiling (concentration/correlation), not a
+# capital one. Raised to 18 to match SCANNER_WATCHLIST_SIZE exactly --
+# the position-count cap can no longer block a trade the scanner itself
+# was willing to watch; the real risk ceiling is MAX_PORTFOLIO_HEAT_USD
+# and MAX_POSITIONS_PER_SECTOR below, not this number.
+MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 18))
 MAX_DAILY_LOSS_PCT = float(os.getenv("MAX_DAILY_LOSS_PCT", 3))
 MAX_PORTFOLIO_RISK_PCT = float(os.getenv("MAX_PORTFOLIO_RISK_PCT", 5.0))
 
@@ -319,19 +332,19 @@ MAX_PORTFOLIO_RISK_PCT = float(os.getenv("MAX_PORTFOLIO_RISK_PCT", 5.0))
 # sizing mode is active, so this composes safely with flat-$ sizing
 # instead of reintroducing a second equity-scaled cap alongside it.
 #
-# Raised 200 -> 250 on 2026-08-09 alongside MAX_CONCURRENT_POSITIONS
-# 5 -> 10, so the heat cap doesn't immediately neutralize the wider
-# position count -- 250 is exactly 10 positions' worth of a $25
-# stop-loss risk each (the default $500 flat size at a 5% stop: 500 *
-# 0.05 = $25/position; the original 200 was 8 positions' worth, already
-# more than the old 5-slot count allowed to matter -- this keeps the same
-# proportion against the new, higher slot count rather than becoming the
-# binding constraint at 8 while MAX_CONCURRENT_POSITIONS allows 10). ON
-# by default (unlike most new toggles here) since it is purely restrictive -- it can only
-# ever block a trade, never add exposure, so there is no downside risk to
-# leaving it active.
+# Raised twice on 2026-08-09, in lockstep with MAX_CONCURRENT_POSITIONS
+# each time (200 -> 250 -> 450), so the heat cap never becomes the
+# binding constraint before the position-count cap does. 450 is exactly
+# 18 positions' worth of a $25 stop-loss risk each (the default $500
+# flat size at a 5% stop: 500 * 0.05 = $25/position), matching
+# MAX_CONCURRENT_POSITIONS=18 1:1. Still a hard, fixed-dollar ceiling
+# either way -- at most 0.45% of this account's equity can be at risk
+# across ALL open positions combined, regardless of how many slots are
+# technically available. ON by default (unlike most new toggles here)
+# since it is purely restrictive -- it can only ever block a trade,
+# never add exposure, so there is no downside risk to leaving it active.
 USE_PORTFOLIO_HEAT_CAP = os.getenv("USE_PORTFOLIO_HEAT_CAP", "true").strip().lower() in ("1", "true", "yes")
-MAX_PORTFOLIO_HEAT_USD = float(os.getenv("MAX_PORTFOLIO_HEAT_USD", 250))
+MAX_PORTFOLIO_HEAT_USD = float(os.getenv("MAX_PORTFOLIO_HEAT_USD", 450))
 
 # Portfolio-CONSTRUCTION control: caps how many currently open positions
 # may share the same sector, checked before a new entry (never affects

@@ -1353,3 +1353,23 @@ open at once (5% of the account) versus $2,500 (2.5%) before -- more of
 the account genuinely at work, without touching per-trade risk or
 reintroducing anything resembling the 2026-08-05 failure shape. 91/91
 tests still pass.
+
+**Same day, follow-up: user clarified "use the full $100k" meant capital
+available in aggregate, not a bigger single trade** (which had already
+been correctly declined above). Checked the real account before changing
+anything rather than guessing: buying power is ~$398k against ~$99.6k
+equity (4x margin) -- capital was never actually the constraint, even at
+the just-raised cap of 10. `MAX_CONCURRENT_POSITIONS` was always a
+deliberate RISK ceiling (concentration/correlation), not a reflection of
+available cash. Raised again, 10 -> 18, to match `SCANNER_WATCHLIST_SIZE`
+exactly, so the position-count cap can no longer block a trade the
+scanner itself was already willing to watch. `MAX_PORTFOLIO_HEAT_USD`
+raised in lockstep, 250 -> 450 (18 positions' worth of the default
+$25/position risk, same 1:1 proportion as before), so the heat cap still
+becomes the real binding constraint before the position count does: at
+most 0.45% of account equity can be at risk across every open position
+combined, regardless of the higher slot count. `TRADE_AMOUNT_USD` left
+untouched at $500 -- the lever used here was exclusively "more small,
+independent positions," never "bigger ones," which is the distinction
+that matters against the 2026-08-05 failure mode. 91/91 tests still
+pass.
