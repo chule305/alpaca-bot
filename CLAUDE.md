@@ -1303,3 +1303,53 @@ exactly (100 vs 99 trades megacap, identical WR/PF/DD -- the 1-trade
 difference is normal day-to-day drift since backtest.py always uses "last
 90 days from today"), confirming the merge introduced no accidental
 default-behavior change or cross-candidate interaction.
+
+## 2026-08-09: "horrible week" traced to 2 already-fixed bugs, not a strategy problem; MAX_CONCURRENT_POSITIONS raised 5->10
+
+User reported the past week was bad, asked to find and remove whatever
+was losing money, and asked to enable using the full paper account per
+trade for higher returns. Reconstructed every round-trip trade since the
+bot went live (2026-07-24) from Alpaca's own order history (not
+trades.csv alone, which still has real gaps -- see the 2026-08-02 entry)
+and analyzed by week/strategy/symbol.
+
+**The numbers told a very different story than "bad week."** Week of
+2026-08-04 to 08-07: net -$198.35 -- but $1,206.55 of that is the single
+UFPT trade from the 2026-08-05 sizing-bug day (already reverted).
+Excluding that one trade, the week was +$1,008.20, led by breakout
+(PLTR +$794.13, AAPL +$208.74). The week of 2026-07-27 to 07-31 (which
+the user believed was better) was actually WORSE in raw dollars
+(-$158.97), root-caused to VEEE/TRAX getting rebought within 2-20
+minutes of stopping out (real timestamps confirmed this, not assumed) --
+exactly the pattern `SYMBOL_COOLDOWN_MINUTES` was built to stop, and
+this happened before that fix was live. Neither week's loss was a live,
+current strategy problem -- both trace to bugs already found and fixed
+in this project's own history. No strategy was cut, because no current
+mistake-maker was found; an honest null result here matters more than
+manufacturing a change to look responsive.
+
+**Declined, with the numbers, using the full account per trade.**
+Recomputed the UFPT trade (-6.1% move) at three sizes: correct $500
+sizing would have cost $30.34; what the sizing bug actually did
+(~$19,900) cost the real $1,206.55; the full $99,613 account on that
+same trade would have cost $6,044.77. Bigger size doesn't create edge,
+it multiplies whatever's already there -- including bugs -- in both
+directions. Explained this directly rather than complying, then offered
+the safe version of "deploy more capital": more $500 positions running
+concurrently (more diversified, same risk per trade) instead of bigger
+individual ones.
+
+**Shipped: `MAX_CONCURRENT_POSITIONS` 5 -> 10, `MAX_PORTFOLIO_HEAT_USD`
+200 -> 250** (user chose this option explicitly). The heat cap is raised
+in lockstep specifically so it doesn't become the binding constraint
+before the new position-count cap does -- 250 is exactly 10 positions'
+worth of the default $500-at-5%-stop ($25/position) risk, matching the
+new slot count 1:1, same math the original 200 used for the old 5-slot
+default (also corrected a pre-existing comment error found while doing
+this -- 200 was actually 8 positions' worth, not the "4" a prior
+session's comment claimed; arithmetic error in documentation only, the
+code itself was never wrong). Net effect: up to $5,000 total notional
+open at once (5% of the account) versus $2,500 (2.5%) before -- more of
+the account genuinely at work, without touching per-trade risk or
+reintroducing anything resembling the 2026-08-05 failure shape. 91/91
+tests still pass.

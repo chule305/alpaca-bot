@@ -267,7 +267,7 @@ largest whole number of shares your budget covers.
 ### Position and account-level limits
 
 ```
-MAX_CONCURRENT_POSITIONS=5
+MAX_CONCURRENT_POSITIONS=10
 MAX_PORTFOLIO_RISK_PCT=5.0
 MAX_DAILY_LOSS_PCT=3
 ```
@@ -275,7 +275,11 @@ MAX_DAILY_LOSS_PCT=3
 `MAX_CONCURRENT_POSITIONS` caps how many positions can be open at once
 — with a broader/faster scanner checking more symbols per cycle, this
 stops several strategies firing in the same cycle from over-
-concentrating capital.
+concentrating capital. Raised 5 → 10 on 2026-08-09 to put more of the
+account to work as MORE $500 positions at once (diversified, same risk
+per trade each), not bigger individual ones — `MAX_PORTFOLIO_HEAT_USD`
+below already bounds the account's real worst-case aggregate exposure
+regardless of this number.
 
 `MAX_PORTFOLIO_RISK_PCT` caps the SUM of $-at-risk across every open
 position at once, read from their real stop-loss orders. This is what
@@ -294,7 +298,7 @@ toggle caps it, in FIXED DOLLARS rather than a percentage, on by default:
 
 ```
 USE_PORTFOLIO_HEAT_CAP=true
-MAX_PORTFOLIO_HEAT_USD=200
+MAX_PORTFOLIO_HEAT_USD=250
 ```
 
 A percentage-of-equity ceiling here would risk repeating the exact
@@ -303,10 +307,11 @@ under one sizing mode and a large real dollar figure under another.
 `MAX_PORTFOLIO_HEAT_USD` sidesteps that by being a plain dollar figure:
 before opening a new position, the bot adds up (entry − stop) × qty
 across every currently open position PLUS what the new one would add, and
-skips the entry if that total would exceed this ceiling. 200 is roughly 4
-positions' worth of a $25 stop-loss risk each — the default $500 flat
-size at a 5% stop (`500 × 5% = $25`/position) — leaving room for a
-handful of concurrent positions without being unlimited. On by default
+skips the entry if that total would exceed this ceiling. 250 is exactly
+10 positions' worth of a $25 stop-loss risk each — the default $500 flat
+size at a 5% stop (`500 × 5% = $25`/position) — matching the
+`MAX_CONCURRENT_POSITIONS=10` cap above so the heat cap doesn't become
+the binding constraint before the position-count cap does. On by default
 (unlike most new toggles in this project) because it's purely
 restrictive: it can only ever block a trade, never add exposure, so
 there's no downside to leaving it active.
