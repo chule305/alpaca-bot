@@ -90,3 +90,4 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-07T19:50:02+00:00,2026-08-07,HUBS,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,
 2026-08-07T19:50:02+00:00,2026-08-07,MGNI,FLATTEN,end_of_day,Flattened before market close,20,,,,,,,,,,,,,,,,,,,,,,
 2026-08-07T19:51:04+00:00,2026-08-07,TTD,FLATTEN,end_of_day,Flattened before market close,35,,,,,,,,,,,,,,,,,,,,,,
+2026-08-10T14:32:29+00:00,2026-08-10,NESR,BUY,breakout,volume-confirmed breakout above 20-bar high,14,34.63,484.82,32.81,37.99,flat $,99613.5,,45,f40232c0-c779-4e9d-80df-cf61e77922ad,breakout-1786372347,34.28,79.5669,32.431,0.728887,32.9976,32.0138,33.4505,309383,77869.6,33.92,34.23,29.42
