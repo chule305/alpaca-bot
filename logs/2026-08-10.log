@@ -1,3 +1,301 @@
+2026-08-10 15:11:30,476 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-10 15:11:30,477 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-10 15:11:30,477 | Bar size: 15min | Check interval while market open: 15min
+2026-08-10 15:11:30,477 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-10 15:11:30,477 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-10 15:11:30,477 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-10 15:11:30,477 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-10 15:11:30,477 | Position sizing: flat $500 per trade
+2026-08-10 15:11:30,477 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-10 15:11:30,477 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-10 15:11:30,477 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-10 15:11:30,477 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-10 15:11:30,477 | Loaded saved watchlist from previous run: QNST, TEAM, DOCS, CRSR, SEZL, PUBM, FIGS, QDEL, LASR, MU, NVDA, SNDK, MSFT, AMD, AAPL
+2026-08-10 15:11:30,478 | Restored daily risk state from previous run: day 2026-08-07, breaker tripped: False
+2026-08-10 15:11:30,478 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-10 15:11:30,710 | Daily loss circuit breaker: tracking from starting equity $99,608.97 (limit -3%).
+2026-08-10 15:11:30,710 | SCANNER: refreshing watchlist...
+2026-08-10 15:11:31,170 | SCANNER: excluded 11 leveraged/inverse ETF(s) from 18 candidate(s).
+2026-08-10 15:11:32,036 | SCANNER: candidate VREX -- +48.4% today, $18.41, liquid, 7 recent news item(s)
+2026-08-10 15:11:32,037 | SCANNER: candidate HZO -- +45.5% today, $51.93, liquid, 3 recent news item(s)
+2026-08-10 15:11:32,037 | SCANNER: candidate SLN -- +34.5% today, $16.07, liquid, 6 recent news item(s)
+2026-08-10 15:11:32,037 | SCANNER: candidate LINC -- -15.9% today, $34.48, liquid, 2 recent news item(s)
+2026-08-10 15:11:32,071 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-10 15:11:53,425 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 15:11:53,427 | SCANNER: new watchlist -> VREX, HZO, SLN, LINC, MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 15:11:53,494 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 15:11:55,035 | Multi-timeframe filter: refreshed daily trend for 11 symbol(s).
+2026-08-10 15:11:55,092 | [AAPL] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $307.12
+2026-08-10 15:11:55,092 | [AAPL] ACTION: No trade.
+2026-08-10 15:11:55,129 | [AMD] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $475.83
+2026-08-10 15:11:55,129 | [AMD] ACTION: No trade.
+2026-08-10 15:11:55,181 | [HZO] trending (ADX 68.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.95
+2026-08-10 15:11:55,181 | [HZO] ACTION: No trade.
+2026-08-10 15:11:55,231 | [LINC] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.95
+2026-08-10 15:11:55,231 | [LINC] ACTION: No trade.
+2026-08-10 15:11:55,268 | [MSFT] trending (ADX 46.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $509.18
+2026-08-10 15:11:55,269 | [MSFT] ACTION: No trade.
+2026-08-10 15:11:55,305 | [MU] trending (ADX 25.7) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $869.12
+2026-08-10 15:11:55,306 | [MU] ACTION: No trade.
+2026-08-10 15:11:55,339 | [NESR] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.43
+2026-08-10 15:11:55,339 | [NESR] ACTION: No trade.
+2026-08-10 15:11:55,376 | [NVDA] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.60
+2026-08-10 15:11:55,376 | [NVDA] ACTION: No trade.
+2026-08-10 15:11:55,428 | [SLN] trending (ADX 30.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.52
+2026-08-10 15:11:55,428 | [SLN] ACTION: No trade.
+2026-08-10 15:11:55,486 | [SNDK] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1236.21
+2026-08-10 15:11:55,486 | [SNDK] ACTION: No trade.
+2026-08-10 15:11:55,535 | [VREX] trending (ADX 68.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.43
+2026-08-10 15:11:55,536 | [VREX] ACTION: No trade.
+2026-08-10 15:26:55,699 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 15:26:56,660 | [AAPL] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.39
+2026-08-10 15:26:56,660 | [AAPL] ACTION: No trade.
+2026-08-10 15:26:56,697 | [AMD] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $476.20
+2026-08-10 15:26:56,697 | [AMD] ACTION: No trade.
+2026-08-10 15:26:56,727 | [HZO] trending (ADX 69.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.93
+2026-08-10 15:26:56,727 | [HZO] ACTION: No trade.
+2026-08-10 15:26:56,758 | [LINC] trending (ADX 27.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.23
+2026-08-10 15:26:56,758 | [LINC] ACTION: No trade.
+2026-08-10 15:26:56,795 | [MSFT] trending (ADX 47.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $508.84
+2026-08-10 15:26:56,795 | [MSFT] ACTION: No trade.
+2026-08-10 15:26:56,832 | [MU] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $871.79
+2026-08-10 15:26:56,832 | [MU] ACTION: No trade.
+2026-08-10 15:26:56,865 | [NESR] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.09
+2026-08-10 15:26:56,865 | [NESR] ACTION: No trade.
+2026-08-10 15:26:56,902 | [NVDA] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.14
+2026-08-10 15:26:56,902 | [NVDA] ACTION: No trade.
+2026-08-10 15:26:56,934 | [SLN] trending (ADX 29.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.23
+2026-08-10 15:26:56,934 | [SLN] ACTION: No trade.
+2026-08-10 15:26:56,992 | [SNDK] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1239.25
+2026-08-10 15:26:56,992 | [SNDK] ACTION: No trade.
+2026-08-10 15:26:57,032 | [VREX] trending (ADX 69.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.41
+2026-08-10 15:26:57,032 | [VREX] ACTION: No trade.
+2026-08-10 15:41:57,403 | SCANNER: refreshing watchlist...
+2026-08-10 15:41:57,570 | SCANNER: excluded 11 leveraged/inverse ETF(s) from 20 candidate(s).
+2026-08-10 15:41:57,980 | SCANNER: candidate VREX -- +48.5% today, $18.43, liquid, 7 recent news item(s)
+2026-08-10 15:41:57,980 | SCANNER: candidate HZO -- +45.7% today, $51.98, liquid, 3 recent news item(s)
+2026-08-10 15:41:57,980 | SCANNER: candidate SLN -- +37.2% today, $16.40, liquid, 6 recent news item(s)
+2026-08-10 15:41:57,980 | SCANNER: candidate FSLY -- +19.5% today, $27.43, liquid, 1 recent news item(s)
+2026-08-10 15:41:57,980 | SCANNER: candidate LINC -- -17.2% today, $33.94, liquid, 2 recent news item(s)
+2026-08-10 15:42:20,612 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 15:42:20,615 | SCANNER: new watchlist -> VREX, HZO, SLN, FSLY, LINC, MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 15:42:20,679 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AMD, FSLY, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 15:42:22,044 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-10 15:42:22,081 | [AAPL] trending (ADX 55.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.56
+2026-08-10 15:42:22,081 | [AAPL] ACTION: No trade.
+2026-08-10 15:42:22,118 | [AMD] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $475.85
+2026-08-10 15:42:22,118 | [AMD] ACTION: No trade.
+2026-08-10 15:42:22,178 | [FSLY] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.41
+2026-08-10 15:42:22,178 | [FSLY] ACTION: No trade.
+2026-08-10 15:42:22,208 | [HZO] trending (ADX 70.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.95
+2026-08-10 15:42:22,208 | [HZO] ACTION: No trade.
+2026-08-10 15:42:22,239 | [LINC] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.02
+2026-08-10 15:42:22,239 | [LINC] ACTION: No trade.
+2026-08-10 15:42:22,276 | [MSFT] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $509.49
+2026-08-10 15:42:22,276 | [MSFT] ACTION: No trade.
+2026-08-10 15:42:22,313 | [MU] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $872.43
+2026-08-10 15:42:22,313 | [MU] ACTION: No trade.
+2026-08-10 15:42:22,347 | [NESR] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $33.64
+2026-08-10 15:42:22,347 | [NESR] ACTION: No trade.
+2026-08-10 15:42:22,384 | [NVDA] trending (ADX 39.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.45
+2026-08-10 15:42:22,384 | [NVDA] ACTION: No trade.
+2026-08-10 15:42:22,416 | [SLN] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.42
+2026-08-10 15:42:22,416 | [SLN] ACTION: No trade.
+2026-08-10 15:42:22,453 | [SNDK] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1238.64
+2026-08-10 15:42:22,453 | [SNDK] ACTION: No trade.
+2026-08-10 15:42:22,483 | [VREX] trending (ADX 71.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.43
+2026-08-10 15:42:22,483 | [VREX] ACTION: No trade.
+2026-08-10 15:57:22,652 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AMD, FSLY, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 15:57:23,609 | [AAPL] trending (ADX 56.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.55
+2026-08-10 15:57:23,610 | [AAPL] ACTION: No trade.
+2026-08-10 15:57:23,646 | [AMD] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.28
+2026-08-10 15:57:23,646 | [AMD] ACTION: No trade.
+2026-08-10 15:57:23,681 | [FSLY] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.38
+2026-08-10 15:57:23,681 | [FSLY] ACTION: No trade.
+2026-08-10 15:57:23,710 | [HZO] trending (ADX 72.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.98
+2026-08-10 15:57:23,710 | [HZO] ACTION: No trade.
+2026-08-10 15:57:23,741 | [LINC] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.97
+2026-08-10 15:57:23,741 | [LINC] ACTION: No trade.
+2026-08-10 15:57:23,777 | [MSFT] trending (ADX 48.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $509.72
+2026-08-10 15:57:23,777 | [MSFT] ACTION: No trade.
+2026-08-10 15:57:23,815 | [MU] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.11
+2026-08-10 15:57:23,815 | [MU] ACTION: No trade.
+2026-08-10 15:57:23,847 | [NESR] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.09
+2026-08-10 15:57:23,847 | [NESR] ACTION: No trade.
+2026-08-10 15:57:23,883 | [NVDA] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.66
+2026-08-10 15:57:23,883 | [NVDA] ACTION: No trade.
+2026-08-10 15:57:23,915 | [SLN] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.15
+2026-08-10 15:57:23,915 | [SLN] ACTION: No trade.
+2026-08-10 15:57:23,951 | [SNDK] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1243.56
+2026-08-10 15:57:23,951 | [SNDK] ACTION: No trade.
+2026-08-10 15:57:23,980 | [VREX] trending (ADX 72.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.43
+2026-08-10 15:57:23,980 | [VREX] ACTION: No trade.
+2026-08-10 16:12:24,079 | SCANNER: refreshing watchlist...
+2026-08-10 16:12:24,242 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-08-10 16:12:25,167 | SCANNER: candidate VREX -- +48.5% today, $18.43, liquid, 7 recent news item(s)
+2026-08-10 16:12:25,167 | SCANNER: candidate HZO -- +45.6% today, $51.94, liquid, 4 recent news item(s)
+2026-08-10 16:12:25,167 | SCANNER: candidate SLN -- +33.0% today, $15.89, liquid, 6 recent news item(s)
+2026-08-10 16:12:25,167 | SCANNER: candidate NESR -- +20.1% today, $34.85, liquid, 2 recent news item(s)
+2026-08-10 16:12:25,168 | SCANNER: candidate LINC -- -17.5% today, $33.81, liquid, 2 recent news item(s)
+2026-08-10 16:12:49,653 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 16:12:49,656 | SCANNER: new watchlist -> VREX, HZO, SLN, NESR, LINC, MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 16:12:49,719 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 16:12:50,586 | [AAPL] trending (ADX 55.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $307.17
+2026-08-10 16:12:50,586 | [AAPL] ACTION: No trade.
+2026-08-10 16:12:50,624 | [AMD] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.34
+2026-08-10 16:12:50,624 | [AMD] ACTION: No trade.
+2026-08-10 16:12:50,655 | [HZO] trending (ADX 72.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.95
+2026-08-10 16:12:50,655 | [HZO] ACTION: No trade.
+2026-08-10 16:12:50,686 | [LINC] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.17
+2026-08-10 16:12:50,686 | [LINC] ACTION: No trade.
+2026-08-10 16:12:50,724 | [MSFT] trending (ADX 49.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.72
+2026-08-10 16:12:50,724 | [MSFT] ACTION: No trade.
+2026-08-10 16:12:50,762 | [MU] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.33
+2026-08-10 16:12:50,762 | [MU] ACTION: No trade.
+2026-08-10 16:12:50,797 | [NESR] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.43
+2026-08-10 16:12:50,797 | [NESR] ACTION: No trade.
+2026-08-10 16:12:50,835 | [NVDA] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.63
+2026-08-10 16:12:50,835 | [NVDA] ACTION: No trade.
+2026-08-10 16:12:50,868 | [SLN] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.17
+2026-08-10 16:12:50,868 | [SLN] ACTION: No trade.
+2026-08-10 16:12:50,906 | [SNDK] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1245.77
+2026-08-10 16:12:50,906 | [SNDK] ACTION: No trade.
+2026-08-10 16:12:50,936 | [VREX] trending (ADX 73.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.41
+2026-08-10 16:12:50,937 | [VREX] ACTION: No trade.
+2026-08-10 16:27:51,097 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 16:27:51,839 | [AAPL] trending (ADX 56.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.55
+2026-08-10 16:27:51,839 | [AAPL] ACTION: No trade.
+2026-08-10 16:27:51,875 | [AMD] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $476.65
+2026-08-10 16:27:51,875 | [AMD] ACTION: No trade.
+2026-08-10 16:27:51,903 | [HZO] trending (ADX 73.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.92
+2026-08-10 16:27:51,904 | [HZO] ACTION: No trade.
+2026-08-10 16:27:51,933 | [LINC] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.33
+2026-08-10 16:27:51,933 | [LINC] ACTION: No trade.
+2026-08-10 16:27:51,969 | [MSFT] trending (ADX 50.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.03
+2026-08-10 16:27:51,969 | [MSFT] ACTION: No trade.
+2026-08-10 16:27:52,005 | [MU] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $876.47
+2026-08-10 16:27:52,005 | [MU] ACTION: No trade.
+2026-08-10 16:27:52,038 | [NESR] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.81
+2026-08-10 16:27:52,038 | [NESR] ACTION: No trade.
+2026-08-10 16:27:52,075 | [NVDA] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.75
+2026-08-10 16:27:52,075 | [NVDA] ACTION: No trade.
+2026-08-10 16:27:52,107 | [SLN] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.82
+2026-08-10 16:27:52,107 | [SLN] ACTION: No trade.
+2026-08-10 16:27:52,143 | [SNDK] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1247.21
+2026-08-10 16:27:52,143 | [SNDK] ACTION: No trade.
+2026-08-10 16:27:52,172 | [VREX] trending (ADX 74.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.42
+2026-08-10 16:27:52,172 | [VREX] ACTION: No trade.
+2026-08-10 16:42:52,271 | SCANNER: refreshing watchlist...
+2026-08-10 16:42:52,833 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 19 candidate(s).
+2026-08-10 16:42:53,598 | SCANNER: candidate VREX -- +48.4% today, $18.41, liquid, 7 recent news item(s)
+2026-08-10 16:42:53,598 | SCANNER: candidate HZO -- +45.6% today, $51.95, liquid, 5 recent news item(s)
+2026-08-10 16:42:53,598 | SCANNER: candidate SLN -- +23.6% today, $14.77, liquid, 6 recent news item(s)
+2026-08-10 16:42:53,598 | SCANNER: candidate NESR -- +21.8% today, $35.35, liquid, 3 recent news item(s)
+2026-08-10 16:42:53,599 | SCANNER: candidate LINC -- -21.8% today, $32.05, liquid, 2 recent news item(s)
+2026-08-10 16:43:12,728 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 16:43:12,731 | SCANNER: new watchlist -> VREX, HZO, SLN, NESR, LINC, MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 16:43:12,817 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 16:43:13,831 | [AAPL] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.54
+2026-08-10 16:43:13,831 | [AAPL] ACTION: No trade.
+2026-08-10 16:43:13,867 | [AMD] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $476.33
+2026-08-10 16:43:13,867 | [AMD] ACTION: No trade.
+2026-08-10 16:43:13,896 | [HZO] trending (ADX 74.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.95
+2026-08-10 16:43:13,897 | [HZO] ACTION: No trade.
+2026-08-10 16:43:13,926 | [LINC] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.10
+2026-08-10 16:43:13,926 | [LINC] ACTION: No trade.
+2026-08-10 16:43:13,961 | [MSFT] trending (ADX 50.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $509.84
+2026-08-10 16:43:13,962 | [MSFT] ACTION: No trade.
+2026-08-10 16:43:13,997 | [MU] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $879.61
+2026-08-10 16:43:13,997 | [MU] ACTION: No trade.
+2026-08-10 16:43:14,030 | [NESR] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $34.50
+2026-08-10 16:43:14,030 | [NESR] ACTION: No trade.
+2026-08-10 16:43:14,066 | [NVDA] trending (ADX 45.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.36
+2026-08-10 16:43:14,066 | [NVDA] ACTION: No trade.
+2026-08-10 16:43:14,099 | [SLN] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.90
+2026-08-10 16:43:14,099 | [SLN] ACTION: No trade.
+2026-08-10 16:43:14,134 | [SNDK] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1252.87
+2026-08-10 16:43:14,134 | [SNDK] ACTION: No trade.
+2026-08-10 16:43:14,163 | [VREX] trending (ADX 75.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.41
+2026-08-10 16:43:14,163 | [VREX] ACTION: No trade.
+2026-08-10 16:58:14,471 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 16:58:15,411 | [AAPL] trending (ADX 57.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.64
+2026-08-10 16:58:15,411 | [AAPL] ACTION: No trade.
+2026-08-10 16:58:15,447 | [AMD] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $474.61
+2026-08-10 16:58:15,447 | [AMD] ACTION: No trade.
+2026-08-10 16:58:15,481 | [HZO] trending (ADX 75.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.96
+2026-08-10 16:58:15,481 | [HZO] ACTION: No trade.
+2026-08-10 16:58:15,510 | [LINC] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.89
+2026-08-10 16:58:15,510 | [LINC] ACTION: No trade.
+2026-08-10 16:58:15,545 | [MSFT] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $508.12
+2026-08-10 16:58:15,545 | [MSFT] ACTION: No trade.
+2026-08-10 16:58:15,581 | [MU] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.15
+2026-08-10 16:58:15,581 | [MU] ACTION: No trade.
+2026-08-10 16:58:15,612 | [NESR] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $35.24
+2026-08-10 16:58:15,612 | [NESR] ACTION: No trade.
+2026-08-10 16:58:15,647 | [NVDA] trending (ADX 47.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $217.16
+2026-08-10 16:58:15,647 | [NVDA] ACTION: No trade.
+2026-08-10 16:58:15,678 | [SLN] choppy/sideways (ADX 22.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.80
+2026-08-10 16:58:15,678 | [SLN] ACTION: No trade.
+2026-08-10 16:58:15,713 | [SNDK] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1253.60
+2026-08-10 16:58:15,713 | [SNDK] ACTION: No trade.
+2026-08-10 16:58:15,741 | [VREX] trending (ADX 76.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.41
+2026-08-10 16:58:15,742 | [VREX] ACTION: No trade.
+2026-08-10 17:13:15,845 | SCANNER: refreshing watchlist...
+2026-08-10 17:13:15,995 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 20 candidate(s).
+2026-08-10 17:13:16,382 | SCANNER: candidate VREX -- +48.6% today, $18.44, liquid, 8 recent news item(s)
+2026-08-10 17:13:16,382 | SCANNER: candidate HZO -- +45.8% today, $52.01, liquid, 6 recent news item(s)
+2026-08-10 17:13:16,382 | SCANNER: candidate SLN -- +30.2% today, $15.56, liquid, 7 recent news item(s)
+2026-08-10 17:13:16,382 | SCANNER: candidate NESR -- +20.6% today, $35.00, liquid, 3 recent news item(s)
+2026-08-10 17:13:16,382 | SCANNER: candidate LINC -- -20.3% today, $32.66, liquid, 3 recent news item(s)
+2026-08-10 17:13:46,906 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 17:13:46,908 | SCANNER: new watchlist -> VREX, HZO, SLN, NESR, LINC, MU, NVDA, SNDK, MSFT, AAPL, AMD
+2026-08-10 17:13:46,979 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 17:13:48,074 | [AAPL] trending (ADX 57.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.27
+2026-08-10 17:13:48,074 | [AAPL] ACTION: No trade.
+2026-08-10 17:13:48,111 | [AMD] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $475.35
+2026-08-10 17:13:48,111 | [AMD] ACTION: No trade.
+2026-08-10 17:13:48,140 | [HZO] trending (ADX 76.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.98
+2026-08-10 17:13:48,141 | [HZO] ACTION: No trade.
+2026-08-10 17:13:48,171 | [LINC] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $32.74
+2026-08-10 17:13:48,171 | [LINC] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-10 17:13:48,207 | [MSFT] trending (ADX 46.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $508.29
+2026-08-10 17:13:48,208 | [MSFT] ACTION: No trade.
+2026-08-10 17:13:48,246 | [MU] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $877.71
+2026-08-10 17:13:48,246 | [MU] ACTION: No trade.
+2026-08-10 17:13:48,279 | [NESR] trending (ADX 38.7) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $35.10
+2026-08-10 17:13:48,280 | [NESR] ACTION: No trade.
+2026-08-10 17:13:48,317 | [NVDA] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $217.61
+2026-08-10 17:13:48,317 | [NVDA] ACTION: No trade.
+2026-08-10 17:13:48,349 | [SLN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.21
+2026-08-10 17:13:48,349 | [SLN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-10 17:13:48,386 | [SNDK] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1252.97
+2026-08-10 17:13:48,386 | [SNDK] ACTION: No trade.
+2026-08-10 17:13:48,415 | [VREX] trending (ADX 77.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.42
+2026-08-10 17:13:48,415 | [VREX] ACTION: No trade.
+2026-08-10 17:28:48,585 | Market is open (closes 2026-08-10 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMD, HZO, LINC, MSFT, MU, NESR, NVDA, SLN, SNDK, VREX
+2026-08-10 17:28:49,546 | [AAPL] trending (ADX 55.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.45
+2026-08-10 17:28:49,546 | [AAPL] ACTION: No trade.
+2026-08-10 17:28:49,583 | [AMD] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $475.85
+2026-08-10 17:28:49,583 | [AMD] ACTION: No trade.
+2026-08-10 17:28:49,614 | [HZO] trending (ADX 76.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $52.02
+2026-08-10 17:28:49,614 | [HZO] ACTION: No trade.
+2026-08-10 17:28:49,646 | [LINC] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $32.74
+2026-08-10 17:28:49,646 | [LINC] ACTION: No trade.
+2026-08-10 17:28:49,684 | [MSFT] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $507.71
+2026-08-10 17:28:49,684 | [MSFT] ACTION: No trade.
+2026-08-10 17:28:49,721 | [MU] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $881.69
+2026-08-10 17:28:49,722 | [MU] ACTION: No trade.
+2026-08-10 17:28:49,756 | [NESR] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 14.0 | Last price: $35.24
+2026-08-10 17:28:49,756 | [NESR] ACTION: No trade.
+2026-08-10 17:28:49,795 | [NVDA] trending (ADX 49.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.65
+2026-08-10 17:28:49,795 | [NVDA] ACTION: No trade.
+2026-08-10 17:28:49,828 | [SLN] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.53
+2026-08-10 17:28:49,828 | [SLN] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-10 17:28:49,867 | [SNDK] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1257.00
+2026-08-10 17:28:49,867 | [SNDK] ACTION: No trade.
+2026-08-10 17:28:49,897 | [VREX] trending (ADX 77.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $18.46
+2026-08-10 17:28:49,897 | [VREX] ACTION: No trade.
+2026-08-10 17:41:30,478 | Duration window finished.
 2026-08-10 12:40:56,847 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
 2026-08-10 12:40:56,847 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
 2026-08-10 12:40:56,847 | Bar size: 15min | Check interval while market open: 15min
