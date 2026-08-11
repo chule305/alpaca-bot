@@ -77,6 +77,11 @@ FIELDS = [
     "breakout_recent_high",
     "orb_high",
     "prior_session_close",
+    # Added for the volatility-scaled sizing candidate -- lets a later
+    # analysis check whether the high-vol-tercile bucket was actually
+    # sized down as intended, same as every other indicator here.
+    "vol_percentile",
+    "high_vol_tercile",
 ]
 
 # Columns copied straight off the indicator dataframe row, when one is
@@ -84,7 +89,7 @@ FIELDS = [
 CONTEXT_COLUMNS = [
     "close", "rsi", "adx", "atr", "ema_fast", "ema_slow", "vwap", "volume",
     "rvol_avg_volume", "breakout_recent_high", "orb_high", "prior_session_close",
-    "minutes_since_open",
+    "minutes_since_open", "vol_percentile", "high_vol_tercile",
 ]
 
 

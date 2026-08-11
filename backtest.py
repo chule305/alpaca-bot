@@ -73,7 +73,8 @@ from strategy import (
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
-    ADX_TREND_THRESHOLD,
+    ADX_TREND_THRESHOLD, RSI_PERIOD,
+    USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
 )
 
 load_dotenv()
@@ -147,6 +148,107 @@ SP500_LIST_URL = os.getenv(
 # might tell a different story. Re-test before re-enabling.
 USE_SPY_REGIME_GATE = os.getenv("USE_SPY_REGIME_GATE", "false").strip().lower() in ("1", "true", "yes")
 SPY_REGIME_GATE_SYMBOL = os.getenv("SPY_REGIME_GATE_SYMBOL", "SPY").strip().upper()
+
+# Duplicated from trading_bot.py's SECTOR_MAP -- backtest.py deliberately
+# doesn't import trading_bot.py (same reasoning as fetch_sp500_symbols_once
+# above being its own one-shot version of trading_bot.py's TTL-cached
+# fetch_sp500_symbols, rather than a cross-import: this file is meant to
+# run standalone for a single CLI invocation, not pull in the live bot's
+# whole module-level setup). Keep this in sync by hand if SECTOR_MAP
+# there ever changes -- see that file's own comment for the full sourcing
+# rationale on why it's not exhaustive.
+SECTOR_MAP: dict[str, str] = {
+    "NVDA": "Information Technology", "AMD": "Information Technology",
+    "INTC": "Information Technology", "QCOM": "Information Technology",
+    "AVGO": "Information Technology", "TXN": "Information Technology",
+    "MU": "Information Technology", "AMAT": "Information Technology",
+    "SMCI": "Information Technology", "ARM": "Information Technology",
+    "AAPL": "Information Technology", "MSFT": "Information Technology",
+    "CRM": "Information Technology", "ORCL": "Information Technology",
+    "ADBE": "Information Technology", "CSCO": "Information Technology",
+    "IBM": "Information Technology", "PLTR": "Information Technology",
+    "NOW": "Information Technology", "PANW": "Information Technology",
+    "SOXL": "Information Technology", "SOXS": "Information Technology",
+    "GOOGL": "Communication Services", "GOOG": "Communication Services",
+    "META": "Communication Services", "NFLX": "Communication Services",
+    "DIS": "Communication Services", "T": "Communication Services",
+    "VZ": "Communication Services", "TMUS": "Communication Services",
+    "TSLA": "Consumer Discretionary", "AMZN": "Consumer Discretionary",
+    "HD": "Consumer Discretionary", "NKE": "Consumer Discretionary",
+    "MCD": "Consumer Discretionary", "SBUX": "Consumer Discretionary",
+    "LOW": "Consumer Discretionary", "BKNG": "Consumer Discretionary",
+    "COIN": "Financials", "JPM": "Financials", "V": "Financials",
+    "MA": "Financials", "BAC": "Financials", "WFC": "Financials",
+    "GS": "Financials", "MS": "Financials", "C": "Financials",
+    "AXP": "Financials", "SCHW": "Financials",
+    "UNH": "Health Care", "JNJ": "Health Care", "LLY": "Health Care",
+    "PFE": "Health Care", "MRK": "Health Care", "ABBV": "Health Care",
+    "ABT": "Health Care", "TMO": "Health Care", "DHR": "Health Care",
+    "XOM": "Energy", "CVX": "Energy", "COP": "Energy", "SLB": "Energy",
+    "BA": "Industrials", "CAT": "Industrials", "GE": "Industrials",
+    "MMM": "Industrials", "UPS": "Industrials", "HON": "Industrials",
+    "RTX": "Industrials", "LMT": "Industrials",
+    "WMT": "Consumer Staples", "PG": "Consumer Staples", "KO": "Consumer Staples",
+    "PEP": "Consumer Staples", "COST": "Consumer Staples", "PM": "Consumer Staples",
+}
+
+# One SPDR sector ETF per GICS sector name in SECTOR_MAP -- see
+# trading_bot.py's own SECTOR_ETF_MAP for the full comment.
+SECTOR_ETF_MAP: dict[str, str] = {
+    "Information Technology": "XLK",
+    "Financials": "XLF",
+    "Energy": "XLE",
+    "Health Care": "XLV",
+    "Industrials": "XLI",
+    "Consumer Staples": "XLP",
+    "Utilities": "XLU",
+    "Consumer Discretionary": "XLY",
+    "Materials": "XLB",
+    "Real Estate": "XLRE",
+    "Communication Services": "XLC",
+}
+
+_sector_cache: dict[str, str | None] = {}
+
+
+def get_symbol_sector(symbol: str) -> str | None:
+    """
+    One-shot duplicate of trading_bot.py's get_symbol_sector (SECTOR_MAP
+    first, then a live get_asset() fallback) -- see the comment on
+    SECTOR_MAP above for why this file keeps its own copy instead of
+    importing trading_bot.py.
+    """
+    if symbol in _sector_cache:
+        return _sector_cache[symbol]
+    sector = SECTOR_MAP.get(symbol)
+    if sector is None:
+        try:
+            asset = trading_client.get_asset(symbol)
+            sector = getattr(asset, "sector", None) or getattr(asset, "industry", None) or None
+        except Exception:
+            sector = None
+    _sector_cache[symbol] = sector
+    return sector
+
+
+def get_sector_etf(symbol: str) -> str | None:
+    """The SPDR sector ETF for `symbol`'s own sector, or None if either
+    lookup comes up empty -- see trading_bot.py's get_sector_etf."""
+    sector = get_symbol_sector(symbol)
+    if sector is None:
+        return None
+    return SECTOR_ETF_MAP.get(sector)
+
+
+# Sector-relative mean-reversion filter -- mirrors trading_bot.py's
+# USE_SECTOR_RELATIVE_MEAN_REVERSION exactly (same toggle name, same
+# defaults, same research motivation). See that file's comment for the
+# full reasoning, including why this is NOT the same idea as
+# USE_SPY_REGIME_GATE above despite both comparing against an external
+# reference series, and the 2026-08-11 backtest result this shipped with.
+USE_SECTOR_RELATIVE_MEAN_REVERSION = os.getenv("USE_SECTOR_RELATIVE_MEAN_REVERSION", "false").strip().lower() in ("1", "true", "yes")
+SECTOR_RELATIVE_LOOKBACK_BARS = int(os.getenv("SECTOR_RELATIVE_LOOKBACK_BARS", RSI_PERIOD))
+SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT = float(os.getenv("SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0))
 
 
 def fetch_sp500_symbols_once() -> set:
@@ -232,6 +334,56 @@ def compute_spy_bearish_at_bars(spy_enriched: pd.DataFrame, bar_timestamps: pd.S
     return aligned["spy_bearish_trend"].fillna(False).to_numpy()
 
 
+def fetch_sector_etf_bars(symbols: list[str], days_back: int) -> dict[str, pd.DataFrame]:
+    """
+    Fetches each distinct sector ETF this run's `symbols` actually needs
+    (via SECTOR_MAP/SECTOR_ETF_MAP), ONE fetch per distinct ETF rather
+    than one per symbol -- several megacap symbols commonly share a
+    sector (e.g. NVDA/AMD both map to XLK), so this avoids re-fetching
+    the same ETF's bars redundantly. Only called at all when
+    USE_SECTOR_RELATIVE_MEAN_REVERSION is on.
+    """
+    needed_etfs = sorted({
+        SECTOR_ETF_MAP[sector]
+        for sector in (get_symbol_sector(s) for s in symbols)
+        if sector in SECTOR_ETF_MAP
+    })
+    etf_bars = {}
+    for etf_symbol in needed_etfs:
+        try:
+            bars = fetch_historical_bars(etf_symbol, days_back)
+        except Exception as e:
+            print(f"Sector-relative mean reversion: could not fetch {etf_symbol} bars ({e}) -- "
+                  f"filter disabled this run for symbols in that sector.")
+            continue
+        if not bars.empty:
+            etf_bars[etf_symbol] = bars
+    return etf_bars
+
+
+def compute_sector_relative_return_at_bars(etf_bars: pd.DataFrame, bar_timestamps: pd.Series) -> np.ndarray:
+    """
+    For each timestamp in bar_timestamps (one candidate symbol's own
+    bars), looks up its sector ETF's own SECTOR_RELATIVE_LOOKBACK_BARS-bar
+    trailing return as of the most recent ETF bar at or before that
+    timestamp -- same as-of backward join, same lookahead-safety
+    reasoning, as compute_spy_bearish_at_bars above (a candidate can be
+    missing bars its ETF has, and must only ever see the ETF's already-
+    closed bars). Returns NaN wherever the ETF's own return isn't defined
+    yet (its own warmup, or no ETF bar at/before this timestamp) --
+    simulate() treats NaN as "can't judge, don't block" (fails open),
+    same as every other missing-data case in this filter.
+    """
+    etf = etf_bars[["timestamp", "close"]].copy()
+    etf["etf_return_pct"] = etf["close"].pct_change(periods=SECTOR_RELATIVE_LOOKBACK_BARS) * 100
+    aligned = pd.merge_asof(
+        pd.DataFrame({"timestamp": bar_timestamps}),
+        etf[["timestamp", "etf_return_pct"]],
+        on="timestamp", direction="backward",
+    )
+    return aligned["etf_return_pct"].to_numpy()
+
+
 def get_starting_equity() -> float:
     """
     Uses your REAL Alpaca paper account equity as the starting capital
@@ -310,7 +462,8 @@ def minutes_until_close(timestamp) -> float:
 
 def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
              daily_trend_map: dict | None = None, apply_vwap_volume_filter: bool = False,
-             spy_regime_bars: pd.DataFrame | None = None) -> list[dict]:
+             spy_regime_bars: pd.DataFrame | None = None,
+             sector_etf_bars: pd.DataFrame | None = None) -> list[dict]:
     """
     Walks through the bars one at a time, calling the SAME decision logic
     the live bot uses (decide_signal_at), using only data up to and
@@ -335,6 +488,15 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     None means either the gate is off or SPY's bars couldn't be fetched;
     either way this symbol's entries are ungated by it.
 
+    sector_etf_bars: THIS symbol's own sector ETF's raw bars (see
+    fetch_sector_etf_bars / get_sector_etf), only consulted when
+    USE_SECTOR_RELATIVE_MEAN_REVERSION is on and only for mean_reversion
+    entries specifically. None means the gate is off, the symbol's sector
+    ETF is unknown, or its bars couldn't be fetched -- any of those fails
+    open (mean_reversion entries proceed exactly as if the filter were
+    off), same fail-open philosophy as every other sector lookup in this
+    project.
+
     Returns a list of completed trades.
     """
     trades = []
@@ -346,6 +508,25 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     spy_bearish_now = None
     if USE_SPY_REGIME_GATE and spy_regime_bars is not None and not spy_regime_bars.empty:
         spy_bearish_now = compute_spy_bearish_at_bars(spy_regime_bars, enriched["timestamp"])
+
+    # Sector-relative mean-reversion filter -- both series precomputed
+    # ONCE up front (own-return via a plain pct_change, ETF-return via the
+    # as-of join), same vectorize-before-the-loop pattern as spy_bearish_now
+    # above, rather than recomputing either on every bar.
+    sector_relative_blocks_now = None
+    if (USE_SECTOR_RELATIVE_MEAN_REVERSION and sector_etf_bars is not None
+            and not sector_etf_bars.empty):
+        own_return_pct = (enriched["close"].pct_change(periods=SECTOR_RELATIVE_LOOKBACK_BARS) * 100).to_numpy()
+        etf_return_pct = compute_sector_relative_return_at_bars(sector_etf_bars, enriched["timestamp"])
+        underperformance_pct = etf_return_pct - own_return_pct
+        # NaN on either side (either series still warming up) makes the
+        # "<" comparison False by numpy's own NaN-propagation rule, which
+        # already reads as "don't block" here -- the exact fail-open
+        # behavior wanted, achieved for free rather than needing an
+        # explicit isnan check (contrast spy_bearish_now's fillna(False),
+        # a different mechanism reaching the same fail-open outcome).
+        with np.errstate(invalid="ignore"):
+            sector_relative_blocks_now = underperformance_pct < SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT
 
     for i in range(n):
         if i < 1:
@@ -410,6 +591,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "qty": position["qty"],
                     "pnl": pnl,
                     "pnl_pct": pnl_pct,
+                    "high_vol_tercile": position["high_vol_tercile"],
                 })
                 position = None
                 continue  # don't also open a fresh position on the same bar we just exited
@@ -445,6 +627,13 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 # passes apply_vwap_volume_filter=True for non-S&P-500
                 # symbols (see USE_VWAP_VOLUME_CONFIRMATION above).
                 continue
+            if (signal == "BUY" and reason_key == "mean_reversion"
+                    and sector_relative_blocks_now is not None and bool(sector_relative_blocks_now[i])):
+                # Sector-relative mean-reversion filter -- mirrors
+                # trading_bot.py's check_symbol exactly (only ever
+                # consulted for a mean_reversion entry specifically). See
+                # USE_SECTOR_RELATIVE_MEAN_REVERSION's comment there.
+                continue
             if signal == "BUY":
                 entry_price = current_bar["close"]
                 stop_price, take_profit_price = compute_stop_and_target(entry_price, current_bar["atr"])
@@ -454,10 +643,20 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 # live bot would refuse to take.
                 if not stop_is_wider_than_noise(entry_price, current_bar["atr"], stop_price):
                     continue
+                high_vol_tercile = bool(current_bar["high_vol_tercile"])
                 if USE_RISK_BASED_SIZING:
                     qty = compute_position_size(equity, entry_price, stop_price)
                 else:
-                    qty = int(TRADE_AMOUNT_USD // entry_price)
+                    # See USE_VOLATILITY_SCALED_SIZING in strategy.py --
+                    # only ever swaps in ANOTHER flat dollar figure for
+                    # the high-vol tercile, never a fraction of equity or
+                    # of TRADE_AMOUNT_USD, and strategy.py's own guard
+                    # makes it impossible for this to exceed
+                    # TRADE_AMOUNT_USD even via a bad env var.
+                    trade_amount = TRADE_AMOUNT_USD
+                    if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
+                        trade_amount = VOLATILITY_SCALED_REDUCED_USD
+                    qty = int(trade_amount // entry_price)
                 if qty < 1:
                     continue  # not enough simulated capital/risk budget for even 1 share
                 position = {
@@ -467,6 +666,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "qty": qty,
                     "stop_price": stop_price,
                     "take_profit_price": take_profit_price,
+                    "high_vol_tercile": high_vol_tercile,
                 }
 
     return trades
@@ -555,6 +755,10 @@ if __name__ == "__main__":
         print("Risk management: ATR-based stops (USE_ATR_STOPS=true)\n")
     else:
         print(f"Risk management: stop-loss -{STOP_LOSS_PCT:.0f}% / take-profit +{TAKE_PROFIT_PCT:.0f}%\n")
+    if USE_VOLATILITY_SCALED_SIZING:
+        print(f"Volatility-scaled sizing: ON -- a symbol's own high realized-vol tercile trades at "
+              f"${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
+              f"(only applies under flat sizing, i.e. USE_RISK_BASED_SIZING=false)\n")
     print("=" * 70)
 
     needs_sp500_list = USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION
@@ -573,6 +777,14 @@ if __name__ == "__main__":
               f"{SPY_REGIME_GATE_SYMBOL}'s own {BAR_MINUTES}-min ADX >= {ADX_TREND_THRESHOLD:.0f} "
               f"and its fast EMA < slow EMA)")
         spy_regime_bars = fetch_spy_regime_bars(args.days)
+        print()
+
+    sector_etf_bars_by_etf: dict[str, pd.DataFrame] = {}
+    if USE_SECTOR_RELATIVE_MEAN_REVERSION:
+        print(f"Sector-relative mean reversion filter: ON (mean_reversion entries require the "
+              f"candidate to trail its own sector ETF by >= {SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT:.1f}pp "
+              f"over {SECTOR_RELATIVE_LOOKBACK_BARS} bars; symbols with no known sector ETF are exempt)")
+        sector_etf_bars_by_etf = fetch_sector_etf_bars(symbols, args.days)
         print()
 
     all_trades = []
@@ -601,8 +813,13 @@ if __name__ == "__main__":
 
         apply_vwap_volume_filter = USE_VWAP_VOLUME_CONFIRMATION and is_scanner_pick
 
+        symbol_sector_etf_bars = None
+        if USE_SECTOR_RELATIVE_MEAN_REVERSION:
+            etf_symbol = get_sector_etf(symbol)
+            symbol_sector_etf_bars = sector_etf_bars_by_etf.get(etf_symbol) if etf_symbol else None
+
         trades = simulate(symbol, bars, starting_equity, daily_trend_map, apply_vwap_volume_filter,
-                           spy_regime_bars)
+                           spy_regime_bars, symbol_sector_etf_bars)
         all_trades.extend(trades)
 
         print_stats(compute_stats(trades, starting_equity))

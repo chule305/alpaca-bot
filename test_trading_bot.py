@@ -48,9 +48,11 @@ def check(name: str, condition: bool, detail: str = "") -> None:
         FAILURES.append(name)
 
 
-def make_fake_enriched(minutes_since_open: float, close: float = 100.0, atr: float = 1.0) -> pd.DataFrame:
+def make_fake_enriched(minutes_since_open: float, close: float = 100.0, atr: float = 1.0,
+                        high_vol_tercile: bool = False) -> pd.DataFrame:
     """A one-row stand-in for add_indicators()'s output, with just the columns check_symbol reads."""
-    return pd.DataFrame({"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open]})
+    return pd.DataFrame({"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open],
+                          "high_vol_tercile": [high_vol_tercile]})
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +173,58 @@ def test_estimate_new_position_risk_usd():
           tb.estimate_new_position_risk_usd(0.0, atr_value, 10000.0) == 0.0)
     check("missing last_price (None) returns 0.0 rather than raising",
           tb.estimate_new_position_risk_usd(None, atr_value, 10000.0) == 0.0)
+
+
+def test_estimate_new_position_risk_usd_volatility_scaled():
+    """
+    See USE_VOLATILITY_SCALED_SIZING in strategy.py -- a second, ADX-
+    independent regime axis (Moreira & Muir 2017, "Volatility-Managed
+    Portfolios"). Only ever a fixed-dollar SUBSTITUTION inside the flat-
+    sizing branch (never risk-based, never a fraction of equity), and
+    this function's own docstring promises to mirror place_buy_order's
+    real qty exactly -- pinned here so the heat-cap gate can't silently
+    drift from what actually gets bought.
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = False
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+
+        expected_unreduced = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        check("toggle OFF: high_vol_tercile=True is ignored, same result as low/mid",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                             high_vol_tercile=True), expected_unreduced))
+
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        expected_reduced = int(350.0 // last_price) * risk_per_share
+        got_reduced = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, high_vol_tercile=True)
+        check("toggle ON + high_vol_tercile=True uses the reduced $ amount, not TRADE_AMOUNT_USD",
+              np.isclose(got_reduced, expected_reduced) and got_reduced < expected_unreduced,
+              f"got {got_reduced}, expected {expected_reduced}, unreduced was {expected_unreduced}")
+
+        got_low_mid = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, high_vol_tercile=False)
+        check("toggle ON but high_vol_tercile=False (low/mid tercile) still uses the full TRADE_AMOUNT_USD",
+              np.isclose(got_low_mid, expected_unreduced))
+
+        tb.USE_RISK_BASED_SIZING = True
+        equity = 10000.0
+        expected_rb_qty = tb.compute_position_size(equity, last_price, stop_price)
+        expected_rb_risk = risk_per_share * expected_rb_qty
+        got_rb_high_vol = tb.estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile=True)
+        check("under risk-based sizing, high_vol_tercile is ignored entirely -- this candidate never "
+              "stacks a second size cut on top of risk-based sizing's own stop-distance scaling",
+              np.isclose(got_rb_high_vol, expected_rb_risk))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_VOLATILITY_SCALED_SIZING = original_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
 
 
 def test_would_exceed_portfolio_heat_cap():
@@ -321,6 +375,34 @@ def test_check_symbol_gating():
                                     at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("a SELL signal on a held position calls place_sell_order (and reports 0 notional opened)",
           mock_sell.called and notional == 0.0)
+
+
+def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
+    """
+    check_symbol reads high_vol_tercile off the SAME enriched dataframe
+    row decide_signal_at already consulted, and must forward it to
+    place_buy_order unchanged -- this is the only place that value
+    travels from strategy.py's indicator column (see high_vol_tercile in
+    add_indicators()) into the sizing decision in trading_bot.py.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id")
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, high_vol_tercile=True)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 350.0)) as mock_buy:
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+    check("high_vol_tercile=True on the enriched row is forwarded to place_buy_order",
+          bool(mock_buy.call_args.args[-1]) is True, f"call args: {mock_buy.call_args}")
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, high_vol_tercile=False)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)) as mock_buy:
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+    check("high_vol_tercile=False on the enriched row is forwarded to place_buy_order too",
+          bool(mock_buy.call_args.args[-1]) is False, f"call args: {mock_buy.call_args}")
 
 
 def test_check_symbol_gating_portfolio_heat_cap():
@@ -1077,6 +1159,161 @@ def test_check_symbol_blocks_buy_when_spy_regime_blocks_entry():
     check("a taken entry reports its notional", notional == 500.0)
 
 
+# ---------------------------------------------------------------------------
+# SECTOR-RELATIVE MEAN REVERSION FILTER -- off by default. Only ever
+# consulted for a mean_reversion BUY (checked inside check_symbol once
+# reason_key is known), same reason_key-scoping pattern as the
+# vwap_reversion volume filter above.
+# ---------------------------------------------------------------------------
+
+def make_fake_close_series(closes: list[float]) -> pd.DataFrame:
+    """A stand-in for the 'close' column sector_relative_mean_reversion_blocks_entry
+    reads, on either the candidate's own enriched bars or a sector ETF's raw bars."""
+    return pd.DataFrame({"close": closes})
+
+
+def test_get_sector_etf_resolves_via_sector_map_and_etf_map():
+    with patch.object(tb, "get_symbol_sector", return_value="Information Technology"):
+        etf = tb.get_sector_etf("NVDA")
+    check("a symbol with a mapped sector resolves to its SECTOR_ETF_MAP entry", etf == "XLK")
+
+
+def test_get_sector_etf_none_when_sector_unknown():
+    with patch.object(tb, "get_symbol_sector", return_value=None):
+        etf = tb.get_sector_etf("MYSTERYSYMBOL")
+    check("an unknown sector resolves to no ETF, not an exception", etf is None)
+
+
+def test_sector_relative_blocks_entry_disabled_by_default():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", False), \
+         patch.object(tb, "get_sector_etf") as mock_get_etf:
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "AAA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("with the filter off, the gate never blocks", not blocked)
+    check("no sector lookup happens when the filter is disabled", not mock_get_etf.called)
+
+
+def test_sector_relative_blocks_entry_fails_open_on_unknown_sector():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value=None):
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "MYSTERYSYMBOL", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("an unmappable sector fails open (doesn't block)", not blocked)
+
+
+def test_sector_relative_blocks_entry_fails_open_when_etf_bars_missing():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"):
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4, {})
+    check("no ETF bars fetched this cycle fails open", not blocked)
+
+
+def test_sector_relative_blocks_entry_fails_open_on_insufficient_history():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3):
+        # Candidate only has 3 bars (i=2), fewer than the 3-bar lookback needs.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100]), 2,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("not enough of the candidate's own history yet fails open", not blocked)
+
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3):
+        # ETF only has 3 bars, at/under the 3-bar lookback.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100])})
+    check("not enough of the ETF's own history yet fails open", not blocked)
+
+
+def test_sector_relative_blocks_entry_allows_genuine_underperformance():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3), \
+         patch.object(tb, "SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0):
+        # Candidate: -5% over the window. ETF: +1%. Underperformance 6pp >= 2pp threshold.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("a candidate genuinely underperforming its sector ETF by more than the threshold is allowed",
+          not blocked)
+
+
+def test_sector_relative_blocks_entry_blocks_soft_sector_day():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3), \
+         patch.object(tb, "SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0):
+        # Candidate: -0.5% over the window. ETF: +1%. Underperformance only 1.5pp < 2pp threshold.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 99.5]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("a candidate that isn't meaningfully weaker than its sector ETF is blocked "
+          "(an ordinary soft sector day, not genuine underperformance)", blocked)
+
+
+def test_check_symbol_blocks_buy_when_sector_relative_blocks_entry():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a mean_reversion BUY is refused when the sector-relative filter blocks it", not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=False), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("the same signal is taken once the sector-relative filter confirms", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
+def test_sector_relative_filter_only_applies_to_mean_reversion_signals():
+    """The gate must only fire for mean_reversion's OWN signal -- a BUY
+    from a different strategy must not be blocked by a check that has
+    nothing to do with it."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a breakout signal is unaffected by the mean-reversion-only sector filter", mock_buy.called)
+    check("the unrelated entry reports its notional", notional == 500.0)
+
+
+def test_sector_relative_filter_noop_when_disabled():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", False), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("with the filter disabled, check_symbol short-circuits before ever calling the gate "
+          "function, so a mocked True result has no effect", mock_buy.called)
+    check("the entry reports its notional", notional == 500.0)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -1259,10 +1496,12 @@ if __name__ == "__main__":
         test_would_exceed_portfolio_risk_cap,
         test_get_current_portfolio_risk_usd,
         test_estimate_new_position_risk_usd,
+        test_estimate_new_position_risk_usd_volatility_scaled,
         test_would_exceed_portfolio_heat_cap,
         test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
+        test_check_symbol_propagates_high_vol_tercile_to_place_buy_order,
         test_check_symbol_gating_portfolio_heat_cap,
         test_get_symbol_sector_uses_hardcoded_map_first,
         test_get_symbol_sector_falls_back_to_alpaca_asset_metadata,
@@ -1302,6 +1541,17 @@ if __name__ == "__main__":
         test_spy_regime_confirms_entry_fails_open_on_missing_data,
         test_spy_regime_confirms_entry_fails_open_during_warmup,
         test_check_symbol_blocks_buy_when_spy_regime_blocks_entry,
+        test_get_sector_etf_resolves_via_sector_map_and_etf_map,
+        test_get_sector_etf_none_when_sector_unknown,
+        test_sector_relative_blocks_entry_disabled_by_default,
+        test_sector_relative_blocks_entry_fails_open_on_unknown_sector,
+        test_sector_relative_blocks_entry_fails_open_when_etf_bars_missing,
+        test_sector_relative_blocks_entry_fails_open_on_insufficient_history,
+        test_sector_relative_blocks_entry_allows_genuine_underperformance,
+        test_sector_relative_blocks_entry_blocks_soft_sector_day,
+        test_check_symbol_blocks_buy_when_sector_relative_blocks_entry,
+        test_sector_relative_filter_only_applies_to_mean_reversion_signals,
+        test_sector_relative_filter_noop_when_disabled,
         test_compute_next_cycle_sleep_never_overshoots_the_flatten_trigger,
         test_compute_next_cycle_sleep_unaffected_with_plenty_of_runway,
         test_compute_next_cycle_sleep_already_inside_flatten_window,

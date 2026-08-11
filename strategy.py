@@ -73,6 +73,38 @@ ADX_TREND_THRESHOLD = float(os.getenv("ADX_TREND_THRESHOLD", 25))
 USE_ADX_HYSTERESIS = os.getenv("USE_ADX_HYSTERESIS", "false").strip().lower() in ("1", "true", "yes")
 ADX_HYSTERESIS_BAND = float(os.getenv("ADX_HYSTERESIS_BAND", 3))
 
+# Second regime axis, independent of ADX (Moreira & Muir 2017,
+# "Volatility-Managed Portfolios", J. Finance): everything above measures
+# DIRECTIONAL PERSISTENCE (trending vs. choppy) -- it says nothing about
+# MAGNITUDE. A stock can have low ADX while its realized volatility is
+# either very high (violent whipsaws -- e.g. VEEE's 6.0-7.3%/bar ATR
+# days, see stop_is_wider_than_noise's docstring) or very low (quiet
+# drift). Moreira & Muir found that scaling exposure DOWN when trailing
+# realized vol is high (and up when low) improves risk-adjusted returns
+# through a mechanism that's orthogonal to trend strength -- this bot
+# only acts on the DOWN half (see USE_VOLATILITY_SCALED_SIZING near
+# TRADE_AMOUNT_USD below for why, and why it's a fixed-dollar reduction,
+# never a %-of-equity one).
+#
+# Reuses the ATR column computed a few lines below in add_indicators()
+# rather than adding a second realized-vol indicator -- ATR is already
+# this bot's validated per-symbol noise measure (MIN_STOP_TO_ATR_RATIO,
+# STOP_SLIPPAGE_ATR_FRACTION in backtest.py both lean on it). Expressed
+# as ATR-as-%-of-price (not raw dollars) so a $5 stock and a $500 stock
+# aren't compared on different absolute scales, then ranked with a
+# TRAILING rolling window against ONLY that SAME symbol's own history --
+# never a cross-symbol comparison. VEEE's "high vol" and NVDA's "high
+# vol" are different absolute ATR% by design; this is each stock's own
+# regime relative to itself, not a cross-sectional ranking.
+VOL_PERCENTILE_LOOKBACK = int(os.getenv("VOL_PERCENTILE_LOOKBACK", 90))
+# Terciles split at 1/3 and 2/3 by definition -- not exposed as an env
+# var (unlike VOL_PERCENTILE_LOOKBACK above) because moving this number
+# would silently redefine what "tercile" means rather than tune a
+# behavior. The levers meant to be tuned are whether the top bucket
+# affects sizing at all (USE_VOLATILITY_SCALED_SIZING) and by how much
+# (VOLATILITY_SCALED_REDUCED_USD), both below.
+HIGH_VOL_TERCILE_CUTOFF = 2.0 / 3.0
+
 BREAKOUT_LOOKBACK = int(os.getenv("BREAKOUT_LOOKBACK", 20))
 # The only entry strategy that didn't have an on/off toggle -- added for
 # consistency with every other strategy below, not because of a problem.
@@ -194,6 +226,46 @@ USE_SMASH_DAY_PATTERN = os.getenv("USE_SMASH_DAY_PATTERN", "false").strip().lowe
 USE_GAP_PATTERN = os.getenv("USE_GAP_PATTERN", "true").strip().lower() in ("1", "true", "yes")
 GAP_MIN_PCT = float(os.getenv("GAP_MIN_PCT", 2.0))
 
+# Gap QUALITY gate -- separate from GAP_MIN_PCT above, which only checks
+# gap SIZE. Overnight/intraday return-decomposition research (Lou, Polk &
+# Skouras, "A Tug of War: Overnight Versus Intraday Expected Returns";
+# similarly Cooper, Cliff & Gulen on overnight/intraday return patterns)
+# finds that gaps driven by thin, sentiment/attention-style flow tend to
+# partially fade back during the day, while gaps accompanied by real
+# volume are more likely to hold or extend. gap_continuation_at() as
+# written has no way to tell those apart -- it only ever checks PRICE
+# (gap size vs. prior close, then a break of the opening bar's high),
+# never whether anyone was actually there trading it.
+#
+# Reuses the same time-of-day volume normalization
+# USE_TIME_OF_DAY_VOLUME_NORM already built for breakout (see
+# compute_time_of_day_avg_volume) rather than inventing a second one:
+# gap_quality_confirmed_at() compares the gap day's OPENING bar volume
+# against this symbol's own historical volume for that same
+# minutes-since-open bucket. A flat trailing average would be the wrong
+# comparison here for the same reason documented on that flag -- 9:30 is
+# the single heaviest-volume bucket of the day, so a flat average
+# understates what's "normal" right at the open and would make ordinary
+# opens look like volume surges.
+#
+# Default OFF -- ships toggleable so the backtest gets the final word,
+# same convention as every other filter in this file. gap_continuation
+# is already this bot's least-tested strategy (single digits to low
+# teens of trades per symbol in a 90-day window) -- see CLAUDE.md for the
+# specific numbers this shipped with, and treat any one backtest run on
+# top of an already-thin sample as a hypothesis test, not a settled
+# result.
+USE_GAP_QUALITY_FILTER = os.getenv("USE_GAP_QUALITY_FILTER", "false").strip().lower() in ("1", "true", "yes")
+# How many multiples of the symbol's own normal same-time-of-day opening
+# volume the gap day's opening bar must clear. 1.5x chosen as a middle
+# ground between BREAKOUT_VOLUME_MULTIPLIER (2.0, a "new high" breakout
+# where a bigger surge is expected) and VWAP_REVERSION_MIN_VOLUME_MULT
+# (1.2, just "not on dead volume") -- a gap is already a large price
+# event even at 1x normal volume, so it doesn't need as high a bar as a
+# breakout does to be worth trusting, but should still show MORE than
+# ordinary opening-bar volume, not just any positive reading.
+GAP_QUALITY_VOLUME_MULT = float(os.getenv("GAP_QUALITY_VOLUME_MULT", 1.5))
+
 # Ross Hook -- previously deferred pending swing-pivot detection (see
 # ross_hook_signal() docstring for the simplified adaptation used here).
 # Default FLIPPED TO OFF after the first real backtest: worst average
@@ -300,6 +372,70 @@ RVOL_MIN_CLOSE_STRENGTH = float(os.getenv("RVOL_MIN_CLOSE_STRENGTH", 0.66))
 # in trading_bot.py for the paired change this needs.
 BAR_MINUTES = int(os.getenv("BAR_MINUTES", 15))
 TRADE_AMOUNT_USD = float(os.getenv("TRADE_AMOUNT_USD", 500))
+
+# Volatility-scaled sizing: reduces the FLAT TRADE_AMOUNT_USD position to
+# VOLATILITY_SCALED_REDUCED_USD for the HIGH realized-vol tercile only
+# (see high_vol_tercile in add_indicators() and the second-regime-axis
+# comment above) -- low/mid tercile trades are untouched, still exactly
+# TRADE_AMOUNT_USD. Applied externally in trading_bot.py's
+# place_buy_order() and backtest.py's simulate(), not here -- the same
+# "strategy.py computes, callers decide sizing" split TRADE_AMOUNT_USD /
+# USE_RISK_BASED_SIZING above already use (position sizing has never
+# lived inside this file's pure decision functions).
+#
+# MUST be a fixed dollar number, never a percentage of equity or of
+# TRADE_AMOUNT_USD. See the 2026-08-05 CLAUDE.md entry: a %-of-equity
+# sizing cap (MAX_POSITION_PCT_OF_EQUITY) that looked fine in backtest
+# metrics -- win rate, profit factor, and drawdown-as-%-of-equity all
+# genuinely supported it -- produced real $15,700-19,900 positions on a
+# ~$99,645 account instead of the intended $500, because none of those
+# metrics surface the ABSOLUTE DOLLAR size of a single position.
+# VOLATILITY_SCALED_REDUCED_USD is deliberately just another flat-dollar
+# figure like TRADE_AMOUNT_USD itself, not a multiplier or fraction of
+# it, so it cannot scale with account size at all. The guard right below
+# additionally makes it impossible for this to exceed TRADE_AMOUNT_USD
+# even by misconfiguration -- this lever exists to shrink the high-vol
+# bucket's size, never to grow anything past the existing baseline.
+USE_VOLATILITY_SCALED_SIZING = os.getenv("USE_VOLATILITY_SCALED_SIZING", "false").strip().lower() in ("1", "true", "yes")
+# $350 -- a 30% cut from the $500 baseline. Walked through explicitly:
+# a HIGH-vol-tercile trade buys $350 of stock instead of $500 (e.g. 7
+# shares instead of 10 at a $50 entry) -- fewer shares, a smaller
+# absolute dollar loss if the stop is hit, nothing about account equity
+# enters this number anywhere. 30% is a deliberately moderate first cut
+# (not the "wipe it out" instinct a bigger number might invite): the
+# high tercile is exactly where STOP_SLIPPAGE_ATR_FRACTION-modeled stop
+# slippage bites hardest (see backtest.py), so this reduction stacks
+# with the existing ATR-based noise guard (MIN_STOP_TO_ATR_RATIO)
+# instead of trying to replace it.
+#
+# Known, MEASURED side effect on the megacap universe (90-day backtest,
+# 2026-08-11, TSLA/NVDA/COIN/AMD/PLTR): int(350 // price) rounds to 0
+# shares whenever price > $350, which AMD ($397-495 in this window) and
+# TSLA ($326-422) cross often -- 17 of 45 high-vol-tercile trades across
+# those two symbols were skipped entirely, not just downsized (`qty < 1`
+# in place_buy_order/simulate() already treats that as "no trade", same
+# as it always has for TRADE_AMOUNT_USD itself on any >$500 stock -- this
+# candidate just lowers that same rounding floor from $500 to $350, so it
+# now bites on the $350-500 price band too). This is still SAFE by this
+# candidate's one hard rule (0 exposure is <= $500, never >), and
+# arguably the most conservative possible response to a high-vol regime
+# -- but it means "reduced size" becomes "skipped trade" for higher-
+# priced names, not a smooth downsize, and the megacap backtest numbers
+# below reflect that mix, not a pure size-only comparison. The scanner
+# universe (all sub-$100 names here) never hit this floor -- see
+# CLAUDE.md for the clean, composition-identical read of the mechanism.
+VOLATILITY_SCALED_REDUCED_USD = float(os.getenv("VOLATILITY_SCALED_REDUCED_USD", 350))
+if VOLATILITY_SCALED_REDUCED_USD > TRADE_AMOUNT_USD:
+    # Fail loudly and immediately at import time rather than silently
+    # sizing UP on the high-vol tercile -- exactly the shape of mistake
+    # the 2026-08-05 incident (comment above) cost real money on, just
+    # via a different constant. This candidate's one job is to never be
+    # able to repeat that, even under a bad env-var edit.
+    raise ValueError(
+        f"VOLATILITY_SCALED_REDUCED_USD (${VOLATILITY_SCALED_REDUCED_USD:.0f}) must not exceed "
+        f"TRADE_AMOUNT_USD (${TRADE_AMOUNT_USD:.0f}) -- this lever only ever REDUCES size on the "
+        f"high-vol tercile, it must never raise it above the existing flat-sizing baseline."
+    )
 
 FLATTEN_BEFORE_CLOSE = os.getenv("FLATTEN_BEFORE_CLOSE", "true").strip().lower() in ("1", "true", "yes")
 FLATTEN_MINUTES_BEFORE_CLOSE = int(os.getenv("FLATTEN_MINUTES_BEFORE_CLOSE", 10))
@@ -413,6 +549,24 @@ def compute_adx(df: pd.DataFrame, period: int, true_range: pd.Series | None = No
 
 def compute_atr(true_range: pd.Series, period: int) -> pd.Series:
     return true_range.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+
+
+def compute_vol_percentile(atr: pd.Series, close: pd.Series, lookback: int) -> pd.Series:
+    """
+    Each bar's ATR-as-%-of-price, ranked (0-1) against that SAME symbol's
+    own trailing `lookback` bars -- see VOL_PERCENTILE_LOOKBACK's comment
+    for why this is a second, ADX-independent regime axis.
+
+    No-lookahead: pandas' rolling().rank(pct=True) at row i only ever
+    considers rows [i-lookback+1, i], same backward-only guarantee as
+    every other indicator in this file. NaN for the first `lookback - 1`
+    bars of a symbol's history (not enough trailing data yet to rank
+    against) -- callers comparing this against a threshold (e.g.
+    HIGH_VOL_TERCILE_CUTOFF) get False for those bars for free, since
+    NaN >= threshold is False in pandas/numpy, not NaN.
+    """
+    atr_pct = atr / close.replace(0, np.nan) * 100
+    return atr_pct.rolling(lookback, min_periods=lookback).rank(pct=True)
 
 
 def _session_date(df: pd.DataFrame) -> pd.Series:
@@ -537,6 +691,15 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["adx"] = compute_adx(df, ADX_PERIOD, true_range=true_range)
     df["atr"] = compute_atr(true_range, ATR_PERIOD)
 
+    # Second regime axis (see VOL_PERCENTILE_LOOKBACK above): each bar's
+    # trailing realized-vol percentile, relative to this SAME symbol's
+    # own history only. Always computed (cheap, and matches how every
+    # other optional-strategy column here is unconditional) so flipping
+    # USE_VOLATILITY_SCALED_SIZING on in trading_bot.py/backtest.py never
+    # requires touching add_indicators.
+    df["vol_percentile"] = compute_vol_percentile(df["atr"], df["close"], VOL_PERCENTILE_LOOKBACK)
+    df["high_vol_tercile"] = df["vol_percentile"] >= HIGH_VOL_TERCILE_CUTOFF
+
     # Sticky ADX regime for USE_ADX_HYSTERESIS (see that constant's
     # comment for why): a proper Schmitt trigger, not just "ffill the
     # gaps". ADX has to clear the UPPER band edge to commit to
@@ -595,6 +758,21 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["breakout_tod_avg_volume"] = compute_time_of_day_avg_volume(
         df, session_date, df["minutes_since_open"], TIME_OF_DAY_VOLUME_BUCKET_MINUTES
     )
+
+    # Gap-quality gate columns (USE_GAP_QUALITY_FILTER above) -- the gap
+    # day's own opening-bar volume, and what's normal for THIS symbol at
+    # THAT specific time-of-day bucket, broadcast across the whole
+    # session the same way session_open_price/session_first_bar_high
+    # already are below. Reuses breakout_tod_avg_volume's per-bucket
+    # historical average (already lookahead-safe, see that column's
+    # comment) rather than a second normalization pass -- the opening
+    # bar's own minutes_since_open bucket is bucket 0, so its
+    # breakout_tod_avg_volume value already IS "this symbol's normal
+    # opening-bar volume." Always computed, same reasoning as
+    # breakout_tod_avg_volume: keeps flipping the toggle a pure read-time
+    # switch rather than requiring changes here.
+    df["session_first_bar_volume"] = df.groupby(session_date)["volume"].transform("first")
+    df["session_first_bar_tod_avg_volume"] = df.groupby(session_date)["breakout_tod_avg_volume"].transform("first")
 
     orb_high, orb_low = compute_opening_range(df, session_date, df["minutes_since_open"], ORB_MINUTES)
     df["orb_high"] = orb_high
@@ -688,6 +866,28 @@ def smash_day_at(df: pd.DataFrame, i: int) -> bool:
     return bool(df["smash_day_setup"].iat[i] and df["smash_day_trigger"].iat[i])
 
 
+def gap_quality_confirmed_at(df: pd.DataFrame, i: int) -> bool:
+    """
+    True if this gap day's OPENING bar traded on volume meaningfully
+    above what's normal for this symbol at that same time-of-day bucket
+    (see USE_GAP_QUALITY_FILTER above for the research this is drawing
+    on: gaps backed by real volume are more likely to hold, thin/
+    sentiment-driven gaps tend to fade). Only meaningful for a row that
+    gap_continuation_at has already confirmed IS a gap day -- this
+    function doesn't re-check gap size, only volume quality.
+
+    Fails CLOSED like every other volume/noise guard in this file: not
+    enough prior-session history yet to know what "normal" volume is for
+    this bucket (early in a backtest window, or a low-history symbol)
+    means no confirmation, not a free pass.
+    """
+    opening_volume = df["session_first_bar_volume"].iat[i]
+    normal_volume = df["session_first_bar_tod_avg_volume"].iat[i]
+    if pd.isna(opening_volume) or pd.isna(normal_volume) or normal_volume <= 0:
+        return False
+    return opening_volume >= normal_volume * GAP_QUALITY_VOLUME_MULT
+
+
 def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     """
     Gap Pattern (Type A) -- the other Oxford Capital Strategies B-rated
@@ -701,6 +901,12 @@ def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     at least GAP_MIN_PCT vs. the prior session's close, then a later
     bar in that same session breaks above the opening bar's high
     (confirming the gap is extending rather than filling).
+
+    Both checks above are pure PRICE checks -- they can't tell a gap
+    backed by real trading interest from a thin, low-volume gap that's
+    statistically more likely to fade (see USE_GAP_QUALITY_FILTER).
+    When that toggle is on, a qualifying price-based gap must ALSO clear
+    gap_quality_confirmed_at's opening-volume check to fire.
     """
     prior_close = df["prior_session_close"].iat[i]
     session_open = df["session_open_price"].iat[i]
@@ -718,7 +924,13 @@ def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     close_prev = df["close"].iat[i - 1]
     # Fire on the FIRST bar that breaks the opening bar's high, not every
     # bar afterward that happens to still be above it.
-    return close_now > first_bar_high and close_prev <= first_bar_high
+    if not (close_now > first_bar_high and close_prev <= first_bar_high):
+        return False
+
+    if USE_GAP_QUALITY_FILTER and not gap_quality_confirmed_at(df, i):
+        return False
+
+    return True
 
 
 def ross_hook_at(df: pd.DataFrame, i: int) -> bool:
