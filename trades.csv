@@ -98,3 +98,9 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-11T17:11:50+00:00,2026-08-11,SEPN,BUY,breakout,volume-confirmed breakout above 20-bar high,10,46.69,466.9,44.36,51.36,flat $,98661.1,,195,e07c9a36-3465-4b0a-923a-10cec4dc08a4,breakout-1786468307,45.99,83.1703,56.0194,0.648302,44.8205,43.1705,43.8241,9550,25988.5,45.56,40.73,38.85
 2026-08-11T14:02:20+00:00,2026-08-11,NIQ,BUY,breakout,volume-confirmed breakout above 20-bar high,32,15.48,495.36,14.68,17,flat $,99632.7,,15,f85dce0f-232a-4578-9b99-818d6d5ebd50,breakout-1786456939,15.395,82.0651,44.0631,0.28209,14.0523,13.6248,14.7292,732504,36184.2,14.615,14.8,13.75
 2026-08-11T14:02:22+00:00,2026-08-11,RPD,BUY,breakout,volume-confirmed breakout above 20-bar high,34,14.45,491.3,13.7,15.86,flat $,99138.1,,15,75e7f039-6c24-4740-98c6-780e712a736f,breakout-1786456941,14.44,82.9337,32.1546,0.323963,13.0237,12.5916,13.8452,511063,33128.2,13.8,14.06,12.5
+2026-08-11T17:54:52+00:00,2026-08-11,ALMR,STOP_HIT,breakout,STOP_HIT (order type OrderType.STOP),13,35.19,457.47,,,,,,,461ce1bf-70e6-4484-b83e-4decb928fa23,,,,,,,,,,,,,
+2026-08-11T18:10:37+00:00,2026-08-11,NN,STOP_HIT,breakout,STOP_HIT (order type OrderType.STOP),26,18.16,472.16,,,,,,,cc6d3729-c6af-402e-ab51-fc9b1d803485,,,,,,,,,,,,,
+2026-08-11T18:25:47+00:00,2026-08-11,RPD,BUY,vwap_reversion,stretched below VWAP and turning back up,36,13.69,492.84,13.01,15.06,flat $,99578.2,,270,a76ebc82-71a8-456e-97b2-9c280e8db59e,vwap_reversion-1786472744,13.81,57.9275,32.2577,0.260853,13.7748,13.6477,14.0751,330641,194058,14.72,14.06,12.5
+2026-08-11T19:51:04+00:00,2026-08-11,NIQ,FLATTEN,end_of_day,Flattened before market close,32,,,,,,,,,,,,,,,,,,,,,,
+2026-08-11T19:51:04+00:00,2026-08-11,RPD,FLATTEN,end_of_day,Flattened before market close,36,,,,,,,,,,,,,,,,,,,,,,
+2026-08-11T19:51:04+00:00,2026-08-11,SEPN,FLATTEN,end_of_day,Flattened before market close,10,,,,,,,,,,,,,,,,,,,,,,
