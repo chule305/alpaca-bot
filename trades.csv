@@ -92,3 +92,5 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-07T19:51:04+00:00,2026-08-07,TTD,FLATTEN,end_of_day,Flattened before market close,35,,,,,,,,,,,,,,,,,,,,,,
 2026-08-10T14:32:29+00:00,2026-08-10,NESR,BUY,breakout,volume-confirmed breakout above 20-bar high,14,34.63,484.82,32.81,37.99,flat $,99613.5,,45,f40232c0-c779-4e9d-80df-cf61e77922ad,breakout-1786372347,34.28,79.5669,32.431,0.728887,32.9976,32.0138,33.4505,309383,77869.6,33.92,34.23,29.42
 2026-08-10T19:51:04+00:00,2026-08-10,NESR,FLATTEN,end_of_day,Flattened before market close,14,,,,,,,,,,,,,,,,,,,,,,
+2026-08-11T14:02:20+00:00,2026-08-11,NIQ,BUY,breakout,volume-confirmed breakout above 20-bar high,32,15.48,495.36,14.68,17,flat $,99632.7,,15,f85dce0f-232a-4578-9b99-818d6d5ebd50,breakout-1786456939,15.395,82.0651,44.0631,0.28209,14.0523,13.6248,14.7292,732504,36184.2,14.615,14.8,13.75
+2026-08-11T14:02:22+00:00,2026-08-11,RPD,BUY,breakout,volume-confirmed breakout above 20-bar high,34,14.45,491.3,13.7,15.86,flat $,99138.1,,15,75e7f039-6c24-4740-98c6-780e712a736f,breakout-1786456941,14.44,82.9337,32.1546,0.323963,13.0237,12.5916,13.8452,511063,33128.2,13.8,14.06,12.5
