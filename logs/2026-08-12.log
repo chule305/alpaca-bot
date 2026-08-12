@@ -220,3 +220,202 @@
 2026-08-12 17:30:45,179 | [SNDK] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1373.42
 2026-08-12 17:30:45,179 | [SNDK] ACTION: No trade.
 2026-08-12 17:41:42,889 | Duration window finished.
+2026-08-12 12:41:14,430 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-12 12:41:14,430 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-12 12:41:14,430 | Bar size: 15min | Check interval while market open: 15min
+2026-08-12 12:41:14,430 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-12 12:41:14,430 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-12 12:41:14,430 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-12 12:41:14,430 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-12 12:41:14,430 | Position sizing: flat $500 per trade
+2026-08-12 12:41:14,430 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-12 12:41:14,430 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-12 12:41:14,430 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-12 12:41:14,430 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-12 12:41:14,430 | Loaded saved watchlist from previous run: NIQ, CDNL, ALMR, LIF, ONON, MU, NVDA, MSFT, SNDK, AAPL, PLTR
+2026-08-12 12:41:14,431 | Restored daily risk state from previous run: day 2026-08-11, breaker tripped: False
+2026-08-12 12:41:14,431 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-12 12:41:14,657 | Market is closed. Next open: 2026-08-12 15:30:00 CEST (your local time) -- in 0.8 hours.
+2026-08-12 13:30:05,543 | Daily loss circuit breaker: tracking from starting equity $99,579.30 (limit -3%).
+2026-08-12 13:30:05,543 | SCANNER: refreshing watchlist...
+2026-08-12 13:30:06,561 | SCANNER: excluded 1 leveraged/inverse ETF(s) from 11 candidate(s).
+2026-08-12 13:30:07,468 | SCANNER: candidate NIQ -- +42.0% today, $16.58, liquid, 8 recent news item(s)
+2026-08-12 13:30:07,468 | SCANNER: candidate CDNL -- -36.2% today, $38.27, liquid, 2 recent news item(s)
+2026-08-12 13:30:07,468 | SCANNER: candidate ALMR -- +30.6% today, $36.57, liquid, 6 recent news item(s)
+2026-08-12 13:30:07,468 | SCANNER: candidate LIF -- -24.8% today, $48.61, liquid, 5 recent news item(s)
+2026-08-12 13:30:07,468 | SCANNER: candidate SEPN -- +22.9% today, $47.76, liquid, 3 recent news item(s)
+2026-08-12 13:30:07,468 | SCANNER: candidate ONON -- -20.3% today, $30.91, liquid, 8 recent news item(s)
+2026-08-12 13:30:07,580 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-12 13:30:57,317 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, INTC
+2026-08-12 13:30:57,318 | SCANNER: new watchlist -> NIQ, CDNL, ALMR, LIF, SEPN, ONON, MU, NVDA, SNDK, MSFT, AAPL, INTC
+2026-08-12 13:30:57,431 | [NIQ] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-12 13:30:57,595 | [SEPN] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-12 13:30:57,712 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 12 symbols: AAPL, ALMR, CDNL, INTC, LIF, MSFT, MU, NIQ, NVDA, ONON, SEPN, SNDK
+2026-08-12 13:30:59,911 | Multi-timeframe filter: refreshed daily trend for 12 symbol(s).
+2026-08-12 13:30:59,940 | [AAPL] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.00
+2026-08-12 13:30:59,941 | [AAPL] ACTION: No trade.
+2026-08-12 13:31:00,019 | [ALMR] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.40
+2026-08-12 13:31:00,019 | [ALMR] ACTION: No trade.
+2026-08-12 13:31:00,099 | [CDNL] trending (ADX 46.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.05
+2026-08-12 13:31:00,099 | [CDNL] ACTION: No trade.
+2026-08-12 13:31:00,127 | [INTC] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.40
+2026-08-12 13:31:00,127 | [INTC] ACTION: No trade.
+2026-08-12 13:31:00,211 | [LIF] choppy/sideways (ADX 10.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $49.29
+2026-08-12 13:31:00,211 | [LIF] ACTION: No trade.
+2026-08-12 13:31:00,239 | [MSFT] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.41
+2026-08-12 13:31:00,239 | [MSFT] ACTION: No trade.
+2026-08-12 13:31:00,268 | [MU] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $913.03
+2026-08-12 13:31:00,268 | [MU] ACTION: No trade.
+2026-08-12 13:31:00,346 | [NIQ] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.52
+2026-08-12 13:31:00,346 | [NIQ] ACTION: No trade.
+2026-08-12 13:31:00,374 | [NVDA] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.05
+2026-08-12 13:31:00,374 | [NVDA] ACTION: No trade.
+2026-08-12 13:31:00,529 | [ONON] trending (ADX 25.1) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $32.02
+2026-08-12 13:31:00,529 | [ONON] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-12 13:31:00,613 | [SEPN] trending (ADX 54.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.00
+2026-08-12 13:31:00,613 | [SEPN] ACTION: No trade.
+2026-08-12 13:31:00,701 | [SNDK] trending (ADX 49.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1360.00
+2026-08-12 13:31:00,701 | [SNDK] ACTION: No trade.
+2026-08-12 13:46:01,105 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 12 symbols: AAPL, ALMR, CDNL, INTC, LIF, MSFT, MU, NIQ, NVDA, ONON, SEPN, SNDK
+2026-08-12 13:46:04,453 | [AAPL] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.37
+2026-08-12 13:46:04,453 | [AAPL] ACTION: No trade.
+2026-08-12 13:46:04,475 | [ALMR] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $36.51
+2026-08-12 13:46:04,475 | [ALMR] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-12 13:46:04,498 | [CDNL] trending (ADX 47.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.22
+2026-08-12 13:46:04,498 | [CDNL] ACTION: No trade.
+2026-08-12 13:46:04,526 | [INTC] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $102.69
+2026-08-12 13:46:04,593 | [INTC] Buying 4 share(s) (~$406, flat $ sizing) | stop-loss $96.50 | take-profit $111.74 (fixed %)
+2026-08-12 13:46:05,835 | [INTC] ACTION: BUY (order id f24b0a83-61dc-4423-96c8-151733ee0d9a, strategy: breakout)
+2026-08-12 13:46:05,861 | [LIF] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $50.13
+2026-08-12 13:46:05,861 | [LIF] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-12 13:46:05,889 | [MSFT] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $497.90
+2026-08-12 13:46:05,889 | [MSFT] ACTION: No trade.
+2026-08-12 13:46:05,916 | [MU] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $915.76
+2026-08-12 13:46:05,917 | [MU] ACTION: No trade.
+2026-08-12 13:46:05,940 | [NIQ] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $16.75
+2026-08-12 13:46:05,940 | [NIQ] ACTION: No trade.
+2026-08-12 13:46:05,967 | [NVDA] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.32
+2026-08-12 13:46:05,968 | [NVDA] ACTION: No trade.
+2026-08-12 13:46:05,993 | [ONON] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.21
+2026-08-12 13:46:05,993 | [ONON] ACTION: No trade.
+2026-08-12 13:46:06,014 | [SEPN] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.58
+2026-08-12 13:46:06,014 | [SEPN] ACTION: No trade.
+2026-08-12 13:46:06,042 | [SNDK] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1336.20
+2026-08-12 13:46:06,042 | [SNDK] ACTION: No trade.
+2026-08-12 14:01:06,313 | SCANNER: refreshing watchlist...
+2026-08-12 14:01:08,122 | SCANNER: excluded 21 leveraged/inverse ETF(s) from 27 candidate(s).
+2026-08-12 14:01:09,451 | SCANNER: candidate ATRO -- +22.1% today, $91.42, liquid, 6 recent news item(s)
+2026-08-12 14:01:09,451 | SCANNER: candidate EROC -- +19.3% today, $13.42, liquid, 4 recent news item(s)
+2026-08-12 14:01:09,451 | SCANNER: candidate CRWV -- +18.8% today, $107.33, liquid, 35 recent news item(s)
+2026-08-12 14:01:09,451 | SCANNER: candidate NBIS -- +18.7% today, $229.29, liquid, 13 recent news item(s)
+2026-08-12 14:02:15,143 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AAPL, INTC
+2026-08-12 14:02:15,144 | SCANNER: new watchlist -> ATRO, EROC, CRWV, NBIS, MU, NVDA, MSFT, SNDK, AAPL, INTC
+2026-08-12 14:02:15,368 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ATRO, CRWV, EROC, INTC, MSFT, MU, NBIS, NVDA, SNDK
+2026-08-12 14:02:19,703 | Multi-timeframe filter: refreshed daily trend for 4 symbol(s).
+2026-08-12 14:02:19,732 | [AAPL] trending (ADX 34.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.36
+2026-08-12 14:02:19,732 | [AAPL] ACTION: No trade.
+2026-08-12 14:02:19,810 | [ATRO] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $91.32
+2026-08-12 14:02:19,866 | [ATRO] Buying 5 share(s) (~$455, flat $ sizing) | stop-loss $86.40 | take-profit $100.05 (fixed %)
+2026-08-12 14:02:22,801 | [ATRO] ACTION: BUY (order id 77f3345b-8ef7-4258-9cb0-febc836e41ee, strategy: breakout)
+2026-08-12 14:02:22,885 | [CRWV] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.06
+2026-08-12 14:02:22,885 | [CRWV] ACTION: No trade.
+2026-08-12 14:02:22,965 | [EROC] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.48
+2026-08-12 14:02:22,965 | [EROC] ACTION: No trade.
+2026-08-12 14:02:22,993 | [INTC] trending (ADX 31.0) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $101.50
+2026-08-12 14:02:22,993 | [INTC] ACTION: No trade.
+2026-08-12 14:02:23,021 | [MSFT] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $493.56
+2026-08-12 14:02:23,021 | [MSFT] ACTION: No trade.
+2026-08-12 14:02:23,049 | [MU] trending (ADX 53.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $921.23
+2026-08-12 14:02:23,049 | [MU] ACTION: No trade.
+2026-08-12 14:02:23,132 | [NBIS] trending (ADX 62.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $227.30
+2026-08-12 14:02:23,132 | [NBIS] ACTION: No trade.
+2026-08-12 14:02:23,159 | [NVDA] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.63
+2026-08-12 14:02:23,160 | [NVDA] ACTION: No trade.
+2026-08-12 14:02:23,187 | [SNDK] trending (ADX 43.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1365.77
+2026-08-12 14:02:23,187 | [SNDK] ACTION: No trade.
+2026-08-12 14:17:23,663 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ATRO, CRWV, EROC, INTC, MSFT, MU, NBIS, NVDA, SNDK
+2026-08-12 14:17:26,401 | [AAPL] trending (ADX 34.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.48
+2026-08-12 14:17:26,401 | [AAPL] ACTION: No trade.
+2026-08-12 14:17:26,424 | [ATRO] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 5.0 | Last price: $89.00
+2026-08-12 14:17:26,424 | [ATRO] ACTION: No trade.
+2026-08-12 14:17:26,452 | [CRWV] trending (ADX 41.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $109.46
+2026-08-12 14:17:26,453 | [CRWV] ACTION: No trade.
+2026-08-12 14:17:26,477 | [EROC] trending (ADX 39.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.00
+2026-08-12 14:17:26,477 | [EROC] ACTION: No trade.
+2026-08-12 14:17:26,504 | [INTC] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $100.85
+2026-08-12 14:17:26,504 | [INTC] ACTION: No trade.
+2026-08-12 14:17:26,532 | [MSFT] choppy/sideways (ADX 21.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $495.47
+2026-08-12 14:17:26,532 | [MSFT] ACTION: No trade.
+2026-08-12 14:17:26,560 | [MU] trending (ADX 54.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $920.11
+2026-08-12 14:17:26,560 | [MU] ACTION: No trade.
+2026-08-12 14:17:26,587 | [NBIS] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $233.25
+2026-08-12 14:17:26,587 | [NBIS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-12 14:17:26,615 | [NVDA] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.11
+2026-08-12 14:17:26,615 | [NVDA] ACTION: No trade.
+2026-08-12 14:17:26,643 | [SNDK] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1369.65
+2026-08-12 14:17:26,643 | [SNDK] ACTION: No trade.
+2026-08-12 14:32:26,913 | SCANNER: refreshing watchlist...
+2026-08-12 14:32:27,617 | SCANNER: excluded 22 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-08-12 14:32:28,212 | SCANNER: candidate EROC -- +24.3% today, $13.98, liquid, 5 recent news item(s)
+2026-08-12 14:32:28,212 | SCANNER: candidate NBIS -- +20.0% today, $231.94, liquid, 16 recent news item(s)
+2026-08-12 14:33:13,826 | S&P 500 liquidity backstop -> MU, NVDA, MSFT, SNDK, AAPL, INTC
+2026-08-12 14:33:13,827 | SCANNER: new watchlist -> EROC, NBIS, MU, NVDA, MSFT, SNDK, AAPL, INTC
+2026-08-12 14:33:13,956 | [ATRO] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-12 14:33:14,164 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 8 symbols: AAPL, EROC, INTC, MSFT, MU, NBIS, NVDA, SNDK
+2026-08-12 14:33:16,961 | [AAPL] trending (ADX 34.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.35
+2026-08-12 14:33:16,961 | [AAPL] ACTION: No trade.
+2026-08-12 14:33:16,985 | [EROC] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.94
+2026-08-12 14:33:16,985 | [EROC] ACTION: No trade.
+2026-08-12 14:33:17,013 | [INTC] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $101.03
+2026-08-12 14:33:17,013 | [INTC] ACTION: No trade.
+2026-08-12 14:33:17,040 | [MSFT] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $495.88
+2026-08-12 14:33:17,040 | [MSFT] ACTION: No trade.
+2026-08-12 14:33:17,068 | [MU] trending (ADX 55.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $925.32
+2026-08-12 14:33:17,068 | [MU] ACTION: No trade.
+2026-08-12 14:33:17,095 | [NBIS] trending (ADX 59.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $233.17
+2026-08-12 14:33:17,095 | [NBIS] ACTION: No trade.
+2026-08-12 14:33:17,123 | [NVDA] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.48
+2026-08-12 14:33:17,123 | [NVDA] ACTION: No trade.
+2026-08-12 14:33:17,151 | [SNDK] trending (ADX 39.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1381.00
+2026-08-12 14:33:17,151 | [SNDK] ACTION: No trade.
+2026-08-12 14:48:17,583 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 8 symbols: AAPL, EROC, INTC, MSFT, MU, NBIS, NVDA, SNDK
+2026-08-12 14:48:21,569 | [AAPL] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.94
+2026-08-12 14:48:21,570 | [AAPL] ACTION: No trade.
+2026-08-12 14:48:21,594 | [EROC] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.70
+2026-08-12 14:48:21,594 | [EROC] ACTION: No trade.
+2026-08-12 14:48:21,621 | [INTC] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $101.78
+2026-08-12 14:48:21,621 | [INTC] ACTION: No trade.
+2026-08-12 14:48:21,649 | [MSFT] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $494.35
+2026-08-12 14:48:21,649 | [MSFT] ACTION: No trade.
+2026-08-12 14:48:21,676 | [MU] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $927.65
+2026-08-12 14:48:21,676 | [MU] ACTION: No trade.
+2026-08-12 14:48:21,704 | [NBIS] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $232.95
+2026-08-12 14:48:21,704 | [NBIS] ACTION: No trade.
+2026-08-12 14:48:21,732 | [NVDA] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.81
+2026-08-12 14:48:21,732 | [NVDA] ACTION: No trade.
+2026-08-12 14:48:21,759 | [SNDK] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1388.63
+2026-08-12 14:48:21,759 | [SNDK] ACTION: No trade.
+2026-08-12 15:03:22,249 | SCANNER: refreshing watchlist...
+2026-08-12 15:03:22,856 | SCANNER: excluded 23 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-12 15:03:23,293 | SCANNER: candidate EROC -- +24.5% today, $14.01, liquid, 5 recent news item(s)
+2026-08-12 15:03:23,293 | SCANNER: candidate NBIS -- +21.5% today, $234.70, liquid, 17 recent news item(s)
+2026-08-12 15:04:15,562 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, MSFT, AAPL, INTC
+2026-08-12 15:04:15,564 | SCANNER: new watchlist -> EROC, NBIS, MU, NVDA, SNDK, MSFT, AAPL, INTC
+2026-08-12 15:04:15,792 | Market is open (closes 2026-08-12 22:00:00 CEST your local time). Checking 8 symbols: AAPL, EROC, INTC, MSFT, MU, NBIS, NVDA, SNDK
+2026-08-12 15:04:20,905 | [AAPL] trending (ADX 33.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $302.43
+2026-08-12 15:04:20,905 | [AAPL] ACTION: No trade.
+2026-08-12 15:04:20,929 | [EROC] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.81
+2026-08-12 15:04:20,929 | [EROC] ACTION: No trade.
+2026-08-12 15:04:20,957 | [INTC] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $100.71
+2026-08-12 15:04:20,957 | [INTC] ACTION: No trade.
+2026-08-12 15:04:20,985 | [MSFT] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $494.97
+2026-08-12 15:04:20,985 | [MSFT] ACTION: No trade.
+2026-08-12 15:04:21,013 | [MU] trending (ADX 58.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $921.15
+2026-08-12 15:04:21,013 | [MU] ACTION: No trade.
+2026-08-12 15:04:21,040 | [NBIS] trending (ADX 55.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $234.17
+2026-08-12 15:04:21,040 | [NBIS] ACTION: No trade.
+2026-08-12 15:04:21,068 | [NVDA] trending (ADX 43.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $223.75
+2026-08-12 15:04:21,068 | [NVDA] ACTION: No trade.
+2026-08-12 15:04:21,096 | [SNDK] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1375.76
+2026-08-12 15:04:21,096 | [SNDK] ACTION: No trade.
+2026-08-12 15:11:14,431 | Duration window finished.
