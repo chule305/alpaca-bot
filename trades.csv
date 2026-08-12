@@ -104,3 +104,5 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-11T19:51:04+00:00,2026-08-11,NIQ,FLATTEN,end_of_day,Flattened before market close,32,,,,,,,,,,,,,,,,,,,,,,
 2026-08-11T19:51:04+00:00,2026-08-11,RPD,FLATTEN,end_of_day,Flattened before market close,36,,,,,,,,,,,,,,,,,,,,,,
 2026-08-11T19:51:04+00:00,2026-08-11,SEPN,FLATTEN,end_of_day,Flattened before market close,10,,,,,,,,,,,,,,,,,,,,,,
+2026-08-12T15:12:35+00:00,2026-08-12,NIQ,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),32,16.37,523.84,,,,,,,90ec6188-efbf-4f0c-8144-fb2c340b33ae,,,,,,,,,,,,,
+2026-08-12T15:12:35+00:00,2026-08-12,SEPN,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),10,47.29,472.9,,,,,,,9007a5de-c2ef-41c4-905f-5b30ad925aa9,,,,,,,,,,,,,
