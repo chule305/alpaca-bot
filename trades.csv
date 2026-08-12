@@ -109,3 +109,4 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-12T13:46:05+00:00,2026-08-12,INTC,BUY,breakout,volume-confirmed breakout above 20-bar high,4,101.47,405.88,96.5,111.74,flat $,99579.3,,0,f24b0a83-61dc-4423-96c8-151733ee0d9a,breakout-1786542364,102.69,83.9451,29.1516,0.696024,100.477,99.7474,101.578,2.03086e+07,253262,101.4,103.16,97.94
 2026-08-12T14:02:22+00:00,2026-08-12,ATRO,BUY,breakout,volume-confirmed breakout above 20-bar high,5,91,455,86.4,100.05,flat $,99580.8,,15,77f3345b-8ef7-4258-9cb0-febc836e41ee,breakout-1786543339,91.32,78.8959,50.2928,1.91649,85.988,83.583,88.0657,184844,23257.2,89.41,89.95,84.35
 2026-08-12T14:33:14+00:00,2026-08-12,ATRO,STOP_HIT,breakout,STOP_HIT (order type OrderType.STOP),5,86.29,431.45,,,,,,,5c8bcc42-ada1-4f9e-b342-43abc6eac45b,,,,,,,,,,,,,
+2026-08-12T19:51:04+00:00,2026-08-12,INTC,FLATTEN,end_of_day,Flattened before market close,4,,,,,,,,,,,,,,,,,,,,,,
