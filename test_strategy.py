@@ -106,21 +106,98 @@ def test_breakout():
     # 21 flat bars, then an initial breakout bar (should NOT fire yet --
     # no confirmation), then a confirmation bar that still pushes higher
     # on continued volume (should fire).
+    #
+    # USE_TIME_OF_DAY_VOLUME_NORM defaults true (see strategy.py), which
+    # compares each bar's volume against OTHER sessions' bars in the same
+    # time-of-day bucket -- a single-session fixture has no prior session
+    # to build that average from, so it reads NaN and fails closed (see
+    # compute_time_of_day_avg_volume's docstring). One prior "normal
+    # volume" seed day at the same flat 1000/bar level establishes a real
+    # baseline for the buckets this test's bars actually fall in, same
+    # seeding pattern test_gap_quality_filter uses for the same reason.
     n = 23
+    seed_ts = ts_range("2024-01-01", "09:30", n)
+    seed_closes = [100.0] * n
+    seed_volumes = [1000] * n
     ts = ts_range("2024-01-02", "09:30", n)
     closes = [100.0] * 21 + [110.0, 115.0]
     volumes = [1000] * 21 + [3000, 3500]
-    df = flat_bars(ts, closes, volumes)
+    df = flat_bars(seed_ts + ts, seed_closes + closes, seed_volumes + volumes)
     enriched = strat.add_indicators(df)
+    seed_i = n  # bars [0, n) are the seed day; the test day starts at index n
     check("breakout does NOT fire on the initial (unconfirmed) breakout bar",
-          not strat.breakout_at(enriched, 21))
+          not strat.breakout_at(enriched, seed_i + 21))
     check("breakout fires on the confirmation bar (still pushing higher, volume held up)",
-          strat.breakout_at(enriched, 22))
+          strat.breakout_at(enriched, seed_i + 22))
 
     volumes_no_spike = [1000] * 23
-    df2 = flat_bars(ts, closes, volumes_no_spike)
+    df2 = flat_bars(seed_ts + ts, seed_closes + closes, seed_volumes + volumes_no_spike)
     enriched2 = strat.add_indicators(df2)
-    check("breakout does NOT fire without a volume spike", not strat.breakout_at(enriched2, 22))
+    check("breakout does NOT fire without a volume spike", not strat.breakout_at(enriched2, seed_i + 22))
+
+
+# ---------------------------------------------------------------------------
+# 2b. Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT /
+#     breakout_invalidated_at() in strategy.py. Pure function: only reads
+#     df["close"].iat[i] against the level it's handed, so these fixtures
+#     don't need add_indicators() at all.
+# ---------------------------------------------------------------------------
+
+def test_breakout_invalidated_at():
+    ts = ts_range("2024-01-02", "09:30", 2)
+    df = build_df(
+        ts,
+        opens=[105.0, 95.0], highs=[106.0, 96.0], lows=[104.0, 94.0],
+        closes=[105.0, 95.0], volumes=[1000, 1000],
+    )
+
+    check("fires when the close drops back BELOW the frozen invalidation level",
+          strat.breakout_invalidated_at(df, 1, invalidation_level=100.0))
+    check("does NOT fire on a bar where the level is still holding (close above it)",
+          not strat.breakout_invalidated_at(df, 0, invalidation_level=100.0))
+
+    # A close sitting exactly AT the level hasn't broken below it -- the
+    # entry side (breakout_at) requires a close strictly ABOVE its level,
+    # so the symmetric exit requires strictly BELOW it, not <=.
+    ts_at = ts_range("2024-01-02", "09:30", 1)
+    df_at_level = build_df(ts_at, opens=[100.0], highs=[100.0], lows=[100.0],
+                            closes=[100.0], volumes=[1000])
+    check("does NOT fire when the close sits exactly AT the level (only a genuine break below counts)",
+          not strat.breakout_invalidated_at(df_at_level, 0, invalidation_level=100.0))
+
+    check("fails safe (returns False) when invalidation_level is None -- "
+          "e.g. a non-breakout position, which must never be treated as invalidated",
+          not strat.breakout_invalidated_at(df, 1, invalidation_level=None))
+    check("fails safe (returns False) when invalidation_level is NaN",
+          not strat.breakout_invalidated_at(df, 1, invalidation_level=float("nan")))
+
+    # Checks the CODE's default (a falsy env value), not this repo's
+    # CURRENT .env -- USE_BREAKOUT_INVALIDATION_EXIT was deliberately
+    # enabled live on 2026-08-12 once the scanner-universe backtest
+    # evidence supported it (see CLAUDE.md), so strat.USE_BREAKOUT_
+    # INVALIDATION_EXIT itself is True in this repo's real environment.
+    # Setting the var to "" here (rather than deleting it from the
+    # subprocess env) is deliberate: load_dotenv()'s default override=False
+    # only skips keys ALREADY present in os.environ -- a deleted key would
+    # just let load_dotenv() re-populate it from this repo's own .env
+    # (which says "true"), silently defeating the isolation. An explicit ""
+    # IS present, so dotenv leaves it alone, and the parsing logic
+    # (`.strip().lower() in ("1","true","yes")`) treats "" the same as the
+    # "false" fallback -- same technique as the VOLATILITY_SCALED_REDUCED_USD
+    # import-time guard test below.
+    import os
+    import subprocess
+    import sys
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+    env_falsy = dict(os.environ)
+    env_falsy["USE_BREAKOUT_INVALIDATION_EXIT"] = ""
+    result = subprocess.run(
+        [sys.executable, "-c", "import strategy; print(strategy.USE_BREAKOUT_INVALIDATION_EXIT)"],
+        cwd=here, env=env_falsy, capture_output=True, text=True,
+    )
+    check("USE_BREAKOUT_INVALIDATION_EXIT's CODE default is off for a falsy/unset env value",
+          result.stdout.strip() == "False",
+          f"stdout={result.stdout!r}, stderr tail: {result.stderr[-300:]}")
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +251,79 @@ def test_gap_continuation():
     df2 = make(day2_open=100.5, day2_bar1_high=101.5, day2_bar1_close=101.0, day2_bar2_close=103.0)
     enriched2 = strat.add_indicators(df2)
     check("gap continuation does NOT fire on a sub-threshold gap", not strat.gap_continuation_at(enriched2, 6))
+
+
+# ---------------------------------------------------------------------------
+# 4b. Gap quality gate (USE_GAP_QUALITY_FILTER) -- opening-bar volume vs.
+#     this symbol's own historical same-time-of-day normal.
+# ---------------------------------------------------------------------------
+
+def test_gap_quality_filter():
+    # 3 "normal" prior sessions establish this symbol's historical
+    # opening-bar volume for the 9:30 bucket (bucket 0 at the default
+    # 30-min TIME_OF_DAY_VOLUME_BUCKET_MINUTES): flat 1000 shares/bar,
+    # 5 bars/session, all inside that first 30-min bucket. Each session
+    # closes flat at 100.0 so the immediately-prior session's close
+    # (what gap_continuation_at's gap %% is measured against) matches
+    # the 100.0 used in test_gap_continuation above.
+    seed_days = ["2024-01-02", "2024-01-03", "2024-01-04"]
+    seed_ts, seed_v = [], []
+    for day in seed_days:
+        seed_ts += ts_range(day, "09:30", 5)
+        seed_v += [1000] * 5
+    seed_prices = [100.0] * len(seed_ts)
+
+    gap_ts = ts_range("2024-01-05", "09:30", 2)
+    # Same qualifying price shape as test_gap_continuation: 4%% gap up
+    # from prior close 100 -> 104, first bar high 105, second bar closes
+    # at 106 (breaks the opening bar's high) -- price checks alone
+    # already pass here regardless of volume.
+    gap_o = [104.0, 104.5]
+    gap_h = [105.0, 106.1]
+    gap_l = [103.8, 104.4]
+    gap_c = [104.5, 106.0]
+
+    def make(gap_open_volume: int) -> pd.DataFrame:
+        ts = seed_ts + gap_ts
+        opens = seed_prices + gap_o
+        highs = seed_prices + gap_h
+        lows = seed_prices + gap_l
+        closes = seed_prices + gap_c
+        volumes = seed_v + [gap_open_volume, gap_open_volume]
+        return build_df(ts, opens, highs, lows, closes, volumes)
+
+    gap_i = len(seed_ts) + 1  # the confirmation bar (2nd bar of the gap day)
+
+    # Opening volume 3x the historical 1000/bar normal -> clears
+    # GAP_QUALITY_VOLUME_MULT (default 1.5x).
+    df_strong = make(gap_open_volume=3000)
+    enriched_strong = strat.add_indicators(df_strong)
+    check("gap_quality_confirmed_at fires when opening volume is well above normal",
+          strat.gap_quality_confirmed_at(enriched_strong, gap_i))
+    check("gap_continuation_at (price-only, filter off) still fires on the strong-volume gap",
+          strat.gap_continuation_at(enriched_strong, gap_i))
+
+    # Opening volume exactly matches the historical normal (1x, not
+    # meaningfully elevated) -- the price shape alone still qualifies as
+    # a gap_continuation, but the quality gate should refuse it.
+    df_thin = make(gap_open_volume=1000)
+    enriched_thin = strat.add_indicators(df_thin)
+    check("gap_quality_confirmed_at does NOT fire on ordinary (non-elevated) opening volume",
+          not strat.gap_quality_confirmed_at(enriched_thin, gap_i))
+    check("gap_continuation_at (price-only, filter off) still fires on the same thin-volume gap",
+          strat.gap_continuation_at(enriched_thin, gap_i))
+
+    # Flip the toggle on and confirm gap_continuation_at actually gates
+    # end to end, not just the standalone helper.
+    original = strat.USE_GAP_QUALITY_FILTER
+    try:
+        strat.USE_GAP_QUALITY_FILTER = True
+        check("USE_GAP_QUALITY_FILTER=true: strong-volume gap still fires",
+              strat.gap_continuation_at(enriched_strong, gap_i))
+        check("USE_GAP_QUALITY_FILTER=true: thin-volume gap is now blocked",
+              not strat.gap_continuation_at(enriched_thin, gap_i))
+    finally:
+        strat.USE_GAP_QUALITY_FILTER = original
 
 
 # ---------------------------------------------------------------------------
@@ -431,11 +581,20 @@ def test_decide_signal_entry_points_agree():
     # bar (see breakout_at), so the last TWO bars are the breakout
     # attempt (110, unconfirmed) then the confirmation (114, still below
     # the 115 ORB level so ORB stays out of it).
+    #
+    # A one-day prior seed session (flat, normal volume) is prepended so
+    # USE_TIME_OF_DAY_VOLUME_NORM's per-bucket historical average has
+    # something to compare the confirmation bar's volume spike against --
+    # see test_breakout's comment for why a single-session fixture alone
+    # reads NaN and fails closed.
     n = 31
+    seed_ts = ts_range("2024-01-01", "09:30", n)
+    seed_closes = [100.0] * n
+    seed_volumes = [1000] * n
     ts = ts_range("2024-01-02", "09:30", n)
     closes = [115.0] * 3 + [100.0] * (n - 5) + [110.0, 114.0]
     volumes = [1000] * (n - 2) + [3000, 3500]
-    df = flat_bars(ts, closes, volumes)
+    df = flat_bars(seed_ts + ts, seed_closes + closes, seed_volumes + volumes)
 
     live_signal, live_reason = strat.decide_signal(df)
     enriched = strat.add_indicators(df)
@@ -489,16 +648,27 @@ def test_compute_stop_and_target():
 
 def test_compute_position_size():
     # $10,000 equity, 1% risk per trade (default) = $100 at risk.
-    # Entry $50, stop $48 -> $2/share risk -> 50 shares by risk.
-    # MAX_POSITION_PCT_OF_EQUITY (25%) cap = $2500 notional / $50 = 50 shares.
-    # Risk-based and cap agree here by construction of the example.
+    # Entry $50, stop $48 -> $2/share risk -> 50 shares by risk, but
+    # MAX_POSITION_PCT_OF_EQUITY (5% since the 2026-08-05 sizing-incident
+    # revert, see CLAUDE.md) caps notional at $500 / $50 = 10 shares --
+    # the cap binds here rather than risk alone, unlike the old 25% cap
+    # this test originally assumed.
+    equity_pct_cap_qty = int(10000 * strat.MAX_POSITION_PCT_OF_EQUITY / 100 / 50)
     qty = strat.compute_position_size(equity=10000, entry_price=50, stop_price=48)
-    check("position size matches risk_amount / risk_per_share", qty == 50, f"got {qty}")
+    check("position size matches min(risk_amount / risk_per_share, equity pct cap)",
+          qty == min(50, equity_pct_cap_qty), f"got {qty}")
 
-    # Same equity/risk, but a much wider stop (volatile stock) -> fewer shares.
-    qty_wide_stop = strat.compute_position_size(equity=10000, entry_price=50, stop_price=40)
-    check("wider stop (more volatile) produces a smaller position",
-          qty_wide_stop < qty, f"got {qty_wide_stop} vs {qty}")
+    # A wider stop (volatile stock) reduces the risk-based share count
+    # further below the equity cap -- $100 risk / $10 per share = 10
+    # shares by risk, vs. the same 10-share equity cap above, so the two
+    # mechanisms agree here rather than one dominating. Use a stop wide
+    # enough that risk-based sizing alone would clearly undercut the cap,
+    # confirming the reduction is real and not just re-hitting the same cap.
+    qty_wide_stop = strat.compute_position_size(equity=10000, entry_price=50, stop_price=30)
+    expected_wide_stop_qty = min(int(100 / 20), equity_pct_cap_qty)
+    check("wider stop (more volatile) produces a smaller-or-equal position",
+          qty_wide_stop <= qty and qty_wide_stop == expected_wide_stop_qty,
+          f"got {qty_wide_stop} vs {qty}, expected {expected_wide_stop_qty}")
 
     # A very tight stop should hit the MAX_POSITION_PCT_OF_EQUITY cap
     # instead of implying an absurdly large position (risk alone would
@@ -536,14 +706,278 @@ def test_mean_reversion_turning_confirmation():
           strat.mean_reversion_at(enriched_turning, len(df_turning) - 1) == "BUY")
 
 
+# ---------------------------------------------------------------------------
+# 13. Volatility-scaled sizing: second regime axis (Moreira & Muir 2017),
+#    independent of ADX -- see VOL_PERCENTILE_LOOKBACK's comment in
+#    strategy.py. Tests the PURE indicator (compute_vol_percentile) and
+#    its wiring into add_indicators() separately; the actual sizing
+#    decision (which $ amount a HIGH-tercile trade spends) lives outside
+#    strategy.py in trading_bot.py/backtest.py, per this file's own
+#    "computes, doesn't decide sizing" split, and is covered by
+#    test_trading_bot.py instead.
+# ---------------------------------------------------------------------------
+
+def test_vol_percentile_ranks_against_own_trailing_history_only():
+    # Constant price so ATR-as-%-of-price equals the raw ATR value,
+    # keeping the arithmetic legible. 30 quiet bars (ATR=1.0, tied) then
+    # one spike bar (ATR=5.0), lookback=10.
+    atr = pd.Series([1.0] * 30 + [5.0])
+    close = pd.Series([100.0] * 31)
+    result = strat.compute_vol_percentile(atr, close, lookback=10)
+
+    check("NaN for the first (lookback - 1) bars -- not enough trailing history to rank yet",
+          result.iloc[:9].isna().all())
+    check("a tied plateau (nothing stands out) does NOT rank at the top",
+          not pd.isna(result.iloc[29]) and result.iloc[29] < strat.HIGH_VOL_TERCILE_CUTOFF,
+          f"got {result.iloc[29]}")
+    check("a bar that spikes well above its own trailing window ranks at the very top (pct=1.0)",
+          np.isclose(result.iloc[30], 1.0), f"got {result.iloc[30]}")
+
+    # No-lookahead: values already computed at earlier bars must not
+    # change once MORE data (here, an even bigger future spike) is
+    # appended after them -- same guarantee test_indicator_precompute_
+    # matches_growing_window checks for every other indicator in this file.
+    atr_extended = pd.concat([atr, pd.Series([50.0])], ignore_index=True)
+    result_extended = strat.compute_vol_percentile(atr_extended, pd.Series([100.0] * 32), lookback=10)
+    check("appending a future bar doesn't change any already-computed percentile (no lookahead)",
+          np.allclose(result.iloc[9:31].values, result_extended.iloc[9:31].values, equal_nan=True))
+
+    # A bar that's unusually QUIET relative to its own trailing window
+    # ranks near the bottom, not the top -- confirms this isn't just
+    # "any deviation reads as high vol."
+    atr_low_spike = pd.Series([1.0 + 0.1 * i for i in range(10)] + [0.05])
+    result_low = strat.compute_vol_percentile(atr_low_spike, pd.Series([100.0] * 11), lookback=10)
+    check("a bar that's unusually QUIET (not loud) relative to its own window ranks near the bottom",
+          result_low.iloc[10] < 1.0 / 3.0, f"got {result_low.iloc[10]}")
+
+
+def test_high_vol_tercile_wiring_in_add_indicators():
+    # Monkeypatched to a small lookback purely for a fast, deterministic
+    # test -- compute_vol_percentile itself (tested above) takes lookback
+    # as a plain argument, so only the add_indicators() WIRING (reading
+    # the module constant, applying HIGH_VOL_TERCILE_CUTOFF) needs this.
+    original_lookback = strat.VOL_PERCENTILE_LOOKBACK
+    try:
+        strat.VOL_PERCENTILE_LOOKBACK = 20
+
+        n_quiet, n_loud = 50, 15
+        ts = ts_range("2024-01-02", "09:30", n_quiet + n_loud, bar_minutes=15)
+        widths = [1.0] * n_quiet + [20.0] * n_loud
+        # Symmetric high/low around a CONSTANT close so the bar's true
+        # range is controlled exactly by `width`, independent of any
+        # close-to-close jump term compute_true_range also considers.
+        closes = [100.0] * (n_quiet + n_loud)
+        highs = [100.0 + w / 2 for w in widths]
+        lows = [100.0 - w / 2 for w in widths]
+        df = build_df(ts, closes, highs, lows, closes, [1000] * (n_quiet + n_loud))
+
+        enriched = strat.add_indicators(df)
+
+        check("high_vol_tercile column exists and is boolean",
+              "high_vol_tercile" in enriched.columns and enriched["high_vol_tercile"].dtype == bool)
+        check("during ATR/percentile warmup (NaN vol_percentile), high_vol_tercile defaults to False, "
+              "never True -- NaN can never accidentally trigger the reduced-size path",
+              not enriched.loc[enriched["vol_percentile"].isna(), "high_vol_tercile"].any())
+        check("a long, uniformly quiet stretch (well past warmup) is NOT flagged high-vol",
+              not enriched["high_vol_tercile"].iloc[40:50].any())
+        check("the bar where the loud regime BEGINS is immediately flagged high-vol",
+              bool(enriched["high_vol_tercile"].iloc[n_quiet]))
+        check("the loud regime stays flagged high-vol throughout",
+              enriched["high_vol_tercile"].iloc[n_quiet:].all())
+    finally:
+        strat.VOL_PERCENTILE_LOOKBACK = original_lookback
+
+
+def test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd():
+    """
+    Pins the CRITICAL safety constraint directly (see the 2026-08-05
+    CLAUDE.md incident this candidate exists to never repeat): whatever
+    values .env/the environment currently resolve these to, the reduced
+    high-vol-tercile amount must never be larger than the existing flat
+    baseline. strategy.py additionally raises ValueError AT IMPORT TIME
+    if this is ever violated (see the guard next to
+    VOLATILITY_SCALED_REDUCED_USD) -- that's exercised separately, in a
+    fresh subprocess, by test_bad_volatility_scaled_env_var_fails_
+    at_import below, since mutating env vars and reloading this module
+    in-process would leak into every later test in this same run.
+    """
+    check("VOLATILITY_SCALED_REDUCED_USD does not exceed TRADE_AMOUNT_USD under the current config",
+          strat.VOLATILITY_SCALED_REDUCED_USD <= strat.TRADE_AMOUNT_USD,
+          f"reduced=${strat.VOLATILITY_SCALED_REDUCED_USD}, baseline=${strat.TRADE_AMOUNT_USD}")
+    check("USE_VOLATILITY_SCALED_SIZING defaults off (every untested lever in this project does)",
+          strat.USE_VOLATILITY_SCALED_SIZING is False)
+
+
+def test_bad_volatility_scaled_env_var_fails_at_import():
+    """
+    Runs strategy.py's import-time guard in an isolated subprocess (env
+    vars are read once at module load, so mutating os.environ and
+    reloading in-process would silently change every OTHER test's
+    module-level constants for the rest of this run). Directly proves
+    the 2026-08-05 failure shape -- a sizing constant that's allowed to
+    exceed the intended baseline -- cannot happen here even via a bad
+    env var, not just "wasn't set that way in this repo's current .env."
+    """
+    import os
+    import subprocess
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+
+    env_over_baseline = dict(os.environ)
+    env_over_baseline["TRADE_AMOUNT_USD"] = "500"
+    env_over_baseline["VOLATILITY_SCALED_REDUCED_USD"] = "600"  # ABOVE the $500 baseline
+    result_bad = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                 env=env_over_baseline, capture_output=True, text=True)
+    check("importing with the reduced amount set ABOVE the baseline raises, not silently loads",
+          result_bad.returncode != 0 and "must not exceed" in result_bad.stderr,
+          f"returncode={result_bad.returncode}, stderr tail: {result_bad.stderr[-400:]}")
+
+    env_ok = dict(os.environ)
+    env_ok["TRADE_AMOUNT_USD"] = "500"
+    env_ok["VOLATILITY_SCALED_REDUCED_USD"] = "350"
+    result_ok = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                env=env_ok, capture_output=True, text=True)
+    check("importing with the reduced amount properly BELOW the baseline loads cleanly",
+          result_ok.returncode == 0, f"stderr tail: {result_ok.stderr[-400:]}")
+
+
+# ---------------------------------------------------------------------------
+# Conviction-boost sizing candidate: the SAFE alternative to the rejected
+# $90k "high-conviction" idea. See USE_CONVICTION_SIZING's comment block
+# in strategy.py for the full lineage. Mirrors the volatility-scaled
+# sizing tests directly above -- same shape of safety guard, same reason
+# a subprocess is needed for the import-time ValueError check.
+# ---------------------------------------------------------------------------
+
+def test_conviction_boost_usd_never_exceeds_double_trade_amount_usd():
+    """
+    Pins the CRITICAL safety constraint directly, mirroring
+    test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd
+    above: whatever values .env/the environment currently resolve these
+    to, CONVICTION_BOOST_USD must never be more than double
+    TRADE_AMOUNT_USD. strategy.py additionally raises ValueError AT
+    IMPORT TIME if this is ever violated (see the guard next to
+    CONVICTION_BOOST_USD) -- that's exercised separately, in a fresh
+    subprocess, by test_bad_conviction_boost_env_var_fails_at_import
+    below, since mutating env vars and reloading this module in-process
+    would leak into every later test in this same run.
+
+    Also pins the honest, evidence-based shipped default: USE_CONVICTION_
+    SIZING off, and HIGH_CONVICTION_STRATEGIES an EMPTY set -- not a
+    stub, a deliberate "no strategy has real evidence yet" state (see
+    that set's comment for the three-way research finding behind it).
+    """
+    check("CONVICTION_BOOST_USD does not exceed 2x TRADE_AMOUNT_USD under the current config",
+          strat.CONVICTION_BOOST_USD <= strat.TRADE_AMOUNT_USD * 2,
+          f"boost=${strat.CONVICTION_BOOST_USD}, baseline=${strat.TRADE_AMOUNT_USD}")
+    check("USE_CONVICTION_SIZING defaults off (every untested lever in this project does)",
+          strat.USE_CONVICTION_SIZING is False)
+    check("HIGH_CONVICTION_STRATEGIES defaults to an EMPTY set -- no strategy currently has "
+          "real, consistent evidence of an edge across all three research sources",
+          strat.HIGH_CONVICTION_STRATEGIES == set(),
+          f"got {strat.HIGH_CONVICTION_STRATEGIES!r}")
+
+
+def test_bad_conviction_boost_env_var_fails_at_import():
+    """
+    Runs strategy.py's import-time guard in an isolated subprocess (see
+    test_bad_volatility_scaled_env_var_fails_at_import's docstring for
+    why a fresh subprocess, not an in-process reload, is required).
+    Directly proves the shape of harm this guard exists to prevent --
+    the same shape as the 2026-08-05 incident, and the reason the
+    rejected $90k "high-conviction" idea was never built -- cannot
+    happen here even via a bad env var: CONVICTION_BOOST_USD can never
+    end up more than double TRADE_AMOUNT_USD, not just "wasn't set that
+    way in this repo's current .env."
+    """
+    import os
+    import subprocess
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+
+    env_over_cap = dict(os.environ)
+    env_over_cap["TRADE_AMOUNT_USD"] = "500"
+    env_over_cap["CONVICTION_BOOST_USD"] = "1001"  # ABOVE 2x the $500 baseline ($1000)
+    result_bad = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                 env=env_over_cap, capture_output=True, text=True)
+    check("importing with CONVICTION_BOOST_USD set above 2x TRADE_AMOUNT_USD raises, not silently loads",
+          result_bad.returncode != 0 and "must not exceed 2x" in result_bad.stderr,
+          f"returncode={result_bad.returncode}, stderr tail: {result_bad.stderr[-400:]}")
+
+    env_at_cap = dict(os.environ)
+    env_at_cap["TRADE_AMOUNT_USD"] = "500"
+    env_at_cap["CONVICTION_BOOST_USD"] = "1000"  # EXACTLY 2x -- allowed, only strictly over blocks
+    result_at_cap = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                    env=env_at_cap, capture_output=True, text=True)
+    check("importing with CONVICTION_BOOST_USD set to EXACTLY 2x TRADE_AMOUNT_USD loads cleanly "
+          "(only strictly OVER the cap blocks)",
+          result_at_cap.returncode == 0, f"stderr tail: {result_at_cap.stderr[-400:]}")
+
+    env_ok = dict(os.environ)
+    env_ok["TRADE_AMOUNT_USD"] = "500"
+    env_ok["CONVICTION_BOOST_USD"] = "750"
+    result_ok = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                env=env_ok, capture_output=True, text=True)
+    check("importing with the real shipped default ($750 boost on a $500 baseline) loads cleanly",
+          result_ok.returncode == 0, f"stderr tail: {result_ok.stderr[-400:]}")
+
+
+def test_high_conviction_strategies_parsing():
+    """
+    Exercises the comma-separated HIGH_CONVICTION_STRATEGIES parsing in
+    an isolated subprocess (same reload-leak reasoning as the two tests
+    above): default-empty, comma-separated with surrounding whitespace,
+    and empty entries from stray/doubled commas are all handled the same
+    way every other comma-separated env var in this file (e.g. SYMBOLS
+    in trading_bot.py) is parsed.
+    """
+    import json
+    import os
+    import subprocess
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+
+    def parsed_set(env_value):
+        env = dict(os.environ)
+        if env_value is None:
+            env.pop("HIGH_CONVICTION_STRATEGIES", None)
+        else:
+            env["HIGH_CONVICTION_STRATEGIES"] = env_value
+        result = subprocess.run(
+            [sys.executable, "-c",
+             "import json, strategy; print(json.dumps(sorted(strategy.HIGH_CONVICTION_STRATEGIES)))"],
+            cwd=here, env=env, capture_output=True, text=True)
+        check(f"subprocess parsing HIGH_CONVICTION_STRATEGIES={env_value!r} exits cleanly",
+              result.returncode == 0, f"stderr tail: {result.stderr[-400:]}")
+        return json.loads(result.stdout.strip().splitlines()[-1])
+
+    check("unset env var -> empty set (the real shipped default)",
+          parsed_set(None) == [])
+    check("empty string env var -> empty set",
+          parsed_set("") == [])
+    check("whitespace-only env var -> empty set",
+          parsed_set("   ") == [])
+    check("plain comma-separated list parses to the expected set",
+          parsed_set("trend_following,rvol_spike") == ["rvol_spike", "trend_following"])
+    check("surrounding whitespace around each entry is stripped",
+          parsed_set(" trend_following , rvol_spike ") == ["rvol_spike", "trend_following"])
+    check("stray/doubled commas produce empty entries that get dropped, not blank strategy names",
+          parsed_set("trend_following,,rvol_spike,") == ["rvol_spike", "trend_following"])
+
+
 if __name__ == "__main__":
     tests = [
         test_compute_daily_trend_map,
         test_stop_must_be_wider_than_noise,
         test_indicator_precompute_matches_growing_window,
         test_breakout,
+        test_breakout_invalidated_at,
         test_smash_day,
         test_gap_continuation,
+        test_gap_quality_filter,
         test_ross_hook,
         test_orb,
         test_vwap_reversion,
@@ -552,7 +986,14 @@ if __name__ == "__main__":
         test_decide_signal_entry_points_agree,
         test_compute_stop_and_target,
         test_compute_position_size,
+        test_vol_percentile_ranks_against_own_trailing_history_only,
+        test_high_vol_tercile_wiring_in_add_indicators,
+        test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd,
+        test_bad_volatility_scaled_env_var_fails_at_import,
         test_mean_reversion_turning_confirmation,
+        test_conviction_boost_usd_never_exceeds_double_trade_amount_usd,
+        test_bad_conviction_boost_env_var_fails_at_import,
+        test_high_conviction_strategies_parsing,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

@@ -59,14 +59,18 @@ from strategy import (
 )
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
+    breakout_invalidated_at,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS, ATR_STOP_MULTIPLIER, ATR_TARGET_MULTIPLIER,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT, MAX_POSITION_PCT_OF_EQUITY,
+    USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
+    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, CONVICTION_BOOST_USD,
     FAST_MA, SLOW_MA, RSI_PERIOD, RSI_OVERSOLD, RSI_OVERBOUGHT,
     ADX_PERIOD, ADX_TREND_THRESHOLD,
     USE_BREAKOUT, USE_SMASH_DAY_PATTERN, USE_GAP_PATTERN, USE_ROSS_HOOK, USE_ORB,
     USE_VWAP_REVERSION, USE_RVOL_SPIKE,
+    USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
 )
 
 # ---------------------------------------------------------------------------
@@ -433,6 +437,116 @@ SECTOR_MAP: dict[str, str] = {
     "PEP": "Consumer Staples", "COST": "Consumer Staples", "PM": "Consumer Staples",
 }
 
+# One SPDR sector ETF per GICS sector name used in SECTOR_MAP -- the
+# standard, most-liquid single-sector ETF for each (XLK/XLF/XLE/XLV/XLI/
+# XLP/XLU/XLY/XLB/XLRE/XLC). Deliberately a SEPARATE map from SECTOR_MAP
+# rather than folding ETF tickers directly into it: SECTOR_MAP's values
+# are read as sector NAMES in several places (sector_concentration_blocks_entry's
+# grouping, log messages), and conflating "sector name" with "this
+# sector's benchmark ETF" would make that map do two jobs at once for no
+# benefit -- a symbol's sector doesn't change depending on which feature
+# is asking.
+SECTOR_ETF_MAP: dict[str, str] = {
+    "Information Technology": "XLK",
+    "Financials": "XLF",
+    "Energy": "XLE",
+    "Health Care": "XLV",
+    "Industrials": "XLI",
+    "Consumer Staples": "XLP",
+    "Utilities": "XLU",
+    "Consumer Discretionary": "XLY",
+    "Materials": "XLB",
+    "Real Estate": "XLRE",
+    "Communication Services": "XLC",
+}
+
+# Sector-relative mean-reversion filter: require a mean_reversion BUY
+# candidate to be genuinely underperforming its OWN sector ETF over the
+# same lookback window, not just reading RSI-oversold because the whole
+# sector (or the whole market) had a soft day. Sourced from statistical-
+# arbitrage / short-term-reversal research (Avellaneda & Lee; Quantpedia's
+# short-term reversal writeups): a stock's move is a more meaningful
+# reversion signal once it's been isolated from its peer group's own move
+# over the same window -- "oversold in isolation" is weaker evidence than
+# "oversold relative to how its own sector traded today."
+#
+# This needs a sector ETF's own price series, which is exactly the kind
+# of operational/external data strategy.py deliberately has no access to
+# (same reasoning as the S&P-500-membership gates and this file's own
+# sector-concentration cap above) -- so, same as those, it's implemented
+# here and in backtest.py's simulate(), gated externally, and only ever
+# consulted for a mean_reversion entry specifically (checked inside
+# check_symbol once reason_key is known, same pattern as
+# USE_VWAP_VOLUME_CONFIRMATION).
+#
+# NOT the same idea as USE_SPY_REGIME_GATE above, even though both
+# "compare against an external reference series" -- and that similarity
+# is exactly why SPY_REGIME_GATE's rejection doesn't settle this one
+# either way. SPY regime asks "is the WHOLE market trending down" and
+# vetoes every symbol's entries on one binary market-wide read regardless
+# of story; that one 90-day test came back net negative on both
+# universes (see USE_SPY_REGIME_GATE's comment) because a single broad-
+# index read is too blunt -- it vetoed real winners along with the
+# losers it meant to catch. This filter is narrower and symbol-specific:
+# it doesn't touch every trade, only mean_reversion entries, and it asks
+# a comparative question (this stock vs. ITS OWN sector, same window)
+# rather than a directional one about the whole tape. Different
+# mechanism, different scope -- worth its own honest test rather than
+# assuming the SPY result predicts this one.
+#
+# Backtested 2026-08-11, both universes, 90 days, ON vs. OFF with
+# everything else at defaults (see CLAUDE.md for the full run):
+#
+#   megacap (TSLA/NVDA/COIN/AMD/PLTR): 0 mean_reversion trades either way
+#     (ADX rarely drops into mean_reversion's regime on these names in
+#     this window) -- combined 78 trades, +7.4%, PF 2.09 identical ON/OFF.
+#   scanner (FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/RNG/INHD/FCUV/ATKR/SRAD):
+#     2 mean_reversion trades total either way -- combined 104 trades,
+#     49% win rate, +2.5% ($+150.62/$6,000), PF 1.30, max DD 1.6%,
+#     byte-for-byte identical ON/OFF.
+#
+# Not a wash by coincidence -- checked WHY: one of the two trades (SRAD)
+# is on a symbol with no SECTOR_MAP entry and no sector Alpaca's asset
+# metadata can supply either (confirmed the filter fails open for it, per
+# get_sector_etf's docstring), so it was never going to be affected by
+# ANY threshold. The other (SMCI, -$25.41, IS in SECTOR_MAP -> XLK) DID
+# get evaluated: its real underperformance vs. XLK over the 14-bar window
+# was between 3 and 5pp (confirmed by sweeping the threshold: unaffected
+# at 2.0pp, the shipped default; blocked at 3.0pp and every value tried
+# above it) -- it just narrowly cleared the 2.0pp bar this run shipped
+# with, so the mechanism is doing real, threshold-sensitive work, this
+# sample is simply too small (one single evaluable trade) to say whether
+# 2.0pp is calibrated well or not.
+#
+# Left OFF by default per this project's "default off unless backtest
+# evidence clearly justifies on" convention -- a filter that only ever
+# got to evaluate ONE real trade this run isn't evidence of anything,
+# good or bad, whichever way that one trade happened to land. The
+# scanner's own picks are mostly small/micro-caps that SECTOR_MAP
+# deliberately doesn't cover (see that map's own docstring), so this
+# filter's effective reach is narrower than "every mean_reversion entry"
+# even once mean_reversion fires more often -- worth knowing going in,
+# not a defect introduced here. Kept in code and toggleable, same as the
+# rejected-but-plausible entries above -- re-test if mean_reversion ever
+# becomes a bigger slice of trade volume AND SECTOR_MAP's coverage grows
+# to actually reach more of the symbols that produce it.
+USE_SECTOR_RELATIVE_MEAN_REVERSION = os.getenv("USE_SECTOR_RELATIVE_MEAN_REVERSION", "false").strip().lower() in ("1", "true", "yes")
+# Bars over which both the candidate's own return and its sector ETF's
+# return are measured. Defaults to RSI_PERIOD (not a separate arbitrary
+# number) since that's the exact window mean_reversion's own "is this
+# oversold" read is already judging the candidate's price over --
+# comparing sector-relative performance across a DIFFERENT window than
+# the one that produced the oversold signal in the first place would be
+# answering a different question than the one this filter is meant to ask.
+SECTOR_RELATIVE_LOOKBACK_BARS = int(os.getenv("SECTOR_RELATIVE_LOOKBACK_BARS", RSI_PERIOD))
+# How many percentage points the candidate's own return must trail its
+# sector ETF's return over that window before the entry is allowed
+# (etf_return_pct - candidate_return_pct >= this). A small/zero threshold
+# would let through candidates that merely moved a hair less than their
+# sector on an ordinary day -- not the "genuinely underperforming its
+# peers" bar the research motivation calls for.
+SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT = float(os.getenv("SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0))
+
 # Best-effort list of common leveraged/inverse ETFs. These are structurally
 # built to move 2-3x their underlying index, so they show up constantly in
 # "biggest movers" scans without anything unusual actually happening.
@@ -447,6 +561,9 @@ LEVERAGED_ETF_DENYLIST = {
 LOCAL_TZ = ZoneInfo(os.getenv("LOCAL_TIMEZONE", "Europe/Zagreb"))
 WATCHLIST_STATE_FILE = "watchlist_state.json"
 DAILY_RISK_STATE_FILE = "daily_risk_state.json"
+# See USE_BREAKOUT_INVALIDATION_EXIT (strategy.py) and the OPEN POSITION
+# CONTEXT section below for what this persists and why.
+OPEN_POSITION_CONTEXT_FILE = "open_position_context.json"
 
 # Mutable run state. Initialized here (not only in the __main__ block) so
 # importing this module -- which the tests do -- gives a consistent
@@ -465,6 +582,11 @@ symbol_cooldown_until: dict[str, datetime] = {}
 # What we held on the previous cycle, so a position closing (by stop, by
 # target, or by our own sell) can be detected without an extra API call.
 previously_held: set[str] = set()
+# {symbol: {"strategy": reason_key, "invalidation_level": float | None}}
+# for every symbol currently holding a position this bot opened. See the
+# OPEN POSITION CONTEXT section below for how this is populated, cleared,
+# and persisted.
+open_position_context: dict[str, dict] = {}
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit(
@@ -1168,6 +1290,65 @@ def load_daily_risk_state() -> None:
 
 
 # ---------------------------------------------------------------------------
+# OPEN POSITION CONTEXT -- persists, per currently-open symbol, which
+# strategy opened it and (for breakout entries) the frozen invalidation
+# level, so USE_BREAKOUT_INVALIDATION_EXIT can be checked in check_symbol
+# without any new Alpaca API call: reason_key and the entry bar's own
+# breakout_recent_high[_wick] are already known locally at the exact
+# moment check_symbol places a breakout BUY, so they're captured right
+# there (see check_symbol's BUY branch) rather than re-derived later.
+# Persisted to disk (and tracked in git, same as watchlist_state.json/
+# daily_risk_state.json -- see .gitignore's comment) so this survives a
+# restart or a fresh GitHub Actions checkout exactly like those two.
+# ---------------------------------------------------------------------------
+
+def save_open_position_context() -> None:
+    try:
+        with open(OPEN_POSITION_CONTEXT_FILE, "w") as f:
+            json.dump(open_position_context, f)
+    except Exception as e:
+        log.warning(f"Could not save open-position context: {e}")
+
+
+def load_open_position_context() -> None:
+    """
+    Restores {symbol: {"strategy", "invalidation_level"}} after a
+    restart. A symbol legitimately open right now but ABSENT from this
+    file (e.g. it was bought before this feature existed, or the file
+    was deleted/reset) is simply not in the dict afterwards -- callers
+    must treat that as "unknown," never guess it was a breakout
+    position, which is exactly what check_symbol's .get()-based lookup
+    already does for free.
+    """
+    global open_position_context
+    try:
+        with open(OPEN_POSITION_CONTEXT_FILE, "r") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            open_position_context = data
+        log.info(f"Restored open-position context for {len(open_position_context)} "
+                  f"symbol(s) from previous run.")
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        log.warning(f"Could not load saved open-position context ({e}), starting fresh.")
+
+
+def clear_open_position_context(symbol: str) -> None:
+    """
+    Removes a symbol's persisted entry-context once its position is
+    fully closed -- called from every path that can close a position
+    (check_symbol's own SELL and breakout-invalidation branches,
+    record_auto_exit's bracket-leg-close detection, and
+    flatten_all_positions), so a later re-entry (possibly opened by a
+    completely different strategy) never inherits a stale invalidation
+    level left over from the position that used to be there.
+    """
+    if open_position_context.pop(symbol, None) is not None:
+        save_open_position_context()
+
+
+# ---------------------------------------------------------------------------
 # ORDERS / POSITIONS
 # ---------------------------------------------------------------------------
 
@@ -1238,21 +1419,39 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
     return (portfolio_risk_estimate + projected_new_risk) > cap
 
 
-def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, equity: float | None) -> float:
+def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, equity: float | None,
+                                    high_vol_tercile: bool = False, reason_key: str = "unknown") -> float:
     """
     Best-effort $-at-risk of a position that WOULD be opened right now --
     (entry - stop) * qty -- computed with the exact same
     compute_stop_and_target/compute_position_size helpers place_buy_order
     itself uses for sizing, so the heat-cap gate below is checking against
     a number that actually matches what would really be opened, under
-    EITHER sizing mode (flat-$ or risk-based). Uses the last completed
-    bar's close rather than a fresh quote -- place_buy_order re-checks
-    that right before submitting -- since this only has to be close
-    enough to gate on, not penny-perfect; a stale close moving the qty
-    estimate by a share or two doesn't matter next to a $200 cap.
-    Returns 0.0 if last_price is invalid rather than raising, so a bad
-    quote fails toward "no estimated risk" (a laxer gate), matching how
-    every other best-effort estimate in this file degrades.
+    EITHER sizing mode (flat-$ or risk-based), including the
+    USE_VOLATILITY_SCALED_SIZING reduction and the USE_CONVICTION_SIZING
+    boost (see place_buy_order) when high_vol_tercile / reason_key say
+    one of them applies.
+
+    reason_key is only consulted for the CONVICTION_BOOST_USD substitution
+    (mirroring place_buy_order's own flat-sizing branch exactly, including
+    its precedence rule: if a trade is BOTH in a high-conviction strategy
+    AND in its own high-vol tercile, the volatility-based size-DOWN wins,
+    never the conviction-based size-up). Getting this wrong has a real
+    direction of harm, unlike the vol-scaled case: overestimating risk
+    only makes the heat-cap gate stricter than necessary (still safe), but
+    UNDER-estimating a conviction-boosted trade's risk would make the gate
+    laxer than its own docstring promises -- silently letting more heat
+    onto the book than MAX_PORTFOLIO_HEAT_USD is supposed to allow. Passing
+    reason_key here is what keeps that from happening.
+
+    Uses the last completed bar's close rather than a fresh quote --
+    place_buy_order re-checks that right before submitting -- since this
+    only has to be close enough to gate on, not penny-perfect; a stale
+    close moving the qty estimate by a share or two doesn't matter next
+    to a $200 cap. Returns 0.0 if last_price is invalid rather than
+    raising, so a bad quote fails toward "no estimated risk" (a laxer
+    gate), matching how every other best-effort estimate in this file
+    degrades.
     """
     if last_price is None or last_price <= 0:
         return 0.0
@@ -1261,7 +1460,16 @@ def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, e
     if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
         qty = compute_position_size(equity, last_price, stop_price)
     else:
-        qty = int(TRADE_AMOUNT_USD // last_price)
+        trade_amount = TRADE_AMOUNT_USD
+        if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
+            trade_amount = VOLATILITY_SCALED_REDUCED_USD
+        # elif, not a second independent if: volatility-based size-down
+        # always takes precedence over conviction-based size-up when a
+        # trade qualifies for both (see place_buy_order's identical
+        # branch for the full precedence rationale).
+        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
+            trade_amount = CONVICTION_BOOST_USD
+        qty = int(trade_amount // last_price)
     return risk_per_share * qty
 
 
@@ -1363,6 +1571,84 @@ def sector_concentration_blocks_entry(candidate_symbol: str, open_position_symbo
     return same_sector_open >= MAX_POSITIONS_PER_SECTOR
 
 
+def get_sector_etf(symbol: str) -> str | None:
+    """
+    The SPDR sector ETF for `symbol`'s own sector (SECTOR_MAP /
+    get_symbol_sector, then SECTOR_ETF_MAP), or None if either lookup
+    comes up empty. Callers MUST treat None as "unknown, fail open" --
+    same reasoning as get_symbol_sector's own docstring, just one lookup
+    further: a symbol with no known sector, or a real sector that simply
+    isn't one of the 11 SECTOR_ETF_MAP covers (there is no eligible GICS
+    sector left out, but SECTOR_MAP's Alpaca-asset-metadata fallback can
+    in principle return a string that doesn't exactly match one of
+    SECTOR_ETF_MAP's keys), should skip the sector-relative check for
+    that symbol, not block a real trade over it.
+    """
+    sector = get_symbol_sector(symbol)
+    if sector is None:
+        return None
+    return SECTOR_ETF_MAP.get(sector)
+
+
+def sector_relative_mean_reversion_blocks_entry(symbol: str, enriched: pd.DataFrame, i: int,
+                                                  sector_etf_bars: dict[str, pd.DataFrame] | None) -> bool:
+    """
+    True if a mean_reversion BUY on `symbol` should be refused because its
+    own SECTOR_RELATIVE_LOOKBACK_BARS-bar return isn't meaningfully weaker
+    than its sector ETF's return over that same window -- i.e. the RSI-
+    oversold-and-turning-up read looks like an ordinary soft day for the
+    whole sector, not this stock genuinely lagging its peers. See
+    USE_SECTOR_RELATIVE_MEAN_REVERSION's comment above for the research
+    motivation. Callers gate this on `signal == "BUY" and reason_key ==
+    "mean_reversion"`, same as USE_VWAP_VOLUME_CONFIRMATION's
+    reason_key-specific check -- it has nothing to say about any other
+    strategy's entries.
+
+    Fails OPEN (never blocks) at every step where the comparison can't be
+    made honestly: feature off, sector/ETF unknown (get_sector_etf),
+    this cycle's ETF bars didn't fetch, or either series doesn't have
+    SECTOR_RELATIVE_LOOKBACK_BARS of history yet. Same fail-open
+    philosophy as sector_concentration_blocks_entry -- an incomplete
+    sector map or a missed ETF fetch should never be the reason a real
+    trade gets blocked.
+    """
+    if not USE_SECTOR_RELATIVE_MEAN_REVERSION:
+        return False
+    etf_symbol = get_sector_etf(symbol)
+    if etf_symbol is None:
+        return False
+    if not sector_etf_bars:
+        return False
+    etf_bars = sector_etf_bars.get(etf_symbol)
+    if etf_bars is None or etf_bars.empty:
+        return False
+
+    n = SECTOR_RELATIVE_LOOKBACK_BARS
+    if i < n or len(etf_bars) <= n:
+        return False
+
+    candidate_then = enriched["close"].iat[i - n]
+    candidate_now = enriched["close"].iat[i]
+    if pd.isna(candidate_then) or candidate_then == 0 or pd.isna(candidate_now):
+        return False
+    candidate_return_pct = (candidate_now / candidate_then - 1) * 100
+
+    # sector_etf_bars is fetched fresh once per cycle (see run_one_cycle),
+    # same cycle as `enriched` -- so the ETF's OWN last row is "now" here,
+    # same simplifying assumption spy_regime_confirms_entry makes about
+    # SPY's last row. No timestamp alignment needed the way backtest.py's
+    # bar-by-bar historical replay requires (see
+    # compute_sector_relative_return_at_bars there).
+    etf_then = etf_bars["close"].iat[-1 - n]
+    etf_now = etf_bars["close"].iat[-1]
+    if pd.isna(etf_then) or etf_then == 0 or pd.isna(etf_now):
+        return False
+    etf_return_pct = (etf_now / etf_then - 1) * 100
+
+    underperformance_pct = etf_return_pct - candidate_return_pct
+    return underperformance_pct < SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT
+
+
 # How far the real fill can drift from the quote used to price the
 # bracket before the stop/target legs get corrected. See
 # reconcile_bracket_with_real_fill for why this exists.
@@ -1445,7 +1731,7 @@ def reconcile_bracket_with_real_fill(order, atr_value: float | None, reference_p
 
 
 def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equity: float | None,
-                     reason_key: str = "unknown"):
+                     reason_key: str = "unknown", high_vol_tercile: bool = False):
     """
     Buys a stop-loss/take-profit-protected position ("bracket" order).
 
@@ -1456,6 +1742,32 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     stop gets fewer shares than a calm one with a tight stop for the
     same dollar risk. Falls back to flat TRADE_AMOUNT_USD sizing if
     risk-based sizing is off or equity couldn't be fetched this cycle.
+
+    high_vol_tercile: this symbol's own trailing realized-vol reading is
+    in its top third right now (strategy.high_vol_tercile, see that
+    column's comment -- a second regime axis independent of ADX). Only
+    consulted in the FLAT-sizing branch below, gated by
+    USE_VOLATILITY_SCALED_SIZING (default off): when both are true, this
+    trade spends VOLATILITY_SCALED_REDUCED_USD instead of
+    TRADE_AMOUNT_USD -- still a flat dollar figure, never a fraction of
+    equity, never able to exceed TRADE_AMOUNT_USD (see that constant's
+    guard in strategy.py). Ignored entirely under risk-based sizing,
+    which already scales share count down for a wide/volatile stop via
+    its own mechanism -- stacking a second, independent size cut on top
+    of that hasn't been backtested and isn't this candidate's claim.
+
+    reason_key also feeds the FLAT-sizing branch's conviction-boost check,
+    gated by USE_CONVICTION_SIZING (default off): if reason_key is in
+    HIGH_CONVICTION_STRATEGIES (default EMPTY -- see that set's comment in
+    strategy.py for why), this trade spends CONVICTION_BOOST_USD instead
+    of TRADE_AMOUNT_USD -- again a flat dollar figure, capped at 2x
+    TRADE_AMOUNT_USD by strategy.py's own import-time guard, never a
+    fraction of equity. EXPLICIT PRECEDENCE RULE: if a trade is BOTH in a
+    high-conviction strategy AND in its own high-vol tercile, the
+    volatility-based SIZE-DOWN above always wins over this size-up --
+    safety takes precedence over a return-chasing boost, every time, no
+    exceptions. Also ignored entirely under risk-based sizing, same
+    reasoning as high_vol_tercile above.
 
     Bracket orders on Alpaca don't reliably support fractional
     quantities (unlike plain market orders), regardless of whether the
@@ -1510,12 +1822,33 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
                   f"at random. Needs {MIN_STOP_TO_ATR_RATIO:.1f}x ATR of room.")
         return None, 0.0
 
+    # Never boosted under risk-based sizing -- see high_vol_tercile's
+    # identical reasoning in the docstring above; set here so it's always
+    # defined for last_details below regardless of which branch runs.
+    conviction_boosted = False
     if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
         qty = compute_position_size(equity, reference_price, stop_price)
         sizing_style = f"risk-based, {RISK_PER_TRADE_PCT:.1f}% of ${equity:,.0f}"
     else:
-        qty = int(TRADE_AMOUNT_USD // reference_price)
+        trade_amount = TRADE_AMOUNT_USD
         sizing_style = "flat $"
+        if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
+            trade_amount = VOLATILITY_SCALED_REDUCED_USD
+            sizing_style = f"flat $ (vol-scaled, high tercile -> ${trade_amount:.0f})"
+        # elif, not a second independent if: this makes the two branches
+        # structurally mutually exclusive, not just documented as such.
+        # EXPLICIT PRECEDENCE RULE -- see this function's docstring: a
+        # trade that is BOTH in a high-conviction strategy AND in its own
+        # high-vol tercile gets the REDUCED (volatility) amount above,
+        # never the boosted one below. Safety (size down on real,
+        # measured noise) always wins over a return-chasing boost (size
+        # up on an unconfirmed strategy-level edge), every time, no
+        # exceptions.
+        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
+            trade_amount = CONVICTION_BOOST_USD
+            conviction_boosted = True
+            sizing_style = f"flat $ (conviction-boosted, {reason_key} -> ${trade_amount:.0f})"
+        qty = int(trade_amount // reference_price)
 
     if qty < 1:
         log.warning(f"[{symbol}] Computed position size is 0 shares at ${reference_price:.2f} "
@@ -1553,6 +1886,7 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         "take_profit": recorded_target,
         "sizing_style": sizing_style,
         "equity": equity,
+        "conviction_boosted": conviction_boosted,
     }
     return order, notional
 
@@ -1590,7 +1924,8 @@ def place_sell_order(symbol: str):
 def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | None, at_position_cap: bool,
                   current_qty: float, equity: float | None, portfolio_risk_estimate: float,
                   in_cooldown: bool = False, daily_trend_blocks_entry: bool = False,
-                  spy_regime_blocks_entry: bool = False, sector_cap_blocks_entry: bool = False) -> float:
+                  spy_regime_blocks_entry: bool = False, sector_cap_blocks_entry: bool = False,
+                  sector_etf_bars: dict[str, pd.DataFrame] | None = None) -> float:
     """
     Checks one symbol and acts on its signal. Returns the notional $
     amount of a newly opened position (0.0 if none), so the caller can
@@ -1608,6 +1943,7 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
     signal, reason_key, reason = decide_signal_at(enriched, i)
     last_price = enriched["close"].iat[i]
     atr_value = enriched["atr"].iat[i]
+    high_vol_tercile = bool(enriched["high_vol_tercile"].iat[i])
     minutes_since_open_now = enriched["minutes_since_open"].iat[i]
     in_lunch_blackout = ENTRY_BLACKOUT_START_MINUTES <= minutes_since_open_now < ENTRY_BLACKOUT_END_MINUTES
 
@@ -1620,6 +1956,31 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         and symbol not in fetch_sp500_symbols()
         and not vwap_reversion_volume_confirms(enriched, i)
     )
+
+    # Sector-relative mean-reversion filter -- see USE_SECTOR_RELATIVE_MEAN_REVERSION's
+    # comment. Only ever consulted for a mean_reversion BUY, same
+    # reason_key-scoping as vwap_volume_blocks_entry above.
+    sector_relative_blocks_entry = (
+        USE_SECTOR_RELATIVE_MEAN_REVERSION and signal == "BUY" and reason_key == "mean_reversion"
+        and sector_relative_mean_reversion_blocks_entry(symbol, enriched, i, sector_etf_bars)
+    )
+
+    # Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT and
+    # breakout_invalidated_at() in strategy.py for the reasoning. Reads the
+    # frozen entry-time level from open_position_context (persisted by
+    # THIS function's own BUY branch below, on whatever earlier cycle
+    # opened the position) instead of any new Alpaca API call. A symbol
+    # missing from that state (never opened by breakout, or opened before
+    # this feature existed, or the state file was reset) simply never
+    # matches here -- .get() returning None fails every check below
+    # closed, this never guesses at a position's origin.
+    breakout_invalidation_triggered = False
+    if USE_BREAKOUT_INVALIDATION_EXIT and current_qty > 0:
+        entry_context = open_position_context.get(symbol)
+        if (entry_context and entry_context.get("strategy") == "breakout"
+                and entry_context.get("invalidation_level") is not None):
+            breakout_invalidation_triggered = breakout_invalidated_at(
+                enriched, i, entry_context["invalidation_level"])
 
     log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
@@ -1640,6 +2001,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif vwap_volume_blocks_entry:
                 log.info(f"[{symbol}] ACTION: No trade (vwap_reversion volume filter -- "
                           f"entry bar's volume didn't confirm).")
+            elif sector_relative_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (sector-relative mean reversion filter -- "
+                          f"not meaningfully weaker than its own sector ETF over the same window).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
@@ -1652,11 +2016,13 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_RISK_PCT="
                           f"{MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate risk cap).")
             elif would_exceed_portfolio_heat_cap(
-                    portfolio_risk_estimate, estimate_new_position_risk_usd(last_price, atr_value, equity)):
+                    portfolio_risk_estimate,
+                    estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile, reason_key)):
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_HEAT_USD="
                           f"${MAX_PORTFOLIO_HEAT_USD:,.0f} fixed-dollar aggregate risk cap).")
             else:
-                order, notional = place_buy_order(symbol, last_price, atr_value, equity, reason_key)
+                order, notional = place_buy_order(symbol, last_price, atr_value, equity, reason_key,
+                                                   high_vol_tercile)
                 if order is not None:
                     log.info(f"[{symbol}] ACTION: BUY (order id {order.id}, strategy: {reason_key})")
                     notional_opened = notional
@@ -1668,6 +2034,25 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                         context=extract_context(enriched, i),
                         details=place_buy_order.last_details,
                     )
+                    # Persist what opened this position (and, for breakout
+                    # specifically, the exact level breakout_at() itself
+                    # used to confirm the entry) so a LATER cycle -- quite
+                    # possibly a different process entirely, after a
+                    # restart -- can check USE_BREAKOUT_INVALIDATION_EXIT
+                    # without any new Alpaca API call. See the OPEN
+                    # POSITION CONTEXT section above.
+                    invalidation_level = None
+                    if reason_key == "breakout":
+                        level_col = ("breakout_recent_high_wick" if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION
+                                     else "breakout_recent_high")
+                        level_value = enriched[level_col].iat[i]
+                        if not pd.isna(level_value):
+                            invalidation_level = float(level_value)
+                    open_position_context[symbol] = {
+                        "strategy": reason_key,
+                        "invalidation_level": invalidation_level,
+                    }
+                    save_open_position_context()
         elif signal == "SELL" and current_qty > 0:
             order = place_sell_order(symbol)
             log.info(f"[{symbol}] ACTION: SELL - closing position (order id {order.id})")
@@ -1679,6 +2064,27 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 equity=equity, order_id=str(order.id),
                 context=extract_context(enriched, i),
             )
+            clear_open_position_context(symbol)
+        elif breakout_invalidation_triggered:
+            # Same sell mechanics as the strategy-SELL-signal branch above
+            # (cancel the resting bracket legs, close the position) -- the
+            # only difference is WHY: the level that justified this
+            # specific breakout entry gave back, independent of whatever
+            # the currently-active regime strategy's own signal says.
+            order = place_sell_order(symbol)
+            log.info(f"[{symbol}] ACTION: SELL - breakout invalidation exit "
+                      f"(close ${last_price:.2f} back below entry level "
+                      f"${open_position_context[symbol]['invalidation_level']:.2f}, order id {order.id})")
+            record_trade(
+                "SELL", symbol,
+                trading_day_et=_trading_day_et(),
+                strategy="breakout",
+                reason="breakout invalidated: price closed back below the entry breakout level",
+                qty=current_qty, price=last_price, notional=current_qty * last_price,
+                equity=equity, order_id=str(order.id),
+                context=extract_context(enriched, i),
+            )
+            clear_open_position_context(symbol)
         else:
             log.info(f"[{symbol}] ACTION: No trade.")
     except Exception as e:
@@ -1737,7 +2143,14 @@ def record_auto_exit(symbol: str) -> None:
     strategy via client_order_id) via Alpaca's own order history --
     best-effort throughout, since a lookup failure here must never be
     allowed to disrupt the trading cycle that called it.
+
+    Also clears this symbol's open_position_context entry -- the caller
+    (run_one_cycle) only reaches this function once it's already detected
+    the position is gone, so that part doesn't depend on the Alpaca order
+    history lookup below succeeding, unlike the best-effort trades.csv
+    recording it does after.
     """
+    clear_open_position_context(symbol)
     try:
         sells = trading_client.get_orders(filter=GetOrdersRequest(
             status=QueryOrderStatus.CLOSED, symbols=[symbol],
@@ -1824,6 +2237,7 @@ def flatten_all_positions() -> bool:
                           strategy="end_of_day", reason="Flattened before market close",
                           qty=details.get("qty"))
             log.info(f"[{symbol}] EOD FLATTEN: close order submitted for {details.get('qty')} share(s).")
+            clear_open_position_context(symbol)
         except Exception as e:
             all_closed = False
             log.error(f"[{symbol}] EOD FLATTEN FAILED: {e} -- position likely still open, will retry.")
@@ -2002,6 +2416,24 @@ def run_one_cycle() -> float:
     # live inside check_symbol like the per-symbol gates do.
     spy_regime_blocks_entry_this_cycle = not spy_regime_confirms_entry()
 
+    # Sector ETF bars for USE_SECTOR_RELATIVE_MEAN_REVERSION, fetched ONCE
+    # per cycle in a single batched call for whatever distinct sector
+    # ETFs this cycle's watchlist actually needs -- not one fetch per
+    # symbol, same batching principle as get_recent_bars_batch itself.
+    # Left empty (not fetched at all) when the toggle is off, so this
+    # adds zero API calls to the default configuration.
+    sector_etf_bars: dict[str, pd.DataFrame] = {}
+    if USE_SECTOR_RELATIVE_MEAN_REVERSION:
+        needed_etfs = sorted({
+            etf for etf in (get_sector_etf(s) for s in symbols_to_check) if etf
+        })
+        if needed_etfs:
+            try:
+                sector_etf_bars = get_recent_bars_batch(needed_etfs)
+            except Exception as e:
+                log.warning(f"Sector-relative mean reversion: could not fetch sector ETF bars "
+                             f"({e}) -- filter disabled this cycle (fails open, doesn't block).")
+
     # Tracked live and updated as positions open below (same pattern as
     # open_count/portfolio_risk_estimate) so two same-sector BUYs landing
     # in the SAME cycle still trip the cap on the second one, not just
@@ -2019,7 +2451,8 @@ def run_one_cycle() -> float:
                                  at_position_cap, current_qty, equity_estimate, portfolio_risk_estimate,
                                  in_cooldown=in_cooldown, daily_trend_blocks_entry=daily_trend_blocks_entry,
                                  spy_regime_blocks_entry=spy_regime_blocks_entry_this_cycle,
-                                 sector_cap_blocks_entry=sector_cap_blocks_entry)
+                                 sector_cap_blocks_entry=sector_cap_blocks_entry,
+                                 sector_etf_bars=sector_etf_bars)
         if notional > 0:
             open_count += 1
             open_symbols_this_cycle.add(symbol)
@@ -2170,6 +2603,19 @@ if __name__ == "__main__":
                   f"{MAX_POSITION_PCT_OF_EQUITY:.0f}% of equity notional)")
     else:
         log.info(f"Position sizing: flat ${TRADE_AMOUNT_USD:.0f} per trade")
+        if USE_VOLATILITY_SCALED_SIZING:
+            log.info(f"Volatility-scaled sizing: ON -- trades in a symbol's own top vol-percentile "
+                      f"tercile sized at ${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of "
+                      f"${TRADE_AMOUNT_USD:.0f} (see strategy.VOL_PERCENTILE_LOOKBACK)")
+        if USE_CONVICTION_SIZING:
+            if HIGH_CONVICTION_STRATEGIES:
+                log.info(f"Conviction-boosted sizing: ON -- {', '.join(sorted(HIGH_CONVICTION_STRATEGIES))} "
+                          f"sized at ${CONVICTION_BOOST_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
+                          f"(volatility-based size-down always wins when a trade qualifies for both)")
+            else:
+                log.info("Conviction-boosted sizing: ON but HIGH_CONVICTION_STRATEGIES is empty -- "
+                          "structurally a no-op right now (no strategy currently has real evidence "
+                          "supporting a boost, see strategy.HIGH_CONVICTION_STRATEGIES)")
     log.info(f"Position limits: max {MAX_CONCURRENT_POSITIONS} concurrent positions | "
               f"max {MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate portfolio risk | "
               f"daily loss circuit breaker at -{MAX_DAILY_LOSS_PCT:.0f}% (pauses new entries only)")
@@ -2178,6 +2624,10 @@ if __name__ == "__main__":
     if USE_SECTOR_CONCENTRATION_CAP:
         log.info(f"Sector concentration cap: max {MAX_POSITIONS_PER_SECTOR} open positions per sector "
                   f"(new entries only; symbols with no known sector are exempt)")
+    if USE_SECTOR_RELATIVE_MEAN_REVERSION:
+        log.info(f"Sector-relative mean reversion filter: mean_reversion entries require the candidate "
+                  f"to trail its own sector ETF by >= {SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT:.1f}pp over "
+                  f"{SECTOR_RELATIVE_LOOKBACK_BARS} bars (symbols with no known sector ETF are exempt)")
     if FLATTEN_BEFORE_CLOSE:
         log.info(f"End-of-day mode: positions will be auto-closed {FLATTEN_MINUTES_BEFORE_CLOSE} min before market close.")
     else:
@@ -2194,6 +2644,8 @@ if __name__ == "__main__":
     day_start_equity = None
     daily_loss_breaker_tripped = False
     load_daily_risk_state()
+
+    load_open_position_context()
 
     if args.once:
         # Single-shot mode: one check cycle, then exit. Exceptions are

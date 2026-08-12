@@ -77,6 +77,27 @@ FIELDS = [
     "breakout_recent_high",
     "orb_high",
     "prior_session_close",
+    # Added for the volatility-scaled sizing candidate -- lets a later
+    # analysis check whether the high-vol-tercile bucket was actually
+    # sized down as intended, same as every other indicator here.
+    "vol_percentile",
+    "high_vol_tercile",
+    # Added for the conviction-boost sizing candidate -- lets a later
+    # analysis check whether a high-conviction-strategy trade was
+    # actually sized up as intended (and, just as importantly, confirm
+    # it was NOT sized up when the volatility precedence rule should
+    # have overridden it). Unlike vol_percentile/high_vol_tercile just
+    # above, this is not a per-bar indicator column on the enriched
+    # dataframe -- whether a trade was boosted depends on reason_key
+    # PLUS runtime config (USE_CONVICTION_SIZING, HIGH_CONVICTION_
+    # STRATEGIES) that strategy.py's pure, single-symbol indicator
+    # functions have no access to (same "strategy.py computes, callers
+    # decide sizing" split documented on TRADE_AMOUNT_USD). So it is NOT
+    # added to CONTEXT_COLUMNS below -- it flows through the `details`
+    # dict instead (place_buy_order.last_details), the same path
+    # "sizing_style" and "equity" already use for values that are a
+    # sizing DECISION, not a raw dataframe column.
+    "conviction_boosted",
 ]
 
 # Columns copied straight off the indicator dataframe row, when one is
@@ -84,7 +105,7 @@ FIELDS = [
 CONTEXT_COLUMNS = [
     "close", "rsi", "adx", "atr", "ema_fast", "ema_slow", "vwap", "volume",
     "rvol_avg_volume", "breakout_recent_high", "orb_high", "prior_session_close",
-    "minutes_since_open",
+    "minutes_since_open", "vol_percentile", "high_vol_tercile",
 ]
 
 

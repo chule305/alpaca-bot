@@ -38,6 +38,16 @@ import trade_recorder
 # to git and meant to be genuine trading history.
 trade_recorder.TRADE_HISTORY_FILE = os.path.join(tempfile.mkdtemp(), "trades.csv")
 
+# Likewise again: check_symbol's BUY branch now persists open-position
+# context on every successful buy (see USE_BREAKOUT_INVALIDATION_EXIT),
+# so without this, every EXISTING test that drives a successful BUY
+# through check_symbol (most of which predate this feature and have no
+# reason to know about it) would write to the project's real, git-tracked
+# open_position_context.json. Individual tests below that specifically
+# exercise this feature still override this per-test via patch.object,
+# same layering as trade_recorder.TRADE_HISTORY_FILE above.
+tb.OPEN_POSITION_CONTEXT_FILE = os.path.join(tempfile.mkdtemp(), "open_position_context.json")
+
 FAILURES = []
 
 
@@ -48,9 +58,11 @@ def check(name: str, condition: bool, detail: str = "") -> None:
         FAILURES.append(name)
 
 
-def make_fake_enriched(minutes_since_open: float, close: float = 100.0, atr: float = 1.0) -> pd.DataFrame:
+def make_fake_enriched(minutes_since_open: float, close: float = 100.0, atr: float = 1.0,
+                        high_vol_tercile: bool = False) -> pd.DataFrame:
     """A one-row stand-in for add_indicators()'s output, with just the columns check_symbol reads."""
-    return pd.DataFrame({"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open]})
+    return pd.DataFrame({"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open],
+                          "high_vol_tercile": [high_vol_tercile]})
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +183,229 @@ def test_estimate_new_position_risk_usd():
           tb.estimate_new_position_risk_usd(0.0, atr_value, 10000.0) == 0.0)
     check("missing last_price (None) returns 0.0 rather than raising",
           tb.estimate_new_position_risk_usd(None, atr_value, 10000.0) == 0.0)
+
+
+def test_estimate_new_position_risk_usd_volatility_scaled():
+    """
+    See USE_VOLATILITY_SCALED_SIZING in strategy.py -- a second, ADX-
+    independent regime axis (Moreira & Muir 2017, "Volatility-Managed
+    Portfolios"). Only ever a fixed-dollar SUBSTITUTION inside the flat-
+    sizing branch (never risk-based, never a fraction of equity), and
+    this function's own docstring promises to mirror place_buy_order's
+    real qty exactly -- pinned here so the heat-cap gate can't silently
+    drift from what actually gets bought.
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = False
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+
+        expected_unreduced = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        check("toggle OFF: high_vol_tercile=True is ignored, same result as low/mid",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                             high_vol_tercile=True), expected_unreduced))
+
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        expected_reduced = int(350.0 // last_price) * risk_per_share
+        got_reduced = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, high_vol_tercile=True)
+        check("toggle ON + high_vol_tercile=True uses the reduced $ amount, not TRADE_AMOUNT_USD",
+              np.isclose(got_reduced, expected_reduced) and got_reduced < expected_unreduced,
+              f"got {got_reduced}, expected {expected_reduced}, unreduced was {expected_unreduced}")
+
+        got_low_mid = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, high_vol_tercile=False)
+        check("toggle ON but high_vol_tercile=False (low/mid tercile) still uses the full TRADE_AMOUNT_USD",
+              np.isclose(got_low_mid, expected_unreduced))
+
+        tb.USE_RISK_BASED_SIZING = True
+        equity = 10000.0
+        expected_rb_qty = tb.compute_position_size(equity, last_price, stop_price)
+        expected_rb_risk = risk_per_share * expected_rb_qty
+        got_rb_high_vol = tb.estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile=True)
+        check("under risk-based sizing, high_vol_tercile is ignored entirely -- this candidate never "
+              "stacks a second size cut on top of risk-based sizing's own stop-distance scaling",
+              np.isclose(got_rb_high_vol, expected_rb_risk))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_VOLATILITY_SCALED_SIZING = original_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
+
+
+def test_estimate_new_position_risk_usd_conviction_boosted():
+    """
+    Mirrors test_estimate_new_position_risk_usd_volatility_scaled exactly,
+    for the conviction-boost lever instead. Only ever a fixed-dollar
+    SUBSTITUTION inside the flat-sizing branch (never risk-based, never
+    a fraction of equity), and this function's own docstring promises to
+    mirror place_buy_order's real qty exactly -- pinned here so the
+    heat-cap gate can't silently UNDER-estimate risk for a boosted trade
+    (the opposite, and more dangerous, direction of drift than the
+    volatility-scaled case's over-estimate).
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_CONVICTION_SIZING = False
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+
+        expected_unboosted = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        check("toggle OFF: a qualifying reason_key is ignored, same result as any other",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                             reason_key="trend_following"), expected_unboosted))
+
+        tb.USE_CONVICTION_SIZING = True
+        tb.CONVICTION_BOOST_USD = 750.0
+        expected_boosted = int(750.0 // last_price) * risk_per_share
+        got_boosted = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                          reason_key="trend_following")
+        check("toggle ON + reason_key IN HIGH_CONVICTION_STRATEGIES uses the boosted $ amount, "
+              "not TRADE_AMOUNT_USD",
+              np.isclose(got_boosted, expected_boosted) and got_boosted > expected_unboosted,
+              f"got {got_boosted}, expected {expected_boosted}, unboosted was {expected_unboosted}")
+
+        got_not_qualifying = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                                 reason_key="mean_reversion")
+        check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES still uses the full "
+              "TRADE_AMOUNT_USD",
+              np.isclose(got_not_qualifying, expected_unboosted))
+
+        tb.USE_RISK_BASED_SIZING = True
+        equity = 10000.0
+        expected_rb_qty = tb.compute_position_size(equity, last_price, stop_price)
+        expected_rb_risk = risk_per_share * expected_rb_qty
+        got_rb_boosted = tb.estimate_new_position_risk_usd(last_price, atr_value, equity,
+                                                             reason_key="trend_following")
+        check("under risk-based sizing, reason_key/conviction is ignored entirely -- this "
+              "candidate never stacks a boost on top of risk-based sizing's own stop-distance "
+              "scaling, same reasoning as the volatility-scaled case above",
+              np.isclose(got_rb_boosted, expected_rb_risk))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_CONVICTION_SIZING = original_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_estimate_new_position_risk_usd_volatility_precedes_conviction():
+    """
+    THE precedence test. A trade that is BOTH in a high-conviction
+    strategy AND in its own high-vol tercile must get the REDUCED
+    (volatility) amount, never the boosted one -- safety (size down on
+    real, measured noise) always wins over a return-chasing boost (size
+    up on an unconfirmed strategy-level edge), every time, no exceptions.
+
+    Written so it would actually FAIL if the precedence were implemented
+    backwards (i.e. conviction checked before/instead of volatility): the
+    reduced and boosted $ amounts are chosen to be clearly distinguishable
+    ($350 vs $750 against a $500 baseline -> 7 vs 15 shares at $50), and
+    the assertion pins the EXACT reduced qty, not just "less than the
+    boosted amount" (which a broken implementation that used, say, the
+    average of the two could still slip past).
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    original_conv_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        tb.USE_CONVICTION_SIZING = True
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+        expected_reduced = int(350.0 // last_price) * risk_per_share
+        expected_boosted = int(750.0 // last_price) * risk_per_share
+        expected_unmodified = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        # These three must actually differ, or the test below can't tell
+        # reduced from boosted from unmodified.
+        check("fixture sanity: reduced/boosted/unmodified expected values are all distinct",
+              len({expected_reduced, expected_boosted, expected_unmodified}) == 3,
+              f"reduced={expected_reduced}, boosted={expected_boosted}, unmodified={expected_unmodified}")
+
+        got = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                  high_vol_tercile=True, reason_key="trend_following")
+        check("a trade BOTH high-vol-tercile AND in a high-conviction strategy gets the REDUCED "
+              "(volatility) amount, never the boosted one",
+              np.isclose(got, expected_reduced) and not np.isclose(got, expected_boosted),
+              f"got {got}, reduced would be {expected_reduced}, boosted would be {expected_boosted}")
+
+        # Sanity checks on the other three quadrants, so this test would
+        # catch a regression in EITHER direction, not just the precedence.
+        got_vol_only = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                           high_vol_tercile=True, reason_key="mean_reversion")
+        check("high-vol-tercile alone (not a conviction strategy) still gets reduced",
+              np.isclose(got_vol_only, expected_reduced))
+
+        got_conviction_only = tb.estimate_new_position_risk_usd(
+            last_price, atr_value, 10000.0, high_vol_tercile=False, reason_key="trend_following")
+        check("conviction strategy alone (not high-vol-tercile) gets boosted",
+              np.isclose(got_conviction_only, expected_boosted))
+
+        got_neither = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                          high_vol_tercile=False, reason_key="mean_reversion")
+        check("neither condition applies -- plain TRADE_AMOUNT_USD",
+              np.isclose(got_neither, expected_unmodified))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
+        tb.USE_CONVICTION_SIZING = original_conv_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_conviction_sizing_structurally_inert_with_real_shipped_default():
+    """
+    Confirms the REAL shipped default (HIGH_CONVICTION_STRATEGIES as
+    loaded from the actual, unmodified environment -- not a test-
+    populated one) means USE_CONVICTION_SIZING=true is a complete no-op
+    regardless of reason_key. This is not "empirically happens to do
+    nothing today" -- HIGH_CONVICTION_STRATEGIES is structurally an empty
+    set by default (see strategy.py's comment on why), so the
+    `reason_key in HIGH_CONVICTION_STRATEGIES` membership test can never
+    be True for ANY reason_key without someone deliberately repopulating
+    the set first.
+    """
+    check("the real shipped default really is an empty set (sanity check on the fixture itself, "
+          "not just the assumption behind this test)",
+          tb.HIGH_CONVICTION_STRATEGIES == set(), f"got {tb.HIGH_CONVICTION_STRATEGIES!r}")
+
+    last_price = 50.0
+    atr_value = 1.0
+    original_toggle = tb.USE_CONVICTION_SIZING
+    try:
+        tb.USE_CONVICTION_SIZING = True  # forced ON; HIGH_CONVICTION_STRATEGIES left at its real default
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+        expected = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        for reason_key in ("trend_following", "vwap_reversion", "rvol_spike",
+                            "breakout", "mean_reversion", "gap_continuation", "unknown"):
+            got = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, reason_key=reason_key)
+            check(f"USE_CONVICTION_SIZING=true with the real empty default set: "
+                  f"reason_key={reason_key!r} still uses plain TRADE_AMOUNT_USD",
+                  np.isclose(got, expected), f"got {got}, expected {expected}")
+    finally:
+        tb.USE_CONVICTION_SIZING = original_toggle
 
 
 def test_would_exceed_portfolio_heat_cap():
@@ -321,6 +556,151 @@ def test_check_symbol_gating():
                                     at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("a SELL signal on a held position calls place_sell_order (and reports 0 notional opened)",
           mock_sell.called and notional == 0.0)
+
+
+def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
+    """
+    check_symbol reads high_vol_tercile off the SAME enriched dataframe
+    row decide_signal_at already consulted, and must forward it to
+    place_buy_order unchanged -- this is the only place that value
+    travels from strategy.py's indicator column (see high_vol_tercile in
+    add_indicators()) into the sizing decision in trading_bot.py.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id")
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, high_vol_tercile=True)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 350.0)) as mock_buy:
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+    check("high_vol_tercile=True on the enriched row is forwarded to place_buy_order",
+          bool(mock_buy.call_args.args[-1]) is True, f"call args: {mock_buy.call_args}")
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, high_vol_tercile=False)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)) as mock_buy:
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+    check("high_vol_tercile=False on the enriched row is forwarded to place_buy_order too",
+          bool(mock_buy.call_args.args[-1]) is False, f"call args: {mock_buy.call_args}")
+
+
+def test_place_buy_order_conviction_sizing():
+    """
+    place_buy_order/check_symbol wiring: a reason_key IN the (test-
+    populated) high-conviction set gets the boosted amount; a reason_key
+    NOT in it gets the normal amount; the toggle OFF means zero effect
+    even with a populated set. Exercises place_buy_order's REAL sizing
+    branch directly (mocked trading_client/get_latest_price/reconcile),
+    not the mirrored math in estimate_new_position_risk_usd, so a bug
+    that only lived inside place_buy_order itself would still be caught.
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    fake_client = MagicMock()
+    fake_client.submit_order.return_value = types.SimpleNamespace(id="test-order-id")
+
+    original_rb = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        with patch.object(tb, "trading_client", fake_client), \
+             patch.object(tb, "get_latest_price", return_value=last_price), \
+             patch.object(tb, "reconcile_bracket_with_real_fill", return_value=(last_price, False)):
+
+            tb.USE_CONVICTION_SIZING = False
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=False)
+            check("toggle OFF: a qualifying reason_key still gets the normal TRADE_AMOUNT_USD qty "
+                  "-- zero effect from a populated HIGH_CONVICTION_STRATEGIES set",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(tb.TRADE_AMOUNT_USD // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}")
+
+            tb.USE_CONVICTION_SIZING = True
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=False)
+            check("toggle ON + reason_key IN HIGH_CONVICTION_STRATEGIES gets the boosted qty",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(750.0 // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is True,
+                  f"details: {tb.place_buy_order.last_details}")
+
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="mean_reversion", high_vol_tercile=False)
+            check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES gets the normal qty",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(tb.TRADE_AMOUNT_USD // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}")
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_rb
+        tb.USE_CONVICTION_SIZING = original_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_place_buy_order_volatility_precedes_conviction():
+    """
+    THE precedence test, exercised against the REAL place_buy_order (not
+    the mirrored math in estimate_new_position_risk_usd): a trade that is
+    BOTH in a high-conviction strategy AND in its own high-vol tercile
+    must submit an order sized off VOLATILITY_SCALED_REDUCED_USD, never
+    CONVICTION_BOOST_USD. Written so it would actually FAIL if the
+    precedence were implemented backwards -- the reduced/boosted qtys are
+    chosen to be clearly distinguishable ($350 vs $750 on a $500 baseline
+    -> 7 vs 15 shares at $50), and the assertion pins the exact reduced
+    qty, not just "not the largest number".
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    fake_client = MagicMock()
+    fake_client.submit_order.return_value = types.SimpleNamespace(id="test-order-id")
+
+    original_rb = tb.USE_RISK_BASED_SIZING
+    original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    original_conv_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        tb.USE_CONVICTION_SIZING = True
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        with patch.object(tb, "trading_client", fake_client), \
+             patch.object(tb, "get_latest_price", return_value=last_price), \
+             patch.object(tb, "reconcile_bracket_with_real_fill", return_value=(last_price, False)):
+
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=True)
+            expected_reduced_qty = int(350.0 // last_price)
+            expected_boosted_qty = int(750.0 // last_price)
+            check("a trade BOTH high-vol-tercile AND in a high-conviction strategy submits at the "
+                  "REDUCED (volatility) qty, never the boosted one",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == expected_reduced_qty
+                  and tb.place_buy_order.last_details["qty"] != expected_boosted_qty
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}, reduced would be {expected_reduced_qty}, "
+                  f"boosted would be {expected_boosted_qty}")
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_rb
+        tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
+        tb.USE_CONVICTION_SIZING = original_conv_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
 
 
 def test_check_symbol_gating_portfolio_heat_cap():
@@ -1077,6 +1457,161 @@ def test_check_symbol_blocks_buy_when_spy_regime_blocks_entry():
     check("a taken entry reports its notional", notional == 500.0)
 
 
+# ---------------------------------------------------------------------------
+# SECTOR-RELATIVE MEAN REVERSION FILTER -- off by default. Only ever
+# consulted for a mean_reversion BUY (checked inside check_symbol once
+# reason_key is known), same reason_key-scoping pattern as the
+# vwap_reversion volume filter above.
+# ---------------------------------------------------------------------------
+
+def make_fake_close_series(closes: list[float]) -> pd.DataFrame:
+    """A stand-in for the 'close' column sector_relative_mean_reversion_blocks_entry
+    reads, on either the candidate's own enriched bars or a sector ETF's raw bars."""
+    return pd.DataFrame({"close": closes})
+
+
+def test_get_sector_etf_resolves_via_sector_map_and_etf_map():
+    with patch.object(tb, "get_symbol_sector", return_value="Information Technology"):
+        etf = tb.get_sector_etf("NVDA")
+    check("a symbol with a mapped sector resolves to its SECTOR_ETF_MAP entry", etf == "XLK")
+
+
+def test_get_sector_etf_none_when_sector_unknown():
+    with patch.object(tb, "get_symbol_sector", return_value=None):
+        etf = tb.get_sector_etf("MYSTERYSYMBOL")
+    check("an unknown sector resolves to no ETF, not an exception", etf is None)
+
+
+def test_sector_relative_blocks_entry_disabled_by_default():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", False), \
+         patch.object(tb, "get_sector_etf") as mock_get_etf:
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "AAA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("with the filter off, the gate never blocks", not blocked)
+    check("no sector lookup happens when the filter is disabled", not mock_get_etf.called)
+
+
+def test_sector_relative_blocks_entry_fails_open_on_unknown_sector():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value=None):
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "MYSTERYSYMBOL", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("an unmappable sector fails open (doesn't block)", not blocked)
+
+
+def test_sector_relative_blocks_entry_fails_open_when_etf_bars_missing():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"):
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4, {})
+    check("no ETF bars fetched this cycle fails open", not blocked)
+
+
+def test_sector_relative_blocks_entry_fails_open_on_insufficient_history():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3):
+        # Candidate only has 3 bars (i=2), fewer than the 3-bar lookback needs.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100]), 2,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("not enough of the candidate's own history yet fails open", not blocked)
+
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3):
+        # ETF only has 3 bars, at/under the 3-bar lookback.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100])})
+    check("not enough of the ETF's own history yet fails open", not blocked)
+
+
+def test_sector_relative_blocks_entry_allows_genuine_underperformance():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3), \
+         patch.object(tb, "SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0):
+        # Candidate: -5% over the window. ETF: +1%. Underperformance 6pp >= 2pp threshold.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 95]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("a candidate genuinely underperforming its sector ETF by more than the threshold is allowed",
+          not blocked)
+
+
+def test_sector_relative_blocks_entry_blocks_soft_sector_day():
+    with patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "get_sector_etf", return_value="XLK"), \
+         patch.object(tb, "SECTOR_RELATIVE_LOOKBACK_BARS", 3), \
+         patch.object(tb, "SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT", 2.0):
+        # Candidate: -0.5% over the window. ETF: +1%. Underperformance only 1.5pp < 2pp threshold.
+        blocked = tb.sector_relative_mean_reversion_blocks_entry(
+            "NVDA", make_fake_close_series([100, 100, 100, 100, 99.5]), 4,
+            {"XLK": make_fake_close_series([100, 100, 100, 100, 101])})
+    check("a candidate that isn't meaningfully weaker than its sector ETF is blocked "
+          "(an ordinary soft sector day, not genuine underperformance)", blocked)
+
+
+def test_check_symbol_blocks_buy_when_sector_relative_blocks_entry():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a mean_reversion BUY is refused when the sector-relative filter blocks it", not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=False), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("the same signal is taken once the sector-relative filter confirms", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
+def test_sector_relative_filter_only_applies_to_mean_reversion_signals():
+    """The gate must only fire for mean_reversion's OWN signal -- a BUY
+    from a different strategy must not be blocked by a check that has
+    nothing to do with it."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", True), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a breakout signal is unaffected by the mean-reversion-only sector filter", mock_buy.called)
+    check("the unrelated entry reports its notional", notional == 500.0)
+
+
+def test_sector_relative_filter_noop_when_disabled():
+    df_input = pd.DataFrame({"close": [100.0]})
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SECTOR_RELATIVE_MEAN_REVERSION", False), \
+         patch.object(tb, "sector_relative_mean_reversion_blocks_entry", return_value=True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("NVDA", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("with the filter disabled, check_symbol short-circuits before ever calling the gate "
+          "function, so a mocked True result has no effect", mock_buy.called)
+    check("the entry reports its notional", notional == 500.0)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -1254,15 +1789,299 @@ def test_run_for_duration_survives_a_bad_cycle_but_reports_it():
     check("still reports failure so the run goes red", had_error is True)
 
 
+# ---------------------------------------------------------------------------
+# Breakout invalidation exit -- open_position_context state-file round
+# trip, and check_symbol's wiring of USE_BREAKOUT_INVALIDATION_EXIT. See
+# strategy.breakout_invalidated_at / trading_bot's OPEN POSITION CONTEXT
+# section.
+# ---------------------------------------------------------------------------
+
+def test_open_position_context_persistence():
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file):
+        tb.open_position_context = {
+            "AAA": {"strategy": "breakout", "invalidation_level": 123.45},
+            "BBB": {"strategy": "vwap_reversion", "invalidation_level": None},
+        }
+        tb.save_open_position_context()
+
+        # Simulate a crash-and-restart: wipe the in-memory state, then reload it.
+        tb.open_position_context = {}
+        tb.load_open_position_context()
+
+        check("a breakout entry (with its frozen level) survives a save/reload round-trip",
+              tb.open_position_context.get("AAA") == {"strategy": "breakout", "invalidation_level": 123.45})
+        check("a non-breakout entry (invalidation_level None) survives a save/reload round-trip too",
+              tb.open_position_context.get("BBB") == {"strategy": "vwap_reversion", "invalidation_level": None})
+
+        tb.clear_open_position_context("AAA")
+        check("clear_open_position_context removes just that symbol's in-memory entry",
+              "AAA" not in tb.open_position_context and "BBB" in tb.open_position_context)
+
+        # Reload from disk to confirm the clear was actually PERSISTED,
+        # not just removed from the in-memory dict.
+        tb.open_position_context = {}
+        tb.load_open_position_context()
+        check("the clear survives a reload too -- it was written to disk, not just in-memory",
+              "AAA" not in tb.open_position_context and "BBB" in tb.open_position_context)
+
+    tb.open_position_context = {}
+
+
+def test_load_open_position_context_missing_file_starts_fresh():
+    tmp_dir = tempfile.mkdtemp()
+    missing_file = os.path.join(tmp_dir, "does_not_exist.json")
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", missing_file):
+        tb.open_position_context = {"STALE": {"strategy": "breakout", "invalidation_level": 1.0}}
+        tb.load_open_position_context()  # must not raise or wipe existing in-memory state
+    check("a missing state file is not an error -- load leaves whatever was already in memory untouched",
+          tb.open_position_context == {"STALE": {"strategy": "breakout", "invalidation_level": 1.0}})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_buy_persists_open_position_context_for_breakout():
+    """The BUY branch must persist the SAME level breakout_at() itself
+    used to confirm the entry (breakout_recent_high, since
+    USE_CLOSE_BEYOND_LEVEL_CONFIRMATION defaults off)."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id", client_order_id="breakout-123")
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    fake_enriched = make_fake_enriched(100)
+    fake_enriched["breakout_recent_high"] = [97.5]
+    fake_enriched["breakout_recent_high_wick"] = [98.5]
+
+    tb.open_position_context = {}
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=fake_enriched), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a breakout BUY persists strategy='breakout' and the entry bar's breakout_recent_high level",
+          tb.open_position_context.get("AAA") == {"strategy": "breakout", "invalidation_level": 97.5})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_buy_persists_none_invalidation_level_for_non_breakout():
+    # reason_key="trend_following" (not vwap_reversion) deliberately --
+    # a vwap_reversion BUY would also exercise vwap_volume_blocks_entry's
+    # own volume-confirmation lookup, which needs indicator columns this
+    # minimal fake enriched df doesn't have and isn't what's under test here.
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id", client_order_id="trend_following-123")
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    tb.open_position_context = {}
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "trend_following", "test trend")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a non-breakout BUY still records its own strategy, with invalidation_level None",
+          tb.open_position_context.get("AAA") == {"strategy": "trend_following", "invalidation_level": None})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_sell_signal_clears_open_position_context():
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 90.0}}
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("SELL", "trend_following", "test sell")), \
+         patch.object(tb, "place_sell_order", return_value=types.SimpleNamespace(id="sell-id")):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a regular strategy-SELL-signal exit clears the symbol's open_position_context entry",
+          "AAA" not in tb.open_position_context)
+    tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_sells_when_flagged_and_broken():
+    """The whole point of this candidate: a breakout position the regime
+    strategy's own signal says nothing about (HOLD) still gets exited
+    once price closes back below the level that justified its entry."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order", return_value=types.SimpleNamespace(id="inv-exit-id")) as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a breakout position whose entry level has been invalidated gets sold, "
+              "even though the currently-active regime strategy's own signal is HOLD",
+              mock_sell.called and notional == 0.0)
+        check("the invalidation exit clears the symbol's open_position_context entry",
+              "AAA" not in tb.open_position_context)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_does_not_fire_for_non_breakout_position():
+    """The exact same price action (close back below 105) must NOT sell a
+    position that open_position_context says was opened by a different
+    strategy -- this mechanism is scoped to breakout entries only."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {"AAA": {"strategy": "vwap_reversion", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a non-breakout open position is NOT sold by the breakout invalidation mechanism, "
+              "even with the identical price action that WOULD invalidate a breakout entry",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_noop_when_toggle_off():
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = False
+        tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("toggle off means zero behavior change -- an otherwise-invalidated breakout "
+              "position is left alone",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_unknown_position_not_touched():
+    """
+    Fail-safe requirement: a currently-open position with NO entry in
+    open_position_context (e.g. it existed before this feature was
+    deployed, or the state file was reset) must never be guessed at --
+    this mechanism simply doesn't apply to it.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {}  # symbol is NOT in the state file at all
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a position with no entry in open_position_context is never touched by this mechanism",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_flatten_all_positions_clears_open_position_context():
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {
+        "AAA": {"strategy": "breakout", "invalidation_level": 90.0},
+        "BBB": {"strategy": "trend_following", "invalidation_level": None},
+    }
+    fake_client = MagicMock()
+    fake_client.close_position.return_value = None
+    fake_client.cancel_orders.return_value = None
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "trading_client", fake_client), \
+         patch.object(tb, "get_all_open_positions", return_value={
+             "AAA": {"qty": 5.0, "avg_entry_price": 100.0},
+             "BBB": {"qty": 3.0, "avg_entry_price": 50.0},
+         }):
+        result = tb.flatten_all_positions()
+
+    check("flatten_all_positions reports success when every close succeeds", result is True)
+    check("flatten_all_positions clears every closed symbol's open_position_context entry",
+          tb.open_position_context == {})
+    tb.open_position_context = {}
+
+
+def test_record_auto_exit_clears_open_position_context_even_on_lookup_failure():
+    """
+    clear_open_position_context must run unconditionally, before the
+    best-effort Alpaca order-history lookup -- the caller (run_one_cycle)
+    already knows the position is gone by the time it calls this, so
+    clearing local state can't be allowed to depend on that lookup
+    succeeding.
+    """
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 90.0}}
+
+    failing_client = MagicMock()
+    failing_client.get_orders.side_effect = Exception("simulated API failure")
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "trading_client", failing_client):
+        tb.record_auto_exit("AAA")
+
+    check("record_auto_exit clears open_position_context even when the order-history lookup fails",
+          "AAA" not in tb.open_position_context)
+    tb.open_position_context = {}
+
+
 if __name__ == "__main__":
     tests = [
         test_would_exceed_portfolio_risk_cap,
         test_get_current_portfolio_risk_usd,
         test_estimate_new_position_risk_usd,
+        test_estimate_new_position_risk_usd_volatility_scaled,
+        test_estimate_new_position_risk_usd_conviction_boosted,
+        test_estimate_new_position_risk_usd_volatility_precedes_conviction,
+        test_conviction_sizing_structurally_inert_with_real_shipped_default,
         test_would_exceed_portfolio_heat_cap,
         test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
+        test_check_symbol_propagates_high_vol_tercile_to_place_buy_order,
+        test_place_buy_order_conviction_sizing,
+        test_place_buy_order_volatility_precedes_conviction,
         test_check_symbol_gating_portfolio_heat_cap,
         test_get_symbol_sector_uses_hardcoded_map_first,
         test_get_symbol_sector_falls_back_to_alpaca_asset_metadata,
@@ -1302,6 +2121,17 @@ if __name__ == "__main__":
         test_spy_regime_confirms_entry_fails_open_on_missing_data,
         test_spy_regime_confirms_entry_fails_open_during_warmup,
         test_check_symbol_blocks_buy_when_spy_regime_blocks_entry,
+        test_get_sector_etf_resolves_via_sector_map_and_etf_map,
+        test_get_sector_etf_none_when_sector_unknown,
+        test_sector_relative_blocks_entry_disabled_by_default,
+        test_sector_relative_blocks_entry_fails_open_on_unknown_sector,
+        test_sector_relative_blocks_entry_fails_open_when_etf_bars_missing,
+        test_sector_relative_blocks_entry_fails_open_on_insufficient_history,
+        test_sector_relative_blocks_entry_allows_genuine_underperformance,
+        test_sector_relative_blocks_entry_blocks_soft_sector_day,
+        test_check_symbol_blocks_buy_when_sector_relative_blocks_entry,
+        test_sector_relative_filter_only_applies_to_mean_reversion_signals,
+        test_sector_relative_filter_noop_when_disabled,
         test_compute_next_cycle_sleep_never_overshoots_the_flatten_trigger,
         test_compute_next_cycle_sleep_unaffected_with_plenty_of_runway,
         test_compute_next_cycle_sleep_already_inside_flatten_window,
@@ -1315,6 +2145,17 @@ if __name__ == "__main__":
         test_run_for_duration_never_overruns_its_window,
         test_run_for_duration_exits_when_session_is_over,
         test_run_for_duration_survives_a_bad_cycle_but_reports_it,
+        test_open_position_context_persistence,
+        test_load_open_position_context_missing_file_starts_fresh,
+        test_check_symbol_buy_persists_open_position_context_for_breakout,
+        test_check_symbol_buy_persists_none_invalidation_level_for_non_breakout,
+        test_check_symbol_sell_signal_clears_open_position_context,
+        test_check_symbol_breakout_invalidation_exit_sells_when_flagged_and_broken,
+        test_check_symbol_breakout_invalidation_exit_does_not_fire_for_non_breakout_position,
+        test_check_symbol_breakout_invalidation_exit_noop_when_toggle_off,
+        test_check_symbol_breakout_invalidation_exit_unknown_position_not_touched,
+        test_flatten_all_positions_clears_open_position_context,
+        test_record_auto_exit_clears_open_position_context_even_on_lookup_failure,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

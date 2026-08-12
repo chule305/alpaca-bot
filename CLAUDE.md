@@ -1373,3 +1373,397 @@ untouched at $500 -- the lever used here was exclusively "more small,
 independent positions," never "bigger ones," which is the distinction
 that matters against the 2026-08-05 failure mode. 91/91 tests still
 pass.
+
+## 2026-08-11: sector-relative mean-reversion filter built and backtested -- inconclusive, shipped OFF
+
+Candidate sourced from statistical-arbitrage / short-term-reversal
+research (Avellaneda & Lee; Quantpedia's short-term reversal writeups):
+a stock's move is a more meaningful mean-reversion signal once it's
+compared against its own SECTOR peers over the same window, not judged
+in isolation -- "oversold alone" is weaker evidence than "oversold
+relative to how its own sector traded today." This is conceptually
+similar to the already-rejected `USE_SPY_REGIME_GATE` (both compare
+against an external reference series), but narrower and symbol-specific
+rather than a single market-wide veto, so it got its own honest test
+rather than being assumed guilty by association.
+
+**Built as an external gate, not inside `strategy.py`** -- same
+reasoning as the S&P-500-membership gates and the sector-concentration
+cap: a sector ETF's own price series is operational/external data the
+pure decision file has no access to by design. `trading_bot.py` reuses
+the existing `SECTOR_MAP`/`get_symbol_sector()` (built for the
+concentration cap) plus a new `SECTOR_ETF_MAP` (GICS sector name -> SPDR
+ticker: XLK/XLF/XLE/XLV/XLI/XLP/XLU/XLY/XLB/XLRE/XLC) to resolve which
+ETF a candidate belongs to, fetches that ETF's own bars once per cycle
+(batched, only when the toggle is on), and requires the candidate's own
+return over `SECTOR_RELATIVE_LOOKBACK_BARS` (default: `RSI_PERIOD`, the
+same window the RSI-oversold read already judges) to trail the ETF's
+return over that same window by at least
+`SECTOR_RELATIVE_MIN_UNDERPERFORMANCE_PCT` (default 2.0pp) before a
+`mean_reversion` entry is allowed. `backtest.py` mirrors this with its
+own parallel implementation (as-of backward join for per-bar historical
+alignment, since it replays history bar-by-bar rather than reading a
+single "now" like the live bot) -- same pattern already used for
+`USE_SPY_REGIME_GATE`'s two separate implementations. Fails OPEN
+throughout: unknown sector, no mapped ETF, fetch failure, or either
+series still warming up all mean "don't block," never "block."
+`USE_SECTOR_RELATIVE_MEAN_REVERSION`, default off.
+
+**Backtested both universes, 90 days, ON vs. OFF, everything else at
+defaults:**
+
+```
+                      trades   win rate   total return    profit factor   max DD
+megacap (5 symbols):   78       56%        +7.4%            2.09          1.4%   <- identical ON/OFF
+scanner (12 symbols): 104       49%        +2.5%            1.30          1.6%   <- identical ON/OFF
+```
+
+Byte-for-byte identical combined numbers both ways, on both universes.
+Root cause, checked rather than assumed: `mean_reversion` is a RARE
+entry in this bot's priority chain (`vwap_reversion`/`orb`/
+`gap_continuation`/`breakout` all sit ahead of it and claim most
+oversold-looking bars first) -- 0 `mean_reversion` trades fired in the
+megacap universe this window, and only 2 in the scanner universe. Of
+those 2: SRAD has no `SECTOR_MAP` entry (small-cap, was never going to
+be evaluated by any threshold -- confirmed it fails open regardless).
+SMCI (`Information Technology` -> XLK, a loser, -$25.41) DID get
+evaluated -- swept the threshold from 2pp up to 50pp and found the real
+underperformance vs. XLK that window was between 3-5pp: unaffected at
+the shipped 2.0pp default, blocked at every value from 3.0pp up. So the
+mechanism is doing real, threshold-sensitive work; there just wasn't a
+large enough sample (one single evaluable trade) this run to say whether
+2.0pp is the right bar or not, in either direction.
+
+**Shipped OFF, per this project's "default off unless backtest evidence
+clearly justifies on" convention** -- one evaluable trade isn't evidence
+of anything, good or bad, whichever way it happened to land. Also worth
+remembering going in: the scanner's own picks are mostly small/micro-caps
+that `SECTOR_MAP` deliberately doesn't cover (see that map's own
+docstring), so even once `mean_reversion` fires more often, this filter's
+effective reach stays narrower than "every mean_reversion entry" until
+`SECTOR_MAP`'s coverage grows too. Kept in code and toggleable, same as
+`USE_SPY_REGIME_GATE`/`USE_RVOL_SPIKE`/`USE_ROSS_HOOK` above -- re-test
+once both of those preconditions are actually met rather than assuming
+this result is final. 11 new unit tests added (`get_sector_etf`,
+`sector_relative_mean_reversion_blocks_entry`'s fail-open cases and its
+actual threshold math, and `check_symbol`'s wiring/scoping), 102/102
+tests pass.
+
+## 2026-08-11: gap-quality volume filter built and backtested -- net negative, shipped OFF
+
+Same research round as the sector-relative filter above. Hypothesis, from
+overnight/intraday return-decomposition research (Lou, Polk & Skouras;
+Cooper, Cliff & Gulen): a price gap backed by real opening-bar volume is
+more likely to hold/extend than a thin, sentiment-driven gap, which tends
+to fade. `gap_continuation_at()` as written only ever checked PRICE (gap
+size vs. prior close, then a break of the opening bar's high) -- never
+whether anyone was actually trading it.
+
+Built as a pure `strategy.py` addition (no `trading_bot.py`/`backtest.py`
+changes needed): `USE_GAP_QUALITY_FILTER` (default off) and
+`GAP_QUALITY_VOLUME_MULT` (default 1.5x) gate `gap_continuation_at()` on
+`gap_quality_confirmed_at()`, which requires the gap day's own opening-bar
+volume to clear `GAP_QUALITY_VOLUME_MULT` times this SAME symbol's own
+historical volume for that time-of-day bucket -- reuses the existing
+`breakout_tod_avg_volume` machinery (`USE_TIME_OF_DAY_VOLUME_NORM`) rather
+than a second normalization pass. Fails closed like every other
+volume/noise guard in this file.
+
+**Backtested both universes, 90 days, ON vs. OFF, everything else at
+defaults:**
+
+```
+                      trades   win rate   PF      return   max DD
+megacap  OFF:          78       56.4%     2.07    +7.3%    1.4%
+megacap  ON:            72       55.6%     1.91    +6.1%    1.4%
+scanner  OFF:          103       48.5%     1.28    +2.3%    1.6%
+scanner  ON:            97       48.5%     1.27    +2.1%    1.8%
+```
+
+Net negative on both universes, and not narrowly -- the filter did what it
+was built to do mechanically (screened out most `gap_continuation` signals
+whose opening volume wasn't 1.5x normal), but the trades it KEPT were not
+higher quality than the ones it removed, the opposite of the hypothesis.
+On megacap, `gap_continuation`'s own win rate dropped 54%->43% and 3 of
+the filtered-out trades were AMD's entire 3-for-3 winning
+`gap_continuation` record that window -- a reminder that `gap_continuation`
+was already this bot's least-tested strategy (13-17 trades per universe
+before filtering; the filter roughly halves that again), so neither the
+baseline nor the filtered number should be read as a settled result at
+this sample size, just as a real, honest negative in this window.
+
+**Shipped OFF** per the "default off unless backtest evidence clearly
+justifies on" convention -- there's no evidence here that opening-bar
+volume screening (as implemented, 1.5x threshold) improves
+`gap_continuation` in this window on either universe. Kept in code and
+toggleable, same as the other rejected-but-plausible entries above --
+worth retesting with a bigger sample or a different threshold, not
+assumed permanently dead. 6 new unit tests added
+(`gap_quality_confirmed_at`'s strong/thin-volume cases,
+`gap_continuation_at`'s end-to-end gating on/off), 109/109 tests pass
+combined with the other two candidates from this round (4 pre-existing,
+unrelated test-fixture failures from earlier `MAX_POSITION_PCT_OF_EQUITY`/
+`USE_TIME_OF_DAY_VOLUME_NORM` default changes were also fixed today --
+see below).
+
+## 2026-08-11: volatility-scaled sizing built and backtested -- real drawdown reduction, real dollar cost, shipped OFF
+
+Third candidate from the same research round. Sourced from Moreira & Muir
+2017 ("Volatility-Managed Portfolios", J. Finance): a second regime axis,
+independent of ADX -- ADX measures DIRECTIONAL PERSISTENCE (trending vs.
+choppy), not MAGNITUDE. Moreira & Muir found scaling exposure down when
+trailing realized vol is high improves risk-adjusted returns through a
+mechanism orthogonal to trend strength. This bot only acts on the DOWN
+half: `USE_VOLATILITY_SCALED_SIZING` (default off) reduces the flat
+`TRADE_AMOUNT_USD` position to `VOLATILITY_SCALED_REDUCED_USD` (default
+$350, a 30% cut) for a symbol's own HIGH realized-vol tercile only (ranked
+via `compute_vol_percentile()` against that SAME symbol's own trailing 90
+bars of ATR-as-%-of-price -- never a cross-symbol comparison). Low/mid
+tercile trades are untouched.
+
+**Safety-hardened against the exact 2026-08-05 failure shape** (see that
+incident above): `VOLATILITY_SCALED_REDUCED_USD` is a flat dollar figure,
+never a fraction of equity or of `TRADE_AMOUNT_USD`, and `strategy.py`
+raises `ValueError` at import time if it's ever configured above
+`TRADE_AMOUNT_USD` -- proven by a dedicated subprocess test that actually
+imports the module with a bad env var and confirms the crash. This lever
+can only ever shrink a position, never grow one past the existing flat
+baseline, even under a misconfigured `.env`.
+
+**Backtested both universes, 90 days, ON vs. OFF, everything else at
+defaults:**
+
+```
+                      trades   win rate   PF      return   max DD
+megacap  OFF:          78       56%       2.10    +7.4%    1.4%
+megacap  ON:            64       56%       2.51    +5.0%    0.8%
+scanner  OFF:          104       50%       1.30    +2.5%    1.6%
+scanner  ON:            104       50%       1.31    +2.0%    1.1%
+```
+
+The scanner read is the clean one: all 104 trades and every win/loss
+outcome are IDENTICAL toggle-off vs. toggle-on (every scanner-universe
+symbol trades well under $350/share, so nothing rounds to 0 shares) --
+same trades, same outcomes, just smaller positions in the high-vol
+tercile. Max drawdown fell 31% (1.6%->1.1%), profit factor and win rate
+held flat, but total dollar return fell 18% ($150->$122), because the
+high-vol tercile happened to be mildly PROFITABLE this window, not a net
+drag -- cutting its size cut real profit along with real risk. That's the
+honest core finding: the mechanism does exactly what Moreira & Muir's
+theory predicts on the metric it targets (drawdown), but it isn't free.
+
+The MEGACAP number (PF 2.10->2.51, DD 1.4%->0.8%) looks more dramatic but
+is NOT a clean sizing-only comparison: AMD ($397-495 this window) and TSLA
+($326-422) are priced high enough that `int($350 // price)` rounds to 0
+shares whenever price exceeds $350, so 17 of 45 high-vol-tercile trades in
+those two names were skipped entirely rather than downsized (this is still
+safe -- 0 exposure is never above the $500 baseline -- but it means
+"reduced size" became "skipped trade" for these two names specifically,
+and those 17 skipped trades happened to be net +$27 at their original
+size, a small, noisy sample driving much of the headline PF improvement).
+
+**Shipped OFF.** The drawdown reduction is real and reproducible, and the
+safety guard makes the 2026-08-05 failure shape structurally impossible
+here even via a bad env var -- but unlike `USE_TIME_OF_DAY_VOLUME_NORM`
+(which improved PF, return, AND drawdown together), this trades real
+dollar return for the drawdown improvement in the one window tested, and
+the flattering megacap number is confounded by a share-price rounding
+effect at exactly the $350 threshold. Worth re-testing over a longer
+window (to see whether the high-vol tercile is a drag more often than not,
+the actual Moreira & Muir claim) or with a price-aware minimum-share-count
+guard before defaulting this on. 6 new unit tests added (`compute_vol_
+percentile`'s no-lookahead/own-history-only behavior, `add_indicators`
+wiring, the safety-guard invariant, the subprocess import-time-crash
+proof, `estimate_new_position_risk_usd`'s volatility-scaled branch, and
+`check_symbol`'s `high_vol_tercile` forwarding), 109/109 tests pass
+combined with the other two candidates from this round.
+
+## 2026-08-11: fixed 4 pre-existing stale test-fixture failures found during round-3 merge
+
+Not a new candidate -- found while verifying round-3's combined test
+suite. `test_strategy.py`'s `test_breakout`, `test_decide_signal_entry_
+points_agree`, and `test_compute_position_size` were all failing on a
+clean, untouched checkout (confirmed via `git stash`), independent of any
+of the three candidates above. Root cause for each:
+
+- `test_breakout` / `test_decide_signal_entry_points_agree`: built as
+  single-session fixtures, but `USE_TIME_OF_DAY_VOLUME_NORM` (default
+  `true` since earlier this session) compares each bar's volume against
+  OTHER sessions' bars in the same time-of-day bucket -- a fixture with no
+  prior session has no baseline to compare against, reads NaN, and
+  `breakout_at` fails closed on NaN by design (see that function's
+  comment). Fixed by seeding one prior "normal volume" day, the same
+  pattern `test_gap_quality_filter` already uses for the identical reason.
+- `test_compute_position_size`: hardcoded `qty == 50`, assuming the OLD
+  `MAX_POSITION_PCT_OF_EQUITY=25` default. That constant was deliberately
+  dropped to 5 after the 2026-08-05 sizing incident (see above) -- at the
+  new default, the equity-pct cap binds at 10 shares instead of 50, so the
+  test's hardcoded expectation was simply stale. Fixed to compute the
+  expected cap dynamically from `strat.MAX_POSITION_PCT_OF_EQUITY` instead
+  of a hardcoded number, matching the pattern the test's own third check
+  already used.
+
+No trading logic changed -- these were test-fixture bugs, not code bugs.
+109/109 tests pass (`py test_strategy.py`, `py test_trading_bot.py`,
+`py test_trade_recorder.py`, `py test_daily_summary.py` all green).
+
+## 2026-08-12: breakout invalidation exit -- real structural fix, genuine improvement on the scanner universe, shipped OFF pending a decision on defaults
+
+Root cause found by reconstructing REAL Alpaca order history (not backtest):
+every open position, regardless of which strategy opened it, only ever
+exited via (a) its bracket stop-loss/take-profit leg filling on its own,
+(b) the CURRENTLY ACTIVE regime strategy's SELL signal (trend_following's
+EMA cross-down or mean_reversion's RSI-overbought -- `decide_signal_at()`
+only ever reflects the regime active RIGHT NOW, not what originally
+justified the entry), or (c) the mandatory end-of-day flatten. There was
+no "the original breakout thesis failed" exit. Real evidence: ALL 12 real
+winning breakout trades exited via a plain MARKET order, never the
+bracket's take-profit LIMIT leg -- every real win got cut short before
+reaching its 10% target by something unrelated. Only 2 of 9 real losses
+hit the actual stop; the other 7 also just got market-sold. In the 90-day
+scanner backtest, "end-of-day flatten" was the exit reason for 76% of all
+breakout trades (28/37); take-profit fired only 3 times.
+
+**Fix**: `USE_BREAKOUT_INVALIDATION_EXIT` (default off) adds a real exit
+condition symmetric to the entry -- `breakout_at()` requires a close
+strictly ABOVE `breakout_recent_high`(`_wick`) to enter; the new
+`breakout_invalidated_at()` exits when a later bar closes strictly BELOW
+that SAME level, frozen at the moment of entry (not re-read from the
+drifting rolling window later). `backtest.py` already tracks
+`position["entry_reason"]` so this was a small addition there. The live
+bot needed a new piece of infrastructure: `open_position_context.json`, a
+small state file (mirroring `daily_risk_state.json`/`watchlist_state.json`'s
+existing load/save/git-tracked pattern exactly) recording `{symbol:
+{strategy, invalidation_level}}` at entry time, so `check_symbol` can tell
+whether a currently-open position was a breakout entry without any extra
+Alpaca API calls per cycle. Cleared on every position-closing path (SELL
+signal, this new invalidation exit, the existing bracket-leg-close
+detection, `flatten_all_positions`) so no stale entry can ever leak into a
+different position that later opens in the same symbol.
+
+**Independently verified**, not just self-reported: a second agent
+re-read every changed line, traced every code path that touches position
+state, and confirmed the new exit path requires ALL of (toggle on) AND
+(stored strategy == "breakout", a string no other strategy ever produces)
+AND (a real, non-null invalidation level, which is only ever set for
+breakout entries) before it can fire -- a non-breakout position can never
+be touched by this mechanism, verified via a dedicated adversarial test
+(identical price action, different stored strategy, confirmed no sell).
+The verifier also independently re-ran all four test suites and both
+backtests from scratch and got matching numbers, not just trusted the
+builder's report.
+
+**Backtested both universes, 90 days, ON vs OFF, everything else default:**
+
+```
+                            trades  win%   avg win   avg loss   P&L      exit mix
+megacap breakout, OFF:        7    28.6%   +1.37%    -0.95%   -$6.82    EOD flatten 5, sell-signal 2
+megacap breakout, ON:         7    28.6%   +1.37%    -0.91%   -$6.24    invalidated 3, EOD 2, sell-signal 2
+scanner breakout, OFF:       36    47.2%   +3.63%    -1.96%  +$116.22   EOD flatten 27, stop 4, target 3, sell-signal 2
+scanner breakout, ON:        36    44.4%   +3.73%    -1.57%  +$135.37   invalidated 15, EOD 14, target 3, stop 2, sell-signal 2
+```
+
+Megacap (7 trades) is too thin to say anything either way -- marginally
+less bad, same win rate, not real evidence. **Scanner (36 trades, the
+meaningful sample) is genuine, reproduced, non-cherry-picked evidence of
+an improvement**: avg loss shrank ~20% (-1.96% -> -1.57%) with avg win
+essentially unchanged, meaning the fix worked exactly as diagnosed --
+losses are getting contained closer to where they should be, winners
+that were going to run to full target still do (take-profit fired 3
+times either way). Win rate actually dipped slightly (one EOD-flatten
+small win became a small invalidation loss) but the dollar math improved
+regardless. Combined portfolio on scanner: return +2.5%->+2.8%, profit
+factor 1.29->1.35, max drawdown 1.6%->1.4%. Every dollar of that
+combined-portfolio improvement traces back to breakout's own P&L delta,
+confirming it doesn't leak into other strategies' numbers.
+
+**Shipped OFF by default** since the live bot's SYMBOLS fallback is the
+megacap list (no real evidence there yet) even though `USE_SCANNER=true`
+means real trading mostly runs on scanner-style picks (where the evidence
+IS real) -- this is a case where the scanner-side evidence is strong
+enough that turning it on is a reasonable, evidence-backed call, unlike
+this round's other candidates. Left as the user's decision rather than
+defaulted on unilaterally. 12 new unit tests (`breakout_invalidated_at`'s
+pure logic, the state-file round-trip, `check_symbol`'s wiring including
+the adversarial non-breakout-position test), 121/121 test functions pass.
+
+## 2026-08-12: conviction-boost sizing built -- safe mechanism, shipped genuinely empty (no strategy currently qualifies)
+
+Requested as the safe alternative to an idea explicitly declined earlier
+the same day: staking up to $90k on a trade the bot judged "very likely to
+be really good." That was declined because this bot has no real
+confidence score -- every strategy just returns BUY/SELL, never a
+probability -- and doing something like it before (a %-of-equity sizing
+mode) caused the real 2026-08-05 incident: $15,700-$19,900 single
+positions instead of $500. The agreed alternative: strategies with REAL,
+evidenced-based higher win rates can trade a bit bigger (e.g. $750 instead
+of $500), hard-capped so this can never repeat that incident's shape.
+
+**Checked the evidence first, honestly, before building anything**: per-
+strategy win rates compared across the megacap backtest, the scanner
+backtest, AND real reconstructed Alpaca live-trade history (not just one
+source). Result: no strategy showed a consistent real edge across all
+three. `trend_following` looked like a standout on megacap (64% win) but
+was the WORST performer on scanner (33% win, losing money). `vwap_reversion`
+looked solid on both backtests (56%/60%) but was the worst REAL performer
+(23% win, -$200 across 13 real trades). Real trading overall: 45% win
+rate, net -$418 across 80 reconstructed trades, worse than either
+backtest predicted -- a reminder that backtest numbers alone aren't
+sufficient evidence for a sizing decision. Conclusion: the honestly
+qualifying strategy list is EMPTY right now.
+
+**Built anyway, but shipped genuinely inert**: `USE_CONVICTION_SIZING`
+(default off), `HIGH_CONVICTION_STRATEGIES` (comma-separated env var,
+default empty -- not pre-populated with anything), `CONVICTION_BOOST_USD`
+(default $750). Same hard import-time safety guard pattern as
+`VOLATILITY_SCALED_REDUCED_USD`: `CONVICTION_BOOST_USD` cannot exceed 2x
+`TRADE_AMOUNT_USD` (i.e. never above $1,000 at current defaults) even via
+a misconfigured env var -- this is the direct, structural answer to why
+the $90k idea was declined; it is now physically impossible for this
+lever to produce anything resembling that incident's shape. Composes
+correctly with the existing volatility-scaled-sizing candidate: if a
+trade is BOTH in a high-conviction strategy AND in its own high-
+volatility tercile, the size-DOWN always wins over the size-UP (safety
+before return-chasing) -- implemented as a true `elif` chain, not two
+independent `if`s, in all three places it needed to exist, and this was
+specifically stress-tested by inverting the branch order and confirming
+the test suite actually catches it.
+
+**Independently verified, not just self-reported**: a second agent
+re-ran fresh subprocess imports at and around the 2x safety-cap boundary
+(confirmed strict `>`, not `>=`; confirmed the cap scales correctly off a
+non-default `TRADE_AMOUNT_USD`, not a hardcoded number), wrote its own
+throwaway scripts to call the real `place_buy_order`/
+`estimate_new_position_risk_usd` functions directly with a trade that
+qualifies for both the reduction and the boost, and confirmed the
+reduction wins every time -- not by trusting the builder's tests, but by
+calling the real functions itself.
+
+**Proved inertness the strong way**: backtested both universes with the
+toggle OFF, and again ON with `HIGH_CONVICTION_STRATEGIES` empty (the
+real shipped default) -- the two runs produced BYTE-IDENTICAL
+trade-by-trade CSVs (confirmed via MD5 hash, independently, by both the
+builder and the verifier). Not "no strategy happened to qualify today" --
+the code path that would change sizing is structurally unreachable with
+an empty set.
+
+**Proved the mechanism actually works when populated** (functional proof
+only, never shipped this way): a throwaway test run with
+`HIGH_CONVICTION_STRATEGIES=trend_following` showed every trend_following
+trade's entry/exit price and timing stayed byte-identical, only qty and
+$ P&L scaled proportionally (e.g. one COIN trade: qty 2->3, pnl
+$7.42->$11.13, same pnl_pct) -- confirming this is a pure sizing lever,
+never a timing or entry/exit change. One honest side effect surfaced: a
+handful of AMD trades that were silently skipped at the $500 baseline
+(`int(500 // price)` rounding to 0 shares on a >$500 stock) newly cleared
+1 share at $750 -- the same rounding-floor behavior already documented
+for `VOLATILITY_SCALED_REDUCED_USD`, just recovering trades instead of
+dropping them. Worth knowing if this is ever populated, not a defect.
+
+**Shipped with `HIGH_CONVICTION_STRATEGIES` empty.** This is not a stub --
+it's a fully working, tested, safety-capped mechanism sitting idle because
+the evidence to point it at anything specific doesn't exist yet. Re-test
+once a strategy shows a consistent edge across backtest AND real trading,
+not just one or the other. 9 new unit tests (the safety-guard boundary
+sweep, env-var parsing, the precedence test, structural-inertness proof
+against the real default), 130/130 test functions pass.

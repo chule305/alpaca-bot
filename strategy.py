@@ -73,6 +73,38 @@ ADX_TREND_THRESHOLD = float(os.getenv("ADX_TREND_THRESHOLD", 25))
 USE_ADX_HYSTERESIS = os.getenv("USE_ADX_HYSTERESIS", "false").strip().lower() in ("1", "true", "yes")
 ADX_HYSTERESIS_BAND = float(os.getenv("ADX_HYSTERESIS_BAND", 3))
 
+# Second regime axis, independent of ADX (Moreira & Muir 2017,
+# "Volatility-Managed Portfolios", J. Finance): everything above measures
+# DIRECTIONAL PERSISTENCE (trending vs. choppy) -- it says nothing about
+# MAGNITUDE. A stock can have low ADX while its realized volatility is
+# either very high (violent whipsaws -- e.g. VEEE's 6.0-7.3%/bar ATR
+# days, see stop_is_wider_than_noise's docstring) or very low (quiet
+# drift). Moreira & Muir found that scaling exposure DOWN when trailing
+# realized vol is high (and up when low) improves risk-adjusted returns
+# through a mechanism that's orthogonal to trend strength -- this bot
+# only acts on the DOWN half (see USE_VOLATILITY_SCALED_SIZING near
+# TRADE_AMOUNT_USD below for why, and why it's a fixed-dollar reduction,
+# never a %-of-equity one).
+#
+# Reuses the ATR column computed a few lines below in add_indicators()
+# rather than adding a second realized-vol indicator -- ATR is already
+# this bot's validated per-symbol noise measure (MIN_STOP_TO_ATR_RATIO,
+# STOP_SLIPPAGE_ATR_FRACTION in backtest.py both lean on it). Expressed
+# as ATR-as-%-of-price (not raw dollars) so a $5 stock and a $500 stock
+# aren't compared on different absolute scales, then ranked with a
+# TRAILING rolling window against ONLY that SAME symbol's own history --
+# never a cross-symbol comparison. VEEE's "high vol" and NVDA's "high
+# vol" are different absolute ATR% by design; this is each stock's own
+# regime relative to itself, not a cross-sectional ranking.
+VOL_PERCENTILE_LOOKBACK = int(os.getenv("VOL_PERCENTILE_LOOKBACK", 90))
+# Terciles split at 1/3 and 2/3 by definition -- not exposed as an env
+# var (unlike VOL_PERCENTILE_LOOKBACK above) because moving this number
+# would silently redefine what "tercile" means rather than tune a
+# behavior. The levers meant to be tuned are whether the top bucket
+# affects sizing at all (USE_VOLATILITY_SCALED_SIZING) and by how much
+# (VOLATILITY_SCALED_REDUCED_USD), both below.
+HIGH_VOL_TERCILE_CUTOFF = 2.0 / 3.0
+
 BREAKOUT_LOOKBACK = int(os.getenv("BREAKOUT_LOOKBACK", 20))
 # The only entry strategy that didn't have an on/off toggle -- added for
 # consistency with every other strategy below, not because of a problem.
@@ -173,6 +205,25 @@ TIME_OF_DAY_VOLUME_BUCKET_MINUTES = int(os.getenv("TIME_OF_DAY_VOLUME_BUCKET_MIN
 # supports turning on.
 USE_CLOSE_BEYOND_LEVEL_CONFIRMATION = os.getenv("USE_CLOSE_BEYOND_LEVEL_CONFIRMATION", "false").strip().lower() in ("1", "true", "yes")
 
+# Breakout INVALIDATION exit -- see breakout_invalidated_at()'s docstring
+# (right after breakout_at() below) for the full real-evidence case this
+# is built on. Symmetric with the entry side: breakout_at() requires a
+# CLOSE above breakout_recent_high (or breakout_recent_high_wick, if
+# USE_CLOSE_BEYOND_LEVEL_CONFIRMATION is on) to get in; this exits the
+# instant a LATER bar closes back BELOW that SAME level -- frozen at the
+# moment of entry, never re-read from the rolling window as it drifts --
+# instead of waiting for an unrelated regime signal (trend_following's
+# death-cross or mean_reversion's RSI-overbought, whichever happens to
+# be active right now, regardless of what actually opened the position)
+# or the mandatory end-of-day flatten.
+#
+# Default OFF -- ships toggleable so the backtest gets the final word,
+# same convention as every other lever in this file. This is a real,
+# evidenced structural gap (see breakout_invalidated_at()), not a guess,
+# but the FIX itself hasn't been backtested yet -- that's a separate
+# question from whether the gap is real.
+USE_BREAKOUT_INVALIDATION_EXIT = os.getenv("USE_BREAKOUT_INVALIDATION_EXIT", "false").strip().lower() in ("1", "true", "yes")
+
 # Smash Day Pattern (Type B) -- a Larry Williams reversal pattern, sourced
 # from Oxford Capital Strategies' public strategy research (B-rated in
 # their own testing). Long side only -- this bot doesn't take short
@@ -193,6 +244,46 @@ USE_SMASH_DAY_PATTERN = os.getenv("USE_SMASH_DAY_PATTERN", "false").strip().lowe
 # "proven bad," unlike smash_day/ross_hook below.
 USE_GAP_PATTERN = os.getenv("USE_GAP_PATTERN", "true").strip().lower() in ("1", "true", "yes")
 GAP_MIN_PCT = float(os.getenv("GAP_MIN_PCT", 2.0))
+
+# Gap QUALITY gate -- separate from GAP_MIN_PCT above, which only checks
+# gap SIZE. Overnight/intraday return-decomposition research (Lou, Polk &
+# Skouras, "A Tug of War: Overnight Versus Intraday Expected Returns";
+# similarly Cooper, Cliff & Gulen on overnight/intraday return patterns)
+# finds that gaps driven by thin, sentiment/attention-style flow tend to
+# partially fade back during the day, while gaps accompanied by real
+# volume are more likely to hold or extend. gap_continuation_at() as
+# written has no way to tell those apart -- it only ever checks PRICE
+# (gap size vs. prior close, then a break of the opening bar's high),
+# never whether anyone was actually there trading it.
+#
+# Reuses the same time-of-day volume normalization
+# USE_TIME_OF_DAY_VOLUME_NORM already built for breakout (see
+# compute_time_of_day_avg_volume) rather than inventing a second one:
+# gap_quality_confirmed_at() compares the gap day's OPENING bar volume
+# against this symbol's own historical volume for that same
+# minutes-since-open bucket. A flat trailing average would be the wrong
+# comparison here for the same reason documented on that flag -- 9:30 is
+# the single heaviest-volume bucket of the day, so a flat average
+# understates what's "normal" right at the open and would make ordinary
+# opens look like volume surges.
+#
+# Default OFF -- ships toggleable so the backtest gets the final word,
+# same convention as every other filter in this file. gap_continuation
+# is already this bot's least-tested strategy (single digits to low
+# teens of trades per symbol in a 90-day window) -- see CLAUDE.md for the
+# specific numbers this shipped with, and treat any one backtest run on
+# top of an already-thin sample as a hypothesis test, not a settled
+# result.
+USE_GAP_QUALITY_FILTER = os.getenv("USE_GAP_QUALITY_FILTER", "false").strip().lower() in ("1", "true", "yes")
+# How many multiples of the symbol's own normal same-time-of-day opening
+# volume the gap day's opening bar must clear. 1.5x chosen as a middle
+# ground between BREAKOUT_VOLUME_MULTIPLIER (2.0, a "new high" breakout
+# where a bigger surge is expected) and VWAP_REVERSION_MIN_VOLUME_MULT
+# (1.2, just "not on dead volume") -- a gap is already a large price
+# event even at 1x normal volume, so it doesn't need as high a bar as a
+# breakout does to be worth trusting, but should still show MORE than
+# ordinary opening-bar volume, not just any positive reading.
+GAP_QUALITY_VOLUME_MULT = float(os.getenv("GAP_QUALITY_VOLUME_MULT", 1.5))
 
 # Ross Hook -- previously deferred pending swing-pivot detection (see
 # ross_hook_signal() docstring for the simplified adaptation used here).
@@ -300,6 +391,154 @@ RVOL_MIN_CLOSE_STRENGTH = float(os.getenv("RVOL_MIN_CLOSE_STRENGTH", 0.66))
 # in trading_bot.py for the paired change this needs.
 BAR_MINUTES = int(os.getenv("BAR_MINUTES", 15))
 TRADE_AMOUNT_USD = float(os.getenv("TRADE_AMOUNT_USD", 500))
+
+# Volatility-scaled sizing: reduces the FLAT TRADE_AMOUNT_USD position to
+# VOLATILITY_SCALED_REDUCED_USD for the HIGH realized-vol tercile only
+# (see high_vol_tercile in add_indicators() and the second-regime-axis
+# comment above) -- low/mid tercile trades are untouched, still exactly
+# TRADE_AMOUNT_USD. Applied externally in trading_bot.py's
+# place_buy_order() and backtest.py's simulate(), not here -- the same
+# "strategy.py computes, callers decide sizing" split TRADE_AMOUNT_USD /
+# USE_RISK_BASED_SIZING above already use (position sizing has never
+# lived inside this file's pure decision functions).
+#
+# MUST be a fixed dollar number, never a percentage of equity or of
+# TRADE_AMOUNT_USD. See the 2026-08-05 CLAUDE.md entry: a %-of-equity
+# sizing cap (MAX_POSITION_PCT_OF_EQUITY) that looked fine in backtest
+# metrics -- win rate, profit factor, and drawdown-as-%-of-equity all
+# genuinely supported it -- produced real $15,700-19,900 positions on a
+# ~$99,645 account instead of the intended $500, because none of those
+# metrics surface the ABSOLUTE DOLLAR size of a single position.
+# VOLATILITY_SCALED_REDUCED_USD is deliberately just another flat-dollar
+# figure like TRADE_AMOUNT_USD itself, not a multiplier or fraction of
+# it, so it cannot scale with account size at all. The guard right below
+# additionally makes it impossible for this to exceed TRADE_AMOUNT_USD
+# even by misconfiguration -- this lever exists to shrink the high-vol
+# bucket's size, never to grow anything past the existing baseline.
+USE_VOLATILITY_SCALED_SIZING = os.getenv("USE_VOLATILITY_SCALED_SIZING", "false").strip().lower() in ("1", "true", "yes")
+# $350 -- a 30% cut from the $500 baseline. Walked through explicitly:
+# a HIGH-vol-tercile trade buys $350 of stock instead of $500 (e.g. 7
+# shares instead of 10 at a $50 entry) -- fewer shares, a smaller
+# absolute dollar loss if the stop is hit, nothing about account equity
+# enters this number anywhere. 30% is a deliberately moderate first cut
+# (not the "wipe it out" instinct a bigger number might invite): the
+# high tercile is exactly where STOP_SLIPPAGE_ATR_FRACTION-modeled stop
+# slippage bites hardest (see backtest.py), so this reduction stacks
+# with the existing ATR-based noise guard (MIN_STOP_TO_ATR_RATIO)
+# instead of trying to replace it.
+#
+# Known, MEASURED side effect on the megacap universe (90-day backtest,
+# 2026-08-11, TSLA/NVDA/COIN/AMD/PLTR): int(350 // price) rounds to 0
+# shares whenever price > $350, which AMD ($397-495 in this window) and
+# TSLA ($326-422) cross often -- 17 of 45 high-vol-tercile trades across
+# those two symbols were skipped entirely, not just downsized (`qty < 1`
+# in place_buy_order/simulate() already treats that as "no trade", same
+# as it always has for TRADE_AMOUNT_USD itself on any >$500 stock -- this
+# candidate just lowers that same rounding floor from $500 to $350, so it
+# now bites on the $350-500 price band too). This is still SAFE by this
+# candidate's one hard rule (0 exposure is <= $500, never >), and
+# arguably the most conservative possible response to a high-vol regime
+# -- but it means "reduced size" becomes "skipped trade" for higher-
+# priced names, not a smooth downsize, and the megacap backtest numbers
+# below reflect that mix, not a pure size-only comparison. The scanner
+# universe (all sub-$100 names here) never hit this floor -- see
+# CLAUDE.md for the clean, composition-identical read of the mechanism.
+VOLATILITY_SCALED_REDUCED_USD = float(os.getenv("VOLATILITY_SCALED_REDUCED_USD", 350))
+if VOLATILITY_SCALED_REDUCED_USD > TRADE_AMOUNT_USD:
+    # Fail loudly and immediately at import time rather than silently
+    # sizing UP on the high-vol tercile -- exactly the shape of mistake
+    # the 2026-08-05 incident (comment above) cost real money on, just
+    # via a different constant. This candidate's one job is to never be
+    # able to repeat that, even under a bad env-var edit.
+    raise ValueError(
+        f"VOLATILITY_SCALED_REDUCED_USD (${VOLATILITY_SCALED_REDUCED_USD:.0f}) must not exceed "
+        f"TRADE_AMOUNT_USD (${TRADE_AMOUNT_USD:.0f}) -- this lever only ever REDUCES size on the "
+        f"high-vol tercile, it must never raise it above the existing flat-sizing baseline."
+    )
+
+# Capped-boost sizing: the SAFE alternative to an earlier, REJECTED idea
+# from the same conversation as the 2026-08-05 incident cited in
+# VOLATILITY_SCALED_REDUCED_USD's comment above -- staking up to ~$90k on
+# a "high-conviction" trade based on a vague, unvalidated confidence
+# read. That idea was declined for the exact same underlying reason the
+# %-of-equity sizing mode was: this bot has no real confidence score, and
+# a lever that's allowed to scale position size off anything other than
+# a flat dollar figure has already, once, for real, on 2026-08-05,
+# produced $15,700-19,900 single positions on a ~$99,645 account instead
+# of the intended $500 -- from a mode whose backtest metrics (win rate,
+# profit factor, drawdown-as-%-of-equity) all looked fine, because none
+# of those metrics surface the ABSOLUTE DOLLAR size of a single position.
+# What follows is the approved, structurally-bounded alternative: a
+# strategy with REAL evidence of a meaningfully better win rate trades a
+# bit bigger (one fixed, capped bump), everything else stays at
+# TRADE_AMOUNT_USD. Applied externally in trading_bot.py's
+# place_buy_order()/estimate_new_position_risk_usd() and backtest.py's
+# simulate() -- same "strategy.py computes, callers decide sizing" split
+# TRADE_AMOUNT_USD / VOLATILITY_SCALED_REDUCED_USD / USE_RISK_BASED_SIZING
+# above already use.
+USE_CONVICTION_SIZING = os.getenv("USE_CONVICTION_SIZING", "false").strip().lower() in ("1", "true", "yes")
+
+# Comma-separated reason_key strings (e.g. "trend_following,rvol_spike")
+# naming which strategies currently have real evidence of a meaningfully
+# better win rate and therefore qualify for CONVICTION_BOOST_USD below.
+# Parsed once at import time like every other env-driven constant in
+# this file: split on comma, strip whitespace, drop empty entries, build
+# a set (membership-tested, not order-sensitive).
+#
+# DEFAULT IS DELIBERATELY EMPTY. This is not a stub left for later --
+# it's the honest, currently-correct state of the evidence, and shipping
+# it any other way would be shipping an opinion the data doesn't support.
+# Per-strategy win rates were checked across THREE independent sources:
+# two 90-day backtests (megacap: TSLA/NVDA/COIN/AMD/PLTR; scanner:
+# FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/RNG/INHD/FCUV/ATKR/SRAD) and real
+# reconstructed Alpaca live-trade history. NO strategy showed a
+# consistent, real edge across all three:
+#   - trend_following looked like a standout on megacap (64% win) but was
+#     the WORST performer on scanner (33% win, losing money) -- a result
+#     that flatters one 5-symbol universe and craters on a differently
+#     composed one isn't "real evidence" of an edge, it's overfitting to
+#     megacap's specific names.
+#   - vwap_reversion looked solid on BOTH backtests but was the worst
+#     REAL-MONEY performer of all (23% win, -$200 actual) -- precisely
+#     the backtest-vs-live gap this project's testing culture exists to
+#     catch before it costs more than $200.
+# So the qualifying list is empty, on purpose, until some strategy
+# someday shows a real, consistent edge across all three sources at
+# once. Adding a name here should cite fresh evidence, never be a
+# default.
+HIGH_CONVICTION_STRATEGIES = {
+    s.strip() for s in os.getenv("HIGH_CONVICTION_STRATEGIES", "").split(",") if s.strip()
+}
+
+# Flat dollar figure, same rule as TRADE_AMOUNT_USD and
+# VOLATILITY_SCALED_REDUCED_USD -- never a percentage of equity, never a
+# multiplier applied to equity. $750 against the $500 baseline is a
+# deliberately modest bump (1.5x), chosen to be worth having without
+# inviting the "why not push it further" instinct that produced the
+# rejected $90k idea in the first place.
+CONVICTION_BOOST_USD = float(os.getenv("CONVICTION_BOOST_USD", 750))
+if CONVICTION_BOOST_USD > TRADE_AMOUNT_USD * 2:
+    # Hard, structural ceiling: this feature must NEVER be able to more
+    # than double the normal flat trade size, regardless of env var
+    # misconfiguration. This guard is the direct, structural answer to
+    # why the earlier "$90k on a strong signal" idea (see this block's
+    # opening comment) was rejected -- that idea had no ceiling at all,
+    # tied position size to a vague confidence read, and scaled with
+    # equity. The 2026-08-05 incident (VOLATILITY_SCALED_REDUCED_USD's
+    # comment above) is the real-money proof of what an unbounded sizing
+    # lever costs: $15,700-19,900 single positions instead of $500, from
+    # a mode whose own backtest metrics looked fine right up until it
+    # was run for real. A 2x cap here means even a badly misconfigured
+    # CONVICTION_BOOST_USD can only ever produce a $1,000 position on a
+    # $500 baseline -- never anywhere close to a five-figure one.
+    raise ValueError(
+        f"CONVICTION_BOOST_USD (${CONVICTION_BOOST_USD:.0f}) must not exceed 2x "
+        f"TRADE_AMOUNT_USD (${TRADE_AMOUNT_USD:.0f} x 2 = ${TRADE_AMOUNT_USD * 2:.0f}) -- "
+        f"this lever must never be able to more than double the normal flat trade size. "
+        f"This is the same structural lesson the 2026-08-05 %-of-equity incident cost real "
+        f"money to learn, and the direct reason the earlier $90k 'high-conviction' sizing "
+        f"idea was rejected instead of built: no sizing lever in this bot may be unbounded."
+    )
 
 FLATTEN_BEFORE_CLOSE = os.getenv("FLATTEN_BEFORE_CLOSE", "true").strip().lower() in ("1", "true", "yes")
 FLATTEN_MINUTES_BEFORE_CLOSE = int(os.getenv("FLATTEN_MINUTES_BEFORE_CLOSE", 10))
@@ -413,6 +652,24 @@ def compute_adx(df: pd.DataFrame, period: int, true_range: pd.Series | None = No
 
 def compute_atr(true_range: pd.Series, period: int) -> pd.Series:
     return true_range.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+
+
+def compute_vol_percentile(atr: pd.Series, close: pd.Series, lookback: int) -> pd.Series:
+    """
+    Each bar's ATR-as-%-of-price, ranked (0-1) against that SAME symbol's
+    own trailing `lookback` bars -- see VOL_PERCENTILE_LOOKBACK's comment
+    for why this is a second, ADX-independent regime axis.
+
+    No-lookahead: pandas' rolling().rank(pct=True) at row i only ever
+    considers rows [i-lookback+1, i], same backward-only guarantee as
+    every other indicator in this file. NaN for the first `lookback - 1`
+    bars of a symbol's history (not enough trailing data yet to rank
+    against) -- callers comparing this against a threshold (e.g.
+    HIGH_VOL_TERCILE_CUTOFF) get False for those bars for free, since
+    NaN >= threshold is False in pandas/numpy, not NaN.
+    """
+    atr_pct = atr / close.replace(0, np.nan) * 100
+    return atr_pct.rolling(lookback, min_periods=lookback).rank(pct=True)
 
 
 def _session_date(df: pd.DataFrame) -> pd.Series:
@@ -537,6 +794,15 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["adx"] = compute_adx(df, ADX_PERIOD, true_range=true_range)
     df["atr"] = compute_atr(true_range, ATR_PERIOD)
 
+    # Second regime axis (see VOL_PERCENTILE_LOOKBACK above): each bar's
+    # trailing realized-vol percentile, relative to this SAME symbol's
+    # own history only. Always computed (cheap, and matches how every
+    # other optional-strategy column here is unconditional) so flipping
+    # USE_VOLATILITY_SCALED_SIZING on in trading_bot.py/backtest.py never
+    # requires touching add_indicators.
+    df["vol_percentile"] = compute_vol_percentile(df["atr"], df["close"], VOL_PERCENTILE_LOOKBACK)
+    df["high_vol_tercile"] = df["vol_percentile"] >= HIGH_VOL_TERCILE_CUTOFF
+
     # Sticky ADX regime for USE_ADX_HYSTERESIS (see that constant's
     # comment for why): a proper Schmitt trigger, not just "ffill the
     # gaps". ADX has to clear the UPPER band edge to commit to
@@ -595,6 +861,21 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["breakout_tod_avg_volume"] = compute_time_of_day_avg_volume(
         df, session_date, df["minutes_since_open"], TIME_OF_DAY_VOLUME_BUCKET_MINUTES
     )
+
+    # Gap-quality gate columns (USE_GAP_QUALITY_FILTER above) -- the gap
+    # day's own opening-bar volume, and what's normal for THIS symbol at
+    # THAT specific time-of-day bucket, broadcast across the whole
+    # session the same way session_open_price/session_first_bar_high
+    # already are below. Reuses breakout_tod_avg_volume's per-bucket
+    # historical average (already lookahead-safe, see that column's
+    # comment) rather than a second normalization pass -- the opening
+    # bar's own minutes_since_open bucket is bucket 0, so its
+    # breakout_tod_avg_volume value already IS "this symbol's normal
+    # opening-bar volume." Always computed, same reasoning as
+    # breakout_tod_avg_volume: keeps flipping the toggle a pure read-time
+    # switch rather than requiring changes here.
+    df["session_first_bar_volume"] = df.groupby(session_date)["volume"].transform("first")
+    df["session_first_bar_tod_avg_volume"] = df.groupby(session_date)["breakout_tod_avg_volume"].transform("first")
 
     orb_high, orb_low = compute_opening_range(df, session_date, df["minutes_since_open"], ORB_MINUTES)
     df["orb_high"] = orb_high
@@ -661,6 +942,50 @@ def breakout_at(df: pd.DataFrame, i: int) -> bool:
     return broke_out_last_bar and still_pushing and volume_confirmed
 
 
+def breakout_invalidated_at(df: pd.DataFrame, i: int, invalidation_level: float | None) -> bool:
+    """
+    True if `invalidation_level` -- the SAME breakout_recent_high (or
+    breakout_recent_high_wick, if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION was
+    on) level that justified this position's original breakout entry,
+    frozen at the moment of entry, never re-read from a later, drifted
+    rolling window -- is a real number AND this bar's close has dropped
+    back BELOW it.
+
+    This is breakout_at()'s own entry test, run in reverse against the
+    same level: entry requires a CLOSE above the recent-high; this is
+    "the thesis that got us in no longer holds," the exit that mirrors
+    it. Without this, EVERY open position -- no matter which strategy
+    opened it -- only ever exits via (a) its bracket stop-loss/take-
+    profit filling on their own, (b) whichever regime strategy happens
+    to be active RIGHT NOW (decide_signal_at() only ever reflects the
+    CURRENT regime, not what originally justified the entry), or (c) the
+    mandatory end-of-day flatten. There has never been a "the original
+    breakout thesis specifically failed" exit.
+
+    That gap is not a theory -- it's reconstructed from real Alpaca order
+    history: ALL 12 real winning breakout trades exited via a plain
+    MARKET order, never the bracket's own take-profit LIMIT leg, meaning
+    every real win got cut short before reaching its 10% target by
+    something unrelated to the breakout thesis. Only 2 of 9 real losses
+    hit the actual stop-loss; the other 7 also just got market-sold. In a
+    90-day scanner-universe backtest, "end-of-day flatten" was the exit
+    reason for 28 of 37 breakout trades (76%) -- take-profit fired only 3
+    times. Net effect: real breakout trades won MORE often (57%) than
+    backtests predicted, but still lost money overall (-$182.99 across 21
+    real trades), because winners averaged only +2% (cut short) while
+    losers averaged -3.3% (never reliably capped). Giving breakout
+    positions their own thesis-specific exit is meant to close that gap.
+
+    Fails CLOSED like every other guard in this file: a missing level
+    (None or NaN -- e.g. a non-breakout position, or a breakout position
+    opened before this feature existed / before this field was tracked)
+    means this never fires. It never guesses at a level it wasn't given.
+    """
+    if invalidation_level is None or pd.isna(invalidation_level):
+        return False
+    return bool(df["close"].iat[i] < invalidation_level)
+
+
 def smash_day_at(df: pd.DataFrame, i: int) -> bool:
     """
     Smash Day Pattern (Type B) -- developed by Larry Williams, sourced
@@ -688,6 +1013,28 @@ def smash_day_at(df: pd.DataFrame, i: int) -> bool:
     return bool(df["smash_day_setup"].iat[i] and df["smash_day_trigger"].iat[i])
 
 
+def gap_quality_confirmed_at(df: pd.DataFrame, i: int) -> bool:
+    """
+    True if this gap day's OPENING bar traded on volume meaningfully
+    above what's normal for this symbol at that same time-of-day bucket
+    (see USE_GAP_QUALITY_FILTER above for the research this is drawing
+    on: gaps backed by real volume are more likely to hold, thin/
+    sentiment-driven gaps tend to fade). Only meaningful for a row that
+    gap_continuation_at has already confirmed IS a gap day -- this
+    function doesn't re-check gap size, only volume quality.
+
+    Fails CLOSED like every other volume/noise guard in this file: not
+    enough prior-session history yet to know what "normal" volume is for
+    this bucket (early in a backtest window, or a low-history symbol)
+    means no confirmation, not a free pass.
+    """
+    opening_volume = df["session_first_bar_volume"].iat[i]
+    normal_volume = df["session_first_bar_tod_avg_volume"].iat[i]
+    if pd.isna(opening_volume) or pd.isna(normal_volume) or normal_volume <= 0:
+        return False
+    return opening_volume >= normal_volume * GAP_QUALITY_VOLUME_MULT
+
+
 def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     """
     Gap Pattern (Type A) -- the other Oxford Capital Strategies B-rated
@@ -701,6 +1048,12 @@ def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     at least GAP_MIN_PCT vs. the prior session's close, then a later
     bar in that same session breaks above the opening bar's high
     (confirming the gap is extending rather than filling).
+
+    Both checks above are pure PRICE checks -- they can't tell a gap
+    backed by real trading interest from a thin, low-volume gap that's
+    statistically more likely to fade (see USE_GAP_QUALITY_FILTER).
+    When that toggle is on, a qualifying price-based gap must ALSO clear
+    gap_quality_confirmed_at's opening-volume check to fire.
     """
     prior_close = df["prior_session_close"].iat[i]
     session_open = df["session_open_price"].iat[i]
@@ -718,7 +1071,13 @@ def gap_continuation_at(df: pd.DataFrame, i: int) -> bool:
     close_prev = df["close"].iat[i - 1]
     # Fire on the FIRST bar that breaks the opening bar's high, not every
     # bar afterward that happens to still be above it.
-    return close_now > first_bar_high and close_prev <= first_bar_high
+    if not (close_now > first_bar_high and close_prev <= first_bar_high):
+        return False
+
+    if USE_GAP_QUALITY_FILTER and not gap_quality_confirmed_at(df, i):
+        return False
+
+    return True
 
 
 def ross_hook_at(df: pd.DataFrame, i: int) -> bool:

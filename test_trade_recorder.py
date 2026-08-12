@@ -144,6 +144,46 @@ def test_extract_context_reads_the_decision_bar():
           isinstance(tr.extract_context(df, 999), dict))
 
 
+def test_conviction_boosted_flows_through_details_not_context():
+    """
+    conviction_boosted (see FIELDS' comment) is a sizing DECISION, not a
+    per-bar indicator column -- it depends on reason_key plus runtime
+    config strategy.py's pure indicator functions never see. Unlike
+    vol_percentile/high_vol_tercile (real dataframe columns, picked up
+    automatically by extract_context via CONTEXT_COLUMNS), it flows
+    through the `details` dict instead -- the same path place_buy_order
+    already uses for "sizing_style" and "equity". This pins that it
+    actually lands in the CSV via that path, and that it is NOT silently
+    pulled from an indicator dataframe that was never asked about it.
+    """
+    path = _fresh_file()
+    df_no_conviction_column = pd.DataFrame({"close": [10.0], "rsi": [40.0]})
+
+    tr.record_trade("BUY", "AAA", strategy="trend_following", qty=15, price=50.0,
+                     context=tr.extract_context(df_no_conviction_column, 0),
+                     details={"sizing_style": "flat $ (conviction-boosted, trend_following -> $750)",
+                              "conviction_boosted": True})
+    tr.record_trade("BUY", "BBB", strategy="mean_reversion", qty=10, price=50.0,
+                     context=tr.extract_context(df_no_conviction_column, 0),
+                     details={"sizing_style": "flat $", "conviction_boosted": False})
+    rows = _rows(path)
+    check("conviction_boosted is a real column on every row (layout never shifts)",
+          all("conviction_boosted" in r for r in rows))
+    check("a boosted trade's details land as the literal string 'True' in the CSV cell",
+          rows[0]["conviction_boosted"] == "True", f"got {rows[0]['conviction_boosted']!r}")
+    check("a non-boosted trade's details land as 'False', not blank or truthy garbage",
+          rows[1]["conviction_boosted"] == "False", f"got {rows[1]['conviction_boosted']!r}")
+
+    path2 = _fresh_file()
+    tr.record_trade("SELL", "AAA", strategy="trend_following", qty=15, price=55.0,
+                     context=tr.extract_context(df_no_conviction_column, 0))
+    row2 = _rows(path2)[0]
+    check("no details= passed (e.g. a SELL row) leaves conviction_boosted blank, not a stale/"
+          "guessed value pulled from the indicator dataframe -- confirms it is NOT wired into "
+          "CONTEXT_COLUMNS, since df_no_conviction_column never had that column at all",
+          row2["conviction_boosted"] == "")
+
+
 if __name__ == "__main__":
     tests = [
         test_writes_header_once_then_appends,
@@ -152,6 +192,7 @@ if __name__ == "__main__":
         test_recording_never_raises,
         test_bad_details_cannot_masquerade_as_a_failed_order,
         test_extract_context_reads_the_decision_bar,
+        test_conviction_boosted_flows_through_details_not_context,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

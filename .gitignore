@@ -6,10 +6,13 @@ backtest_trades*.csv
 orders_export.csv
 equity_history_export.csv
 
-# watchlist_state.json and daily_risk_state.json are DELIBERATELY
-# tracked (not ignored) -- the GitHub Actions workflow commits them
-# back after every run so state survives between the fresh checkouts
-# each scheduled run gets. See .github/workflows/trade.yml.
+# watchlist_state.json, daily_risk_state.json, and open_position_context.json
+# are DELIBERATELY tracked (not ignored) -- the GitHub Actions workflow
+# commits them back after every run so state survives between the fresh
+# checkouts each scheduled run gets. See .github/workflows/trade.yml.
+# open_position_context.json is what USE_BREAKOUT_INVALIDATION_EXIT reads
+# in trading_bot.py's check_symbol -- see that file's OPEN POSITION
+# CONTEXT section.
 #
 # logs/ and trades.csv are tracked for the SAME reason, but a different
 # purpose: not state the next run needs, but evidence a human (or Claude)
