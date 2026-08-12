@@ -76,6 +76,7 @@ from strategy import (
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
     ADX_TREND_THRESHOLD, RSI_PERIOD,
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
+    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, CONVICTION_BOOST_USD,
     USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
 )
 
@@ -605,6 +606,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "pnl": pnl,
                     "pnl_pct": pnl_pct,
                     "high_vol_tercile": position["high_vol_tercile"],
+                    "conviction_boosted": position["conviction_boosted"],
                 })
                 position = None
                 continue  # don't also open a fresh position on the same bar we just exited
@@ -657,6 +659,11 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 if not stop_is_wider_than_noise(entry_price, current_bar["atr"], stop_price):
                     continue
                 high_vol_tercile = bool(current_bar["high_vol_tercile"])
+                # Never boosted under risk-based sizing -- mirrors
+                # place_buy_order's identical reasoning in trading_bot.py;
+                # set here so it's always defined for the position dict
+                # below regardless of which sizing branch runs.
+                conviction_boosted = False
                 if USE_RISK_BASED_SIZING:
                     qty = compute_position_size(equity, entry_price, stop_price)
                 else:
@@ -669,6 +676,19 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     trade_amount = TRADE_AMOUNT_USD
                     if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
                         trade_amount = VOLATILITY_SCALED_REDUCED_USD
+                    # elif, not a second independent if: see
+                    # USE_CONVICTION_SIZING in strategy.py. EXPLICIT
+                    # PRECEDENCE RULE, mirroring trading_bot.py's
+                    # place_buy_order exactly: a trade that is BOTH in a
+                    # high-conviction strategy AND in its own high-vol
+                    # tercile gets the REDUCED (volatility) amount above,
+                    # never the boosted one below -- safety (size down on
+                    # real, measured noise) always wins over a return-
+                    # chasing boost (size up on an unconfirmed strategy-
+                    # level edge), every time, no exceptions.
+                    elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
+                        trade_amount = CONVICTION_BOOST_USD
+                        conviction_boosted = True
                     qty = int(trade_amount // entry_price)
                 if qty < 1:
                     continue  # not enough simulated capital/risk budget for even 1 share
@@ -693,6 +713,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "stop_price": stop_price,
                     "take_profit_price": take_profit_price,
                     "high_vol_tercile": high_vol_tercile,
+                    "conviction_boosted": conviction_boosted,
                     "invalidation_level": invalidation_level,
                 }
 
@@ -786,6 +807,15 @@ if __name__ == "__main__":
         print(f"Volatility-scaled sizing: ON -- a symbol's own high realized-vol tercile trades at "
               f"${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
               f"(only applies under flat sizing, i.e. USE_RISK_BASED_SIZING=false)\n")
+    if USE_CONVICTION_SIZING:
+        if HIGH_CONVICTION_STRATEGIES:
+            print(f"Conviction-boosted sizing: ON -- {', '.join(sorted(HIGH_CONVICTION_STRATEGIES))} "
+                  f"trade at ${CONVICTION_BOOST_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
+                  f"(only applies under flat sizing; volatility-based size-down always wins if a "
+                  f"trade qualifies for both)\n")
+        else:
+            print("Conviction-boosted sizing: ON but HIGH_CONVICTION_STRATEGIES is empty -- "
+                  "structurally a no-op right now (see strategy.HIGH_CONVICTION_STRATEGIES)\n")
     print("=" * 70)
 
     needs_sp500_list = USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION

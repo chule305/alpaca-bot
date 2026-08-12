@@ -456,6 +456,90 @@ if VOLATILITY_SCALED_REDUCED_USD > TRADE_AMOUNT_USD:
         f"high-vol tercile, it must never raise it above the existing flat-sizing baseline."
     )
 
+# Capped-boost sizing: the SAFE alternative to an earlier, REJECTED idea
+# from the same conversation as the 2026-08-05 incident cited in
+# VOLATILITY_SCALED_REDUCED_USD's comment above -- staking up to ~$90k on
+# a "high-conviction" trade based on a vague, unvalidated confidence
+# read. That idea was declined for the exact same underlying reason the
+# %-of-equity sizing mode was: this bot has no real confidence score, and
+# a lever that's allowed to scale position size off anything other than
+# a flat dollar figure has already, once, for real, on 2026-08-05,
+# produced $15,700-19,900 single positions on a ~$99,645 account instead
+# of the intended $500 -- from a mode whose backtest metrics (win rate,
+# profit factor, drawdown-as-%-of-equity) all looked fine, because none
+# of those metrics surface the ABSOLUTE DOLLAR size of a single position.
+# What follows is the approved, structurally-bounded alternative: a
+# strategy with REAL evidence of a meaningfully better win rate trades a
+# bit bigger (one fixed, capped bump), everything else stays at
+# TRADE_AMOUNT_USD. Applied externally in trading_bot.py's
+# place_buy_order()/estimate_new_position_risk_usd() and backtest.py's
+# simulate() -- same "strategy.py computes, callers decide sizing" split
+# TRADE_AMOUNT_USD / VOLATILITY_SCALED_REDUCED_USD / USE_RISK_BASED_SIZING
+# above already use.
+USE_CONVICTION_SIZING = os.getenv("USE_CONVICTION_SIZING", "false").strip().lower() in ("1", "true", "yes")
+
+# Comma-separated reason_key strings (e.g. "trend_following,rvol_spike")
+# naming which strategies currently have real evidence of a meaningfully
+# better win rate and therefore qualify for CONVICTION_BOOST_USD below.
+# Parsed once at import time like every other env-driven constant in
+# this file: split on comma, strip whitespace, drop empty entries, build
+# a set (membership-tested, not order-sensitive).
+#
+# DEFAULT IS DELIBERATELY EMPTY. This is not a stub left for later --
+# it's the honest, currently-correct state of the evidence, and shipping
+# it any other way would be shipping an opinion the data doesn't support.
+# Per-strategy win rates were checked across THREE independent sources:
+# two 90-day backtests (megacap: TSLA/NVDA/COIN/AMD/PLTR; scanner:
+# FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/RNG/INHD/FCUV/ATKR/SRAD) and real
+# reconstructed Alpaca live-trade history. NO strategy showed a
+# consistent, real edge across all three:
+#   - trend_following looked like a standout on megacap (64% win) but was
+#     the WORST performer on scanner (33% win, losing money) -- a result
+#     that flatters one 5-symbol universe and craters on a differently
+#     composed one isn't "real evidence" of an edge, it's overfitting to
+#     megacap's specific names.
+#   - vwap_reversion looked solid on BOTH backtests but was the worst
+#     REAL-MONEY performer of all (23% win, -$200 actual) -- precisely
+#     the backtest-vs-live gap this project's testing culture exists to
+#     catch before it costs more than $200.
+# So the qualifying list is empty, on purpose, until some strategy
+# someday shows a real, consistent edge across all three sources at
+# once. Adding a name here should cite fresh evidence, never be a
+# default.
+HIGH_CONVICTION_STRATEGIES = {
+    s.strip() for s in os.getenv("HIGH_CONVICTION_STRATEGIES", "").split(",") if s.strip()
+}
+
+# Flat dollar figure, same rule as TRADE_AMOUNT_USD and
+# VOLATILITY_SCALED_REDUCED_USD -- never a percentage of equity, never a
+# multiplier applied to equity. $750 against the $500 baseline is a
+# deliberately modest bump (1.5x), chosen to be worth having without
+# inviting the "why not push it further" instinct that produced the
+# rejected $90k idea in the first place.
+CONVICTION_BOOST_USD = float(os.getenv("CONVICTION_BOOST_USD", 750))
+if CONVICTION_BOOST_USD > TRADE_AMOUNT_USD * 2:
+    # Hard, structural ceiling: this feature must NEVER be able to more
+    # than double the normal flat trade size, regardless of env var
+    # misconfiguration. This guard is the direct, structural answer to
+    # why the earlier "$90k on a strong signal" idea (see this block's
+    # opening comment) was rejected -- that idea had no ceiling at all,
+    # tied position size to a vague confidence read, and scaled with
+    # equity. The 2026-08-05 incident (VOLATILITY_SCALED_REDUCED_USD's
+    # comment above) is the real-money proof of what an unbounded sizing
+    # lever costs: $15,700-19,900 single positions instead of $500, from
+    # a mode whose own backtest metrics looked fine right up until it
+    # was run for real. A 2x cap here means even a badly misconfigured
+    # CONVICTION_BOOST_USD can only ever produce a $1,000 position on a
+    # $500 baseline -- never anywhere close to a five-figure one.
+    raise ValueError(
+        f"CONVICTION_BOOST_USD (${CONVICTION_BOOST_USD:.0f}) must not exceed 2x "
+        f"TRADE_AMOUNT_USD (${TRADE_AMOUNT_USD:.0f} x 2 = ${TRADE_AMOUNT_USD * 2:.0f}) -- "
+        f"this lever must never be able to more than double the normal flat trade size. "
+        f"This is the same structural lesson the 2026-08-05 %-of-equity incident cost real "
+        f"money to learn, and the direct reason the earlier $90k 'high-conviction' sizing "
+        f"idea was rejected instead of built: no sizing lever in this bot may be unbounded."
+    )
+
 FLATTEN_BEFORE_CLOSE = os.getenv("FLATTEN_BEFORE_CLOSE", "true").strip().lower() in ("1", "true", "yes")
 FLATTEN_MINUTES_BEFORE_CLOSE = int(os.getenv("FLATTEN_MINUTES_BEFORE_CLOSE", 10))
 

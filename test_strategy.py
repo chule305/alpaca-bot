@@ -817,6 +817,132 @@ def test_bad_volatility_scaled_env_var_fails_at_import():
           result_ok.returncode == 0, f"stderr tail: {result_ok.stderr[-400:]}")
 
 
+# ---------------------------------------------------------------------------
+# Conviction-boost sizing candidate: the SAFE alternative to the rejected
+# $90k "high-conviction" idea. See USE_CONVICTION_SIZING's comment block
+# in strategy.py for the full lineage. Mirrors the volatility-scaled
+# sizing tests directly above -- same shape of safety guard, same reason
+# a subprocess is needed for the import-time ValueError check.
+# ---------------------------------------------------------------------------
+
+def test_conviction_boost_usd_never_exceeds_double_trade_amount_usd():
+    """
+    Pins the CRITICAL safety constraint directly, mirroring
+    test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd
+    above: whatever values .env/the environment currently resolve these
+    to, CONVICTION_BOOST_USD must never be more than double
+    TRADE_AMOUNT_USD. strategy.py additionally raises ValueError AT
+    IMPORT TIME if this is ever violated (see the guard next to
+    CONVICTION_BOOST_USD) -- that's exercised separately, in a fresh
+    subprocess, by test_bad_conviction_boost_env_var_fails_at_import
+    below, since mutating env vars and reloading this module in-process
+    would leak into every later test in this same run.
+
+    Also pins the honest, evidence-based shipped default: USE_CONVICTION_
+    SIZING off, and HIGH_CONVICTION_STRATEGIES an EMPTY set -- not a
+    stub, a deliberate "no strategy has real evidence yet" state (see
+    that set's comment for the three-way research finding behind it).
+    """
+    check("CONVICTION_BOOST_USD does not exceed 2x TRADE_AMOUNT_USD under the current config",
+          strat.CONVICTION_BOOST_USD <= strat.TRADE_AMOUNT_USD * 2,
+          f"boost=${strat.CONVICTION_BOOST_USD}, baseline=${strat.TRADE_AMOUNT_USD}")
+    check("USE_CONVICTION_SIZING defaults off (every untested lever in this project does)",
+          strat.USE_CONVICTION_SIZING is False)
+    check("HIGH_CONVICTION_STRATEGIES defaults to an EMPTY set -- no strategy currently has "
+          "real, consistent evidence of an edge across all three research sources",
+          strat.HIGH_CONVICTION_STRATEGIES == set(),
+          f"got {strat.HIGH_CONVICTION_STRATEGIES!r}")
+
+
+def test_bad_conviction_boost_env_var_fails_at_import():
+    """
+    Runs strategy.py's import-time guard in an isolated subprocess (see
+    test_bad_volatility_scaled_env_var_fails_at_import's docstring for
+    why a fresh subprocess, not an in-process reload, is required).
+    Directly proves the shape of harm this guard exists to prevent --
+    the same shape as the 2026-08-05 incident, and the reason the
+    rejected $90k "high-conviction" idea was never built -- cannot
+    happen here even via a bad env var: CONVICTION_BOOST_USD can never
+    end up more than double TRADE_AMOUNT_USD, not just "wasn't set that
+    way in this repo's current .env."
+    """
+    import os
+    import subprocess
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+
+    env_over_cap = dict(os.environ)
+    env_over_cap["TRADE_AMOUNT_USD"] = "500"
+    env_over_cap["CONVICTION_BOOST_USD"] = "1001"  # ABOVE 2x the $500 baseline ($1000)
+    result_bad = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                 env=env_over_cap, capture_output=True, text=True)
+    check("importing with CONVICTION_BOOST_USD set above 2x TRADE_AMOUNT_USD raises, not silently loads",
+          result_bad.returncode != 0 and "must not exceed 2x" in result_bad.stderr,
+          f"returncode={result_bad.returncode}, stderr tail: {result_bad.stderr[-400:]}")
+
+    env_at_cap = dict(os.environ)
+    env_at_cap["TRADE_AMOUNT_USD"] = "500"
+    env_at_cap["CONVICTION_BOOST_USD"] = "1000"  # EXACTLY 2x -- allowed, only strictly over blocks
+    result_at_cap = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                    env=env_at_cap, capture_output=True, text=True)
+    check("importing with CONVICTION_BOOST_USD set to EXACTLY 2x TRADE_AMOUNT_USD loads cleanly "
+          "(only strictly OVER the cap blocks)",
+          result_at_cap.returncode == 0, f"stderr tail: {result_at_cap.stderr[-400:]}")
+
+    env_ok = dict(os.environ)
+    env_ok["TRADE_AMOUNT_USD"] = "500"
+    env_ok["CONVICTION_BOOST_USD"] = "750"
+    result_ok = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
+                                env=env_ok, capture_output=True, text=True)
+    check("importing with the real shipped default ($750 boost on a $500 baseline) loads cleanly",
+          result_ok.returncode == 0, f"stderr tail: {result_ok.stderr[-400:]}")
+
+
+def test_high_conviction_strategies_parsing():
+    """
+    Exercises the comma-separated HIGH_CONVICTION_STRATEGIES parsing in
+    an isolated subprocess (same reload-leak reasoning as the two tests
+    above): default-empty, comma-separated with surrounding whitespace,
+    and empty entries from stray/doubled commas are all handled the same
+    way every other comma-separated env var in this file (e.g. SYMBOLS
+    in trading_bot.py) is parsed.
+    """
+    import json
+    import os
+    import subprocess
+    import sys
+
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+
+    def parsed_set(env_value):
+        env = dict(os.environ)
+        if env_value is None:
+            env.pop("HIGH_CONVICTION_STRATEGIES", None)
+        else:
+            env["HIGH_CONVICTION_STRATEGIES"] = env_value
+        result = subprocess.run(
+            [sys.executable, "-c",
+             "import json, strategy; print(json.dumps(sorted(strategy.HIGH_CONVICTION_STRATEGIES)))"],
+            cwd=here, env=env, capture_output=True, text=True)
+        check(f"subprocess parsing HIGH_CONVICTION_STRATEGIES={env_value!r} exits cleanly",
+              result.returncode == 0, f"stderr tail: {result.stderr[-400:]}")
+        return json.loads(result.stdout.strip().splitlines()[-1])
+
+    check("unset env var -> empty set (the real shipped default)",
+          parsed_set(None) == [])
+    check("empty string env var -> empty set",
+          parsed_set("") == [])
+    check("whitespace-only env var -> empty set",
+          parsed_set("   ") == [])
+    check("plain comma-separated list parses to the expected set",
+          parsed_set("trend_following,rvol_spike") == ["rvol_spike", "trend_following"])
+    check("surrounding whitespace around each entry is stripped",
+          parsed_set(" trend_following , rvol_spike ") == ["rvol_spike", "trend_following"])
+    check("stray/doubled commas produce empty entries that get dropped, not blank strategy names",
+          parsed_set("trend_following,,rvol_spike,") == ["rvol_spike", "trend_following"])
+
+
 if __name__ == "__main__":
     tests = [
         test_compute_daily_trend_map,
@@ -840,6 +966,9 @@ if __name__ == "__main__":
         test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd,
         test_bad_volatility_scaled_env_var_fails_at_import,
         test_mean_reversion_turning_confirmation,
+        test_conviction_boost_usd_never_exceeds_double_trade_amount_usd,
+        test_bad_conviction_boost_env_var_fails_at_import,
+        test_high_conviction_strategies_parsing,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

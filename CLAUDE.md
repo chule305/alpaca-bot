@@ -1686,3 +1686,84 @@ this round's other candidates. Left as the user's decision rather than
 defaulted on unilaterally. 12 new unit tests (`breakout_invalidated_at`'s
 pure logic, the state-file round-trip, `check_symbol`'s wiring including
 the adversarial non-breakout-position test), 121/121 test functions pass.
+
+## 2026-08-12: conviction-boost sizing built -- safe mechanism, shipped genuinely empty (no strategy currently qualifies)
+
+Requested as the safe alternative to an idea explicitly declined earlier
+the same day: staking up to $90k on a trade the bot judged "very likely to
+be really good." That was declined because this bot has no real
+confidence score -- every strategy just returns BUY/SELL, never a
+probability -- and doing something like it before (a %-of-equity sizing
+mode) caused the real 2026-08-05 incident: $15,700-$19,900 single
+positions instead of $500. The agreed alternative: strategies with REAL,
+evidenced-based higher win rates can trade a bit bigger (e.g. $750 instead
+of $500), hard-capped so this can never repeat that incident's shape.
+
+**Checked the evidence first, honestly, before building anything**: per-
+strategy win rates compared across the megacap backtest, the scanner
+backtest, AND real reconstructed Alpaca live-trade history (not just one
+source). Result: no strategy showed a consistent real edge across all
+three. `trend_following` looked like a standout on megacap (64% win) but
+was the WORST performer on scanner (33% win, losing money). `vwap_reversion`
+looked solid on both backtests (56%/60%) but was the worst REAL performer
+(23% win, -$200 across 13 real trades). Real trading overall: 45% win
+rate, net -$418 across 80 reconstructed trades, worse than either
+backtest predicted -- a reminder that backtest numbers alone aren't
+sufficient evidence for a sizing decision. Conclusion: the honestly
+qualifying strategy list is EMPTY right now.
+
+**Built anyway, but shipped genuinely inert**: `USE_CONVICTION_SIZING`
+(default off), `HIGH_CONVICTION_STRATEGIES` (comma-separated env var,
+default empty -- not pre-populated with anything), `CONVICTION_BOOST_USD`
+(default $750). Same hard import-time safety guard pattern as
+`VOLATILITY_SCALED_REDUCED_USD`: `CONVICTION_BOOST_USD` cannot exceed 2x
+`TRADE_AMOUNT_USD` (i.e. never above $1,000 at current defaults) even via
+a misconfigured env var -- this is the direct, structural answer to why
+the $90k idea was declined; it is now physically impossible for this
+lever to produce anything resembling that incident's shape. Composes
+correctly with the existing volatility-scaled-sizing candidate: if a
+trade is BOTH in a high-conviction strategy AND in its own high-
+volatility tercile, the size-DOWN always wins over the size-UP (safety
+before return-chasing) -- implemented as a true `elif` chain, not two
+independent `if`s, in all three places it needed to exist, and this was
+specifically stress-tested by inverting the branch order and confirming
+the test suite actually catches it.
+
+**Independently verified, not just self-reported**: a second agent
+re-ran fresh subprocess imports at and around the 2x safety-cap boundary
+(confirmed strict `>`, not `>=`; confirmed the cap scales correctly off a
+non-default `TRADE_AMOUNT_USD`, not a hardcoded number), wrote its own
+throwaway scripts to call the real `place_buy_order`/
+`estimate_new_position_risk_usd` functions directly with a trade that
+qualifies for both the reduction and the boost, and confirmed the
+reduction wins every time -- not by trusting the builder's tests, but by
+calling the real functions itself.
+
+**Proved inertness the strong way**: backtested both universes with the
+toggle OFF, and again ON with `HIGH_CONVICTION_STRATEGIES` empty (the
+real shipped default) -- the two runs produced BYTE-IDENTICAL
+trade-by-trade CSVs (confirmed via MD5 hash, independently, by both the
+builder and the verifier). Not "no strategy happened to qualify today" --
+the code path that would change sizing is structurally unreachable with
+an empty set.
+
+**Proved the mechanism actually works when populated** (functional proof
+only, never shipped this way): a throwaway test run with
+`HIGH_CONVICTION_STRATEGIES=trend_following` showed every trend_following
+trade's entry/exit price and timing stayed byte-identical, only qty and
+$ P&L scaled proportionally (e.g. one COIN trade: qty 2->3, pnl
+$7.42->$11.13, same pnl_pct) -- confirming this is a pure sizing lever,
+never a timing or entry/exit change. One honest side effect surfaced: a
+handful of AMD trades that were silently skipped at the $500 baseline
+(`int(500 // price)` rounding to 0 shares on a >$500 stock) newly cleared
+1 share at $750 -- the same rounding-floor behavior already documented
+for `VOLATILITY_SCALED_REDUCED_USD`, just recovering trades instead of
+dropping them. Worth knowing if this is ever populated, not a defect.
+
+**Shipped with `HIGH_CONVICTION_STRATEGIES` empty.** This is not a stub --
+it's a fully working, tested, safety-capped mechanism sitting idle because
+the evidence to point it at anything specific doesn't exist yet. Re-test
+once a strategy shows a consistent edge across backtest AND real trading,
+not just one or the other. 9 new unit tests (the safety-guard boundary
+sweep, env-var parsing, the precedence test, structural-inertness proof
+against the real default), 130/130 test functions pass.

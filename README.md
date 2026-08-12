@@ -618,6 +618,38 @@ anything. Left off by default since there's no megacap-side evidence yet,
 but the scanner-side evidence is real and reproduced — worth deciding
 deliberately rather than defaulting either way blindly.
 
+**Conviction-boost sizing** *(off by default — `USE_CONVICTION_SIZING=false`,
+`HIGH_CONVICTION_STRATEGIES` genuinely empty)*. The safe alternative to an
+idea explicitly declined: staking a large chunk of the account on a trade
+judged "very likely to be really good" — declined because this bot has no
+real confidence score, and a similar-shaped lever (%-of-equity sizing)
+already caused the real 2026-08-05 incident ($15,700–$19,900 single
+positions instead of $500). This is the bounded version: a strategy in
+`HIGH_CONVICTION_STRATEGIES` trades `CONVICTION_BOOST_USD` (default $750)
+instead of the flat `TRADE_AMOUNT_USD`, hard-capped at import time to
+never exceed 2x `TRADE_AMOUNT_USD` (never above $1,000 today) even under a
+misconfigured env var — the direct, structural answer to the declined
+$90k idea. Composes safely with volatility-scaled sizing above: if a trade
+is both in a high-conviction strategy and its own high-volatility tercile,
+the size-down always wins over the size-up, verified by deliberately
+breaking the precedence and confirming the test suite catches it. Checked
+the evidence honestly before building anything — comparing per-strategy
+win rates across two backtest universes AND real reconstructed Alpaca
+trade history found no strategy with a consistent edge across all three
+(`trend_following` was a 64%-win standout on one backtest universe and the
+worst performer on the other; `vwap_reversion` looked solid on both
+backtests but was the worst real-money performer at 23%) — so
+`HIGH_CONVICTION_STRATEGIES` ships genuinely empty, not pre-populated with
+a guess. Proved inert the strong way: toggle ON with an empty list produces
+byte-identical backtest output to toggle OFF (confirmed via matching MD5
+hashes) on both universes — the sizing code path is structurally
+unreachable, not just empirically unused today. Also proved the mechanism
+actually works when populated (a throwaway test run, never shipped this
+way): every affected trade's entry/exit price and timing stayed identical,
+only size scaled. This is a ready, tested, safety-capped tool sitting idle
+until a strategy earns its way onto the list with real, cross-validated
+evidence — not a stub.
+
 **Bar timeframe: 15 minutes, not 5.** `BAR_MINUTES` (and the matching
 `CHECK_INTERVAL_MINUTES`) moved from 5 to 15 on 2026-07-31. A 90-day
 backtest found fewer, higher-quality decision points beat reacting to

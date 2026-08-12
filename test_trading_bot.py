@@ -237,6 +237,177 @@ def test_estimate_new_position_risk_usd_volatility_scaled():
         tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
 
 
+def test_estimate_new_position_risk_usd_conviction_boosted():
+    """
+    Mirrors test_estimate_new_position_risk_usd_volatility_scaled exactly,
+    for the conviction-boost lever instead. Only ever a fixed-dollar
+    SUBSTITUTION inside the flat-sizing branch (never risk-based, never
+    a fraction of equity), and this function's own docstring promises to
+    mirror place_buy_order's real qty exactly -- pinned here so the
+    heat-cap gate can't silently UNDER-estimate risk for a boosted trade
+    (the opposite, and more dangerous, direction of drift than the
+    volatility-scaled case's over-estimate).
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_CONVICTION_SIZING = False
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+
+        expected_unboosted = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        check("toggle OFF: a qualifying reason_key is ignored, same result as any other",
+              np.isclose(tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                             reason_key="trend_following"), expected_unboosted))
+
+        tb.USE_CONVICTION_SIZING = True
+        tb.CONVICTION_BOOST_USD = 750.0
+        expected_boosted = int(750.0 // last_price) * risk_per_share
+        got_boosted = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                          reason_key="trend_following")
+        check("toggle ON + reason_key IN HIGH_CONVICTION_STRATEGIES uses the boosted $ amount, "
+              "not TRADE_AMOUNT_USD",
+              np.isclose(got_boosted, expected_boosted) and got_boosted > expected_unboosted,
+              f"got {got_boosted}, expected {expected_boosted}, unboosted was {expected_unboosted}")
+
+        got_not_qualifying = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                                 reason_key="mean_reversion")
+        check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES still uses the full "
+              "TRADE_AMOUNT_USD",
+              np.isclose(got_not_qualifying, expected_unboosted))
+
+        tb.USE_RISK_BASED_SIZING = True
+        equity = 10000.0
+        expected_rb_qty = tb.compute_position_size(equity, last_price, stop_price)
+        expected_rb_risk = risk_per_share * expected_rb_qty
+        got_rb_boosted = tb.estimate_new_position_risk_usd(last_price, atr_value, equity,
+                                                             reason_key="trend_following")
+        check("under risk-based sizing, reason_key/conviction is ignored entirely -- this "
+              "candidate never stacks a boost on top of risk-based sizing's own stop-distance "
+              "scaling, same reasoning as the volatility-scaled case above",
+              np.isclose(got_rb_boosted, expected_rb_risk))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_CONVICTION_SIZING = original_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_estimate_new_position_risk_usd_volatility_precedes_conviction():
+    """
+    THE precedence test. A trade that is BOTH in a high-conviction
+    strategy AND in its own high-vol tercile must get the REDUCED
+    (volatility) amount, never the boosted one -- safety (size down on
+    real, measured noise) always wins over a return-chasing boost (size
+    up on an unconfirmed strategy-level edge), every time, no exceptions.
+
+    Written so it would actually FAIL if the precedence were implemented
+    backwards (i.e. conviction checked before/instead of volatility): the
+    reduced and boosted $ amounts are chosen to be clearly distinguishable
+    ($350 vs $750 against a $500 baseline -> 7 vs 15 shares at $50), and
+    the assertion pins the EXACT reduced qty, not just "less than the
+    boosted amount" (which a broken implementation that used, say, the
+    average of the two could still slip past).
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    original_mode = tb.USE_RISK_BASED_SIZING
+    original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    original_conv_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        tb.USE_CONVICTION_SIZING = True
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+        expected_reduced = int(350.0 // last_price) * risk_per_share
+        expected_boosted = int(750.0 // last_price) * risk_per_share
+        expected_unmodified = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        # These three must actually differ, or the test below can't tell
+        # reduced from boosted from unmodified.
+        check("fixture sanity: reduced/boosted/unmodified expected values are all distinct",
+              len({expected_reduced, expected_boosted, expected_unmodified}) == 3,
+              f"reduced={expected_reduced}, boosted={expected_boosted}, unmodified={expected_unmodified}")
+
+        got = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                  high_vol_tercile=True, reason_key="trend_following")
+        check("a trade BOTH high-vol-tercile AND in a high-conviction strategy gets the REDUCED "
+              "(volatility) amount, never the boosted one",
+              np.isclose(got, expected_reduced) and not np.isclose(got, expected_boosted),
+              f"got {got}, reduced would be {expected_reduced}, boosted would be {expected_boosted}")
+
+        # Sanity checks on the other three quadrants, so this test would
+        # catch a regression in EITHER direction, not just the precedence.
+        got_vol_only = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                           high_vol_tercile=True, reason_key="mean_reversion")
+        check("high-vol-tercile alone (not a conviction strategy) still gets reduced",
+              np.isclose(got_vol_only, expected_reduced))
+
+        got_conviction_only = tb.estimate_new_position_risk_usd(
+            last_price, atr_value, 10000.0, high_vol_tercile=False, reason_key="trend_following")
+        check("conviction strategy alone (not high-vol-tercile) gets boosted",
+              np.isclose(got_conviction_only, expected_boosted))
+
+        got_neither = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
+                                                          high_vol_tercile=False, reason_key="mean_reversion")
+        check("neither condition applies -- plain TRADE_AMOUNT_USD",
+              np.isclose(got_neither, expected_unmodified))
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_mode
+        tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
+        tb.USE_CONVICTION_SIZING = original_conv_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_conviction_sizing_structurally_inert_with_real_shipped_default():
+    """
+    Confirms the REAL shipped default (HIGH_CONVICTION_STRATEGIES as
+    loaded from the actual, unmodified environment -- not a test-
+    populated one) means USE_CONVICTION_SIZING=true is a complete no-op
+    regardless of reason_key. This is not "empirically happens to do
+    nothing today" -- HIGH_CONVICTION_STRATEGIES is structurally an empty
+    set by default (see strategy.py's comment on why), so the
+    `reason_key in HIGH_CONVICTION_STRATEGIES` membership test can never
+    be True for ANY reason_key without someone deliberately repopulating
+    the set first.
+    """
+    check("the real shipped default really is an empty set (sanity check on the fixture itself, "
+          "not just the assumption behind this test)",
+          tb.HIGH_CONVICTION_STRATEGIES == set(), f"got {tb.HIGH_CONVICTION_STRATEGIES!r}")
+
+    last_price = 50.0
+    atr_value = 1.0
+    original_toggle = tb.USE_CONVICTION_SIZING
+    try:
+        tb.USE_CONVICTION_SIZING = True  # forced ON; HIGH_CONVICTION_STRATEGIES left at its real default
+        stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
+        risk_per_share = last_price - stop_price
+        expected = int(tb.TRADE_AMOUNT_USD // last_price) * risk_per_share
+        for reason_key in ("trend_following", "vwap_reversion", "rvol_spike",
+                            "breakout", "mean_reversion", "gap_continuation", "unknown"):
+            got = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, reason_key=reason_key)
+            check(f"USE_CONVICTION_SIZING=true with the real empty default set: "
+                  f"reason_key={reason_key!r} still uses plain TRADE_AMOUNT_USD",
+                  np.isclose(got, expected), f"got {got}, expected {expected}")
+    finally:
+        tb.USE_CONVICTION_SIZING = original_toggle
+
+
 def test_would_exceed_portfolio_heat_cap():
     original_toggle = tb.USE_PORTFOLIO_HEAT_CAP
     original_cap = tb.MAX_PORTFOLIO_HEAT_USD
@@ -413,6 +584,123 @@ def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
                          at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("high_vol_tercile=False on the enriched row is forwarded to place_buy_order too",
           bool(mock_buy.call_args.args[-1]) is False, f"call args: {mock_buy.call_args}")
+
+
+def test_place_buy_order_conviction_sizing():
+    """
+    place_buy_order/check_symbol wiring: a reason_key IN the (test-
+    populated) high-conviction set gets the boosted amount; a reason_key
+    NOT in it gets the normal amount; the toggle OFF means zero effect
+    even with a populated set. Exercises place_buy_order's REAL sizing
+    branch directly (mocked trading_client/get_latest_price/reconcile),
+    not the mirrored math in estimate_new_position_risk_usd, so a bug
+    that only lived inside place_buy_order itself would still be caught.
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    fake_client = MagicMock()
+    fake_client.submit_order.return_value = types.SimpleNamespace(id="test-order-id")
+
+    original_rb = tb.USE_RISK_BASED_SIZING
+    original_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        with patch.object(tb, "trading_client", fake_client), \
+             patch.object(tb, "get_latest_price", return_value=last_price), \
+             patch.object(tb, "reconcile_bracket_with_real_fill", return_value=(last_price, False)):
+
+            tb.USE_CONVICTION_SIZING = False
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=False)
+            check("toggle OFF: a qualifying reason_key still gets the normal TRADE_AMOUNT_USD qty "
+                  "-- zero effect from a populated HIGH_CONVICTION_STRATEGIES set",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(tb.TRADE_AMOUNT_USD // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}")
+
+            tb.USE_CONVICTION_SIZING = True
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=False)
+            check("toggle ON + reason_key IN HIGH_CONVICTION_STRATEGIES gets the boosted qty",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(750.0 // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is True,
+                  f"details: {tb.place_buy_order.last_details}")
+
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="mean_reversion", high_vol_tercile=False)
+            check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES gets the normal qty",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == int(tb.TRADE_AMOUNT_USD // last_price)
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}")
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_rb
+        tb.USE_CONVICTION_SIZING = original_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
+
+
+def test_place_buy_order_volatility_precedes_conviction():
+    """
+    THE precedence test, exercised against the REAL place_buy_order (not
+    the mirrored math in estimate_new_position_risk_usd): a trade that is
+    BOTH in a high-conviction strategy AND in its own high-vol tercile
+    must submit an order sized off VOLATILITY_SCALED_REDUCED_USD, never
+    CONVICTION_BOOST_USD. Written so it would actually FAIL if the
+    precedence were implemented backwards -- the reduced/boosted qtys are
+    chosen to be clearly distinguishable ($350 vs $750 on a $500 baseline
+    -> 7 vs 15 shares at $50), and the assertion pins the exact reduced
+    qty, not just "not the largest number".
+    """
+    last_price = 50.0
+    atr_value = 1.0
+    fake_client = MagicMock()
+    fake_client.submit_order.return_value = types.SimpleNamespace(id="test-order-id")
+
+    original_rb = tb.USE_RISK_BASED_SIZING
+    original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
+    original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
+    original_conv_toggle = tb.USE_CONVICTION_SIZING
+    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
+    original_boost = tb.CONVICTION_BOOST_USD
+    try:
+        tb.USE_RISK_BASED_SIZING = False
+        tb.USE_VOLATILITY_SCALED_SIZING = True
+        tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
+        tb.USE_CONVICTION_SIZING = True
+        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        tb.CONVICTION_BOOST_USD = 750.0
+
+        with patch.object(tb, "trading_client", fake_client), \
+             patch.object(tb, "get_latest_price", return_value=last_price), \
+             patch.object(tb, "reconcile_bracket_with_real_fill", return_value=(last_price, False)):
+
+            order, notional = tb.place_buy_order("AAA", last_price, atr_value, 10000.0,
+                                                   reason_key="trend_following", high_vol_tercile=True)
+            expected_reduced_qty = int(350.0 // last_price)
+            expected_boosted_qty = int(750.0 // last_price)
+            check("a trade BOTH high-vol-tercile AND in a high-conviction strategy submits at the "
+                  "REDUCED (volatility) qty, never the boosted one",
+                  order is not None
+                  and tb.place_buy_order.last_details["qty"] == expected_reduced_qty
+                  and tb.place_buy_order.last_details["qty"] != expected_boosted_qty
+                  and tb.place_buy_order.last_details["conviction_boosted"] is False,
+                  f"details: {tb.place_buy_order.last_details}, reduced would be {expected_reduced_qty}, "
+                  f"boosted would be {expected_boosted_qty}")
+    finally:
+        tb.USE_RISK_BASED_SIZING = original_rb
+        tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
+        tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
+        tb.USE_CONVICTION_SIZING = original_conv_toggle
+        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
+        tb.CONVICTION_BOOST_USD = original_boost
 
 
 def test_check_symbol_gating_portfolio_heat_cap():
@@ -1784,11 +2072,16 @@ if __name__ == "__main__":
         test_get_current_portfolio_risk_usd,
         test_estimate_new_position_risk_usd,
         test_estimate_new_position_risk_usd_volatility_scaled,
+        test_estimate_new_position_risk_usd_conviction_boosted,
+        test_estimate_new_position_risk_usd_volatility_precedes_conviction,
+        test_conviction_sizing_structurally_inert_with_real_shipped_default,
         test_would_exceed_portfolio_heat_cap,
         test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
         test_check_symbol_propagates_high_vol_tercile_to_place_buy_order,
+        test_place_buy_order_conviction_sizing,
+        test_place_buy_order_volatility_precedes_conviction,
         test_check_symbol_gating_portfolio_heat_cap,
         test_get_symbol_sector_uses_hardcoded_map_first,
         test_get_symbol_sector_falls_back_to_alpaca_asset_metadata,

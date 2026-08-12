@@ -65,6 +65,7 @@ from strategy import (
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS, ATR_STOP_MULTIPLIER, ATR_TARGET_MULTIPLIER,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT, MAX_POSITION_PCT_OF_EQUITY,
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
+    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, CONVICTION_BOOST_USD,
     FAST_MA, SLOW_MA, RSI_PERIOD, RSI_OVERSOLD, RSI_OVERBOUGHT,
     ADX_PERIOD, ADX_TREND_THRESHOLD,
     USE_BREAKOUT, USE_SMASH_DAY_PATTERN, USE_GAP_PATTERN, USE_ROSS_HOOK, USE_ORB,
@@ -1419,7 +1420,7 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
 
 
 def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, equity: float | None,
-                                    high_vol_tercile: bool = False) -> float:
+                                    high_vol_tercile: bool = False, reason_key: str = "unknown") -> float:
     """
     Best-effort $-at-risk of a position that WOULD be opened right now --
     (entry - stop) * qty -- computed with the exact same
@@ -1427,19 +1428,30 @@ def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, e
     itself uses for sizing, so the heat-cap gate below is checking against
     a number that actually matches what would really be opened, under
     EITHER sizing mode (flat-$ or risk-based), including the
-    USE_VOLATILITY_SCALED_SIZING reduction (see place_buy_order) when
-    high_vol_tercile is true -- otherwise this would systematically
-    OVER-estimate risk for high-vol-tercile entries (still safe, since
-    over-estimating can only make the heat-cap gate stricter than
-    necessary, never laxer, but it would silently make the gate less
-    accurate than its own docstring promise). Uses the last completed
-    bar's close rather than a fresh quote -- place_buy_order re-checks
-    that right before submitting -- since this only has to be close
-    enough to gate on, not penny-perfect; a stale close moving the qty
-    estimate by a share or two doesn't matter next to a $200 cap.
-    Returns 0.0 if last_price is invalid rather than raising, so a bad
-    quote fails toward "no estimated risk" (a laxer gate), matching how
-    every other best-effort estimate in this file degrades.
+    USE_VOLATILITY_SCALED_SIZING reduction and the USE_CONVICTION_SIZING
+    boost (see place_buy_order) when high_vol_tercile / reason_key say
+    one of them applies.
+
+    reason_key is only consulted for the CONVICTION_BOOST_USD substitution
+    (mirroring place_buy_order's own flat-sizing branch exactly, including
+    its precedence rule: if a trade is BOTH in a high-conviction strategy
+    AND in its own high-vol tercile, the volatility-based size-DOWN wins,
+    never the conviction-based size-up). Getting this wrong has a real
+    direction of harm, unlike the vol-scaled case: overestimating risk
+    only makes the heat-cap gate stricter than necessary (still safe), but
+    UNDER-estimating a conviction-boosted trade's risk would make the gate
+    laxer than its own docstring promises -- silently letting more heat
+    onto the book than MAX_PORTFOLIO_HEAT_USD is supposed to allow. Passing
+    reason_key here is what keeps that from happening.
+
+    Uses the last completed bar's close rather than a fresh quote --
+    place_buy_order re-checks that right before submitting -- since this
+    only has to be close enough to gate on, not penny-perfect; a stale
+    close moving the qty estimate by a share or two doesn't matter next
+    to a $200 cap. Returns 0.0 if last_price is invalid rather than
+    raising, so a bad quote fails toward "no estimated risk" (a laxer
+    gate), matching how every other best-effort estimate in this file
+    degrades.
     """
     if last_price is None or last_price <= 0:
         return 0.0
@@ -1451,6 +1463,12 @@ def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, e
         trade_amount = TRADE_AMOUNT_USD
         if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
             trade_amount = VOLATILITY_SCALED_REDUCED_USD
+        # elif, not a second independent if: volatility-based size-down
+        # always takes precedence over conviction-based size-up when a
+        # trade qualifies for both (see place_buy_order's identical
+        # branch for the full precedence rationale).
+        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
+            trade_amount = CONVICTION_BOOST_USD
         qty = int(trade_amount // last_price)
     return risk_per_share * qty
 
@@ -1738,6 +1756,19 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     its own mechanism -- stacking a second, independent size cut on top
     of that hasn't been backtested and isn't this candidate's claim.
 
+    reason_key also feeds the FLAT-sizing branch's conviction-boost check,
+    gated by USE_CONVICTION_SIZING (default off): if reason_key is in
+    HIGH_CONVICTION_STRATEGIES (default EMPTY -- see that set's comment in
+    strategy.py for why), this trade spends CONVICTION_BOOST_USD instead
+    of TRADE_AMOUNT_USD -- again a flat dollar figure, capped at 2x
+    TRADE_AMOUNT_USD by strategy.py's own import-time guard, never a
+    fraction of equity. EXPLICIT PRECEDENCE RULE: if a trade is BOTH in a
+    high-conviction strategy AND in its own high-vol tercile, the
+    volatility-based SIZE-DOWN above always wins over this size-up --
+    safety takes precedence over a return-chasing boost, every time, no
+    exceptions. Also ignored entirely under risk-based sizing, same
+    reasoning as high_vol_tercile above.
+
     Bracket orders on Alpaca don't reliably support fractional
     quantities (unlike plain market orders), regardless of whether the
     underlying stock itself is normally fractionable -- so this always
@@ -1791,6 +1822,10 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
                   f"at random. Needs {MIN_STOP_TO_ATR_RATIO:.1f}x ATR of room.")
         return None, 0.0
 
+    # Never boosted under risk-based sizing -- see high_vol_tercile's
+    # identical reasoning in the docstring above; set here so it's always
+    # defined for last_details below regardless of which branch runs.
+    conviction_boosted = False
     if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
         qty = compute_position_size(equity, reference_price, stop_price)
         sizing_style = f"risk-based, {RISK_PER_TRADE_PCT:.1f}% of ${equity:,.0f}"
@@ -1800,6 +1835,19 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
             trade_amount = VOLATILITY_SCALED_REDUCED_USD
             sizing_style = f"flat $ (vol-scaled, high tercile -> ${trade_amount:.0f})"
+        # elif, not a second independent if: this makes the two branches
+        # structurally mutually exclusive, not just documented as such.
+        # EXPLICIT PRECEDENCE RULE -- see this function's docstring: a
+        # trade that is BOTH in a high-conviction strategy AND in its own
+        # high-vol tercile gets the REDUCED (volatility) amount above,
+        # never the boosted one below. Safety (size down on real,
+        # measured noise) always wins over a return-chasing boost (size
+        # up on an unconfirmed strategy-level edge), every time, no
+        # exceptions.
+        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
+            trade_amount = CONVICTION_BOOST_USD
+            conviction_boosted = True
+            sizing_style = f"flat $ (conviction-boosted, {reason_key} -> ${trade_amount:.0f})"
         qty = int(trade_amount // reference_price)
 
     if qty < 1:
@@ -1838,6 +1886,7 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         "take_profit": recorded_target,
         "sizing_style": sizing_style,
         "equity": equity,
+        "conviction_boosted": conviction_boosted,
     }
     return order, notional
 
@@ -1968,7 +2017,7 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                           f"{MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate risk cap).")
             elif would_exceed_portfolio_heat_cap(
                     portfolio_risk_estimate,
-                    estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile)):
+                    estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile, reason_key)):
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_HEAT_USD="
                           f"${MAX_PORTFOLIO_HEAT_USD:,.0f} fixed-dollar aggregate risk cap).")
             else:
@@ -2558,6 +2607,15 @@ if __name__ == "__main__":
             log.info(f"Volatility-scaled sizing: ON -- trades in a symbol's own top vol-percentile "
                       f"tercile sized at ${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of "
                       f"${TRADE_AMOUNT_USD:.0f} (see strategy.VOL_PERCENTILE_LOOKBACK)")
+        if USE_CONVICTION_SIZING:
+            if HIGH_CONVICTION_STRATEGIES:
+                log.info(f"Conviction-boosted sizing: ON -- {', '.join(sorted(HIGH_CONVICTION_STRATEGIES))} "
+                          f"sized at ${CONVICTION_BOOST_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
+                          f"(volatility-based size-down always wins when a trade qualifies for both)")
+            else:
+                log.info("Conviction-boosted sizing: ON but HIGH_CONVICTION_STRATEGIES is empty -- "
+                          "structurally a no-op right now (no strategy currently has real evidence "
+                          "supporting a boost, see strategy.HIGH_CONVICTION_STRATEGIES)")
     log.info(f"Position limits: max {MAX_CONCURRENT_POSITIONS} concurrent positions | "
               f"max {MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate portfolio risk | "
               f"daily loss circuit breaker at -{MAX_DAILY_LOSS_PCT:.0f}% (pauses new entries only)")
