@@ -171,8 +171,33 @@ def test_breakout_invalidated_at():
     check("fails safe (returns False) when invalidation_level is NaN",
           not strat.breakout_invalidated_at(df, 1, invalidation_level=float("nan")))
 
-    check("USE_BREAKOUT_INVALIDATION_EXIT defaults off (every untested lever in this project does)",
-          strat.USE_BREAKOUT_INVALIDATION_EXIT is False)
+    # Checks the CODE's default (a falsy env value), not this repo's
+    # CURRENT .env -- USE_BREAKOUT_INVALIDATION_EXIT was deliberately
+    # enabled live on 2026-08-12 once the scanner-universe backtest
+    # evidence supported it (see CLAUDE.md), so strat.USE_BREAKOUT_
+    # INVALIDATION_EXIT itself is True in this repo's real environment.
+    # Setting the var to "" here (rather than deleting it from the
+    # subprocess env) is deliberate: load_dotenv()'s default override=False
+    # only skips keys ALREADY present in os.environ -- a deleted key would
+    # just let load_dotenv() re-populate it from this repo's own .env
+    # (which says "true"), silently defeating the isolation. An explicit ""
+    # IS present, so dotenv leaves it alone, and the parsing logic
+    # (`.strip().lower() in ("1","true","yes")`) treats "" the same as the
+    # "false" fallback -- same technique as the VOLATILITY_SCALED_REDUCED_USD
+    # import-time guard test below.
+    import os
+    import subprocess
+    import sys
+    here = os.path.dirname(os.path.abspath(__file__)) or "."
+    env_falsy = dict(os.environ)
+    env_falsy["USE_BREAKOUT_INVALIDATION_EXIT"] = ""
+    result = subprocess.run(
+        [sys.executable, "-c", "import strategy; print(strategy.USE_BREAKOUT_INVALIDATION_EXIT)"],
+        cwd=here, env=env_falsy, capture_output=True, text=True,
+    )
+    check("USE_BREAKOUT_INVALIDATION_EXIT's CODE default is off for a falsy/unset env value",
+          result.stdout.strip() == "False",
+          f"stdout={result.stdout!r}, stderr tail: {result.stderr[-300:]}")
 
 
 # ---------------------------------------------------------------------------
