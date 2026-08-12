@@ -69,12 +69,14 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
     stop_is_wider_than_noise, compute_daily_trend_map, vwap_reversion_volume_confirms,
+    breakout_invalidated_at,
     BAR_MINUTES, TRADE_AMOUNT_USD,
     FLATTEN_BEFORE_CLOSE, STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT,
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
     ADX_TREND_THRESHOLD, RSI_PERIOD,
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
+    USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
 )
 
 load_dotenv()
@@ -572,6 +574,17 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 if signal == "SELL":
                     exit_price = current_bar["close"]
                     exit_reason = "strategy sell signal"
+                elif (USE_BREAKOUT_INVALIDATION_EXIT and position["entry_reason"] == "breakout"
+                      and position["invalidation_level"] is not None
+                      and breakout_invalidated_at(enriched, i, position["invalidation_level"])):
+                    # See strategy.breakout_invalidated_at's docstring for
+                    # the real-evidence case: without this, a breakout
+                    # position only ever exits via its bracket, whichever
+                    # regime signal is active RIGHT NOW (unrelated to why
+                    # it was opened), or the EOD flatten -- never because
+                    # the breakout thesis itself specifically failed.
+                    exit_price = current_bar["close"]
+                    exit_reason = "breakout invalidated"
                 elif FLATTEN_BEFORE_CLOSE and is_last_bar_of_day:
                     exit_price = current_bar["close"]
                     exit_reason = "end-of-day flatten"
@@ -659,6 +672,19 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     qty = int(trade_amount // entry_price)
                 if qty < 1:
                     continue  # not enough simulated capital/risk budget for even 1 share
+                # Freeze the SAME level breakout_at() itself used to confirm
+                # this entry (see USE_CLOSE_BEYOND_LEVEL_CONFIRMATION), so
+                # breakout_invalidated_at() later checks against the level
+                # that was actually true at entry, not a rolling window that
+                # has since drifted. None for non-breakout entries -- the
+                # exit check below never fires without a real level.
+                invalidation_level = None
+                if reason_key == "breakout":
+                    level_col = ("breakout_recent_high_wick" if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION
+                                 else "breakout_recent_high")
+                    level_value = current_bar[level_col]
+                    if not pd.isna(level_value):
+                        invalidation_level = float(level_value)
                 position = {
                     "entry_time": current_bar["timestamp"],
                     "entry_price": entry_price,
@@ -667,6 +693,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "stop_price": stop_price,
                     "take_profit_price": take_profit_price,
                     "high_vol_tercile": high_vol_tercile,
+                    "invalidation_level": invalidation_level,
                 }
 
     return trades

@@ -137,6 +137,45 @@ def test_breakout():
 
 
 # ---------------------------------------------------------------------------
+# 2b. Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT /
+#     breakout_invalidated_at() in strategy.py. Pure function: only reads
+#     df["close"].iat[i] against the level it's handed, so these fixtures
+#     don't need add_indicators() at all.
+# ---------------------------------------------------------------------------
+
+def test_breakout_invalidated_at():
+    ts = ts_range("2024-01-02", "09:30", 2)
+    df = build_df(
+        ts,
+        opens=[105.0, 95.0], highs=[106.0, 96.0], lows=[104.0, 94.0],
+        closes=[105.0, 95.0], volumes=[1000, 1000],
+    )
+
+    check("fires when the close drops back BELOW the frozen invalidation level",
+          strat.breakout_invalidated_at(df, 1, invalidation_level=100.0))
+    check("does NOT fire on a bar where the level is still holding (close above it)",
+          not strat.breakout_invalidated_at(df, 0, invalidation_level=100.0))
+
+    # A close sitting exactly AT the level hasn't broken below it -- the
+    # entry side (breakout_at) requires a close strictly ABOVE its level,
+    # so the symmetric exit requires strictly BELOW it, not <=.
+    ts_at = ts_range("2024-01-02", "09:30", 1)
+    df_at_level = build_df(ts_at, opens=[100.0], highs=[100.0], lows=[100.0],
+                            closes=[100.0], volumes=[1000])
+    check("does NOT fire when the close sits exactly AT the level (only a genuine break below counts)",
+          not strat.breakout_invalidated_at(df_at_level, 0, invalidation_level=100.0))
+
+    check("fails safe (returns False) when invalidation_level is None -- "
+          "e.g. a non-breakout position, which must never be treated as invalidated",
+          not strat.breakout_invalidated_at(df, 1, invalidation_level=None))
+    check("fails safe (returns False) when invalidation_level is NaN",
+          not strat.breakout_invalidated_at(df, 1, invalidation_level=float("nan")))
+
+    check("USE_BREAKOUT_INVALIDATION_EXIT defaults off (every untested lever in this project does)",
+          strat.USE_BREAKOUT_INVALIDATION_EXIT is False)
+
+
+# ---------------------------------------------------------------------------
 # 3. Smash Day
 # ---------------------------------------------------------------------------
 
@@ -784,6 +823,7 @@ if __name__ == "__main__":
         test_stop_must_be_wider_than_noise,
         test_indicator_precompute_matches_growing_window,
         test_breakout,
+        test_breakout_invalidated_at,
         test_smash_day,
         test_gap_continuation,
         test_gap_quality_filter,

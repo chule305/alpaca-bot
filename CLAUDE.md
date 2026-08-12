@@ -1606,3 +1606,83 @@ of the three candidates above. Root cause for each:
 No trading logic changed -- these were test-fixture bugs, not code bugs.
 109/109 tests pass (`py test_strategy.py`, `py test_trading_bot.py`,
 `py test_trade_recorder.py`, `py test_daily_summary.py` all green).
+
+## 2026-08-12: breakout invalidation exit -- real structural fix, genuine improvement on the scanner universe, shipped OFF pending a decision on defaults
+
+Root cause found by reconstructing REAL Alpaca order history (not backtest):
+every open position, regardless of which strategy opened it, only ever
+exited via (a) its bracket stop-loss/take-profit leg filling on its own,
+(b) the CURRENTLY ACTIVE regime strategy's SELL signal (trend_following's
+EMA cross-down or mean_reversion's RSI-overbought -- `decide_signal_at()`
+only ever reflects the regime active RIGHT NOW, not what originally
+justified the entry), or (c) the mandatory end-of-day flatten. There was
+no "the original breakout thesis failed" exit. Real evidence: ALL 12 real
+winning breakout trades exited via a plain MARKET order, never the
+bracket's take-profit LIMIT leg -- every real win got cut short before
+reaching its 10% target by something unrelated. Only 2 of 9 real losses
+hit the actual stop; the other 7 also just got market-sold. In the 90-day
+scanner backtest, "end-of-day flatten" was the exit reason for 76% of all
+breakout trades (28/37); take-profit fired only 3 times.
+
+**Fix**: `USE_BREAKOUT_INVALIDATION_EXIT` (default off) adds a real exit
+condition symmetric to the entry -- `breakout_at()` requires a close
+strictly ABOVE `breakout_recent_high`(`_wick`) to enter; the new
+`breakout_invalidated_at()` exits when a later bar closes strictly BELOW
+that SAME level, frozen at the moment of entry (not re-read from the
+drifting rolling window later). `backtest.py` already tracks
+`position["entry_reason"]` so this was a small addition there. The live
+bot needed a new piece of infrastructure: `open_position_context.json`, a
+small state file (mirroring `daily_risk_state.json`/`watchlist_state.json`'s
+existing load/save/git-tracked pattern exactly) recording `{symbol:
+{strategy, invalidation_level}}` at entry time, so `check_symbol` can tell
+whether a currently-open position was a breakout entry without any extra
+Alpaca API calls per cycle. Cleared on every position-closing path (SELL
+signal, this new invalidation exit, the existing bracket-leg-close
+detection, `flatten_all_positions`) so no stale entry can ever leak into a
+different position that later opens in the same symbol.
+
+**Independently verified**, not just self-reported: a second agent
+re-read every changed line, traced every code path that touches position
+state, and confirmed the new exit path requires ALL of (toggle on) AND
+(stored strategy == "breakout", a string no other strategy ever produces)
+AND (a real, non-null invalidation level, which is only ever set for
+breakout entries) before it can fire -- a non-breakout position can never
+be touched by this mechanism, verified via a dedicated adversarial test
+(identical price action, different stored strategy, confirmed no sell).
+The verifier also independently re-ran all four test suites and both
+backtests from scratch and got matching numbers, not just trusted the
+builder's report.
+
+**Backtested both universes, 90 days, ON vs OFF, everything else default:**
+
+```
+                            trades  win%   avg win   avg loss   P&L      exit mix
+megacap breakout, OFF:        7    28.6%   +1.37%    -0.95%   -$6.82    EOD flatten 5, sell-signal 2
+megacap breakout, ON:         7    28.6%   +1.37%    -0.91%   -$6.24    invalidated 3, EOD 2, sell-signal 2
+scanner breakout, OFF:       36    47.2%   +3.63%    -1.96%  +$116.22   EOD flatten 27, stop 4, target 3, sell-signal 2
+scanner breakout, ON:        36    44.4%   +3.73%    -1.57%  +$135.37   invalidated 15, EOD 14, target 3, stop 2, sell-signal 2
+```
+
+Megacap (7 trades) is too thin to say anything either way -- marginally
+less bad, same win rate, not real evidence. **Scanner (36 trades, the
+meaningful sample) is genuine, reproduced, non-cherry-picked evidence of
+an improvement**: avg loss shrank ~20% (-1.96% -> -1.57%) with avg win
+essentially unchanged, meaning the fix worked exactly as diagnosed --
+losses are getting contained closer to where they should be, winners
+that were going to run to full target still do (take-profit fired 3
+times either way). Win rate actually dipped slightly (one EOD-flatten
+small win became a small invalidation loss) but the dollar math improved
+regardless. Combined portfolio on scanner: return +2.5%->+2.8%, profit
+factor 1.29->1.35, max drawdown 1.6%->1.4%. Every dollar of that
+combined-portfolio improvement traces back to breakout's own P&L delta,
+confirming it doesn't leak into other strategies' numbers.
+
+**Shipped OFF by default** since the live bot's SYMBOLS fallback is the
+megacap list (no real evidence there yet) even though `USE_SCANNER=true`
+means real trading mostly runs on scanner-style picks (where the evidence
+IS real) -- this is a case where the scanner-side evidence is strong
+enough that turning it on is a reasonable, evidence-backed call, unlike
+this round's other candidates. Left as the user's decision rather than
+defaulted on unilaterally. 12 new unit tests (`breakout_invalidated_at`'s
+pure logic, the state-file round-trip, `check_symbol`'s wiring including
+the adversarial non-breakout-position test), 121/121 test functions pass.

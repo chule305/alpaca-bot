@@ -205,6 +205,25 @@ TIME_OF_DAY_VOLUME_BUCKET_MINUTES = int(os.getenv("TIME_OF_DAY_VOLUME_BUCKET_MIN
 # supports turning on.
 USE_CLOSE_BEYOND_LEVEL_CONFIRMATION = os.getenv("USE_CLOSE_BEYOND_LEVEL_CONFIRMATION", "false").strip().lower() in ("1", "true", "yes")
 
+# Breakout INVALIDATION exit -- see breakout_invalidated_at()'s docstring
+# (right after breakout_at() below) for the full real-evidence case this
+# is built on. Symmetric with the entry side: breakout_at() requires a
+# CLOSE above breakout_recent_high (or breakout_recent_high_wick, if
+# USE_CLOSE_BEYOND_LEVEL_CONFIRMATION is on) to get in; this exits the
+# instant a LATER bar closes back BELOW that SAME level -- frozen at the
+# moment of entry, never re-read from the rolling window as it drifts --
+# instead of waiting for an unrelated regime signal (trend_following's
+# death-cross or mean_reversion's RSI-overbought, whichever happens to
+# be active right now, regardless of what actually opened the position)
+# or the mandatory end-of-day flatten.
+#
+# Default OFF -- ships toggleable so the backtest gets the final word,
+# same convention as every other lever in this file. This is a real,
+# evidenced structural gap (see breakout_invalidated_at()), not a guess,
+# but the FIX itself hasn't been backtested yet -- that's a separate
+# question from whether the gap is real.
+USE_BREAKOUT_INVALIDATION_EXIT = os.getenv("USE_BREAKOUT_INVALIDATION_EXIT", "false").strip().lower() in ("1", "true", "yes")
+
 # Smash Day Pattern (Type B) -- a Larry Williams reversal pattern, sourced
 # from Oxford Capital Strategies' public strategy research (B-rated in
 # their own testing). Long side only -- this bot doesn't take short
@@ -837,6 +856,50 @@ def breakout_at(df: pd.DataFrame, i: int) -> bool:
     still_pushing = close_now > recent_high and close_now > close_prev
     volume_confirmed = df["volume"].iat[i] > avg_volume * BREAKOUT_VOLUME_MULTIPLIER
     return broke_out_last_bar and still_pushing and volume_confirmed
+
+
+def breakout_invalidated_at(df: pd.DataFrame, i: int, invalidation_level: float | None) -> bool:
+    """
+    True if `invalidation_level` -- the SAME breakout_recent_high (or
+    breakout_recent_high_wick, if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION was
+    on) level that justified this position's original breakout entry,
+    frozen at the moment of entry, never re-read from a later, drifted
+    rolling window -- is a real number AND this bar's close has dropped
+    back BELOW it.
+
+    This is breakout_at()'s own entry test, run in reverse against the
+    same level: entry requires a CLOSE above the recent-high; this is
+    "the thesis that got us in no longer holds," the exit that mirrors
+    it. Without this, EVERY open position -- no matter which strategy
+    opened it -- only ever exits via (a) its bracket stop-loss/take-
+    profit filling on their own, (b) whichever regime strategy happens
+    to be active RIGHT NOW (decide_signal_at() only ever reflects the
+    CURRENT regime, not what originally justified the entry), or (c) the
+    mandatory end-of-day flatten. There has never been a "the original
+    breakout thesis specifically failed" exit.
+
+    That gap is not a theory -- it's reconstructed from real Alpaca order
+    history: ALL 12 real winning breakout trades exited via a plain
+    MARKET order, never the bracket's own take-profit LIMIT leg, meaning
+    every real win got cut short before reaching its 10% target by
+    something unrelated to the breakout thesis. Only 2 of 9 real losses
+    hit the actual stop-loss; the other 7 also just got market-sold. In a
+    90-day scanner-universe backtest, "end-of-day flatten" was the exit
+    reason for 28 of 37 breakout trades (76%) -- take-profit fired only 3
+    times. Net effect: real breakout trades won MORE often (57%) than
+    backtests predicted, but still lost money overall (-$182.99 across 21
+    real trades), because winners averaged only +2% (cut short) while
+    losers averaged -3.3% (never reliably capped). Giving breakout
+    positions their own thesis-specific exit is meant to close that gap.
+
+    Fails CLOSED like every other guard in this file: a missing level
+    (None or NaN -- e.g. a non-breakout position, or a breakout position
+    opened before this feature existed / before this field was tracked)
+    means this never fires. It never guesses at a level it wasn't given.
+    """
+    if invalidation_level is None or pd.isna(invalidation_level):
+        return False
+    return bool(df["close"].iat[i] < invalidation_level)
 
 
 def smash_day_at(df: pd.DataFrame, i: int) -> bool:

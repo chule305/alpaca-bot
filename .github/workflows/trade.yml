@@ -162,7 +162,7 @@ jobs:
         run: |
           git config user.name "trading-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add watchlist_state.json daily_risk_state.json
+          git add watchlist_state.json daily_risk_state.json open_position_context.json
           git add -A logs trades.csv 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No state changes to commit."

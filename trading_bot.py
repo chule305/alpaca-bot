@@ -59,6 +59,7 @@ from strategy import (
 )
 from strategy import (
     add_indicators, decide_signal_at, compute_stop_and_target, compute_position_size,
+    breakout_invalidated_at,
     BAR_MINUTES, TRADE_AMOUNT_USD, FLATTEN_BEFORE_CLOSE, FLATTEN_MINUTES_BEFORE_CLOSE,
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS, ATR_STOP_MULTIPLIER, ATR_TARGET_MULTIPLIER,
@@ -68,6 +69,7 @@ from strategy import (
     ADX_PERIOD, ADX_TREND_THRESHOLD,
     USE_BREAKOUT, USE_SMASH_DAY_PATTERN, USE_GAP_PATTERN, USE_ROSS_HOOK, USE_ORB,
     USE_VWAP_REVERSION, USE_RVOL_SPIKE,
+    USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
 )
 
 # ---------------------------------------------------------------------------
@@ -558,6 +560,9 @@ LEVERAGED_ETF_DENYLIST = {
 LOCAL_TZ = ZoneInfo(os.getenv("LOCAL_TIMEZONE", "Europe/Zagreb"))
 WATCHLIST_STATE_FILE = "watchlist_state.json"
 DAILY_RISK_STATE_FILE = "daily_risk_state.json"
+# See USE_BREAKOUT_INVALIDATION_EXIT (strategy.py) and the OPEN POSITION
+# CONTEXT section below for what this persists and why.
+OPEN_POSITION_CONTEXT_FILE = "open_position_context.json"
 
 # Mutable run state. Initialized here (not only in the __main__ block) so
 # importing this module -- which the tests do -- gives a consistent
@@ -576,6 +581,11 @@ symbol_cooldown_until: dict[str, datetime] = {}
 # What we held on the previous cycle, so a position closing (by stop, by
 # target, or by our own sell) can be detected without an extra API call.
 previously_held: set[str] = set()
+# {symbol: {"strategy": reason_key, "invalidation_level": float | None}}
+# for every symbol currently holding a position this bot opened. See the
+# OPEN POSITION CONTEXT section below for how this is populated, cleared,
+# and persisted.
+open_position_context: dict[str, dict] = {}
 
 if not API_KEY or not SECRET_KEY or "your_paper" in API_KEY:
     raise SystemExit(
@@ -1279,6 +1289,65 @@ def load_daily_risk_state() -> None:
 
 
 # ---------------------------------------------------------------------------
+# OPEN POSITION CONTEXT -- persists, per currently-open symbol, which
+# strategy opened it and (for breakout entries) the frozen invalidation
+# level, so USE_BREAKOUT_INVALIDATION_EXIT can be checked in check_symbol
+# without any new Alpaca API call: reason_key and the entry bar's own
+# breakout_recent_high[_wick] are already known locally at the exact
+# moment check_symbol places a breakout BUY, so they're captured right
+# there (see check_symbol's BUY branch) rather than re-derived later.
+# Persisted to disk (and tracked in git, same as watchlist_state.json/
+# daily_risk_state.json -- see .gitignore's comment) so this survives a
+# restart or a fresh GitHub Actions checkout exactly like those two.
+# ---------------------------------------------------------------------------
+
+def save_open_position_context() -> None:
+    try:
+        with open(OPEN_POSITION_CONTEXT_FILE, "w") as f:
+            json.dump(open_position_context, f)
+    except Exception as e:
+        log.warning(f"Could not save open-position context: {e}")
+
+
+def load_open_position_context() -> None:
+    """
+    Restores {symbol: {"strategy", "invalidation_level"}} after a
+    restart. A symbol legitimately open right now but ABSENT from this
+    file (e.g. it was bought before this feature existed, or the file
+    was deleted/reset) is simply not in the dict afterwards -- callers
+    must treat that as "unknown," never guess it was a breakout
+    position, which is exactly what check_symbol's .get()-based lookup
+    already does for free.
+    """
+    global open_position_context
+    try:
+        with open(OPEN_POSITION_CONTEXT_FILE, "r") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            open_position_context = data
+        log.info(f"Restored open-position context for {len(open_position_context)} "
+                  f"symbol(s) from previous run.")
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        log.warning(f"Could not load saved open-position context ({e}), starting fresh.")
+
+
+def clear_open_position_context(symbol: str) -> None:
+    """
+    Removes a symbol's persisted entry-context once its position is
+    fully closed -- called from every path that can close a position
+    (check_symbol's own SELL and breakout-invalidation branches,
+    record_auto_exit's bracket-leg-close detection, and
+    flatten_all_positions), so a later re-entry (possibly opened by a
+    completely different strategy) never inherits a stale invalidation
+    level left over from the position that used to be there.
+    """
+    if open_position_context.pop(symbol, None) is not None:
+        save_open_position_context()
+
+
+# ---------------------------------------------------------------------------
 # ORDERS / POSITIONS
 # ---------------------------------------------------------------------------
 
@@ -1847,6 +1916,23 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         and sector_relative_mean_reversion_blocks_entry(symbol, enriched, i, sector_etf_bars)
     )
 
+    # Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT and
+    # breakout_invalidated_at() in strategy.py for the reasoning. Reads the
+    # frozen entry-time level from open_position_context (persisted by
+    # THIS function's own BUY branch below, on whatever earlier cycle
+    # opened the position) instead of any new Alpaca API call. A symbol
+    # missing from that state (never opened by breakout, or opened before
+    # this feature existed, or the state file was reset) simply never
+    # matches here -- .get() returning None fails every check below
+    # closed, this never guesses at a position's origin.
+    breakout_invalidation_triggered = False
+    if USE_BREAKOUT_INVALIDATION_EXIT and current_qty > 0:
+        entry_context = open_position_context.get(symbol)
+        if (entry_context and entry_context.get("strategy") == "breakout"
+                and entry_context.get("invalidation_level") is not None):
+            breakout_invalidation_triggered = breakout_invalidated_at(
+                enriched, i, entry_context["invalidation_level"])
+
     log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
     notional_opened = 0.0
@@ -1899,6 +1985,25 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                         context=extract_context(enriched, i),
                         details=place_buy_order.last_details,
                     )
+                    # Persist what opened this position (and, for breakout
+                    # specifically, the exact level breakout_at() itself
+                    # used to confirm the entry) so a LATER cycle -- quite
+                    # possibly a different process entirely, after a
+                    # restart -- can check USE_BREAKOUT_INVALIDATION_EXIT
+                    # without any new Alpaca API call. See the OPEN
+                    # POSITION CONTEXT section above.
+                    invalidation_level = None
+                    if reason_key == "breakout":
+                        level_col = ("breakout_recent_high_wick" if USE_CLOSE_BEYOND_LEVEL_CONFIRMATION
+                                     else "breakout_recent_high")
+                        level_value = enriched[level_col].iat[i]
+                        if not pd.isna(level_value):
+                            invalidation_level = float(level_value)
+                    open_position_context[symbol] = {
+                        "strategy": reason_key,
+                        "invalidation_level": invalidation_level,
+                    }
+                    save_open_position_context()
         elif signal == "SELL" and current_qty > 0:
             order = place_sell_order(symbol)
             log.info(f"[{symbol}] ACTION: SELL - closing position (order id {order.id})")
@@ -1910,6 +2015,27 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 equity=equity, order_id=str(order.id),
                 context=extract_context(enriched, i),
             )
+            clear_open_position_context(symbol)
+        elif breakout_invalidation_triggered:
+            # Same sell mechanics as the strategy-SELL-signal branch above
+            # (cancel the resting bracket legs, close the position) -- the
+            # only difference is WHY: the level that justified this
+            # specific breakout entry gave back, independent of whatever
+            # the currently-active regime strategy's own signal says.
+            order = place_sell_order(symbol)
+            log.info(f"[{symbol}] ACTION: SELL - breakout invalidation exit "
+                      f"(close ${last_price:.2f} back below entry level "
+                      f"${open_position_context[symbol]['invalidation_level']:.2f}, order id {order.id})")
+            record_trade(
+                "SELL", symbol,
+                trading_day_et=_trading_day_et(),
+                strategy="breakout",
+                reason="breakout invalidated: price closed back below the entry breakout level",
+                qty=current_qty, price=last_price, notional=current_qty * last_price,
+                equity=equity, order_id=str(order.id),
+                context=extract_context(enriched, i),
+            )
+            clear_open_position_context(symbol)
         else:
             log.info(f"[{symbol}] ACTION: No trade.")
     except Exception as e:
@@ -1968,7 +2094,14 @@ def record_auto_exit(symbol: str) -> None:
     strategy via client_order_id) via Alpaca's own order history --
     best-effort throughout, since a lookup failure here must never be
     allowed to disrupt the trading cycle that called it.
+
+    Also clears this symbol's open_position_context entry -- the caller
+    (run_one_cycle) only reaches this function once it's already detected
+    the position is gone, so that part doesn't depend on the Alpaca order
+    history lookup below succeeding, unlike the best-effort trades.csv
+    recording it does after.
     """
+    clear_open_position_context(symbol)
     try:
         sells = trading_client.get_orders(filter=GetOrdersRequest(
             status=QueryOrderStatus.CLOSED, symbols=[symbol],
@@ -2055,6 +2188,7 @@ def flatten_all_positions() -> bool:
                           strategy="end_of_day", reason="Flattened before market close",
                           qty=details.get("qty"))
             log.info(f"[{symbol}] EOD FLATTEN: close order submitted for {details.get('qty')} share(s).")
+            clear_open_position_context(symbol)
         except Exception as e:
             all_closed = False
             log.error(f"[{symbol}] EOD FLATTEN FAILED: {e} -- position likely still open, will retry.")
@@ -2452,6 +2586,8 @@ if __name__ == "__main__":
     day_start_equity = None
     daily_loss_breaker_tripped = False
     load_daily_risk_state()
+
+    load_open_position_context()
 
     if args.once:
         # Single-shot mode: one check cycle, then exit. Exceptions are

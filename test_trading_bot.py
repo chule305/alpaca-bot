@@ -38,6 +38,16 @@ import trade_recorder
 # to git and meant to be genuine trading history.
 trade_recorder.TRADE_HISTORY_FILE = os.path.join(tempfile.mkdtemp(), "trades.csv")
 
+# Likewise again: check_symbol's BUY branch now persists open-position
+# context on every successful buy (see USE_BREAKOUT_INVALIDATION_EXIT),
+# so without this, every EXISTING test that drives a successful BUY
+# through check_symbol (most of which predate this feature and have no
+# reason to know about it) would write to the project's real, git-tracked
+# open_position_context.json. Individual tests below that specifically
+# exercise this feature still override this per-test via patch.object,
+# same layering as trade_recorder.TRADE_HISTORY_FILE above.
+tb.OPEN_POSITION_CONTEXT_FILE = os.path.join(tempfile.mkdtemp(), "open_position_context.json")
+
 FAILURES = []
 
 
@@ -1491,6 +1501,283 @@ def test_run_for_duration_survives_a_bad_cycle_but_reports_it():
     check("still reports failure so the run goes red", had_error is True)
 
 
+# ---------------------------------------------------------------------------
+# Breakout invalidation exit -- open_position_context state-file round
+# trip, and check_symbol's wiring of USE_BREAKOUT_INVALIDATION_EXIT. See
+# strategy.breakout_invalidated_at / trading_bot's OPEN POSITION CONTEXT
+# section.
+# ---------------------------------------------------------------------------
+
+def test_open_position_context_persistence():
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file):
+        tb.open_position_context = {
+            "AAA": {"strategy": "breakout", "invalidation_level": 123.45},
+            "BBB": {"strategy": "vwap_reversion", "invalidation_level": None},
+        }
+        tb.save_open_position_context()
+
+        # Simulate a crash-and-restart: wipe the in-memory state, then reload it.
+        tb.open_position_context = {}
+        tb.load_open_position_context()
+
+        check("a breakout entry (with its frozen level) survives a save/reload round-trip",
+              tb.open_position_context.get("AAA") == {"strategy": "breakout", "invalidation_level": 123.45})
+        check("a non-breakout entry (invalidation_level None) survives a save/reload round-trip too",
+              tb.open_position_context.get("BBB") == {"strategy": "vwap_reversion", "invalidation_level": None})
+
+        tb.clear_open_position_context("AAA")
+        check("clear_open_position_context removes just that symbol's in-memory entry",
+              "AAA" not in tb.open_position_context and "BBB" in tb.open_position_context)
+
+        # Reload from disk to confirm the clear was actually PERSISTED,
+        # not just removed from the in-memory dict.
+        tb.open_position_context = {}
+        tb.load_open_position_context()
+        check("the clear survives a reload too -- it was written to disk, not just in-memory",
+              "AAA" not in tb.open_position_context and "BBB" in tb.open_position_context)
+
+    tb.open_position_context = {}
+
+
+def test_load_open_position_context_missing_file_starts_fresh():
+    tmp_dir = tempfile.mkdtemp()
+    missing_file = os.path.join(tmp_dir, "does_not_exist.json")
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", missing_file):
+        tb.open_position_context = {"STALE": {"strategy": "breakout", "invalidation_level": 1.0}}
+        tb.load_open_position_context()  # must not raise or wipe existing in-memory state
+    check("a missing state file is not an error -- load leaves whatever was already in memory untouched",
+          tb.open_position_context == {"STALE": {"strategy": "breakout", "invalidation_level": 1.0}})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_buy_persists_open_position_context_for_breakout():
+    """The BUY branch must persist the SAME level breakout_at() itself
+    used to confirm the entry (breakout_recent_high, since
+    USE_CLOSE_BEYOND_LEVEL_CONFIRMATION defaults off)."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id", client_order_id="breakout-123")
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    fake_enriched = make_fake_enriched(100)
+    fake_enriched["breakout_recent_high"] = [97.5]
+    fake_enriched["breakout_recent_high_wick"] = [98.5]
+
+    tb.open_position_context = {}
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=fake_enriched), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a breakout BUY persists strategy='breakout' and the entry bar's breakout_recent_high level",
+          tb.open_position_context.get("AAA") == {"strategy": "breakout", "invalidation_level": 97.5})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_buy_persists_none_invalidation_level_for_non_breakout():
+    # reason_key="trend_following" (not vwap_reversion) deliberately --
+    # a vwap_reversion BUY would also exercise vwap_volume_blocks_entry's
+    # own volume-confirmation lookup, which needs indicator columns this
+    # minimal fake enriched df doesn't have and isn't what's under test here.
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id", client_order_id="trend_following-123")
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+
+    tb.open_position_context = {}
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "trend_following", "test trend")), \
+         patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a non-breakout BUY still records its own strategy, with invalidation_level None",
+          tb.open_position_context.get("AAA") == {"strategy": "trend_following", "invalidation_level": None})
+    tb.open_position_context = {}
+
+
+def test_check_symbol_sell_signal_clears_open_position_context():
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 90.0}}
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+         patch.object(tb, "decide_signal_at", return_value=("SELL", "trend_following", "test sell")), \
+         patch.object(tb, "place_sell_order", return_value=types.SimpleNamespace(id="sell-id")):
+        tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                         at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
+
+    check("a regular strategy-SELL-signal exit clears the symbol's open_position_context entry",
+          "AAA" not in tb.open_position_context)
+    tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_sells_when_flagged_and_broken():
+    """The whole point of this candidate: a breakout position the regime
+    strategy's own signal says nothing about (HOLD) still gets exited
+    once price closes back below the level that justified its entry."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order", return_value=types.SimpleNamespace(id="inv-exit-id")) as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a breakout position whose entry level has been invalidated gets sold, "
+              "even though the currently-active regime strategy's own signal is HOLD",
+              mock_sell.called and notional == 0.0)
+        check("the invalidation exit clears the symbol's open_position_context entry",
+              "AAA" not in tb.open_position_context)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_does_not_fire_for_non_breakout_position():
+    """The exact same price action (close back below 105) must NOT sell a
+    position that open_position_context says was opened by a different
+    strategy -- this mechanism is scoped to breakout entries only."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {"AAA": {"strategy": "vwap_reversion", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a non-breakout open position is NOT sold by the breakout invalidation mechanism, "
+              "even with the identical price action that WOULD invalidate a breakout entry",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_noop_when_toggle_off():
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = False
+        tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 105.0}}
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("toggle off means zero behavior change -- an otherwise-invalidated breakout "
+              "position is left alone",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_check_symbol_breakout_invalidation_exit_unknown_position_not_touched():
+    """
+    Fail-safe requirement: a currently-open position with NO entry in
+    open_position_context (e.g. it existed before this feature was
+    deployed, or the state file was reset) must never be guessed at --
+    this mechanism simply doesn't apply to it.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    original_toggle = tb.USE_BREAKOUT_INVALIDATION_EXIT
+    try:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = True
+        tb.open_position_context = {}  # symbol is NOT in the state file at all
+
+        with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+             patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, close=100.0)), \
+             patch.object(tb, "decide_signal_at", return_value=("HOLD", "trend_following", "test hold")), \
+             patch.object(tb, "place_sell_order") as mock_sell:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=5.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a position with no entry in open_position_context is never touched by this mechanism",
+              notional == 0.0 and not mock_sell.called)
+    finally:
+        tb.USE_BREAKOUT_INVALIDATION_EXIT = original_toggle
+        tb.open_position_context = {}
+
+
+def test_flatten_all_positions_clears_open_position_context():
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {
+        "AAA": {"strategy": "breakout", "invalidation_level": 90.0},
+        "BBB": {"strategy": "trend_following", "invalidation_level": None},
+    }
+    fake_client = MagicMock()
+    fake_client.close_position.return_value = None
+    fake_client.cancel_orders.return_value = None
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "trading_client", fake_client), \
+         patch.object(tb, "get_all_open_positions", return_value={
+             "AAA": {"qty": 5.0, "avg_entry_price": 100.0},
+             "BBB": {"qty": 3.0, "avg_entry_price": 50.0},
+         }):
+        result = tb.flatten_all_positions()
+
+    check("flatten_all_positions reports success when every close succeeds", result is True)
+    check("flatten_all_positions clears every closed symbol's open_position_context entry",
+          tb.open_position_context == {})
+    tb.open_position_context = {}
+
+
+def test_record_auto_exit_clears_open_position_context_even_on_lookup_failure():
+    """
+    clear_open_position_context must run unconditionally, before the
+    best-effort Alpaca order-history lookup -- the caller (run_one_cycle)
+    already knows the position is gone by the time it calls this, so
+    clearing local state can't be allowed to depend on that lookup
+    succeeding.
+    """
+    tmp_dir = tempfile.mkdtemp()
+    state_file = os.path.join(tmp_dir, "open_position_context_test.json")
+    tb.open_position_context = {"AAA": {"strategy": "breakout", "invalidation_level": 90.0}}
+
+    failing_client = MagicMock()
+    failing_client.get_orders.side_effect = Exception("simulated API failure")
+
+    with patch.object(tb, "OPEN_POSITION_CONTEXT_FILE", state_file), \
+         patch.object(tb, "trading_client", failing_client):
+        tb.record_auto_exit("AAA")
+
+    check("record_auto_exit clears open_position_context even when the order-history lookup fails",
+          "AAA" not in tb.open_position_context)
+    tb.open_position_context = {}
+
+
 if __name__ == "__main__":
     tests = [
         test_would_exceed_portfolio_risk_cap,
@@ -1565,6 +1852,17 @@ if __name__ == "__main__":
         test_run_for_duration_never_overruns_its_window,
         test_run_for_duration_exits_when_session_is_over,
         test_run_for_duration_survives_a_bad_cycle_but_reports_it,
+        test_open_position_context_persistence,
+        test_load_open_position_context_missing_file_starts_fresh,
+        test_check_symbol_buy_persists_open_position_context_for_breakout,
+        test_check_symbol_buy_persists_none_invalidation_level_for_non_breakout,
+        test_check_symbol_sell_signal_clears_open_position_context,
+        test_check_symbol_breakout_invalidation_exit_sells_when_flagged_and_broken,
+        test_check_symbol_breakout_invalidation_exit_does_not_fire_for_non_breakout_position,
+        test_check_symbol_breakout_invalidation_exit_noop_when_toggle_off,
+        test_check_symbol_breakout_invalidation_exit_unknown_position_not_touched,
+        test_flatten_all_positions_clears_open_position_context,
+        test_record_auto_exit_clears_open_position_context_even_on_lookup_failure,
     ]
     for t in tests:
         print(f"\n{t.__name__}")

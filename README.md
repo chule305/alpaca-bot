@@ -592,6 +592,32 @@ mechanism works as designed on the metric it targets, but isn't free, and
 a longer backtest window or a price-aware minimum-share-count guard would
 strengthen the case before defaulting it on.
 
+**Breakout invalidation exit** *(off by default —
+`USE_BREAKOUT_INVALIDATION_EXIT=false`, real improvement on the scanner
+universe)*. Found by reconstructing real Alpaca order history: every open
+position only ever exited via its bracket stop/target, the *currently
+active* regime strategy's SELL signal (not necessarily related to why the
+position was opened), or the end-of-day flatten — there was no "the
+breakout itself failed" exit. Real data showed this mattered: all 12 real
+winning breakout trades exited via a plain market order, never the
+bracket's take-profit leg, meaning every real win got cut short before
+reaching its target by something unrelated. When on, a breakout position
+exits the moment price closes back below the same level that justified
+the entry in the first place (frozen at entry, symmetric with the entry
+condition itself) — a live-bot cousin of `open_position_context.json`, a
+small state file, tracks which open positions were breakout entries so
+this works without adding API calls. A 90-day backtest (2026-08-12,
+independently reproduced by a second, adversarial reviewer — not just
+self-reported) found the scanner universe's 36 breakout trades (the
+meaningful sample) improved: average loss shrank about 20% (-1.96% →
+-1.57%) while average win held steady, exactly the asymmetry the real
+evidence pointed at — combined portfolio return rose 2.5%→2.8%, profit
+factor 1.29→1.35, max drawdown 1.6%→1.4%. The 5-symbol megacap universe
+only produced 7 breakout trades in the same window, too few to say
+anything. Left off by default since there's no megacap-side evidence yet,
+but the scanner-side evidence is real and reproduced — worth deciding
+deliberately rather than defaulting either way blindly.
+
 **Bar timeframe: 15 minutes, not 5.** `BAR_MINUTES` (and the matching
 `CHECK_INTERVAL_MINUTES`) moved from 5 to 15 on 2026-07-31. A 90-day
 backtest found fewer, higher-quality decision points beat reacting to
