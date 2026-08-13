@@ -250,3 +250,295 @@
 2026-08-13 15:05:00,851 | [SNDK] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1402.14
 2026-08-13 15:05:00,851 | [SNDK] ACTION: No trade.
 2026-08-13 15:11:59,404 | Duration window finished.
+2026-08-13 17:43:06,473 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-13 17:43:06,473 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-13 17:43:06,473 | Bar size: 15min | Check interval while market open: 15min
+2026-08-13 17:43:06,474 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-13 17:43:06,474 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-13 17:43:06,474 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-13 17:43:06,474 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-13 17:43:06,474 | Position sizing: flat $500 per trade
+2026-08-13 17:43:06,474 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-13 17:43:06,474 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-13 17:43:06,474 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-13 17:43:06,474 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-13 17:43:06,474 | Loaded saved watchlist from previous run: ARX, CLBT, OMER, BSP, REZI, LFTO, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 17:43:06,474 | Restored daily risk state from previous run: day 2026-08-13, breaker tripped: False
+2026-08-13 17:43:06,474 | Restored open-position context for 1 symbol(s) from previous run.
+2026-08-13 17:43:06,475 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-13 17:43:06,985 | SCANNER: refreshing watchlist...
+2026-08-13 17:43:08,320 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-08-13 17:43:10,108 | SCANNER: candidate ARX -- +43.1% today, $19.48, liquid, 5 recent news item(s)
+2026-08-13 17:43:10,108 | SCANNER: candidate CLBT -- -32.0% today, $10.37, liquid, 9 recent news item(s)
+2026-08-13 17:43:10,108 | SCANNER: candidate OMER -- +23.9% today, $16.98, liquid, 6 recent news item(s)
+2026-08-13 17:43:10,108 | SCANNER: candidate BSP -- -20.1% today, $39.12, liquid, 7 recent news item(s)
+2026-08-13 17:43:10,108 | SCANNER: candidate LFTO -- -19.5% today, $20.33, liquid, 7 recent news item(s)
+2026-08-13 17:43:10,108 | SCANNER: candidate REZI -- -18.4% today, $20.97, liquid, 6 recent news item(s)
+2026-08-13 17:43:10,256 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-13 17:44:04,576 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 17:44:04,579 | SCANNER: new watchlist -> ARX, CLBT, OMER, BSP, LFTO, REZI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 17:44:04,723 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 12 symbols: AAPL, ARX, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, REZI, SNDK
+2026-08-13 17:44:10,232 | Multi-timeframe filter: refreshed daily trend for 12 symbol(s).
+2026-08-13 17:44:10,276 | [AAPL] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.34
+2026-08-13 17:44:10,276 | [AAPL] ACTION: No trade.
+2026-08-13 17:44:10,384 | [ARX] trending (ADX 80.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.51
+2026-08-13 17:44:10,384 | [ARX] ACTION: No trade.
+2026-08-13 17:44:10,495 | [BSP] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.70
+2026-08-13 17:44:10,496 | [BSP] ACTION: No trade.
+2026-08-13 17:44:10,605 | [CLBT] trending (ADX 48.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.36
+2026-08-13 17:44:10,605 | [CLBT] ACTION: No trade.
+2026-08-13 17:44:10,648 | [INTC] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.41
+2026-08-13 17:44:10,648 | [INTC] ACTION: No trade.
+2026-08-13 17:44:10,759 | [LFTO] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.50
+2026-08-13 17:44:10,760 | [LFTO] ACTION: No trade.
+2026-08-13 17:44:10,802 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $494.50
+2026-08-13 17:44:10,802 | [MSFT] ACTION: No trade.
+2026-08-13 17:44:10,846 | [MU] trending (ADX 47.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $972.33
+2026-08-13 17:44:10,846 | [MU] ACTION: No trade.
+2026-08-13 17:44:10,888 | [NVDA] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.34
+2026-08-13 17:44:10,888 | [NVDA] ACTION: No trade.
+2026-08-13 17:44:10,999 | [OMER] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.07
+2026-08-13 17:44:11,000 | [OMER] ACTION: No trade.
+2026-08-13 17:44:11,107 | [REZI] trending (ADX 40.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.93
+2026-08-13 17:44:11,108 | [REZI] ACTION: No trade.
+2026-08-13 17:44:11,221 | [SNDK] trending (ADX 52.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1565.71
+2026-08-13 17:44:11,221 | [SNDK] ACTION: No trade.
+2026-08-13 17:59:11,837 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 12 symbols: AAPL, ARX, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, REZI, SNDK
+2026-08-13 17:59:15,184 | [AAPL] choppy/sideways (ADX 14.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.54
+2026-08-13 17:59:15,184 | [AAPL] ACTION: No trade.
+2026-08-13 17:59:15,218 | [ARX] trending (ADX 79.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.47
+2026-08-13 17:59:15,218 | [ARX] ACTION: No trade.
+2026-08-13 17:59:15,256 | [BSP] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.21
+2026-08-13 17:59:15,256 | [BSP] ACTION: No trade.
+2026-08-13 17:59:15,293 | [CLBT] trending (ADX 48.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.38
+2026-08-13 17:59:15,293 | [CLBT] ACTION: No trade.
+2026-08-13 17:59:15,335 | [INTC] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.58
+2026-08-13 17:59:15,335 | [INTC] ACTION: No trade.
+2026-08-13 17:59:15,369 | [LFTO] trending (ADX 39.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.25
+2026-08-13 17:59:15,370 | [LFTO] ACTION: No trade.
+2026-08-13 17:59:15,411 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $493.75
+2026-08-13 17:59:15,411 | [MSFT] ACTION: No trade.
+2026-08-13 17:59:15,453 | [MU] trending (ADX 48.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $972.40
+2026-08-13 17:59:15,453 | [MU] ACTION: No trade.
+2026-08-13 17:59:15,494 | [NVDA] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.17
+2026-08-13 17:59:15,494 | [NVDA] ACTION: No trade.
+2026-08-13 17:59:15,531 | [OMER] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.05
+2026-08-13 17:59:15,531 | [OMER] ACTION: No trade.
+2026-08-13 17:59:15,566 | [REZI] trending (ADX 40.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $21.05
+2026-08-13 17:59:15,566 | [REZI] ACTION: No trade.
+2026-08-13 17:59:15,607 | [SNDK] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1564.61
+2026-08-13 17:59:15,607 | [SNDK] ACTION: No trade.
+2026-08-13 18:14:15,915 | SCANNER: refreshing watchlist...
+2026-08-13 18:14:16,306 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-08-13 18:14:18,019 | SCANNER: candidate ARX -- +43.0% today, $19.46, liquid, 5 recent news item(s)
+2026-08-13 18:14:18,019 | SCANNER: candidate CLBT -- -33.0% today, $10.22, liquid, 9 recent news item(s)
+2026-08-13 18:14:18,019 | SCANNER: candidate OMER -- +24.5% today, $17.07, liquid, 6 recent news item(s)
+2026-08-13 18:14:18,019 | SCANNER: candidate BSP -- -20.0% today, $39.20, liquid, 7 recent news item(s)
+2026-08-13 18:14:18,019 | SCANNER: candidate LFTO -- -19.4% today, $20.36, liquid, 7 recent news item(s)
+2026-08-13 18:15:00,053 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 18:15:00,056 | SCANNER: new watchlist -> ARX, CLBT, OMER, BSP, LFTO, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 18:15:00,219 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 11 symbols: AAPL, ARX, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, SNDK
+2026-08-13 18:15:02,287 | [AAPL] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.42
+2026-08-13 18:15:02,287 | [AAPL] ACTION: No trade.
+2026-08-13 18:15:02,322 | [ARX] trending (ADX 78.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.46
+2026-08-13 18:15:02,322 | [ARX] ACTION: No trade.
+2026-08-13 18:15:02,362 | [BSP] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.29
+2026-08-13 18:15:02,362 | [BSP] ACTION: No trade.
+2026-08-13 18:15:02,398 | [CLBT] trending (ADX 47.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.22
+2026-08-13 18:15:02,398 | [CLBT] ACTION: No trade.
+2026-08-13 18:15:02,441 | [INTC] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.28
+2026-08-13 18:15:02,441 | [INTC] ACTION: No trade.
+2026-08-13 18:15:02,476 | [LFTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $20.36
+2026-08-13 18:15:02,476 | [LFTO] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-13 18:15:02,517 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $494.30
+2026-08-13 18:15:02,517 | [MSFT] ACTION: No trade.
+2026-08-13 18:15:02,559 | [MU] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $966.92
+2026-08-13 18:15:02,559 | [MU] ACTION: No trade.
+2026-08-13 18:15:02,601 | [NVDA] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.20
+2026-08-13 18:15:02,601 | [NVDA] ACTION: No trade.
+2026-08-13 18:15:02,638 | [OMER] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.07
+2026-08-13 18:15:02,638 | [OMER] ACTION: No trade.
+2026-08-13 18:15:02,679 | [SNDK] trending (ADX 55.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1547.51
+2026-08-13 18:15:02,679 | [SNDK] ACTION: No trade.
+2026-08-13 18:30:03,620 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 11 symbols: AAPL, ARX, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 18:30:08,073 | [AAPL] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.31
+2026-08-13 18:30:08,073 | [AAPL] ACTION: No trade.
+2026-08-13 18:30:08,109 | [ARX] trending (ADX 77.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.46
+2026-08-13 18:30:08,109 | [ARX] ACTION: No trade.
+2026-08-13 18:30:08,148 | [BSP] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $39.66
+2026-08-13 18:30:08,148 | [BSP] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-13 18:30:08,187 | [CLBT] trending (ADX 47.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.15
+2026-08-13 18:30:08,187 | [CLBT] ACTION: No trade.
+2026-08-13 18:30:08,231 | [INTC] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.46
+2026-08-13 18:30:08,231 | [INTC] ACTION: No trade.
+2026-08-13 18:30:08,268 | [LFTO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $20.41
+2026-08-13 18:30:08,268 | [LFTO] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-13 18:30:08,312 | [MSFT] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $493.13
+2026-08-13 18:30:08,312 | [MSFT] ACTION: No trade.
+2026-08-13 18:30:08,355 | [MU] trending (ADX 47.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $967.35
+2026-08-13 18:30:08,355 | [MU] ACTION: No trade.
+2026-08-13 18:30:08,397 | [NVDA] choppy/sideways (ADX 24.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.62
+2026-08-13 18:30:08,397 | [NVDA] ACTION: No trade.
+2026-08-13 18:30:08,438 | [OMER] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.11
+2026-08-13 18:30:08,438 | [OMER] ACTION: No trade.
+2026-08-13 18:30:08,480 | [SNDK] trending (ADX 55.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1557.81
+2026-08-13 18:30:08,480 | [SNDK] ACTION: No trade.
+2026-08-13 18:45:08,821 | SCANNER: refreshing watchlist...
+2026-08-13 18:45:09,289 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 13 candidate(s).
+2026-08-13 18:45:11,010 | SCANNER: candidate ARX -- +43.0% today, $19.46, liquid, 5 recent news item(s)
+2026-08-13 18:45:11,010 | SCANNER: candidate CLBT -- -33.3% today, $10.16, liquid, 9 recent news item(s)
+2026-08-13 18:45:11,010 | SCANNER: candidate OMER -- +27.3% today, $17.45, liquid, 6 recent news item(s)
+2026-08-13 18:45:11,010 | SCANNER: candidate WDAY -- +25.8% today, $220.50, liquid, 4 recent news item(s)
+2026-08-13 18:46:31,809 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT
+2026-08-13 18:46:31,811 | SCANNER: new watchlist -> ARX, CLBT, OMER, WDAY, MU, NVDA, SNDK, INTC, MSFT
+2026-08-13 18:46:32,051 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 9 symbols: ARX, CLBT, INTC, MSFT, MU, NVDA, OMER, SNDK, WDAY (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 18:46:35,047 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-13 18:46:35,081 | [ARX] trending (ADX 76.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.46
+2026-08-13 18:46:35,082 | [ARX] ACTION: No trade.
+2026-08-13 18:46:35,118 | [CLBT] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.16
+2026-08-13 18:46:35,118 | [CLBT] ACTION: No trade.
+2026-08-13 18:46:35,160 | [INTC] trending (ADX 37.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.44
+2026-08-13 18:46:35,161 | [INTC] ACTION: No trade.
+2026-08-13 18:46:35,202 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $496.82
+2026-08-13 18:46:35,203 | [MSFT] ACTION: No trade.
+2026-08-13 18:46:35,245 | [MU] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $963.58
+2026-08-13 18:46:35,245 | [MU] ACTION: No trade.
+2026-08-13 18:46:35,287 | [NVDA] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.55
+2026-08-13 18:46:35,287 | [NVDA] ACTION: No trade.
+2026-08-13 18:46:35,325 | [OMER] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.45
+2026-08-13 18:46:35,325 | [OMER] ACTION: No trade.
+2026-08-13 18:46:35,367 | [SNDK] trending (ADX 55.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1552.00
+2026-08-13 18:46:35,367 | [SNDK] ACTION: No trade.
+2026-08-13 18:46:35,479 | [WDAY] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: SELL | Shares held: 0.0 | Last price: $220.50
+2026-08-13 18:46:35,480 | [WDAY] ACTION: No trade.
+2026-08-13 19:01:35,881 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 9 symbols: ARX, CLBT, INTC, MSFT, MU, NVDA, OMER, SNDK, WDAY (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 19:01:42,156 | [ARX] trending (ADX 76.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.46
+2026-08-13 19:01:42,156 | [ARX] ACTION: No trade.
+2026-08-13 19:01:42,191 | [CLBT] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.11
+2026-08-13 19:01:42,191 | [CLBT] ACTION: No trade.
+2026-08-13 19:01:42,232 | [INTC] trending (ADX 37.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.20
+2026-08-13 19:01:42,232 | [INTC] ACTION: No trade.
+2026-08-13 19:01:42,272 | [MSFT] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $496.98
+2026-08-13 19:01:42,272 | [MSFT] ACTION: No trade.
+2026-08-13 19:01:42,313 | [MU] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $963.33
+2026-08-13 19:01:42,313 | [MU] ACTION: No trade.
+2026-08-13 19:01:42,354 | [NVDA] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.74
+2026-08-13 19:01:42,354 | [NVDA] ACTION: No trade.
+2026-08-13 19:01:42,391 | [OMER] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $17.81
+2026-08-13 19:01:42,391 | [OMER] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-13 19:01:42,432 | [SNDK] trending (ADX 55.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1543.44
+2026-08-13 19:01:42,432 | [SNDK] ACTION: No trade.
+2026-08-13 19:01:42,469 | [WDAY] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.81
+2026-08-13 19:01:42,469 | [WDAY] ACTION: No trade.
+2026-08-13 19:16:42,780 | SCANNER: refreshing watchlist...
+2026-08-13 19:16:43,257 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 16 candidate(s).
+2026-08-13 19:16:44,782 | SCANNER: candidate ARX -- +43.0% today, $19.46, liquid, 5 recent news item(s)
+2026-08-13 19:16:44,782 | SCANNER: candidate CLBT -- -33.0% today, $10.22, liquid, 9 recent news item(s)
+2026-08-13 19:16:44,782 | SCANNER: candidate OMER -- +29.5% today, $17.76, liquid, 6 recent news item(s)
+2026-08-13 19:16:44,782 | SCANNER: candidate AVAH -- +26.5% today, $11.45, liquid, 4 recent news item(s)
+2026-08-13 19:16:44,783 | SCANNER: candidate LFTO -- -18.6% today, $20.57, liquid, 7 recent news item(s)
+2026-08-13 19:16:44,783 | SCANNER: candidate AOSL -- -17.8% today, $29.82, liquid, 10 recent news item(s)
+2026-08-13 19:16:44,783 | SCANNER: candidate BSP -- -17.7% today, $40.30, liquid, 7 recent news item(s)
+2026-08-13 19:18:14,368 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 19:18:14,370 | SCANNER: new watchlist -> ARX, CLBT, OMER, AVAH, LFTO, AOSL, BSP, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 19:18:14,608 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 13 symbols: AAPL, AOSL, ARX, AVAH, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 19:18:17,542 | Multi-timeframe filter: refreshed daily trend for 2 symbol(s).
+2026-08-13 19:18:17,584 | [AAPL] choppy/sideways (ADX 11.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $303.50
+2026-08-13 19:18:17,584 | [AAPL] ACTION: No trade.
+2026-08-13 19:18:17,693 | [AOSL] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.80
+2026-08-13 19:18:17,693 | [AOSL] ACTION: No trade.
+2026-08-13 19:18:17,729 | [ARX] trending (ADX 75.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.46
+2026-08-13 19:18:17,729 | [ARX] ACTION: No trade.
+2026-08-13 19:18:17,838 | [AVAH] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $11.47
+2026-08-13 19:18:17,838 | [AVAH] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-13 19:18:17,877 | [BSP] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.33
+2026-08-13 19:18:17,877 | [BSP] ACTION: No trade.
+2026-08-13 19:18:17,914 | [CLBT] trending (ADX 46.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.20
+2026-08-13 19:18:17,914 | [CLBT] ACTION: No trade.
+2026-08-13 19:18:17,956 | [INTC] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.75
+2026-08-13 19:18:17,956 | [INTC] ACTION: No trade.
+2026-08-13 19:18:17,991 | [LFTO] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.53
+2026-08-13 19:18:17,991 | [LFTO] ACTION: No trade.
+2026-08-13 19:18:18,032 | [MSFT] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $497.38
+2026-08-13 19:18:18,033 | [MSFT] ACTION: No trade.
+2026-08-13 19:18:18,074 | [MU] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $960.84
+2026-08-13 19:18:18,074 | [MU] ACTION: No trade.
+2026-08-13 19:18:18,115 | [NVDA] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.70
+2026-08-13 19:18:18,115 | [NVDA] ACTION: No trade.
+2026-08-13 19:18:18,153 | [OMER] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.79
+2026-08-13 19:18:18,153 | [OMER] ACTION: No trade.
+2026-08-13 19:18:18,194 | [SNDK] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1535.68
+2026-08-13 19:18:18,194 | [SNDK] ACTION: No trade.
+2026-08-13 19:33:18,580 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 13 symbols: AAPL, AOSL, ARX, AVAH, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 19:33:25,249 | [AAPL] choppy/sideways (ADX 12.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.40
+2026-08-13 19:33:25,249 | [AAPL] ACTION: No trade.
+2026-08-13 19:33:25,284 | [AOSL] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.70
+2026-08-13 19:33:25,285 | [AOSL] ACTION: No trade.
+2026-08-13 19:33:25,318 | [ARX] trending (ADX 75.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.47
+2026-08-13 19:33:25,318 | [ARX] ACTION: No trade.
+2026-08-13 19:33:25,352 | [AVAH] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: SELL | Shares held: 0.0 | Last price: $11.46
+2026-08-13 19:33:25,352 | [AVAH] ACTION: No trade.
+2026-08-13 19:33:25,390 | [BSP] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.62
+2026-08-13 19:33:25,390 | [BSP] ACTION: No trade.
+2026-08-13 19:33:25,425 | [CLBT] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.12
+2026-08-13 19:33:25,425 | [CLBT] ACTION: No trade.
+2026-08-13 19:33:25,466 | [INTC] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.44
+2026-08-13 19:33:25,466 | [INTC] ACTION: No trade.
+2026-08-13 19:33:25,499 | [LFTO] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.54
+2026-08-13 19:33:25,499 | [LFTO] ACTION: No trade.
+2026-08-13 19:33:25,540 | [MSFT] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $497.16
+2026-08-13 19:33:25,540 | [MSFT] ACTION: No trade.
+2026-08-13 19:33:25,581 | [MU] trending (ADX 41.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $959.03
+2026-08-13 19:33:25,581 | [MU] ACTION: No trade.
+2026-08-13 19:33:25,622 | [NVDA] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.78
+2026-08-13 19:33:25,622 | [NVDA] ACTION: No trade.
+2026-08-13 19:33:25,658 | [OMER] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.73
+2026-08-13 19:33:25,658 | [OMER] ACTION: No trade.
+2026-08-13 19:33:25,698 | [SNDK] trending (ADX 52.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1525.16
+2026-08-13 19:33:25,698 | [SNDK] ACTION: No trade.
+2026-08-13 19:48:26,013 | SCANNER: refreshing watchlist...
+2026-08-13 19:48:26,346 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 15 candidate(s).
+2026-08-13 19:48:27,324 | SCANNER: candidate ARX -- +43.0% today, $19.46, liquid, 5 recent news item(s)
+2026-08-13 19:48:27,324 | SCANNER: candidate CLBT -- -30.7% today, $10.57, liquid, 9 recent news item(s)
+2026-08-13 19:48:27,324 | SCANNER: candidate OMER -- +28.6% today, $17.63, liquid, 6 recent news item(s)
+2026-08-13 19:48:27,324 | SCANNER: candidate AVAH -- +27.2% today, $11.52, liquid, 4 recent news item(s)
+2026-08-13 19:48:27,324 | SCANNER: candidate LFTO -- -18.7% today, $20.54, liquid, 7 recent news item(s)
+2026-08-13 19:48:27,324 | SCANNER: candidate AOSL -- -18.2% today, $29.69, liquid, 10 recent news item(s)
+2026-08-13 19:48:27,325 | SCANNER: candidate BSP -- -18.1% today, $40.11, liquid, 7 recent news item(s)
+2026-08-13 19:48:27,325 | SCANNER: candidate REZI -- -17.9% today, $21.09, liquid, 6 recent news item(s)
+2026-08-13 19:49:27,590 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 19:49:27,593 | SCANNER: new watchlist -> ARX, CLBT, OMER, AVAH, LFTO, AOSL, BSP, REZI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-13 19:49:27,666 | Market is open (closes 2026-08-13 22:00:00 CEST your local time). Checking 14 symbols: AAPL, AOSL, ARX, AVAH, BSP, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, REZI, SNDK (within 90 min of close -- not enough runway left today for a new position)
+2026-08-13 19:49:30,960 | [AAPL] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.10
+2026-08-13 19:49:30,960 | [AAPL] ACTION: No trade.
+2026-08-13 19:49:30,996 | [AOSL] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $29.74
+2026-08-13 19:49:30,997 | [AOSL] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-13 19:49:31,031 | [ARX] trending (ADX 74.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.45
+2026-08-13 19:49:31,031 | [ARX] ACTION: No trade.
+2026-08-13 19:49:31,068 | [AVAH] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: SELL | Shares held: 0.0 | Last price: $11.53
+2026-08-13 19:49:31,068 | [AVAH] ACTION: No trade.
+2026-08-13 19:49:31,106 | [BSP] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.57
+2026-08-13 19:49:31,106 | [BSP] ACTION: No trade.
+2026-08-13 19:49:31,143 | [CLBT] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.62
+2026-08-13 19:49:31,143 | [CLBT] ACTION: No trade.
+2026-08-13 19:49:31,185 | [INTC] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.34
+2026-08-13 19:49:31,185 | [INTC] ACTION: No trade.
+2026-08-13 19:49:31,221 | [LFTO] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.34
+2026-08-13 19:49:31,221 | [LFTO] ACTION: No trade.
+2026-08-13 19:49:31,263 | [MSFT] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.48
+2026-08-13 19:49:31,263 | [MSFT] ACTION: No trade.
+2026-08-13 19:49:31,307 | [MU] trending (ADX 39.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $954.25
+2026-08-13 19:49:31,307 | [MU] ACTION: No trade.
+2026-08-13 19:49:31,353 | [NVDA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.78
+2026-08-13 19:49:31,353 | [NVDA] ACTION: No trade.
+2026-08-13 19:49:31,393 | [OMER] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.59
+2026-08-13 19:49:31,393 | [OMER] ACTION: No trade.
+2026-08-13 19:49:31,429 | [REZI] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $21.05
+2026-08-13 19:49:31,429 | [REZI] ACTION: No trade.
+2026-08-13 19:49:31,472 | [SNDK] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1521.61
+2026-08-13 19:49:31,472 | [SNDK] ACTION: No trade.
+2026-08-13 19:50:02,110 | Within 10 min of close -- flattening all positions for the day.
+2026-08-13 19:50:02,187 | EOD FLATTEN: no open positions to close.
+2026-08-13 20:00:02,110 | Market is closed. Next open: 2026-08-14 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-13 20:00:02,195 | Market is closed for the day -- exiting early instead of idling.
+2026-08-13 20:00:02,195 | Duration window finished.
