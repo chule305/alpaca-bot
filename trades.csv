@@ -114,3 +114,5 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-12T19:51:04+00:00,2026-08-12,INTC,FLATTEN,end_of_day,Flattened before market close,4,,,,,,,,,,,,,,,,,,,,,,
 2026-08-13T15:13:07+00:00,2026-08-13,INTC,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),4,101,404,,,,,,,5049d5e4-b1bd-4848-ae86-1539d54dec97,,,,,,,,,,,,,,,,
 2026-08-13T15:59:12+00:00,2026-08-13,NBIS,STOP_HIT,breakout,STOP_HIT (order type OrderType.STOP),1,257.85,257.85,,,,,,,a29213a3-c548-4cb1-89a8-13104a77ee93,,,,,,,,,,,,,,,,
+2026-08-13T13:31:31+00:00,2026-08-13,INTC,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),4,101,404,,,,,,,5049d5e4-b1bd-4848-ae86-1539d54dec97,,,,,,,,,,,,,,,,
+2026-08-13T13:46:41+00:00,2026-08-13,NBIS,BUY,breakout,volume-confirmed breakout above 20-bar high,1,271.12,271.12,257.82,298.52,flat $,99553.8,,0,ceac3512-1ca5-46bb-b8ff-5cf7a5349e0e,breakout-1786628800,269.29,82.4487,25.0478,3.36768,255.008,252.181,261.604,5.10914e+06,60630.6,255.5,272.16,254.4,0.544444,False,False
