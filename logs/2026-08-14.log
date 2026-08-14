@@ -1,0 +1,206 @@
+2026-08-14 12:38:03,670 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-14 12:38:03,670 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-14 12:38:03,670 | Bar size: 15min | Check interval while market open: 15min
+2026-08-14 12:38:03,670 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-14 12:38:03,670 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-14 12:38:03,670 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-14 12:38:03,670 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-14 12:38:03,670 | Position sizing: flat $500 per trade
+2026-08-14 12:38:03,670 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-14 12:38:03,670 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-14 12:38:03,670 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-14 12:38:03,670 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-14 12:38:03,670 | Loaded saved watchlist from previous run: ARX, CLBT, OMER, AVAH, LFTO, AOSL, BSP, REZI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 12:38:03,671 | Restored daily risk state from previous run: day 2026-08-13, breaker tripped: False
+2026-08-14 12:38:03,671 | Restored open-position context for 1 symbol(s) from previous run.
+2026-08-14 12:38:03,671 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-14 12:38:03,730 | Market is closed. Next open: 2026-08-14 15:30:00 CEST (your local time) -- in 0.9 hours.
+2026-08-14 13:30:05,112 | Daily loss circuit breaker: tracking from starting equity $99,540.53 (limit -3%).
+2026-08-14 13:30:05,112 | SCANNER: refreshing watchlist...
+2026-08-14 13:30:05,372 | SCANNER: excluded 4 leveraged/inverse ETF(s) from 11 candidate(s).
+2026-08-14 13:30:05,754 | SCANNER: candidate ARX -- +43.4% today, $19.51, liquid, 5 recent news item(s)
+2026-08-14 13:30:05,754 | SCANNER: candidate CLBT -- -29.2% today, $10.80, liquid, 6 recent news item(s)
+2026-08-14 13:30:05,754 | SCANNER: candidate OMER -- +26.6% today, $17.35, liquid, 2 recent news item(s)
+2026-08-14 13:30:05,754 | SCANNER: candidate LFTO -- -20.6% today, $20.06, liquid, 3 recent news item(s)
+2026-08-14 13:30:05,754 | SCANNER: candidate REZI -- -20.4% today, $20.46, liquid, 1 recent news item(s)
+2026-08-14 13:30:05,816 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-14 13:31:52,560 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 13:31:52,561 | SCANNER: new watchlist -> ARX, CLBT, OMER, LFTO, REZI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 13:31:52,637 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 11 symbols: AAPL, ARX, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, REZI, SNDK
+2026-08-14 13:31:59,795 | Multi-timeframe filter: refreshed daily trend for 11 symbol(s).
+2026-08-14 13:31:59,832 | [AAPL] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.94
+2026-08-14 13:31:59,833 | [AAPL] ACTION: No trade.
+2026-08-14 13:31:59,872 | [ARX] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.58
+2026-08-14 13:31:59,872 | [ARX] ACTION: No trade.
+2026-08-14 13:31:59,913 | [CLBT] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.83
+2026-08-14 13:31:59,913 | [CLBT] ACTION: No trade.
+2026-08-14 13:31:59,948 | [INTC] choppy/sideways (ADX 24.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.48
+2026-08-14 13:31:59,948 | [INTC] ACTION: No trade.
+2026-08-14 13:31:59,990 | [LFTO] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.55
+2026-08-14 13:31:59,990 | [LFTO] ACTION: No trade.
+2026-08-14 13:32:00,025 | [MSFT] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $495.88
+2026-08-14 13:32:00,025 | [MSFT] ACTION: No trade.
+2026-08-14 13:32:00,060 | [MU] choppy/sideways (ADX 23.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $979.63
+2026-08-14 13:32:00,060 | [MU] ACTION: No trade.
+2026-08-14 13:32:00,096 | [NVDA] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $226.80
+2026-08-14 13:32:00,096 | [NVDA] ACTION: No trade.
+2026-08-14 13:32:00,138 | [OMER] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.49
+2026-08-14 13:32:00,138 | [OMER] ACTION: No trade.
+2026-08-14 13:32:00,186 | [REZI] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.55
+2026-08-14 13:32:00,186 | [REZI] ACTION: No trade.
+2026-08-14 13:32:00,230 | [SNDK] trending (ADX 57.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1647.57
+2026-08-14 13:32:00,230 | [SNDK] ACTION: No trade.
+2026-08-14 13:47:00,329 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 11 symbols: AAPL, ARX, CLBT, INTC, LFTO, MSFT, MU, NVDA, OMER, REZI, SNDK
+2026-08-14 13:47:03,896 | [AAPL] trending (ADX 25.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.23
+2026-08-14 13:47:03,896 | [AAPL] ACTION: No trade.
+2026-08-14 13:47:03,928 | [ARX] trending (ADX 34.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.57
+2026-08-14 13:47:03,929 | [ARX] ACTION: No trade.
+2026-08-14 13:47:03,962 | [CLBT] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.97
+2026-08-14 13:47:03,962 | [CLBT] ACTION: No trade.
+2026-08-14 13:47:04,000 | [INTC] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.39
+2026-08-14 13:47:04,001 | [INTC] ACTION: No trade.
+2026-08-14 13:47:04,034 | [LFTO] choppy/sideways (ADX 16.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.41
+2026-08-14 13:47:04,034 | [LFTO] ACTION: No trade.
+2026-08-14 13:47:04,072 | [MSFT] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $496.34
+2026-08-14 13:47:04,073 | [MSFT] ACTION: No trade.
+2026-08-14 13:47:04,111 | [MU] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $971.25
+2026-08-14 13:47:04,111 | [MU] ACTION: No trade.
+2026-08-14 13:47:04,149 | [NVDA] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.72
+2026-08-14 13:47:04,149 | [NVDA] ACTION: No trade.
+2026-08-14 13:47:04,184 | [OMER] choppy/sideways (ADX 12.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.33
+2026-08-14 13:47:04,184 | [OMER] ACTION: No trade.
+2026-08-14 13:47:04,217 | [REZI] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.66
+2026-08-14 13:47:04,217 | [REZI] ACTION: No trade.
+2026-08-14 13:47:04,255 | [SNDK] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1621.50
+2026-08-14 13:47:04,255 | [SNDK] ACTION: No trade.
+2026-08-14 14:02:04,566 | SCANNER: refreshing watchlist...
+2026-08-14 14:02:04,852 | SCANNER: excluded 7 leveraged/inverse ETF(s) from 15 candidate(s).
+2026-08-14 14:02:05,845 | SCANNER: candidate ETON -- +38.4% today, $56.45, liquid, 9 recent news item(s)
+2026-08-14 14:02:05,845 | SCANNER: candidate HTFL -- +29.2% today, $40.07, liquid, 8 recent news item(s)
+2026-08-14 14:02:05,845 | SCANNER: candidate IMXI -- +18.2% today, $13.83, liquid, 3 recent news item(s)
+2026-08-14 14:02:05,845 | SCANNER: candidate ALOY -- +15.8% today, $15.00, liquid, 2 recent news item(s)
+2026-08-14 14:03:35,739 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 14:03:35,742 | SCANNER: new watchlist -> ETON, HTFL, IMXI, ALOY, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 14:03:38,166 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ALOY, ETON, HTFL, IMXI, INTC, MSFT, MU, NVDA, SNDK
+2026-08-14 14:03:43,152 | Multi-timeframe filter: refreshed daily trend for 4 symbol(s).
+2026-08-14 14:03:43,187 | [AAPL] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.10
+2026-08-14 14:03:43,188 | [AAPL] ACTION: No trade.
+2026-08-14 14:03:43,232 | [ALOY] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $14.80
+2026-08-14 14:03:43,242 | [ALOY] Buying 32 share(s) (~$487, flat $ sizing) | stop-loss $14.45 | take-profit $16.73 (fixed %)
+2026-08-14 14:03:44,311 | [ALOY] ACTION: BUY (order id b97d5e34-be79-4c38-a0ea-d2d4781a2406, strategy: breakout)
+2026-08-14 14:03:44,353 | [ETON] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $56.84
+2026-08-14 14:03:44,362 | [ETON] ACTION: No trade -- too volatile to protect. ATR is $1.86 (3.3% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-14 14:03:44,403 | [HTFL] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.49
+2026-08-14 14:03:44,403 | [HTFL] ACTION: No trade.
+2026-08-14 14:03:44,442 | [IMXI] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.84
+2026-08-14 14:03:44,442 | [IMXI] ACTION: No trade.
+2026-08-14 14:03:44,477 | [INTC] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.64
+2026-08-14 14:03:44,477 | [INTC] ACTION: No trade.
+2026-08-14 14:03:44,513 | [MSFT] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.59
+2026-08-14 14:03:44,513 | [MSFT] ACTION: No trade.
+2026-08-14 14:03:44,548 | [MU] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $969.40
+2026-08-14 14:03:44,548 | [MU] ACTION: No trade.
+2026-08-14 14:03:44,584 | [NVDA] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.68
+2026-08-14 14:03:44,584 | [NVDA] ACTION: No trade.
+2026-08-14 14:03:44,619 | [SNDK] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1619.43
+2026-08-14 14:03:44,619 | [SNDK] ACTION: No trade.
+2026-08-14 14:18:44,728 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ALOY, ETON, HTFL, IMXI, INTC, MSFT, MU, NVDA, SNDK
+2026-08-14 14:18:48,435 | [AAPL] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.73
+2026-08-14 14:18:48,435 | [AAPL] ACTION: No trade.
+2026-08-14 14:18:48,470 | [ALOY] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 32.0 | Last price: $14.90
+2026-08-14 14:18:48,470 | [ALOY] ACTION: No trade.
+2026-08-14 14:18:48,501 | [ETON] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.83
+2026-08-14 14:18:48,502 | [ETON] ACTION: No trade.
+2026-08-14 14:18:48,533 | [HTFL] trending (ADX 42.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.26
+2026-08-14 14:18:48,533 | [HTFL] ACTION: No trade.
+2026-08-14 14:18:48,563 | [IMXI] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.77
+2026-08-14 14:18:48,563 | [IMXI] ACTION: No trade.
+2026-08-14 14:18:48,600 | [INTC] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.44
+2026-08-14 14:18:48,600 | [INTC] ACTION: No trade.
+2026-08-14 14:18:48,637 | [MSFT] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.00
+2026-08-14 14:18:48,637 | [MSFT] ACTION: No trade.
+2026-08-14 14:18:48,675 | [MU] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $978.83
+2026-08-14 14:18:48,675 | [MU] ACTION: No trade.
+2026-08-14 14:18:48,712 | [NVDA] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.83
+2026-08-14 14:18:48,712 | [NVDA] ACTION: No trade.
+2026-08-14 14:18:48,749 | [SNDK] trending (ADX 48.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1635.11
+2026-08-14 14:18:48,749 | [SNDK] ACTION: No trade.
+2026-08-14 14:33:48,829 | SCANNER: refreshing watchlist...
+2026-08-14 14:33:49,001 | SCANNER: excluded 7 leveraged/inverse ETF(s) from 13 candidate(s).
+2026-08-14 14:33:51,179 | SCANNER: candidate ETON -- +35.5% today, $55.27, liquid, 9 recent news item(s)
+2026-08-14 14:33:51,179 | SCANNER: candidate HTFL -- +34.1% today, $41.59, liquid, 8 recent news item(s)
+2026-08-14 14:33:51,179 | SCANNER: candidate IMXI -- +18.1% today, $13.82, liquid, 3 recent news item(s)
+2026-08-14 14:35:23,673 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 14:35:23,676 | SCANNER: new watchlist -> ETON, HTFL, IMXI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 14:35:23,756 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ALOY, ETON, HTFL, IMXI, INTC, MSFT, MU, NVDA, SNDK
+2026-08-14 14:35:30,726 | [AAPL] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.99
+2026-08-14 14:35:30,726 | [AAPL] ACTION: No trade.
+2026-08-14 14:35:30,761 | [ALOY] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 32.0 | Last price: $14.63
+2026-08-14 14:35:30,804 | [ALOY] ACTION: SELL - breakout invalidation exit (close $14.63 back below entry level $14.66, order id 5ab5b72f-7a76-4545-97be-7ff040880f73)
+2026-08-14 14:35:30,837 | [ETON] trending (ADX 53.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $55.77
+2026-08-14 14:35:30,837 | [ETON] ACTION: No trade.
+2026-08-14 14:35:30,867 | [HTFL] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $41.29
+2026-08-14 14:35:30,877 | [HTFL] ACTION: No trade -- too volatile to protect. ATR is $1.06 (2.5% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-14 14:35:30,907 | [IMXI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.84
+2026-08-14 14:35:30,907 | [IMXI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-14 14:35:30,943 | [INTC] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.29
+2026-08-14 14:35:30,943 | [INTC] ACTION: No trade.
+2026-08-14 14:35:30,979 | [MSFT] choppy/sideways (ADX 15.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.77
+2026-08-14 14:35:30,979 | [MSFT] ACTION: No trade.
+2026-08-14 14:35:31,015 | [MU] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $968.64
+2026-08-14 14:35:31,016 | [MU] ACTION: No trade.
+2026-08-14 14:35:31,051 | [NVDA] choppy/sideways (ADX 14.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.12
+2026-08-14 14:35:31,051 | [NVDA] ACTION: No trade.
+2026-08-14 14:35:31,086 | [SNDK] trending (ADX 45.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1598.21
+2026-08-14 14:35:31,086 | [SNDK] ACTION: No trade.
+2026-08-14 14:50:31,177 | [ALOY] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-14 14:50:31,247 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 9 symbols: AAPL, ETON, HTFL, IMXI, INTC, MSFT, MU, NVDA, SNDK
+2026-08-14 14:50:35,693 | [AAPL] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.91
+2026-08-14 14:50:35,693 | [AAPL] ACTION: No trade.
+2026-08-14 14:50:35,725 | [ETON] trending (ADX 52.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.60
+2026-08-14 14:50:35,726 | [ETON] ACTION: No trade.
+2026-08-14 14:50:35,758 | [HTFL] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $42.56
+2026-08-14 14:50:35,768 | [HTFL] ACTION: No trade -- too volatile to protect. ATR is $1.11 (2.7% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-14 14:50:35,799 | [IMXI] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.92
+2026-08-14 14:50:35,800 | [IMXI] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-14 14:50:35,837 | [INTC] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.03
+2026-08-14 14:50:35,837 | [INTC] ACTION: No trade.
+2026-08-14 14:50:35,874 | [MSFT] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $499.02
+2026-08-14 14:50:35,874 | [MSFT] ACTION: No trade.
+2026-08-14 14:50:35,911 | [MU] choppy/sideways (ADX 21.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $969.77
+2026-08-14 14:50:35,911 | [MU] ACTION: No trade.
+2026-08-14 14:50:35,948 | [NVDA] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $226.32
+2026-08-14 14:50:35,948 | [NVDA] ACTION: No trade.
+2026-08-14 14:50:35,986 | [SNDK] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1622.20
+2026-08-14 14:50:35,986 | [SNDK] ACTION: No trade.
+2026-08-14 15:05:36,066 | SCANNER: refreshing watchlist...
+2026-08-14 15:05:36,238 | SCANNER: excluded 6 leveraged/inverse ETF(s) from 15 candidate(s).
+2026-08-14 15:05:37,723 | SCANNER: candidate ETON -- +35.4% today, $55.24, liquid, 9 recent news item(s)
+2026-08-14 15:05:37,723 | SCANNER: candidate HTFL -- +31.2% today, $40.68, liquid, 9 recent news item(s)
+2026-08-14 15:05:37,723 | SCANNER: candidate UMAC -- +24.5% today, $33.91, liquid, 5 recent news item(s)
+2026-08-14 15:05:37,723 | SCANNER: candidate IMXI -- +19.9% today, $14.03, liquid, 3 recent news item(s)
+2026-08-14 15:07:14,385 | S&P 500 liquidity backstop -> MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 15:07:14,388 | SCANNER: new watchlist -> ETON, HTFL, UMAC, IMXI, MU, NVDA, SNDK, INTC, MSFT, AAPL
+2026-08-14 15:07:14,457 | Market is open (closes 2026-08-14 22:00:00 CEST your local time). Checking 10 symbols: AAPL, ETON, HTFL, IMXI, INTC, MSFT, MU, NVDA, SNDK, UMAC
+2026-08-14 15:07:17,459 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-14 15:07:17,495 | [AAPL] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.16
+2026-08-14 15:07:17,495 | [AAPL] ACTION: No trade.
+2026-08-14 15:07:17,526 | [ETON] trending (ADX 52.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.48
+2026-08-14 15:07:17,526 | [ETON] ACTION: No trade.
+2026-08-14 15:07:17,558 | [HTFL] trending (ADX 37.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.10
+2026-08-14 15:07:17,558 | [HTFL] ACTION: No trade.
+2026-08-14 15:07:17,588 | [IMXI] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.05
+2026-08-14 15:07:17,588 | [IMXI] ACTION: No trade.
+2026-08-14 15:07:17,625 | [INTC] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.89
+2026-08-14 15:07:17,625 | [INTC] ACTION: No trade.
+2026-08-14 15:07:17,661 | [MSFT] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.50
+2026-08-14 15:07:17,661 | [MSFT] ACTION: No trade.
+2026-08-14 15:07:17,698 | [MU] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $968.95
+2026-08-14 15:07:17,698 | [MU] ACTION: No trade.
+2026-08-14 15:07:17,734 | [NVDA] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $226.10
+2026-08-14 15:07:17,734 | [NVDA] ACTION: No trade.
+2026-08-14 15:07:17,770 | [SNDK] trending (ADX 39.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1626.00
+2026-08-14 15:07:17,770 | [SNDK] ACTION: No trade.
+2026-08-14 15:07:17,816 | [UMAC] trending (ADX 39.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.13
+2026-08-14 15:07:17,816 | [UMAC] ACTION: No trade.
+2026-08-14 15:08:03,671 | Duration window finished.
