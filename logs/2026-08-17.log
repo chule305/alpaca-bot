@@ -127,3 +127,200 @@
 2026-08-17 14:47:45,020 | [TSLA] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $340.25
 2026-08-17 14:47:45,020 | [TSLA] ACTION: No trade.
 2026-08-17 14:49:25,367 | Duration window finished.
+2026-08-17 17:20:25,247 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-17 17:20:25,247 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-17 17:20:25,247 | Bar size: 15min | Check interval while market open: 15min
+2026-08-17 17:20:25,247 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-17 17:20:25,247 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-17 17:20:25,247 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-17 17:20:25,247 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-17 17:20:25,248 | Position sizing: flat $500 per trade
+2026-08-17 17:20:25,248 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-17 17:20:25,248 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-17 17:20:25,248 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-17 17:20:25,248 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-17 17:20:25,248 | Loaded saved watchlist from previous run: MU, SNDK, NVDA, TSLA, INTC, AAPL
+2026-08-17 17:20:25,248 | Restored daily risk state from previous run: day 2026-08-17, breaker tripped: False
+2026-08-17 17:20:25,248 | Restored open-position context for 1 symbol(s) from previous run.
+2026-08-17 17:20:25,248 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-17 17:20:25,289 | SCANNER: refreshing watchlist...
+2026-08-17 17:20:25,600 | SCANNER: excluded 12 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-08-17 17:20:25,899 | SCANNER: 2 candidate(s) passed price/extension filters but none met the $10,000,000 average dollar-volume bar.
+2026-08-17 17:20:25,934 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-17 17:20:51,560 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 17:20:51,562 | SCANNER: new watchlist -> MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 17:20:51,575 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 6 symbols: INTC, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-17 17:20:54,210 | Multi-timeframe filter: refreshed daily trend for 6 symbol(s).
+2026-08-17 17:20:54,252 | [INTC] choppy/sideways (ADX 18.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.28
+2026-08-17 17:20:54,252 | [INTC] ACTION: No trade.
+2026-08-17 17:20:54,292 | [MSFT] trending (ADX 49.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.59
+2026-08-17 17:20:54,293 | [MSFT] ACTION: No trade.
+2026-08-17 17:20:54,333 | [MU] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1025.61
+2026-08-17 17:20:54,333 | [MU] ACTION: No trade.
+2026-08-17 17:20:54,373 | [NVDA] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $226.15
+2026-08-17 17:20:54,374 | [NVDA] ACTION: No trade.
+2026-08-17 17:20:54,421 | [SNDK] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1796.59
+2026-08-17 17:20:54,421 | [SNDK] ACTION: No trade.
+2026-08-17 17:20:54,463 | [TSLA] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.48
+2026-08-17 17:20:54,463 | [TSLA] ACTION: No trade.
+2026-08-17 17:35:54,519 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 6 symbols: INTC, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-17 17:35:56,233 | [INTC] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.03
+2026-08-17 17:35:56,234 | [INTC] ACTION: No trade.
+2026-08-17 17:35:56,272 | [MSFT] trending (ADX 50.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.32
+2026-08-17 17:35:56,272 | [MSFT] ACTION: No trade.
+2026-08-17 17:35:56,311 | [MU] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1019.55
+2026-08-17 17:35:56,311 | [MU] ACTION: No trade.
+2026-08-17 17:35:56,350 | [NVDA] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.92
+2026-08-17 17:35:56,350 | [NVDA] ACTION: No trade.
+2026-08-17 17:35:56,388 | [SNDK] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1784.40
+2026-08-17 17:35:56,389 | [SNDK] ACTION: No trade.
+2026-08-17 17:35:56,427 | [TSLA] choppy/sideways (ADX 18.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.04
+2026-08-17 17:35:56,427 | [TSLA] ACTION: No trade.
+2026-08-17 17:50:56,564 | SCANNER: refreshing watchlist...
+2026-08-17 17:50:56,639 | SCANNER: excluded 9 leveraged/inverse ETF(s) from 13 candidate(s).
+2026-08-17 17:50:57,041 | SCANNER: news filter (min 1 article(s) in 24h) would eliminate every candidate this cycle -- skipping it for now.
+2026-08-17 17:50:57,041 | SCANNER: candidate FTK -- -22.7% today, $27.70, liquid, 0 recent news item(s)
+2026-08-17 17:51:23,095 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 17:51:23,098 | SCANNER: new watchlist -> FTK, MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 17:51:23,126 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-17 17:51:24,532 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-17 17:51:24,571 | [FTK] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.26
+2026-08-17 17:51:24,571 | [FTK] ACTION: No trade.
+2026-08-17 17:51:24,612 | [INTC] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.72
+2026-08-17 17:51:24,613 | [INTC] ACTION: No trade.
+2026-08-17 17:51:24,654 | [MSFT] trending (ADX 52.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.32
+2026-08-17 17:51:24,654 | [MSFT] ACTION: No trade.
+2026-08-17 17:51:24,694 | [MU] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1018.21
+2026-08-17 17:51:24,694 | [MU] ACTION: No trade.
+2026-08-17 17:51:24,734 | [NVDA] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $226.23
+2026-08-17 17:51:24,734 | [NVDA] ACTION: No trade.
+2026-08-17 17:51:24,774 | [SNDK] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1794.86
+2026-08-17 17:51:24,774 | [SNDK] ACTION: No trade.
+2026-08-17 17:51:24,815 | [TSLA] choppy/sideways (ADX 17.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $340.63
+2026-08-17 17:51:24,815 | [TSLA] ACTION: No trade.
+2026-08-17 18:06:24,896 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-17 18:06:26,351 | [FTK] trending (ADX 51.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.53
+2026-08-17 18:06:26,351 | [FTK] ACTION: No trade.
+2026-08-17 18:06:26,391 | [INTC] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.27
+2026-08-17 18:06:26,391 | [INTC] ACTION: No trade.
+2026-08-17 18:06:26,430 | [MSFT] trending (ADX 53.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.91
+2026-08-17 18:06:26,430 | [MSFT] ACTION: No trade.
+2026-08-17 18:06:26,470 | [MU] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1019.95
+2026-08-17 18:06:26,470 | [MU] ACTION: No trade.
+2026-08-17 18:06:26,511 | [NVDA] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.82
+2026-08-17 18:06:26,511 | [NVDA] ACTION: No trade.
+2026-08-17 18:06:26,551 | [SNDK] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1790.01
+2026-08-17 18:06:26,551 | [SNDK] ACTION: No trade.
+2026-08-17 18:06:26,591 | [TSLA] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.60
+2026-08-17 18:06:26,591 | [TSLA] ACTION: No trade.
+2026-08-17 18:21:26,656 | SCANNER: refreshing watchlist...
+2026-08-17 18:21:26,782 | SCANNER: excluded 9 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-08-17 18:21:27,400 | SCANNER: candidate AXTI -- +18.5% today, $96.77, liquid, 1 recent news item(s)
+2026-08-17 18:21:55,687 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 18:21:55,691 | SCANNER: new watchlist -> AXTI, MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 18:21:55,705 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: AXTI, INTC, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-17 18:21:57,342 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-17 18:21:57,400 | [AXTI] trending (ADX 67.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $97.37
+2026-08-17 18:21:57,400 | [AXTI] ACTION: No trade.
+2026-08-17 18:21:57,451 | [INTC] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.03
+2026-08-17 18:21:57,451 | [INTC] ACTION: No trade.
+2026-08-17 18:21:57,493 | [MSFT] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.19
+2026-08-17 18:21:57,493 | [MSFT] ACTION: No trade.
+2026-08-17 18:21:57,533 | [MU] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1017.85
+2026-08-17 18:21:57,533 | [MU] ACTION: No trade.
+2026-08-17 18:21:57,575 | [NVDA] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.70
+2026-08-17 18:21:57,575 | [NVDA] ACTION: No trade.
+2026-08-17 18:21:57,615 | [SNDK] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1792.01
+2026-08-17 18:21:57,615 | [SNDK] ACTION: No trade.
+2026-08-17 18:21:57,654 | [TSLA] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.67
+2026-08-17 18:21:57,654 | [TSLA] ACTION: No trade.
+2026-08-17 18:36:57,709 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: AXTI, INTC, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-17 18:36:59,721 | [AXTI] trending (ADX 67.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $96.67
+2026-08-17 18:36:59,722 | [AXTI] ACTION: No trade.
+2026-08-17 18:36:59,761 | [INTC] choppy/sideways (ADX 19.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.13
+2026-08-17 18:36:59,761 | [INTC] ACTION: No trade.
+2026-08-17 18:36:59,801 | [MSFT] trending (ADX 54.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.44
+2026-08-17 18:36:59,801 | [MSFT] ACTION: No trade.
+2026-08-17 18:36:59,841 | [MU] trending (ADX 26.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1019.64
+2026-08-17 18:36:59,841 | [MU] ACTION: No trade.
+2026-08-17 18:36:59,880 | [NVDA] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.53
+2026-08-17 18:36:59,880 | [NVDA] ACTION: No trade.
+2026-08-17 18:36:59,920 | [SNDK] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1788.99
+2026-08-17 18:36:59,920 | [SNDK] ACTION: No trade.
+2026-08-17 18:36:59,960 | [TSLA] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.48
+2026-08-17 18:36:59,960 | [TSLA] ACTION: No trade.
+2026-08-17 18:52:00,122 | SCANNER: refreshing watchlist...
+2026-08-17 18:52:00,382 | SCANNER: excluded 7 leveraged/inverse ETF(s) from 10 candidate(s).
+2026-08-17 18:52:00,834 | SCANNER: news filter (min 1 article(s) in 24h) would eliminate every candidate this cycle -- skipping it for now.
+2026-08-17 18:52:00,834 | SCANNER: candidate FTK -- -21.0% today, $28.30, liquid, 0 recent news item(s)
+2026-08-17 18:52:27,979 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 18:52:27,981 | SCANNER: new watchlist -> FTK, MU, SNDK, NVDA, INTC, TSLA, MSFT
+2026-08-17 18:52:27,987 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-17 18:52:29,385 | [FTK] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.30
+2026-08-17 18:52:29,385 | [FTK] ACTION: No trade.
+2026-08-17 18:52:29,423 | [INTC] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.34
+2026-08-17 18:52:29,424 | [INTC] ACTION: No trade.
+2026-08-17 18:52:29,463 | [MSFT] trending (ADX 54.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.72
+2026-08-17 18:52:29,463 | [MSFT] ACTION: No trade.
+2026-08-17 18:52:29,501 | [MU] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1018.09
+2026-08-17 18:52:29,501 | [MU] ACTION: No trade.
+2026-08-17 18:52:29,540 | [NVDA] choppy/sideways (ADX 22.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.71
+2026-08-17 18:52:29,540 | [NVDA] ACTION: No trade.
+2026-08-17 18:52:29,581 | [SNDK] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1783.37
+2026-08-17 18:52:29,581 | [SNDK] ACTION: No trade.
+2026-08-17 18:52:29,620 | [TSLA] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.90
+2026-08-17 18:52:29,620 | [TSLA] ACTION: No trade.
+2026-08-17 19:07:29,682 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-17 19:07:30,494 | [FTK] trending (ADX 53.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.34
+2026-08-17 19:07:30,495 | [FTK] ACTION: No trade.
+2026-08-17 19:07:30,535 | [INTC] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.59
+2026-08-17 19:07:30,535 | [INTC] ACTION: No trade.
+2026-08-17 19:07:30,575 | [MSFT] trending (ADX 54.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $480.01
+2026-08-17 19:07:30,575 | [MSFT] ACTION: No trade.
+2026-08-17 19:07:30,616 | [MU] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1016.72
+2026-08-17 19:07:30,616 | [MU] ACTION: No trade.
+2026-08-17 19:07:30,656 | [NVDA] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.60
+2026-08-17 19:07:30,656 | [NVDA] ACTION: No trade.
+2026-08-17 19:07:30,697 | [SNDK] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1781.74
+2026-08-17 19:07:30,697 | [SNDK] ACTION: No trade.
+2026-08-17 19:07:30,737 | [TSLA] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $340.49
+2026-08-17 19:07:30,737 | [TSLA] ACTION: No trade.
+2026-08-17 19:22:30,857 | SCANNER: refreshing watchlist...
+2026-08-17 19:22:30,930 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 9 candidate(s).
+2026-08-17 19:22:31,286 | SCANNER: news filter (min 1 article(s) in 24h) would eliminate every candidate this cycle -- skipping it for now.
+2026-08-17 19:22:31,287 | SCANNER: candidate FTK -- -20.8% today, $28.37, liquid, 0 recent news item(s)
+2026-08-17 19:23:01,428 | S&P 500 liquidity backstop -> SNDK, MU, NVDA, INTC, TSLA, MSFT
+2026-08-17 19:23:01,432 | SCANNER: new watchlist -> FTK, SNDK, MU, NVDA, INTC, TSLA, MSFT
+2026-08-17 19:23:01,439 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-17 19:23:02,724 | [FTK] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.08
+2026-08-17 19:23:02,724 | [FTK] ACTION: No trade.
+2026-08-17 19:23:02,764 | [INTC] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.09
+2026-08-17 19:23:02,764 | [INTC] ACTION: No trade.
+2026-08-17 19:23:02,803 | [MSFT] trending (ADX 52.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.23
+2026-08-17 19:23:02,803 | [MSFT] ACTION: No trade.
+2026-08-17 19:23:02,843 | [MU] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1009.96
+2026-08-17 19:23:02,843 | [MU] ACTION: No trade.
+2026-08-17 19:23:02,883 | [NVDA] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.46
+2026-08-17 19:23:02,883 | [NVDA] ACTION: No trade.
+2026-08-17 19:23:02,923 | [SNDK] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1766.23
+2026-08-17 19:23:02,923 | [SNDK] ACTION: No trade.
+2026-08-17 19:23:02,963 | [TSLA] choppy/sideways (ADX 13.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $340.56
+2026-08-17 19:23:02,963 | [TSLA] ACTION: No trade.
+2026-08-17 19:38:03,318 | Market is open (closes 2026-08-17 22:00:00 CEST your local time). Checking 7 symbols: FTK, INTC, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-17 19:38:04,683 | [FTK] trending (ADX 52.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.70
+2026-08-17 19:38:04,683 | [FTK] ACTION: No trade.
+2026-08-17 19:38:04,721 | [INTC] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.29
+2026-08-17 19:38:04,721 | [INTC] ACTION: No trade.
+2026-08-17 19:38:04,760 | [MSFT] trending (ADX 50.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.02
+2026-08-17 19:38:04,760 | [MSFT] ACTION: No trade.
+2026-08-17 19:38:04,798 | [MU] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1011.42
+2026-08-17 19:38:04,798 | [MU] ACTION: No trade.
+2026-08-17 19:38:04,836 | [NVDA] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.50
+2026-08-17 19:38:04,836 | [NVDA] ACTION: No trade.
+2026-08-17 19:38:04,875 | [SNDK] choppy/sideways (ADX 22.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1778.89
+2026-08-17 19:38:04,875 | [SNDK] ACTION: No trade.
+2026-08-17 19:38:04,915 | [TSLA] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $340.68
+2026-08-17 19:38:04,915 | [TSLA] ACTION: No trade.
+2026-08-17 19:50:02,051 | Within 10 min of close -- flattening all positions for the day.
+2026-08-17 19:50:02,062 | EOD FLATTEN: no open positions to close.
+2026-08-17 19:50:25,249 | Duration window finished.
