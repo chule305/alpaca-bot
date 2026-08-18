@@ -221,3 +221,173 @@
 2026-08-18 17:10:06,533 | [WETO] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.02
 2026-08-18 17:10:06,533 | [WETO] ACTION: No trade.
 2026-08-18 17:21:59,876 | Duration window finished.
+2026-08-18 12:21:31,075 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-18 12:21:31,075 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-18 12:21:31,075 | Bar size: 15min | Check interval while market open: 15min
+2026-08-18 12:21:31,075 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-18 12:21:31,075 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-18 12:21:31,075 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-18 12:21:31,075 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-18 12:21:31,075 | Position sizing: flat $500 per trade
+2026-08-18 12:21:31,075 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-18 12:21:31,075 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-18 12:21:31,075 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-18 12:21:31,075 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-18 12:21:31,075 | Loaded saved watchlist from previous run: FTK, SNDK, MU, NVDA, INTC, TSLA, MSFT
+2026-08-18 12:21:31,075 | Restored daily risk state from previous run: day 2026-08-17, breaker tripped: False
+2026-08-18 12:21:31,076 | Restored open-position context for 1 symbol(s) from previous run.
+2026-08-18 12:21:31,076 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-18 12:21:31,198 | Market is closed. Next open: 2026-08-18 15:30:00 CEST (your local time) -- in 1.1 hours.
+2026-08-18 13:21:36,503 | Market is closed. Next open: 2026-08-18 15:30:00 CEST (your local time) -- in 0.1 hours.
+2026-08-18 13:30:05,183 | Daily loss circuit breaker: tracking from starting equity $99,506.30 (limit -3%).
+2026-08-18 13:30:05,183 | SCANNER: refreshing watchlist...
+2026-08-18 13:30:06,184 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 10 candidate(s).
+2026-08-18 13:30:06,753 | SCANNER: candidate FTK -- -20.0% today, $28.66, liquid, 1 recent news item(s)
+2026-08-18 13:30:06,831 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-18 13:31:04,754 | S&P 500 liquidity backstop -> SNDK, MU, NVDA, TSLA, MSFT, AMD
+2026-08-18 13:31:04,755 | SCANNER: new watchlist -> FTK, SNDK, MU, NVDA, TSLA, MSFT, AMD
+2026-08-18 13:31:04,819 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 7 symbols: AMD, FTK, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 13:31:12,601 | Multi-timeframe filter: refreshed daily trend for 7 symbol(s).
+2026-08-18 13:31:12,624 | [AMD] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $488.00
+2026-08-18 13:31:12,625 | [AMD] ACTION: No trade.
+2026-08-18 13:31:12,672 | [FTK] trending (ADX 39.1) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $29.56
+2026-08-18 13:31:12,726 | [FTK] ACTION: No trade -- too volatile to protect. ATR is $0.85 (2.9% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-18 13:31:12,748 | [MSFT] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.38
+2026-08-18 13:31:12,748 | [MSFT] ACTION: No trade.
+2026-08-18 13:31:12,769 | [MU] trending (ADX 38.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.00
+2026-08-18 13:31:12,769 | [MU] ACTION: No trade.
+2026-08-18 13:31:12,790 | [NVDA] trending (ADX 41.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $220.31
+2026-08-18 13:31:12,790 | [NVDA] ACTION: No trade.
+2026-08-18 13:31:12,840 | [SNDK] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1678.35
+2026-08-18 13:31:12,840 | [SNDK] ACTION: No trade.
+2026-08-18 13:31:12,861 | [TSLA] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $333.31
+2026-08-18 13:31:12,861 | [TSLA] ACTION: No trade.
+2026-08-18 13:46:13,078 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 7 symbols: AMD, FTK, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 13:46:14,585 | [AMD] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $487.29
+2026-08-18 13:46:14,585 | [AMD] ACTION: No trade.
+2026-08-18 13:46:14,603 | [FTK] trending (ADX 38.3) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $28.43
+2026-08-18 13:46:14,603 | [FTK] ACTION: No trade.
+2026-08-18 13:46:14,624 | [MSFT] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $482.92
+2026-08-18 13:46:14,624 | [MSFT] ACTION: No trade.
+2026-08-18 13:46:14,645 | [MU] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $968.59
+2026-08-18 13:46:14,645 | [MU] ACTION: No trade.
+2026-08-18 13:46:14,665 | [NVDA] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $220.42
+2026-08-18 13:46:14,666 | [NVDA] ACTION: No trade.
+2026-08-18 13:46:14,686 | [SNDK] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1693.20
+2026-08-18 13:46:14,686 | [SNDK] ACTION: No trade.
+2026-08-18 13:46:14,707 | [TSLA] trending (ADX 33.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $336.63
+2026-08-18 13:46:14,707 | [TSLA] ACTION: No trade.
+2026-08-18 14:01:14,858 | SCANNER: refreshing watchlist...
+2026-08-18 14:01:15,598 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 20 candidate(s).
+2026-08-18 14:01:16,033 | SCANNER: candidate AMLX -- +46.2% today, $31.33, liquid, 10 recent news item(s)
+2026-08-18 14:01:16,033 | SCANNER: candidate DUOT -- +22.4% today, $12.59, liquid, 7 recent news item(s)
+2026-08-18 14:01:16,033 | SCANNER: candidate KLAR -- -21.1% today, $15.38, liquid, 4 recent news item(s)
+2026-08-18 14:01:16,033 | SCANNER: candidate FN -- -18.4% today, $488.24, liquid, 14 recent news item(s)
+2026-08-18 14:01:16,033 | SCANNER: candidate HAE -- +16.0% today, $104.68, liquid, 3 recent news item(s)
+2026-08-18 14:02:07,475 | S&P 500 liquidity backstop -> SNDK, MU, NVDA, TSLA, MSFT, AMD
+2026-08-18 14:02:07,476 | SCANNER: new watchlist -> AMLX, DUOT, KLAR, FN, HAE, SNDK, MU, NVDA, TSLA, MSFT, AMD
+2026-08-18 14:02:07,538 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 11 symbols: AMD, AMLX, DUOT, FN, HAE, KLAR, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 14:02:10,358 | Multi-timeframe filter: refreshed daily trend for 5 symbol(s).
+2026-08-18 14:02:10,380 | [AMD] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.61
+2026-08-18 14:02:10,380 | [AMD] ACTION: No trade.
+2026-08-18 14:02:10,428 | [AMLX] trending (ADX 65.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.10
+2026-08-18 14:02:10,428 | [AMLX] ACTION: No trade.
+2026-08-18 14:02:10,476 | [DUOT] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $12.47
+2026-08-18 14:02:10,547 | [DUOT] ACTION: No trade -- too volatile to protect. ATR is $0.32 (2.5% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-18 14:02:10,603 | [FN] trending (ADX 27.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $488.31
+2026-08-18 14:02:10,603 | [FN] ACTION: No trade.
+2026-08-18 14:02:10,648 | [HAE] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $104.00
+2026-08-18 14:02:10,683 | [HAE] Buying 4 share(s) (~$418, flat $ sizing) | stop-loss $99.29 | take-profit $114.97 (fixed %)
+2026-08-18 14:02:13,521 | [HAE] ACTION: BUY (order id 23828483-dad9-4bdb-9102-571ebcb7f147, strategy: breakout)
+2026-08-18 14:02:13,572 | [KLAR] trending (ADX 50.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.43
+2026-08-18 14:02:13,572 | [KLAR] ACTION: No trade.
+2026-08-18 14:02:13,593 | [MSFT] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $479.94
+2026-08-18 14:02:13,593 | [MSFT] ACTION: No trade.
+2026-08-18 14:02:13,614 | [MU] trending (ADX 33.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $960.42
+2026-08-18 14:02:13,614 | [MU] ACTION: No trade.
+2026-08-18 14:02:13,634 | [NVDA] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $220.21
+2026-08-18 14:02:13,634 | [NVDA] ACTION: No trade.
+2026-08-18 14:02:13,655 | [SNDK] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1674.49
+2026-08-18 14:02:13,655 | [SNDK] ACTION: No trade.
+2026-08-18 14:02:13,676 | [TSLA] trending (ADX 33.8) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $339.15
+2026-08-18 14:02:13,719 | [TSLA] Buying 1 share(s) (~$338, flat $ sizing) | stop-loss $321.08 | take-profit $371.78 (fixed %)
+2026-08-18 14:02:15,378 | [TSLA] ACTION: BUY (order id 6f6865ec-df3a-4d38-a4a6-6d63c97892fa, strategy: trend_following)
+2026-08-18 14:17:15,656 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 11 symbols: AMD, AMLX, DUOT, FN, HAE, KLAR, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 14:17:17,497 | [AMD] trending (ADX 46.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.40
+2026-08-18 14:17:17,497 | [AMD] ACTION: No trade.
+2026-08-18 14:17:17,515 | [AMLX] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $31.46
+2026-08-18 14:17:17,554 | [AMLX] ACTION: No trade -- too volatile to protect. ATR is $1.42 (4.5% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-18 14:17:17,573 | [DUOT] trending (ADX 47.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.46
+2026-08-18 14:17:17,573 | [DUOT] ACTION: No trade.
+2026-08-18 14:17:17,592 | [FN] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $485.25
+2026-08-18 14:17:17,593 | [FN] ACTION: No trade.
+2026-08-18 14:17:17,610 | [HAE] trending (ADX 67.7) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $103.06
+2026-08-18 14:17:17,610 | [HAE] ACTION: No trade.
+2026-08-18 14:17:17,629 | [KLAR] trending (ADX 51.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.56
+2026-08-18 14:17:17,629 | [KLAR] ACTION: No trade.
+2026-08-18 14:17:17,650 | [MSFT] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.37
+2026-08-18 14:17:17,650 | [MSFT] ACTION: No trade.
+2026-08-18 14:17:17,671 | [MU] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $949.50
+2026-08-18 14:17:17,671 | [MU] ACTION: No trade.
+2026-08-18 14:17:17,692 | [NVDA] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.02
+2026-08-18 14:17:17,692 | [NVDA] ACTION: No trade.
+2026-08-18 14:17:17,713 | [SNDK] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1656.31
+2026-08-18 14:17:17,713 | [SNDK] ACTION: No trade.
+2026-08-18 14:17:17,734 | [TSLA] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $335.92
+2026-08-18 14:17:17,734 | [TSLA] ACTION: No trade.
+2026-08-18 14:32:17,882 | SCANNER: refreshing watchlist...
+2026-08-18 14:32:18,182 | SCANNER: excluded 10 leveraged/inverse ETF(s) from 17 candidate(s).
+2026-08-18 14:32:18,941 | SCANNER: candidate AMLX -- +45.2% today, $31.11, liquid, 11 recent news item(s)
+2026-08-18 14:32:18,941 | SCANNER: candidate DUOT -- +19.2% today, $12.26, liquid, 8 recent news item(s)
+2026-08-18 14:32:18,941 | SCANNER: candidate KLAR -- -18.5% today, $15.90, liquid, 5 recent news item(s)
+2026-08-18 14:32:18,941 | SCANNER: candidate FN -- -17.3% today, $494.81, liquid, 16 recent news item(s)
+2026-08-18 14:32:18,941 | SCANNER: candidate HAE -- +15.3% today, $104.09, liquid, 4 recent news item(s)
+2026-08-18 14:33:00,901 | S&P 500 liquidity backstop -> SNDK, MU, NVDA, TSLA, AMD, MSFT
+2026-08-18 14:33:00,904 | SCANNER: new watchlist -> AMLX, DUOT, KLAR, FN, HAE, SNDK, MU, NVDA, TSLA, AMD, MSFT
+2026-08-18 14:33:01,010 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 11 symbols: AMD, AMLX, DUOT, FN, HAE, KLAR, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 14:33:03,491 | [AMD] trending (ADX 47.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.60
+2026-08-18 14:33:03,492 | [AMD] ACTION: No trade.
+2026-08-18 14:33:03,510 | [AMLX] trending (ADX 67.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.98
+2026-08-18 14:33:03,511 | [AMLX] ACTION: No trade.
+2026-08-18 14:33:03,530 | [DUOT] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.24
+2026-08-18 14:33:03,530 | [DUOT] ACTION: No trade.
+2026-08-18 14:33:03,550 | [FN] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $495.40
+2026-08-18 14:33:03,550 | [FN] ACTION: No trade.
+2026-08-18 14:33:03,567 | [HAE] trending (ADX 69.2) -> trend-following strategy | Signal: HOLD | Shares held: 4.0 | Last price: $104.05
+2026-08-18 14:33:03,567 | [HAE] ACTION: No trade.
+2026-08-18 14:33:03,587 | [KLAR] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.85
+2026-08-18 14:33:03,587 | [KLAR] ACTION: No trade.
+2026-08-18 14:33:03,608 | [MSFT] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.05
+2026-08-18 14:33:03,608 | [MSFT] ACTION: No trade.
+2026-08-18 14:33:03,629 | [MU] trending (ADX 31.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.63
+2026-08-18 14:33:03,629 | [MU] ACTION: No trade.
+2026-08-18 14:33:03,650 | [NVDA] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.96
+2026-08-18 14:33:03,650 | [NVDA] ACTION: No trade.
+2026-08-18 14:33:03,671 | [SNDK] choppy/sideways (ADX 24.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1670.06
+2026-08-18 14:33:03,671 | [SNDK] ACTION: No trade.
+2026-08-18 14:33:03,692 | [TSLA] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $336.86
+2026-08-18 14:33:03,692 | [TSLA] ACTION: No trade.
+2026-08-18 14:48:03,954 | Market is open (closes 2026-08-18 22:00:00 CEST your local time). Checking 11 symbols: AMD, AMLX, DUOT, FN, HAE, KLAR, MSFT, MU, NVDA, SNDK, TSLA
+2026-08-18 14:48:06,120 | [AMD] trending (ADX 48.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $478.98
+2026-08-18 14:48:06,120 | [AMD] ACTION: No trade.
+2026-08-18 14:48:06,138 | [AMLX] trending (ADX 67.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.12
+2026-08-18 14:48:06,139 | [AMLX] ACTION: No trade.
+2026-08-18 14:48:06,158 | [DUOT] trending (ADX 49.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.20
+2026-08-18 14:48:06,158 | [DUOT] ACTION: No trade.
+2026-08-18 14:48:06,177 | [FN] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $482.50
+2026-08-18 14:48:06,177 | [FN] ACTION: No trade.
+2026-08-18 14:48:06,195 | [HAE] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 4.0 | Last price: $104.90
+2026-08-18 14:48:06,195 | [HAE] ACTION: No trade.
+2026-08-18 14:48:06,214 | [KLAR] trending (ADX 51.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.79
+2026-08-18 14:48:06,214 | [KLAR] ACTION: No trade.
+2026-08-18 14:48:06,235 | [MSFT] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $481.10
+2026-08-18 14:48:06,235 | [MSFT] ACTION: No trade.
+2026-08-18 14:48:06,256 | [MU] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $946.78
+2026-08-18 14:48:06,256 | [MU] ACTION: No trade.
+2026-08-18 14:48:06,277 | [NVDA] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.41
+2026-08-18 14:48:06,277 | [NVDA] ACTION: No trade.
+2026-08-18 14:48:06,298 | [SNDK] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1642.78
+2026-08-18 14:48:06,298 | [SNDK] ACTION: No trade.
+2026-08-18 14:48:06,319 | [TSLA] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $337.36
+2026-08-18 14:48:06,319 | [TSLA] ACTION: No trade.
+2026-08-18 14:51:31,076 | Duration window finished.
