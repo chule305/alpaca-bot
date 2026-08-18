@@ -1,1 +1,1 @@
-{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}, "HAE": {"strategy": "breakout", "invalidation_level": 102.3511}, "TSLA": {"strategy": "trend_following", "invalidation_level": null}}
+{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}}
