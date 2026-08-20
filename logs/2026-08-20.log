@@ -1,0 +1,266 @@
+2026-08-20 14:53:19,665 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-20 14:53:19,666 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-20 14:53:19,666 | Bar size: 15min | Check interval while market open: 15min
+2026-08-20 14:53:19,666 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-20 14:53:19,666 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-20 14:53:19,666 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-20 14:53:19,666 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-20 14:53:19,666 | Position sizing: flat $500 per trade
+2026-08-20 14:53:19,666 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-20 14:53:19,666 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-20 14:53:19,666 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-20 14:53:19,666 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-20 14:53:19,666 | Loaded saved watchlist from previous run: WETO, WYFI, MU, SNDK, NVDA, AAPL, MSFT, META
+2026-08-20 14:53:19,666 | Restored daily risk state from previous run: day 2026-08-19, breaker tripped: False
+2026-08-20 14:53:19,667 | Restored open-position context for 1 symbol(s) from previous run.
+2026-08-20 14:53:19,667 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-20 14:53:19,718 | Daily loss circuit breaker: tracking from starting equity $99,497.94 (limit -3%).
+2026-08-20 14:53:19,718 | SCANNER: refreshing watchlist...
+2026-08-20 14:53:19,988 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 25 candidate(s).
+2026-08-20 14:53:20,703 | SCANNER: candidate WETO -- +42.3% today, $29.54, liquid, 2 recent news item(s)
+2026-08-20 14:53:20,703 | SCANNER: candidate IPST -- +27.3% today, $10.76, liquid, 1 recent news item(s)
+2026-08-20 14:53:20,703 | SCANNER: candidate AAP -- -22.3% today, $43.63, liquid, 7 recent news item(s)
+2026-08-20 14:53:20,703 | SCANNER: candidate MRNA -- -19.2% today, $140.88, liquid, 23 recent news item(s)
+2026-08-20 14:53:20,703 | SCANNER: candidate SCSC -- +17.3% today, $60.30, liquid, 5 recent news item(s)
+2026-08-20 14:53:20,739 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-20 14:54:00,558 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, META
+2026-08-20 14:54:00,561 | SCANNER: new watchlist -> WETO, IPST, AAP, MRNA, SCSC, MU, SNDK, NVDA, AAPL, META
+2026-08-20 14:54:00,577 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SCSC, SNDK, WETO
+2026-08-20 14:54:04,647 | Multi-timeframe filter: refreshed daily trend for 10 symbol(s).
+2026-08-20 14:54:04,686 | [AAP] trending (ADX 43.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.79
+2026-08-20 14:54:04,686 | [AAP] ACTION: No trade.
+2026-08-20 14:54:04,723 | [AAPL] choppy/sideways (ADX 24.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.35
+2026-08-20 14:54:04,723 | [AAPL] ACTION: No trade.
+2026-08-20 14:54:04,762 | [IPST] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.37
+2026-08-20 14:54:04,762 | [IPST] ACTION: No trade.
+2026-08-20 14:54:04,800 | [META] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $546.29
+2026-08-20 14:54:04,800 | [META] ACTION: No trade.
+2026-08-20 14:54:04,841 | [MRNA] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.63
+2026-08-20 14:54:04,841 | [MRNA] ACTION: No trade.
+2026-08-20 14:54:04,877 | [MU] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $960.82
+2026-08-20 14:54:04,877 | [MU] ACTION: No trade.
+2026-08-20 14:54:04,914 | [NVDA] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.83
+2026-08-20 14:54:04,915 | [NVDA] ACTION: No trade.
+2026-08-20 14:54:04,952 | [SCSC] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $60.93
+2026-08-20 14:54:04,952 | [SCSC] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-20 14:54:04,996 | [SNDK] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1628.81
+2026-08-20 14:54:04,996 | [SNDK] ACTION: No trade.
+2026-08-20 14:54:05,037 | [WETO] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.64
+2026-08-20 14:54:05,037 | [WETO] ACTION: No trade.
+2026-08-20 15:09:05,114 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SCSC, SNDK, WETO
+2026-08-20 15:09:08,449 | [AAP] trending (ADX 43.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.31
+2026-08-20 15:09:08,449 | [AAP] ACTION: No trade.
+2026-08-20 15:09:08,485 | [AAPL] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $317.42
+2026-08-20 15:09:08,485 | [AAPL] ACTION: No trade.
+2026-08-20 15:09:08,516 | [IPST] trending (ADX 30.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.49
+2026-08-20 15:09:08,516 | [IPST] ACTION: No trade.
+2026-08-20 15:09:08,553 | [META] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $545.21
+2026-08-20 15:09:08,553 | [META] ACTION: No trade.
+2026-08-20 15:09:08,587 | [MRNA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $140.31
+2026-08-20 15:09:08,593 | [MRNA] ACTION: No trade -- too volatile to protect. ATR is $7.06 (5.1% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-20 15:09:08,630 | [MU] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $956.15
+2026-08-20 15:09:08,630 | [MU] ACTION: No trade.
+2026-08-20 15:09:08,665 | [NVDA] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $217.69
+2026-08-20 15:09:08,665 | [NVDA] ACTION: No trade.
+2026-08-20 15:09:08,694 | [SCSC] trending (ADX 47.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.73
+2026-08-20 15:09:08,694 | [SCSC] ACTION: No trade.
+2026-08-20 15:09:08,729 | [SNDK] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1608.12
+2026-08-20 15:09:08,729 | [SNDK] ACTION: No trade.
+2026-08-20 15:09:08,761 | [WETO] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.92
+2026-08-20 15:09:08,762 | [WETO] ACTION: No trade.
+2026-08-20 15:24:08,815 | SCANNER: refreshing watchlist...
+2026-08-20 15:24:08,909 | SCANNER: excluded 15 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-20 15:24:10,225 | SCANNER: candidate WETO -- +43.8% today, $29.86, liquid, 2 recent news item(s)
+2026-08-20 15:24:10,225 | SCANNER: candidate IPST -- +38.6% today, $11.71, liquid, 1 recent news item(s)
+2026-08-20 15:24:10,225 | SCANNER: candidate AAP -- -22.9% today, $43.28, liquid, 7 recent news item(s)
+2026-08-20 15:24:57,136 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, META
+2026-08-20 15:24:57,139 | SCANNER: new watchlist -> WETO, IPST, AAP, MU, SNDK, NVDA, AAPL, MRNA, META
+2026-08-20 15:24:57,154 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 9 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SNDK, WETO
+2026-08-20 15:25:00,507 | [AAP] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.27
+2026-08-20 15:25:00,508 | [AAP] ACTION: No trade.
+2026-08-20 15:25:00,542 | [AAPL] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.50
+2026-08-20 15:25:00,542 | [AAPL] ACTION: No trade.
+2026-08-20 15:25:00,573 | [IPST] trending (ADX 33.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $12.00
+2026-08-20 15:25:00,573 | [IPST] ACTION: No trade.
+2026-08-20 15:25:00,608 | [META] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $543.50
+2026-08-20 15:25:00,608 | [META] ACTION: No trade.
+2026-08-20 15:25:00,642 | [MRNA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $141.80
+2026-08-20 15:25:00,648 | [MRNA] ACTION: No trade -- too volatile to protect. ATR is $6.80 (4.7% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-20 15:25:00,683 | [MU] choppy/sideways (ADX 24.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.16
+2026-08-20 15:25:00,683 | [MU] ACTION: No trade.
+2026-08-20 15:25:00,718 | [NVDA] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $217.57
+2026-08-20 15:25:00,718 | [NVDA] ACTION: No trade.
+2026-08-20 15:25:00,753 | [SNDK] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1597.54
+2026-08-20 15:25:00,753 | [SNDK] ACTION: No trade.
+2026-08-20 15:25:00,786 | [WETO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $29.23
+2026-08-20 15:25:00,786 | [WETO] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-20 15:40:00,870 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 9 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SNDK, WETO
+2026-08-20 15:40:03,016 | [AAP] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.20
+2026-08-20 15:40:03,016 | [AAP] ACTION: No trade.
+2026-08-20 15:40:03,051 | [AAPL] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $317.22
+2026-08-20 15:40:03,051 | [AAPL] ACTION: No trade.
+2026-08-20 15:40:03,081 | [IPST] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.51
+2026-08-20 15:40:03,081 | [IPST] ACTION: No trade.
+2026-08-20 15:40:03,115 | [META] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $543.83
+2026-08-20 15:40:03,115 | [META] ACTION: No trade.
+2026-08-20 15:40:03,148 | [MRNA] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $143.10
+2026-08-20 15:40:03,155 | [MRNA] ACTION: No trade -- too volatile to protect. ATR is $6.69 (4.7% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-20 15:40:03,190 | [MU] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.84
+2026-08-20 15:40:03,190 | [MU] ACTION: No trade.
+2026-08-20 15:40:03,225 | [NVDA] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.83
+2026-08-20 15:40:03,225 | [NVDA] ACTION: No trade.
+2026-08-20 15:40:03,260 | [SNDK] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1602.59
+2026-08-20 15:40:03,260 | [SNDK] ACTION: No trade.
+2026-08-20 15:40:03,293 | [WETO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $30.31
+2026-08-20 15:40:03,293 | [WETO] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-20 15:55:03,343 | SCANNER: refreshing watchlist...
+2026-08-20 15:55:03,419 | SCANNER: excluded 16 leveraged/inverse ETF(s) from 28 candidate(s).
+2026-08-20 15:55:04,446 | SCANNER: candidate IPST -- +40.7% today, $11.89, liquid, 1 recent news item(s)
+2026-08-20 15:55:04,446 | SCANNER: candidate WETO -- +40.3% today, $29.12, liquid, 2 recent news item(s)
+2026-08-20 15:55:04,446 | SCANNER: candidate AAP -- -24.7% today, $42.31, liquid, 7 recent news item(s)
+2026-08-20 15:55:04,446 | SCANNER: candidate MRNA -- -19.6% today, $140.26, liquid, 22 recent news item(s)
+2026-08-20 15:55:04,446 | SCANNER: candidate SCSC -- +17.6% today, $60.45, liquid, 8 recent news item(s)
+2026-08-20 15:55:50,951 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, META
+2026-08-20 15:55:50,954 | SCANNER: new watchlist -> IPST, WETO, AAP, MRNA, SCSC, MU, SNDK, NVDA, AAPL, META
+2026-08-20 15:55:50,969 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SCSC, SNDK, WETO
+2026-08-20 15:55:52,119 | [AAP] trending (ADX 44.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.70
+2026-08-20 15:55:52,120 | [AAP] ACTION: No trade.
+2026-08-20 15:55:52,155 | [AAPL] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.50
+2026-08-20 15:55:52,155 | [AAPL] ACTION: No trade.
+2026-08-20 15:55:52,185 | [IPST] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.16
+2026-08-20 15:55:52,186 | [IPST] ACTION: No trade.
+2026-08-20 15:55:52,221 | [META] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $543.42
+2026-08-20 15:55:52,221 | [META] ACTION: No trade.
+2026-08-20 15:55:52,254 | [MRNA] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $140.19
+2026-08-20 15:55:52,254 | [MRNA] ACTION: No trade.
+2026-08-20 15:55:52,289 | [MU] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $953.38
+2026-08-20 15:55:52,289 | [MU] ACTION: No trade.
+2026-08-20 15:55:52,325 | [NVDA] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.94
+2026-08-20 15:55:52,325 | [NVDA] ACTION: No trade.
+2026-08-20 15:55:52,353 | [SCSC] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $60.33
+2026-08-20 15:55:52,353 | [SCSC] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-20 15:55:52,388 | [SNDK] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1592.76
+2026-08-20 15:55:52,388 | [SNDK] ACTION: No trade.
+2026-08-20 15:55:52,421 | [WETO] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.57
+2026-08-20 15:55:52,421 | [WETO] ACTION: No trade.
+2026-08-20 16:10:52,483 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, META, MRNA, MU, NVDA, SCSC, SNDK, WETO
+2026-08-20 16:10:53,968 | [AAP] trending (ADX 45.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $42.01
+2026-08-20 16:10:53,968 | [AAP] ACTION: No trade.
+2026-08-20 16:10:54,003 | [AAPL] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.93
+2026-08-20 16:10:54,003 | [AAPL] ACTION: No trade.
+2026-08-20 16:10:54,033 | [IPST] trending (ADX 38.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.83
+2026-08-20 16:10:54,034 | [IPST] ACTION: No trade.
+2026-08-20 16:10:54,069 | [META] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $542.78
+2026-08-20 16:10:54,069 | [META] ACTION: No trade.
+2026-08-20 16:10:54,103 | [MRNA] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.67
+2026-08-20 16:10:54,103 | [MRNA] ACTION: No trade.
+2026-08-20 16:10:54,139 | [MU] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $959.34
+2026-08-20 16:10:54,139 | [MU] ACTION: No trade.
+2026-08-20 16:10:54,175 | [NVDA] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.28
+2026-08-20 16:10:54,175 | [NVDA] ACTION: No trade.
+2026-08-20 16:10:54,204 | [SCSC] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $60.35
+2026-08-20 16:10:54,204 | [SCSC] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-20 16:10:54,240 | [SNDK] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1600.16
+2026-08-20 16:10:54,240 | [SNDK] ACTION: No trade.
+2026-08-20 16:10:54,274 | [WETO] trending (ADX 41.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.25
+2026-08-20 16:10:54,274 | [WETO] ACTION: No trade.
+2026-08-20 16:25:54,320 | SCANNER: refreshing watchlist...
+2026-08-20 16:25:54,387 | SCANNER: excluded 14 leveraged/inverse ETF(s) from 27 candidate(s).
+2026-08-20 16:25:54,851 | SCANNER: candidate IPST -- +34.6% today, $11.37, liquid, 1 recent news item(s)
+2026-08-20 16:25:54,852 | SCANNER: candidate WETO -- +29.6% today, $26.90, liquid, 2 recent news item(s)
+2026-08-20 16:25:54,852 | SCANNER: candidate AAP -- -25.1% today, $42.07, liquid, 8 recent news item(s)
+2026-08-20 16:25:54,852 | SCANNER: candidate MRNA -- -23.0% today, $134.21, liquid, 23 recent news item(s)
+2026-08-20 16:25:54,852 | SCANNER: candidate SCSC -- +17.2% today, $60.25, liquid, 9 recent news item(s)
+2026-08-20 16:26:43,359 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, TSLA
+2026-08-20 16:26:43,362 | SCANNER: new watchlist -> IPST, WETO, AAP, MRNA, SCSC, MU, SNDK, NVDA, AAPL, TSLA
+2026-08-20 16:26:43,376 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, MRNA, MU, NVDA, SCSC, SNDK, TSLA, WETO
+2026-08-20 16:26:44,481 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-20 16:26:44,511 | [AAP] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $42.02
+2026-08-20 16:26:44,522 | [AAP] ACTION: No trade -- too volatile to protect. ATR is $1.17 (2.8% per bar) but the stop is only 5.0% away, so it sits inside the noise and would be hit at random. Needs 2.0x ATR of room.
+2026-08-20 16:26:44,557 | [AAPL] trending (ADX 28.0) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $316.24
+2026-08-20 16:26:44,557 | [AAPL] ACTION: No trade.
+2026-08-20 16:26:44,588 | [IPST] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.88
+2026-08-20 16:26:44,588 | [IPST] ACTION: No trade.
+2026-08-20 16:26:44,624 | [MRNA] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.43
+2026-08-20 16:26:44,624 | [MRNA] ACTION: No trade.
+2026-08-20 16:26:44,659 | [MU] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $955.27
+2026-08-20 16:26:44,659 | [MU] ACTION: No trade.
+2026-08-20 16:26:44,694 | [NVDA] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.40
+2026-08-20 16:26:44,694 | [NVDA] ACTION: No trade.
+2026-08-20 16:26:44,723 | [SCSC] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $60.43
+2026-08-20 16:26:44,723 | [SCSC] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-20 16:26:44,758 | [SNDK] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1594.98
+2026-08-20 16:26:44,758 | [SNDK] ACTION: No trade.
+2026-08-20 16:26:44,793 | [TSLA] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $345.51
+2026-08-20 16:26:44,793 | [TSLA] ACTION: No trade.
+2026-08-20 16:26:44,827 | [WETO] trending (ADX 40.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.66
+2026-08-20 16:26:44,827 | [WETO] ACTION: No trade.
+2026-08-20 16:41:44,895 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 10 symbols: AAP, AAPL, IPST, MRNA, MU, NVDA, SCSC, SNDK, TSLA, WETO
+2026-08-20 16:41:46,060 | [AAP] trending (ADX 46.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.97
+2026-08-20 16:41:46,060 | [AAP] ACTION: No trade.
+2026-08-20 16:41:46,097 | [AAPL] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.46
+2026-08-20 16:41:46,097 | [AAPL] ACTION: No trade.
+2026-08-20 16:41:46,128 | [IPST] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $11.37
+2026-08-20 16:41:46,128 | [IPST] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-20 16:41:46,163 | [MRNA] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $133.06
+2026-08-20 16:41:46,163 | [MRNA] ACTION: No trade.
+2026-08-20 16:41:46,200 | [MU] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.66
+2026-08-20 16:41:46,200 | [MU] ACTION: No trade.
+2026-08-20 16:41:46,237 | [NVDA] choppy/sideways (ADX 16.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.84
+2026-08-20 16:41:46,237 | [NVDA] ACTION: No trade.
+2026-08-20 16:41:46,266 | [SCSC] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.35
+2026-08-20 16:41:46,267 | [SCSC] ACTION: No trade.
+2026-08-20 16:41:46,304 | [SNDK] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1603.65
+2026-08-20 16:41:46,304 | [SNDK] ACTION: No trade.
+2026-08-20 16:41:46,341 | [TSLA] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $344.81
+2026-08-20 16:41:46,341 | [TSLA] ACTION: No trade.
+2026-08-20 16:41:46,376 | [WETO] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.11
+2026-08-20 16:41:46,376 | [WETO] ACTION: No trade.
+2026-08-20 16:56:46,425 | SCANNER: refreshing watchlist...
+2026-08-20 16:56:46,497 | SCANNER: excluded 13 leveraged/inverse ETF(s) from 26 candidate(s).
+2026-08-20 16:56:47,421 | SCANNER: candidate WETO -- +32.5% today, $27.51, liquid, 2 recent news item(s)
+2026-08-20 16:56:47,421 | SCANNER: candidate AAP -- -25.3% today, $41.95, liquid, 8 recent news item(s)
+2026-08-20 16:56:47,421 | SCANNER: candidate MRNA -- -25.3% today, $130.25, liquid, 22 recent news item(s)
+2026-08-20 16:56:47,421 | SCANNER: candidate IPST -- +19.9% today, $10.13, liquid, 1 recent news item(s)
+2026-08-20 16:57:35,915 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, TSLA
+2026-08-20 16:57:35,918 | SCANNER: new watchlist -> WETO, AAP, MRNA, IPST, MU, SNDK, NVDA, AAPL, TSLA
+2026-08-20 16:57:35,933 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 9 symbols: AAP, AAPL, IPST, MRNA, MU, NVDA, SNDK, TSLA, WETO
+2026-08-20 16:57:37,027 | [AAP] trending (ADX 46.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.89
+2026-08-20 16:57:37,027 | [AAP] ACTION: No trade.
+2026-08-20 16:57:37,062 | [AAPL] trending (ADX 28.5) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $317.44
+2026-08-20 16:57:37,078 | [AAPL] Buying 1 share(s) (~$317, flat $ sizing) | stop-loss $301.24 | take-profit $348.80 (fixed %)
+2026-08-20 16:57:37,637 | [AAPL] ACTION: BUY (order id 71abcdf0-ac25-4612-addd-11373ba01a10, strategy: trend_following)
+2026-08-20 16:57:37,669 | [IPST] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.41
+2026-08-20 16:57:37,669 | [IPST] ACTION: No trade.
+2026-08-20 16:57:37,703 | [MRNA] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $130.37
+2026-08-20 16:57:37,703 | [MRNA] ACTION: No trade.
+2026-08-20 16:57:37,739 | [MU] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $956.45
+2026-08-20 16:57:37,739 | [MU] ACTION: No trade.
+2026-08-20 16:57:37,775 | [NVDA] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.88
+2026-08-20 16:57:37,775 | [NVDA] ACTION: No trade.
+2026-08-20 16:57:37,811 | [SNDK] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1604.74
+2026-08-20 16:57:37,811 | [SNDK] ACTION: No trade.
+2026-08-20 16:57:37,847 | [TSLA] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $345.02
+2026-08-20 16:57:37,847 | [TSLA] ACTION: No trade.
+2026-08-20 16:57:37,881 | [WETO] trending (ADX 37.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.06
+2026-08-20 16:57:37,881 | [WETO] ACTION: No trade.
+2026-08-20 17:12:37,966 | Market is open (closes 2026-08-20 22:00:00 CEST your local time). Checking 9 symbols: AAP, AAPL, IPST, MRNA, MU, NVDA, SNDK, TSLA, WETO
+2026-08-20 17:12:39,077 | [AAP] trending (ADX 47.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $41.66
+2026-08-20 17:12:39,077 | [AAP] ACTION: No trade.
+2026-08-20 17:12:39,113 | [AAPL] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $317.21
+2026-08-20 17:12:39,113 | [AAPL] ACTION: No trade.
+2026-08-20 17:12:39,145 | [IPST] trending (ADX 38.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.21
+2026-08-20 17:12:39,145 | [IPST] ACTION: No trade.
+2026-08-20 17:12:39,181 | [MRNA] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $129.90
+2026-08-20 17:12:39,181 | [MRNA] ACTION: No trade.
+2026-08-20 17:12:39,218 | [MU] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $957.70
+2026-08-20 17:12:39,218 | [MU] ACTION: No trade.
+2026-08-20 17:12:39,257 | [NVDA] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $217.80
+2026-08-20 17:12:39,257 | [NVDA] ACTION: No trade.
+2026-08-20 17:12:39,294 | [SNDK] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1595.77
+2026-08-20 17:12:39,294 | [SNDK] ACTION: No trade.
+2026-08-20 17:12:39,331 | [TSLA] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $344.56
+2026-08-20 17:12:39,332 | [TSLA] ACTION: No trade.
+2026-08-20 17:12:39,366 | [WETO] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $27.79
+2026-08-20 17:12:39,366 | [WETO] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-08-20 17:23:19,667 | Duration window finished.
