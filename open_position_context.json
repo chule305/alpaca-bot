@@ -1,1 +1,1 @@
-{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}, "AAPL": {"strategy": "trend_following", "invalidation_level": null}}
+{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}, "AAPL": {"strategy": "trend_following", "invalidation_level": null}, "ARCT": {"strategy": "breakout", "invalidation_level": 13.1342}}
