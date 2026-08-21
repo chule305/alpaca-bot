@@ -1,3 +1,198 @@
+2026-08-21 14:52:43,320 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-21 14:52:43,321 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-21 14:52:43,321 | Bar size: 15min | Check interval while market open: 15min
+2026-08-21 14:52:43,321 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-21 14:52:43,321 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-21 14:52:43,321 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-21 14:52:43,321 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-21 14:52:43,321 | Position sizing: flat $500 per trade
+2026-08-21 14:52:43,321 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-21 14:52:43,321 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-21 14:52:43,321 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-21 14:52:43,321 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-21 14:52:43,321 | Loaded saved watchlist from previous run: WETO, AAP, MRNA, MU, SNDK, NVDA, AAPL, TSLA
+2026-08-21 14:52:43,321 | Restored daily risk state from previous run: day 2026-08-20, breaker tripped: False
+2026-08-21 14:52:43,322 | Restored open-position context for 2 symbol(s) from previous run.
+2026-08-21 14:52:43,322 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-21 14:52:43,390 | Daily loss circuit breaker: tracking from starting equity $99,480.69 (limit -3%).
+2026-08-21 14:52:43,390 | SCANNER: refreshing watchlist...
+2026-08-21 14:52:45,778 | SCANNER: excluded 20 leveraged/inverse ETF(s) from 23 candidate(s).
+2026-08-21 14:52:46,334 | SCANNER: 3 candidate(s) passed price/extension filters but none met the $10,000,000 average dollar-volume bar.
+2026-08-21 14:52:46,383 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-21 14:54:07,273 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 14:54:07,275 | SCANNER: new watchlist -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 14:54:07,368 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 6 symbols: AAPL, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 14:54:10,319 | Multi-timeframe filter: refreshed daily trend for 6 symbol(s).
+2026-08-21 14:54:10,367 | [AAPL] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.57
+2026-08-21 14:54:10,367 | [AAPL] ACTION: No trade.
+2026-08-21 14:54:10,401 | [MRNA] trending (ADX 31.3) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $155.24
+2026-08-21 14:54:10,401 | [MRNA] ACTION: No trade.
+2026-08-21 14:54:10,437 | [MU] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $964.94
+2026-08-21 14:54:10,437 | [MU] ACTION: No trade.
+2026-08-21 14:54:10,473 | [NVDA] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $214.88
+2026-08-21 14:54:10,473 | [NVDA] ACTION: No trade.
+2026-08-21 14:54:10,517 | [SNDK] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1591.13
+2026-08-21 14:54:10,517 | [SNDK] ACTION: No trade.
+2026-08-21 14:54:10,552 | [TSLA] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.40
+2026-08-21 14:54:10,552 | [TSLA] ACTION: No trade.
+2026-08-21 15:09:10,685 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 6 symbols: AAPL, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 15:09:14,825 | [AAPL] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.45
+2026-08-21 15:09:14,826 | [AAPL] ACTION: No trade.
+2026-08-21 15:09:14,859 | [MRNA] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $153.04
+2026-08-21 15:09:14,859 | [MRNA] ACTION: No trade.
+2026-08-21 15:09:14,894 | [MU] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $962.91
+2026-08-21 15:09:14,894 | [MU] ACTION: No trade.
+2026-08-21 15:09:14,929 | [NVDA] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $214.86
+2026-08-21 15:09:14,929 | [NVDA] ACTION: No trade.
+2026-08-21 15:09:14,963 | [SNDK] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1590.94
+2026-08-21 15:09:14,963 | [SNDK] ACTION: No trade.
+2026-08-21 15:09:14,998 | [TSLA] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $361.03
+2026-08-21 15:09:14,998 | [TSLA] ACTION: No trade.
+2026-08-21 15:24:15,058 | SCANNER: refreshing watchlist...
+2026-08-21 15:24:15,141 | SCANNER: excluded 20 leveraged/inverse ETF(s) from 22 candidate(s).
+2026-08-21 15:24:15,366 | SCANNER: 2 candidate(s) passed price/extension filters but none met the $10,000,000 average dollar-volume bar.
+2026-08-21 15:25:35,260 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 15:25:35,263 | SCANNER: new watchlist -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 15:25:35,330 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 6 symbols: AAPL, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 15:25:40,309 | [AAPL] trending (ADX 31.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.70
+2026-08-21 15:25:40,309 | [AAPL] ACTION: No trade.
+2026-08-21 15:25:40,342 | [MRNA] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 3.0 | Last price: $151.84
+2026-08-21 15:25:40,342 | [MRNA] ACTION: No trade.
+2026-08-21 15:25:40,377 | [MU] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $965.22
+2026-08-21 15:25:40,377 | [MU] ACTION: No trade.
+2026-08-21 15:25:40,412 | [NVDA] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.75
+2026-08-21 15:25:40,412 | [NVDA] ACTION: No trade.
+2026-08-21 15:25:40,447 | [SNDK] trending (ADX 29.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1590.13
+2026-08-21 15:25:40,447 | [SNDK] ACTION: No trade.
+2026-08-21 15:25:40,481 | [TSLA] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $361.82
+2026-08-21 15:25:40,491 | [TSLA] Buying 1 share(s) (~$359, flat $ sizing) | stop-loss $340.78 | take-profit $394.59 (fixed %)
+2026-08-21 15:25:41,551 | [TSLA] ACTION: BUY (order id e062e36f-bc30-495a-aa0f-bfb12e5c7725, strategy: breakout)
+2026-08-21 15:40:41,952 | [MRNA] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-21 15:40:42,032 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 6 symbols: AAPL, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 15:40:49,026 | [AAPL] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $310.60
+2026-08-21 15:40:49,026 | [AAPL] ACTION: No trade.
+2026-08-21 15:40:49,059 | [MRNA] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.83
+2026-08-21 15:40:49,059 | [MRNA] ACTION: No trade.
+2026-08-21 15:40:49,094 | [MU] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $964.45
+2026-08-21 15:40:49,094 | [MU] ACTION: No trade.
+2026-08-21 15:40:49,129 | [NVDA] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.83
+2026-08-21 15:40:49,129 | [NVDA] ACTION: No trade.
+2026-08-21 15:40:49,163 | [SNDK] trending (ADX 29.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1588.56
+2026-08-21 15:40:49,164 | [SNDK] ACTION: No trade.
+2026-08-21 15:40:49,198 | [TSLA] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $358.96
+2026-08-21 15:40:49,235 | [TSLA] ACTION: SELL - breakout invalidation exit (close $358.96 back below entry level $361.03, order id c95ff09e-9603-4224-87a7-75b508a0a42e)
+2026-08-21 15:55:49,649 | SCANNER: refreshing watchlist...
+2026-08-21 15:55:50,054 | SCANNER: excluded 19 leveraged/inverse ETF(s) from 23 candidate(s).
+2026-08-21 15:55:50,494 | SCANNER: news filter (min 1 article(s) in 24h) would eliminate every candidate this cycle -- skipping it for now.
+2026-08-21 15:55:50,494 | SCANNER: candidate ARCT -- +21.4% today, $13.34, liquid, 0 recent news item(s)
+2026-08-21 15:57:16,528 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 15:57:16,530 | SCANNER: new watchlist -> ARCT, MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 15:57:16,596 | [TSLA] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-21 15:57:16,624 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 15:57:22,747 | Multi-timeframe filter: refreshed daily trend for 1 symbol(s).
+2026-08-21 15:57:22,782 | [AAPL] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.31
+2026-08-21 15:57:22,782 | [AAPL] ACTION: No trade.
+2026-08-21 15:57:22,822 | [ARCT] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $13.26
+2026-08-21 15:57:22,832 | [ARCT] Buying 37 share(s) (~$491, flat $ sizing) | stop-loss $12.60 | take-profit $14.59 (fixed %)
+2026-08-21 15:57:25,917 | [ARCT] Fill not confirmed yet -- using the pre-trade quote for records; the bracket legs stay as originally priced.
+2026-08-21 15:57:25,918 | [ARCT] ACTION: BUY (order id 60588e7e-9618-40c3-b9e6-35e720ade570, strategy: breakout)
+2026-08-21 15:57:25,953 | [MRNA] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $147.66
+2026-08-21 15:57:25,953 | [MRNA] ACTION: No trade.
+2026-08-21 15:57:25,989 | [MU] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $970.50
+2026-08-21 15:57:25,989 | [MU] ACTION: No trade.
+2026-08-21 15:57:26,024 | [NVDA] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.70
+2026-08-21 15:57:26,024 | [NVDA] ACTION: No trade.
+2026-08-21 15:57:26,058 | [SNDK] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1595.89
+2026-08-21 15:57:26,059 | [SNDK] ACTION: No trade.
+2026-08-21 15:57:26,095 | [TSLA] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $363.47
+2026-08-21 15:57:26,095 | [TSLA] ACTION: No trade.
+2026-08-21 16:12:26,226 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 16:12:28,664 | [AAPL] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.53
+2026-08-21 16:12:28,665 | [AAPL] ACTION: No trade.
+2026-08-21 16:12:28,695 | [ARCT] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 37.0 | Last price: $13.28
+2026-08-21 16:12:28,695 | [ARCT] ACTION: No trade.
+2026-08-21 16:12:28,728 | [MRNA] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.18
+2026-08-21 16:12:28,728 | [MRNA] ACTION: No trade.
+2026-08-21 16:12:28,763 | [MU] trending (ADX 33.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $967.72
+2026-08-21 16:12:28,763 | [MU] ACTION: No trade.
+2026-08-21 16:12:28,798 | [NVDA] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.16
+2026-08-21 16:12:28,798 | [NVDA] ACTION: No trade.
+2026-08-21 16:12:28,832 | [SNDK] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1598.60
+2026-08-21 16:12:28,832 | [SNDK] ACTION: No trade.
+2026-08-21 16:12:28,867 | [TSLA] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $362.54
+2026-08-21 16:12:28,867 | [TSLA] ACTION: No trade.
+2026-08-21 16:27:28,931 | SCANNER: refreshing watchlist...
+2026-08-21 16:27:29,038 | SCANNER: excluded 20 leveraged/inverse ETF(s) from 22 candidate(s).
+2026-08-21 16:27:29,302 | SCANNER: 2 candidate(s) passed price/extension filters but none met the $10,000,000 average dollar-volume bar.
+2026-08-21 16:28:49,631 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 16:28:49,633 | SCANNER: new watchlist -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 16:28:49,701 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 16:28:51,328 | [AAPL] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.19
+2026-08-21 16:28:51,328 | [AAPL] ACTION: No trade.
+2026-08-21 16:28:51,358 | [ARCT] trending (ADX 41.4) -> trend-following strategy | Signal: HOLD | Shares held: 37.0 | Last price: $13.16
+2026-08-21 16:28:51,358 | [ARCT] ACTION: No trade.
+2026-08-21 16:28:51,392 | [MRNA] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.33
+2026-08-21 16:28:51,392 | [MRNA] ACTION: No trade.
+2026-08-21 16:28:51,427 | [MU] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $962.75
+2026-08-21 16:28:51,427 | [MU] ACTION: No trade.
+2026-08-21 16:28:51,461 | [NVDA] trending (ADX 30.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.71
+2026-08-21 16:28:51,461 | [NVDA] ACTION: No trade.
+2026-08-21 16:28:51,496 | [SNDK] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1590.67
+2026-08-21 16:28:51,496 | [SNDK] ACTION: No trade.
+2026-08-21 16:28:51,530 | [TSLA] trending (ADX 36.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $362.19
+2026-08-21 16:28:51,531 | [TSLA] ACTION: No trade.
+2026-08-21 16:43:51,654 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 16:43:53,331 | [AAPL] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.20
+2026-08-21 16:43:53,331 | [AAPL] ACTION: No trade.
+2026-08-21 16:43:53,361 | [ARCT] trending (ADX 42.7) -> trend-following strategy | Signal: HOLD | Shares held: 37.0 | Last price: $13.39
+2026-08-21 16:43:53,361 | [ARCT] ACTION: No trade.
+2026-08-21 16:43:53,394 | [MRNA] trending (ADX 29.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $149.05
+2026-08-21 16:43:53,394 | [MRNA] ACTION: No trade.
+2026-08-21 16:43:53,428 | [MU] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $965.88
+2026-08-21 16:43:53,428 | [MU] ACTION: No trade.
+2026-08-21 16:43:53,463 | [NVDA] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.68
+2026-08-21 16:43:53,463 | [NVDA] ACTION: No trade.
+2026-08-21 16:43:53,498 | [SNDK] trending (ADX 27.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1596.11
+2026-08-21 16:43:53,498 | [SNDK] ACTION: No trade.
+2026-08-21 16:43:53,532 | [TSLA] trending (ADX 36.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $363.37
+2026-08-21 16:43:53,532 | [TSLA] ACTION: No trade.
+2026-08-21 16:58:53,598 | SCANNER: refreshing watchlist...
+2026-08-21 16:58:53,686 | SCANNER: excluded 19 leveraged/inverse ETF(s) from 21 candidate(s).
+2026-08-21 16:58:54,047 | SCANNER: news filter (min 1 article(s) in 24h) would eliminate every candidate this cycle -- skipping it for now.
+2026-08-21 16:58:54,047 | SCANNER: candidate ARCT -- +21.3% today, $13.33, liquid, 0 recent news item(s)
+2026-08-21 17:00:04,881 | S&P 500 liquidity backstop -> MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 17:00:04,883 | SCANNER: new watchlist -> ARCT, MU, SNDK, NVDA, AAPL, MRNA, TSLA
+2026-08-21 17:00:04,937 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 17:00:11,822 | [AAPL] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.00
+2026-08-21 17:00:11,822 | [AAPL] ACTION: No trade.
+2026-08-21 17:00:11,852 | [ARCT] trending (ADX 44.8) -> trend-following strategy | Signal: HOLD | Shares held: 37.0 | Last price: $13.36
+2026-08-21 17:00:11,852 | [ARCT] ACTION: No trade.
+2026-08-21 17:00:11,886 | [MRNA] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $151.12
+2026-08-21 17:00:11,886 | [MRNA] ACTION: No trade.
+2026-08-21 17:00:11,920 | [MU] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $964.62
+2026-08-21 17:00:11,920 | [MU] ACTION: No trade.
+2026-08-21 17:00:11,955 | [NVDA] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.28
+2026-08-21 17:00:11,955 | [NVDA] ACTION: No trade.
+2026-08-21 17:00:11,990 | [SNDK] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1605.68
+2026-08-21 17:00:11,990 | [SNDK] ACTION: No trade.
+2026-08-21 17:00:12,024 | [TSLA] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $364.33
+2026-08-21 17:00:12,025 | [TSLA] ACTION: No trade.
+2026-08-21 17:15:12,593 | Market is open (closes 2026-08-21 22:00:00 CEST your local time). Checking 7 symbols: AAPL, ARCT, MRNA, MU, NVDA, SNDK, TSLA
+2026-08-21 17:15:14,495 | [AAPL] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.56
+2026-08-21 17:15:14,495 | [AAPL] ACTION: No trade.
+2026-08-21 17:15:14,526 | [ARCT] trending (ADX 45.0) -> trend-following strategy | Signal: HOLD | Shares held: 37.0 | Last price: $13.28
+2026-08-21 17:15:14,526 | [ARCT] ACTION: No trade.
+2026-08-21 17:15:14,559 | [MRNA] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $148.21
+2026-08-21 17:15:14,559 | [MRNA] ACTION: No trade.
+2026-08-21 17:15:14,594 | [MU] trending (ADX 33.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $964.47
+2026-08-21 17:15:14,594 | [MU] ACTION: No trade.
+2026-08-21 17:15:14,628 | [NVDA] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.39
+2026-08-21 17:15:14,628 | [NVDA] ACTION: No trade.
+2026-08-21 17:15:14,663 | [SNDK] choppy/sideways (ADX 22.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1601.70
+2026-08-21 17:15:14,663 | [SNDK] ACTION: No trade.
+2026-08-21 17:15:14,697 | [TSLA] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $363.60
+2026-08-21 17:15:14,698 | [TSLA] ACTION: No trade.
+2026-08-21 17:22:43,322 | Duration window finished.
 2026-08-21 12:22:21,118 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
 2026-08-21 12:22:21,118 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
 2026-08-21 12:22:21,118 | Bar size: 15min | Check interval while market open: 15min
