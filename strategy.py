@@ -217,11 +217,30 @@ USE_CLOSE_BEYOND_LEVEL_CONFIRMATION = os.getenv("USE_CLOSE_BEYOND_LEVEL_CONFIRMA
 # be active right now, regardless of what actually opened the position)
 # or the mandatory end-of-day flatten.
 #
-# Default OFF -- ships toggleable so the backtest gets the final word,
-# same convention as every other lever in this file. This is a real,
-# evidenced structural gap (see breakout_invalidated_at()), not a guess,
-# but the FIX itself hasn't been backtested yet -- that's a separate
-# question from whether the gap is real.
+# Default OFF -- the mechanism itself (breakout_invalidated_at()) is real,
+# well-tested, and NOT in question; only whether it should be ON BY
+# DEFAULT is. History:
+#   2026-08-12 (commit c774afb): enabled live (.env/trade.yml set to
+#     "true", overriding this code default) on real, independently-
+#     verified 90-day scanner-universe backtest evidence: avg breakout
+#     loss shrank ~20% (-1.96% -> -1.57%), combined portfolio profit
+#     factor 1.29 -> 1.35, max drawdown 1.6% -> 1.4%.
+#   2026-08-23: reverted back to OFF (this code default was never
+#     actually flipped to "true" -- only .env/trade.yml were, and those
+#     are reverted alongside this comment) after a 180-day robustness
+#     re-test with a per-symbol P&L breakdown found the ENTIRE claimed
+#     90-day/180-day improvement was driven by ONE symbol, SMCI
+#     (85-100%+ of the delta on both windows). Excluding SMCI, every
+#     metric on the 180-day scanner backtest REVERSES: portfolio pnl
+#     $125.53 (ON) vs $148.20 (OFF), profit factor 1.245 vs 1.279, max
+#     drawdown 2.30% vs 1.91% -- the feature makes things WORSE once the
+#     one outlier is removed. Separately, a scanner-selection audit found
+#     SMCI appeared in the REAL live watchlist exactly ONCE in the last 5
+#     weeks (2026-07-22, before live trading even started), so this
+#     feature had no real expected benefit and plausible real harm on the
+#     population the bot actually trades now. Ships toggleable (not
+#     deleted) so a future backtest across a wider, less outlier-prone
+#     symbol set can still give this a fair re-test.
 USE_BREAKOUT_INVALIDATION_EXIT = os.getenv("USE_BREAKOUT_INVALIDATION_EXIT", "false").strip().lower() in ("1", "true", "yes")
 
 # Smash Day Pattern (Type B) -- a Larry Williams reversal pattern, sourced
@@ -318,6 +337,48 @@ ORB_MINUTES = int(os.getenv("ORB_MINUTES", 15))
 # and starting to turn back up.
 USE_VWAP_REVERSION = os.getenv("USE_VWAP_REVERSION", "true").strip().lower() in ("1", "true", "yes")
 VWAP_REVERSION_PCT = float(os.getenv("VWAP_REVERSION_PCT", 1.5))
+# Whether vwap_reversion_at additionally requires the CURRENT bar to have
+# already closed above the PRIOR bar's close ("already turning back up")
+# before firing, on top of just being stretched below VWAP.
+#
+# DEFAULT FLIPPED TO FALSE (evidence says REMOVE the requirement) after a
+# rigorous sensitivity sweep -- 90d AND 180d, BOTH universes, with a
+# per-symbol breakdown specifically to rule out one outlier symbol driving
+# the result (this project's own recent history has burned it on exactly
+# that mistake at least 3 times, one still live at the time of this
+# writing -- see USE_MULTI_TIMEFRAME_FILTER's comment in trading_bot.py).
+# This one wasn't outlier-driven: 7-8 of the 12 scanner symbols improved
+# individually, not one name carrying the whole average. Every metric
+# tested improved, broadly, by removing the requirement:
+#
+#   90d megacap:  82->117 trades, PF 1.57->1.43 (down slightly), return +4.75%->+5.79%
+#   90d scanner: 102->149 trades, PF 0.97->1.20,                  return -0.22%->+2.49%
+#   180d megacap:      PF 1.50->1.51 (tie),                       return +7.85%->+12.24%
+#   180d scanner:      PF 1.17->1.37,                              return +2.25%->+7.75%
+#
+# The one metric that moved the "wrong" way (90d megacap PF, 1.57->1.43)
+# is a real tradeoff, not a red flag: nearly 1.5x the trade count (82->117)
+# at a still-solidly-profitable profit factor, on a strategy/universe pair
+# that was already the smallest sample here. Every OTHER cell -- both
+# windows, both universes, return, trade count, and 3 of 4 profit-factor
+# readings -- points the same direction, which is why this ships as the
+# new default rather than staying a per-universe or per-window tweak.
+#
+# Why "already turning up" was hurting more than helping: waiting for
+# close_now > close_prev doesn't distinguish a genuine bounce off support
+# from a stock still falling that merely ticked up for one bar inside a
+# larger downswing -- ADX (VWAP_REVERSION_MAX_ADX) is already the real
+# trend/knife-catching guard here (see vwap_reversion_at's docstring for
+# the 2026-07-27 postmortem that added it), so the turn-up check was
+# mostly just adding a one-bar entry LAG on top of a filter that already
+# does the actual safety job: fewer, later entries on the same setups,
+# not meaningfully safer ones.
+#
+# Old stricter behavior (require the turn-up) is still fully available --
+# set this true to restore it, same toggle-for-symmetry convention as
+# every other filter in this file.
+USE_VWAP_REVERSION_TURN_UP_CONFIRMATION = os.getenv(
+    "USE_VWAP_REVERSION_TURN_UP_CONFIRMATION", "false").strip().lower() in ("1", "true", "yes")
 # Refuse VWAP reversion entries above this ADX -- an extreme-trend guard,
 # NOT the fix for the 2026-07-27 losses.
 #
@@ -1171,24 +1232,35 @@ def orb_at(df: pd.DataFrame, i: int) -> bool:
 
 def vwap_reversion_at(df: pd.DataFrame, i: int) -> bool:
     """
-    BUY when price is stretched VWAP_REVERSION_PCT% below session VWAP and
-    just turned back up -- but ONLY when the stock isn't in a strong trend.
+    BUY when price is stretched VWAP_REVERSION_PCT% below session VWAP --
+    but ONLY when the stock isn't in a strong trend.
 
-    That last condition is the whole difference between mean reversion and
-    catching a falling knife, and its absence cost real money on
+    That trend condition is the whole difference between mean reversion
+    and catching a falling knife, and its absence cost real money on
     2026-07-27: this strategy took 8 of the day's 10 trades, lost 7 of
     them, and accounted for essentially the entire -$171 day while the
     other two strategies were both slightly green.
 
     Every one of those losses was entered while ADX said "strong trend":
     VEEE at ADX 44.6 / 40.7 / 30.8, TRAX at 25.0 twice, NVDA at 53.6 with
-    RSI 17.7. "Stretched below VWAP and ticking up" is a reversion signal
-    in a RANGE; in a downtrend it's just a pause on the way down, and the
-    bot bought every one of those pauses.
+    RSI 17.7. "Stretched below VWAP" is a reversion signal in a RANGE; in
+    a downtrend it's just a pause on the way down, and the bot bought
+    every one of those pauses.
 
     ADX was already computed and already had a threshold constant -- it
     was simply never consulted here, because this strategy runs at
     priority 1, ahead of the regime switch that does check it.
+
+    USE_VWAP_REVERSION_TURN_UP_CONFIRMATION (default FALSE): whether an
+    entry ALSO requires the current bar to have already closed above the
+    prior bar's close ("already turning back up") on top of being
+    stretched below VWAP. This used to be a hardcoded, non-toggleable
+    requirement. A 90d-AND-180d, both-universe sensitivity sweep with a
+    per-symbol breakdown (see that constant's comment above) found
+    removing it improves every metric tested, broadly across 7-8 of 12
+    scanner symbols rather than one outlier -- ADX already does the real
+    knife-catching-vs-reversion job here, so the turn-up check was mostly
+    adding a one-bar entry lag rather than meaningfully more safety.
     """
     vwap = df["vwap"].iat[i]
     if pd.isna(vwap) or vwap == 0 or i < 1:
@@ -1200,10 +1272,14 @@ def vwap_reversion_at(df: pd.DataFrame, i: int) -> bool:
     if pd.isna(adx) or adx >= VWAP_REVERSION_MAX_ADX:
         return False
     close_now = df["close"].iat[i]
-    close_prev = df["close"].iat[i - 1]
     stretched_below = close_now < vwap * (1 - VWAP_REVERSION_PCT / 100)
-    turning_up = close_now > close_prev
-    return bool(stretched_below and turning_up)
+    if not stretched_below:
+        return False
+    if USE_VWAP_REVERSION_TURN_UP_CONFIRMATION:
+        close_prev = df["close"].iat[i - 1]
+        turning_up = close_now > close_prev
+        return bool(turning_up)
+    return True
 
 
 def vwap_reversion_volume_confirms(df: pd.DataFrame, i: int) -> bool:
@@ -1335,7 +1411,9 @@ def _decide_from_indicators(df: pd.DataFrame, i: int) -> tuple[str, str, str]:
         return "BUY", "rvol_spike", f"relative volume spike ({RVOL_MULTIPLIER:.1f}x average) on a green bar"
 
     if USE_VWAP_REVERSION and vwap_reversion_at(df, i):
-        return "BUY", "vwap_reversion", "stretched below VWAP and turning back up"
+        return "BUY", "vwap_reversion", (
+            "stretched below VWAP and turning back up" if USE_VWAP_REVERSION_TURN_UP_CONFIRMATION
+            else "stretched below VWAP")
 
     if USE_ORB and orb_at(df, i):
         return "BUY", "orb", f"Opening Range Breakout (broke the first {ORB_MINUTES}-min range high)"

@@ -44,6 +44,7 @@ concurrency:
 
 permissions:
   contents: write  # needed to commit the updated state files back
+  actions: write   # needed to self-dispatch the next run (see below)
 
 jobs:
   trade:
@@ -53,6 +54,70 @@ jobs:
     # hung cycle still gets killed rather than blocking the next job.
     timeout-minutes: 165
     steps:
+      # 2026-08-23: the "one running + one queued per concurrency group"
+      # design below the schedule comment assumed at least one of the ~7-8
+      # cron ticks that fall inside any given 150-165 min job would land.
+      # That assumption was wrong often enough to matter: cross-referencing
+      # logs/*.log job-start/job-end markers against real wall-clock time
+      # found a ~150-165 MINUTE dead gap between the first job of the day
+      # ending and the second one starting on 12 of 12 sampled trading days
+      # (07-27 through 08-12) -- and on 2026-08-06 the gap was 514 minutes
+      # (16:01 -> 00:35 next day), well past the close, so cycles never
+      # resumed that day and 5 positions (MSFT, PRAX, HUBS, CHYM, MGNI) got
+      # carried overnight against FLATTEN_BEFORE_CLOSE's same-day-close
+      # design intent. The concurrency group and the internal
+      # --duration-minutes loop both work exactly as designed; what's
+      # missing is ever getting a run INTO the queued slot when GitHub
+      # drops every cron tick during a job's runtime, which is common
+      # enough to hit on essentially every single day (see CLAUDE.md
+      # 2026-07-24 and 2026-08-23 entries -- this is a recurrence of the
+      # same "GitHub drops most cron ticks" issue, just at a coarser
+      # 20-minute cadence instead of 5-minute).
+      #
+      # Fix: stop depending on `schedule` (documented by GitHub as
+      # best-effort and droppable under load) to create the successor run
+      # at all. As the very FIRST step of the job -- before checkout, pip
+      # install, or the 150-minute trading loop can fail, hang, or get
+      # killed by the timeout -- explicitly queue the NEXT run via a
+      # direct `workflow_dispatch` API call (through `gh workflow run`).
+      # That's a normal authenticated REST call, not a `schedule` event,
+      # so it isn't subject to the same silent-drop behavior, and
+      # `workflow_dispatch`/`repository_dispatch` are specifically exempt
+      # from GitHub's "GITHUB_TOKEN-triggered events don't create new
+      # workflow runs" recursion guard, so a workflow dispatching itself
+      # via the token works normally. The `concurrency:` group above still
+      # serializes execution (one running + one pending); if a real cron
+      # tick also lands later in this job's window it just cancels and
+      # replaces this pending run, which is harmless -- either way,
+      # something is always queued by the time this job ends. Gated to
+      # weekdays and hour < 21 UTC (matching the cron's own hour range) so
+      # the chain self-terminates for the day rather than dispatching all
+      # night; the FIRST job of each new trading day is still started by
+      # cron as before, same as it always was.
+      - name: Queue next run (self-chaining handoff)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          hour=$(date -u +%H)
+          dow=$(date -u +%u)   # 1=Mon .. 7=Sun
+          if [ "$dow" -ge 1 ] && [ "$dow" -le 5 ] && [ "$hour" -lt 21 ]; then
+            queued=false
+            for attempt in 1 2 3; do
+              if gh workflow run trade.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"; then
+                echo "Queued next run on attempt $attempt."
+                queued=true
+                break
+              fi
+              echo "workflow_dispatch failed (attempt $attempt) -- retrying."
+              sleep $((attempt * 5))
+            done
+            if [ "$queued" = false ]; then
+              echo "::warning::Could not queue the next run after 3 attempts -- relying on a cron tick landing during this job's window instead."
+            fi
+          else
+            echo "Outside the self-chaining window (dow=$dow hour=$hour UTC) -- not queuing a successor; next weekday's cron tick starts the day."
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
@@ -106,15 +171,32 @@ jobs:
           SCANNER_MIN_PRICE: "10"
           SCANNER_MIN_DOLLAR_VOLUME: "10000000"
           USE_SP500_UNIVERSE: "true"
-          SP500_MIN_WATCHLIST_SLOTS: "6"
-          USE_MULTI_TIMEFRAME_FILTER: "true"
+          # Raised 6 -> 10 (of 18) on 2026-08-23 -- see trading_bot.py's
+          # SP500_MIN_WATCHLIST_SLOTS comment. Real money AND an honest
+          # (slippage-inclusive) backtest agree the S&P 500 backstop is
+          # currently the bot's only demonstrated source of edge.
+          SP500_MIN_WATCHLIST_SLOTS: "10"
+          # Reverted to false 2026-08-23 -- see trading_bot.py's
+          # USE_MULTI_TIMEFRAME_FILTER comment for the full re-test
+          # (leave-one-symbol-out, 2 windows, 2 universes including the
+          # actual current live watchlist) that contradicted the
+          # original 2026-07-31 "unambiguous win" validation.
+          USE_MULTI_TIMEFRAME_FILTER: "false"
           USE_VWAP_VOLUME_CONFIRMATION: "true"
           DAILY_TREND_REFRESH_HOURS: "4"
           SYMBOL_COOLDOWN_MINUTES: "60"
           MIN_STOP_TO_ATR_RATIO: "2.0"
           VWAP_REVERSION_MAX_ADX: "50"
+          USE_VWAP_REVERSION_TURN_UP_CONFIRMATION: "false"
           SCANNER_REFRESH_HOURS: "0.5"
-          SCANNER_MAX_EXTENSION_PCT: "50"
+          # Tightened 50 -> 20 on 2026-08-23 real-money evidence: real
+          # losing mover trades (ALMR +28.1%, NN +23.5% from the open)
+          # entered comfortably under the old 50% cutoff. See CLAUDE.md.
+          SCANNER_MAX_EXTENSION_PCT: "20"
+          USE_SCANNER_OPENING_BLACKOUT: "true"
+          SCANNER_OPENING_BLACKOUT_MINUTES: "45"
+          USE_SCANNER_MIN_LISTING_AGE: "true"
+          SCANNER_MIN_LISTING_AGE_DAYS: "100"
           USE_NEWS_FILTER: "true"
           NEWS_LOOKBACK_HOURS: "24"
           MIN_NEWS_ITEMS: "1"
@@ -128,7 +210,7 @@ jobs:
           BREAKOUT_VOLUME_MULTIPLIER: "2.0"
           USE_TIME_OF_DAY_VOLUME_NORM: "true"
           TIME_OF_DAY_VOLUME_BUCKET_MINUTES: "30"
-          USE_BREAKOUT_INVALIDATION_EXIT: "true"
+          USE_BREAKOUT_INVALIDATION_EXIT: "false"
           USE_BREAKOUT: "true"
           USE_GAP_PATTERN: "true"
           USE_SMASH_DAY_PATTERN: "false"

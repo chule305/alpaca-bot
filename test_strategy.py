@@ -469,24 +469,32 @@ def test_stop_must_be_wider_than_noise():
 
 def test_vwap_reversion():
     # A RANGING stock (low ADX): stretched below VWAP and turning up is a
-    # genuine reversion setup, and should fire.
+    # genuine reversion setup, and should fire regardless of the turn-up
+    # toggle (it satisfies either version of the check).
     n = 40
     ranging = [100.0 + (1.0 if i % 2 else -1.0) for i in range(n - 2)] + [96.0, 96.6]
     enriched = strat.add_indicators(flat_bars(ts_range("2024-01-02", "09:30", n), ranging))
     check("VWAP reversion fires in a RANGE when stretched below VWAP and turning up",
           strat.vwap_reversion_at(enriched, n - 1))
 
+    # DEFAULT (USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=false): stretched
+    # below VWAP is enough on its own -- see that constant's comment for
+    # the 90d/180d, both-universe, per-symbol-checked evidence that
+    # requiring an already-turned-up bar on top of this was a net drag,
+    # not extra safety (ADX already does the real knife-catching job).
     ranging_no_turn = [100.0 + (1.0 if i % 2 else -1.0) for i in range(n - 2)] + [96.0, 95.5]
     enriched_no_turn = strat.add_indicators(
         flat_bars(ts_range("2024-01-02", "09:30", n), ranging_no_turn))
-    check("VWAP reversion does NOT fire if price keeps falling",
-          not strat.vwap_reversion_at(enriched_no_turn, n - 1))
+    check("default: VWAP reversion fires even while price is still falling, "
+          "as long as it's stretched below VWAP in a non-trending regime",
+          strat.vwap_reversion_at(enriched_no_turn, n - 1))
 
     # A stock in a STRONG DOWNTREND (high ADX). This bar is deeply below
-    # VWAP and ticking up -- textbook "stretched and turning", which the
-    # old code bought without hesitation. It's the exact shape of the
-    # 2026-07-27 losses (VEEE at ADX 44.6, TRAX at 25.0, NVDA at 53.6):
-    # not a bounce, just a pause on the way down.
+    # VWAP -- textbook "stretched", which without the ADX guard would get
+    # bought without hesitation. It's the exact shape of the 2026-07-27
+    # losses (VEEE at ADX 44.6, TRAX at 25.0, NVDA at 53.6): not a bounce,
+    # just a pause on the way down. The ADX guard (not the turn-up check)
+    # is what's supposed to catch this.
     trending = [100.0 - i * 0.8 for i in range(n - 1)]
     trending.append(trending[-1] + 0.3)
     enriched_trend = strat.add_indicators(
@@ -495,7 +503,8 @@ def test_vwap_reversion():
     turning_up = enriched_trend["close"].iat[n - 1] > enriched_trend["close"].iat[n - 2]
     check("(fixture sanity) the trending bar really is stretched below VWAP and turning up",
           stretched and turning_up)
-    check("VWAP reversion does NOT fire in a strong downtrend -- the knife-catching case",
+    check("VWAP reversion does NOT fire in a strong downtrend -- the knife-catching case "
+          "(ADX guard, not the turn-up check, is what refuses this)",
           not strat.vwap_reversion_at(enriched_trend, n - 1))
 
     # Unknown ADX must fail closed: with no trend reading there's no way to
@@ -504,6 +513,20 @@ def test_vwap_reversion():
         flat_bars(ts_range("2024-01-02", "09:30", 11), [100.0] * 9 + [96.0, 96.5]))
     check("VWAP reversion does NOT fire when ADX is unknown (fails closed)",
           not strat.vwap_reversion_at(short, 10))
+
+    # USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=true restores the OLD,
+    # stricter behavior: a stretched-but-still-falling bar in a ranging
+    # market is now refused, same as the pre-toggle code always did.
+    original = strat.USE_VWAP_REVERSION_TURN_UP_CONFIRMATION
+    try:
+        strat.USE_VWAP_REVERSION_TURN_UP_CONFIRMATION = True
+        check("toggle=true: VWAP reversion still fires when stretched AND turning up",
+              strat.vwap_reversion_at(enriched, n - 1))
+        check("toggle=true: VWAP reversion does NOT fire while price keeps falling "
+              "(old stricter behavior restored)",
+              not strat.vwap_reversion_at(enriched_no_turn, n - 1))
+    finally:
+        strat.USE_VWAP_REVERSION_TURN_UP_CONFIRMATION = original
 
 
 def test_vwap_reversion_volume_confirms():

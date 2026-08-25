@@ -52,8 +52,12 @@ data tells a different story — see CLAUDE.md for the numbers behind
 each call):
 
 1. **VWAP mean-reversion.** Price is stretched well below the session's
-   volume-weighted average price and just turned back up. The standout
-   strategy across every backtest so far (63-80% win rate each time).
+   volume-weighted average price (a "must already be turning back up"
+   requirement existed here but was removed by default 2026-08-23 after a
+   sensitivity sweep found it costing real profit on both universes with
+   no real safety benefit — `USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=true`
+   restores it). The standout strategy across every backtest so far
+   (63-80% win rate each time).
 2. **Opening Range Breakout (ORB).** Price breaks above the high of
    the first 15 minutes of the session, once that range is complete.
 3. **Gap Pattern (Type A).** Stock gapped up meaningfully at the open
@@ -445,7 +449,12 @@ a day to place in a top-50 gainers/losers list. But a 90-day backtest
 (2026-07-28, see CLAUDE.md) found this system performs markedly *better*
 on liquid stocks than on its own scanner picks (profit factor 1.52 on
 megacaps vs 1.08 on scanner picks). So when `USE_SP500_UNIVERSE` is on
-(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default 6) of the
+(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default **10**, raised
+from 6 on 2026-08-23 — see CLAUDE.md's full-system regression finding:
+real trading and an honest, slippage-inclusive backtest both independently
+confirmed the backstop is this bot's only demonstrated source of edge,
+while the momentum-mover side currently is not, even with 2026-08-23's
+own new scanner-quality filters) of the
 watchlist are always reserved for S&P 500 names, ranked by trailing
 dollar volume — regardless of whether anything in the index happens to
 be a big mover that day. The constituent list is fetched from a
@@ -454,21 +463,22 @@ for `SP500_REFRESH_HOURS` (default 24 — the index changes only a handful
 of times a year). These reserved slots come out of the existing
 `SCANNER_WATCHLIST_SIZE` budget, not on top of it.
 
-**Multi-timeframe confirmation, scanner picks only.** When
-`USE_MULTI_TIMEFRAME_FILTER` is on (default), a non-S&P-500 symbol needs
-the PRIOR trading day's daily EMA(9) above its EMA(21) — an uptrend, on
-the daily timeframe — before the bot will take a new intraday entry in
-it. S&P 500 names (whether they came from the backstop above or the
-`SYMBOLS` fallback list) are always exempt, regardless of their own daily
-trend. This split is deliberate, not an oversight: a 90-day backtest
-(2026-07-31, see CLAUDE.md) found the filter is a clear win specifically
-on the scanner's own volatile picks (return +4.4% → +7.6%, profit factor
-1.07 → 1.18, max drawdown 8.7% → 5.7% over the same period), but on
-liquid S&P 500 names it cut trade count in half for a *lower* total
-dollar return — each trade taken was higher quality, just far fewer of
-them, which isn't the same as an improvement. Applying it everywhere
-would have thrown away real edge on the liquid side to fix a problem
-that was never there.
+**Multi-timeframe confirmation, scanner picks only** *(off by default —
+`USE_MULTI_TIMEFRAME_FILTER=false`, tested and reverted)*. When on, a
+non-S&P-500 symbol needs the PRIOR trading day's daily EMA(9) above its
+EMA(21) — an uptrend, on the daily timeframe — before the bot will take a
+new intraday entry in it. S&P 500 names (whether they came from the
+backstop above or the `SYMBOLS` fallback list) are always exempt,
+regardless of their own daily trend. This shipped ON from 2026-07-31 on a
+single 90-day backtest calling it "an unambiguous win" for scanner picks
+— that characterization did not survive a 2026-08-23 re-test with a
+mandatory leave-one-symbol-out check across 4 independent comparisons (2
+time windows × 2 symbol universes, one of them the bot's actual current
+live watchlist rather than a stale fixed list): 3 of 4 robustly favor
+OFF, including both tests run against real, currently-traded symbols
+(OFF wins there on return, profit factor, AND drawdown at once). Reverted
+to off — see CLAUDE.md's 2026-08-23 entry for the full leave-one-out
+numbers and why the original result doesn't hold up.
 
 **`vwap_reversion` volume confirmation, scanner picks only.** When
 `USE_VWAP_VOLUME_CONFIRMATION` is on (default), a non-S&P-500 symbol's
@@ -615,8 +625,22 @@ evidence pointed at — combined portfolio return rose 2.5%→2.8%, profit
 factor 1.29→1.35, max drawdown 1.6%→1.4%. The 5-symbol megacap universe
 only produced 7 breakout trades in the same window, too few to say
 anything. Left off by default since there's no megacap-side evidence yet,
-but the scanner-side evidence is real and reproduced — worth deciding
+but the scanner-side evidence looked real and reproduced — worth deciding
 deliberately rather than defaulting either way blindly.
+
+**Update, 2026-08-12 → 2026-08-23**: enabled live for a few hours on the
+strength of the evidence above, then reverted after a 180-day robustness
+re-test with a per-symbol P&L breakdown found the ENTIRE claimed 90-day
+*and* 180-day scanner-universe improvement was driven by ONE symbol,
+SMCI (85-100%+ of the delta on both windows) — "independently reproduced"
+had checked a second reviewer's math, not whether the result held with
+outliers excluded, which turned out to be the real gap. SMCI has also
+appeared in the real live watchlist exactly once in 5 weeks, so the
+concentrated benefit had little real expected value regardless. Back to
+off by default; see `strategy.py`'s `USE_BREAKOUT_INVALIDATION_EXIT`
+comment for the full numbers, and `backtest.py`'s COMBINED section (now
+prints a per-symbol P&L breakdown with an automatic outlier warning on
+every run) for how to catch this class of mistake going forward.
 
 **Conviction-boost sizing** *(off by default — `USE_CONVICTION_SIZING=false`,
 `HIGH_CONVICTION_STRATEGIES` genuinely empty)*. The safe alternative to an
