@@ -183,7 +183,80 @@ EXCLUDE_LEVERAGED_ETFS = os.getenv("EXCLUDE_LEVERAGED_ETFS", "true").strip().low
 # fix that, but it does avoid the worst version of it: a candidate
 # already up/down more than this % today is more likely near-exhausted
 # than just getting started, so it's excluded rather than ranked #1.
-SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 50.0))
+#
+# 2026-08-23 scanner robustness investigation (see CLAUDE.md): tightened
+# 50 -> 20 after real money confirmed 50 was far too loose to matter.
+# "Momentum mover" picks averaged -$2.17/trade in REAL trading vs.
+# +$51.56/trade for S&P 500 backstop picks -- same code, same risk rules,
+# only the selected stock differed. Of the 5 real losing "mover" trades
+# traced against real intraday bars (RGEN, CHYM, ALMR, NN, ATRO), 2
+# entered well past this filter's reach: ALMR after +28.1% from the open,
+# NN at the exact peak of a +23.5% two-hour run -- comfortably under the
+# old 50% cutoff but caught cleanly by 20%. The other 3 (RGEN +8.9%,
+# CHYM +10.1%, ATRO +7.3%) are all under ANY sane extension threshold --
+# those are what SCANNER_OPENING_BLACKOUT_MINUTES below catches instead
+# (all 3 entered 30-35 minutes since open, squarely in that filter's
+# window). 20% is chosen to comfortably block the confirmed 23-28% range
+# while still leaving room for genuine, early-stage moves -- see the
+# scanner-universe before/after backtest in CLAUDE.md for the watchlist-
+# size impact of this change.
+SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 20.0))
+
+# 2026-08-23 scanner robustness investigation, continued: no blackout
+# existed anywhere on the dangerous OPENING-spike window -- the pre-
+# existing ENTRY_BLACKOUT_START/END_MINUTES (see strategy.py) targets the
+# low-volume MIDDAY chop window (~1:00-2:00pm ET) and says nothing about
+# the opening period, which is exactly where real losses cluster: the
+# 30-90-minutes-since-open bucket was the single worst in real trading,
+# net -$55.70 across 12 real trades, with losses running ~1.6x the size
+# of wins even at a 50% win rate. Scoped to scanner picks only (same
+# S&P-500-exempt mechanism as USE_MULTI_TIMEFRAME_FILTER/
+# USE_VWAP_VOLUME_CONFIRMATION above) because the evidence is specifically
+# about scanner-picked movers entering into a still-running opening
+# spike, not about S&P 500 names, and because this is DIFFERENT FROM and
+# ADDITIVE TO the lunch-window blackout, not a replacement for it.
+#
+# Default 45. Checked directly against the 5 real losing trades this
+# whole investigation traces (RGEN, CHYM, ALMR, NN, ATRO): RGEN entered
+# at 30.4 min since open, CHYM at 34.2, ATRO at 32.4 -- a 30-minute
+# cutoff would slip through all three by just a few minutes, right as
+# each opening spike was already rolling over (see ATRO's case
+# specifically). 45 comfortably covers all three with room to spare.
+# (ALMR/NN entered ~222 min in, well outside either blackout window --
+# those two are what SCANNER_MAX_EXTENSION_PCT above is for instead.)
+#
+# NOT widened further to 90 despite real trading's own "30-90-min-since-
+# open bucket is the single worst" framing -- backtest.py's entry-time
+# proxy (see that file) was used to sanity-check window sizes on the
+# scanner-universe backtest, and 90 min backtests WORSE than 45 at both
+# 90 and 180 days (180d: blackout alone swings the universe from +$98.47
+# to -$98.19 at 90 min, vs. only +$46.57 at 45 min -- see CLAUDE.md for
+# the full window-size sweep). That damage is dominated by a couple of
+# single-symbol/single-trade effects (one QBTS breakout entered at
+# literally 0 minutes since open and hit take-profit for +$48.27 pre-fix;
+# delaying it past a wide blackout turned it into a loss), and the
+# window-size response isn't even monotonic across the sizes tested --
+# a classic small-sample overfitting signature, not a reason to trust 90
+# over 45. 45 is the size directly justified by the concrete real cases
+# without extrapolating past what they actually show. Defaults ON given
+# the underlying real-money evidence for SOME opening-window block is
+# real, direct-price-bar-confirmed, not backtest-only.
+USE_SCANNER_OPENING_BLACKOUT = os.getenv("USE_SCANNER_OPENING_BLACKOUT", "true").strip().lower() in ("1", "true", "yes")
+SCANNER_OPENING_BLACKOUT_MINUTES = int(os.getenv("SCANNER_OPENING_BLACKOUT_MINUTES", 45))
+
+# 2026-08-23 scanner robustness investigation, continued: no listing-age
+# filter existed anywhere, so a genuinely recent, no-track-record listing
+# could reach the live watchlist with zero screening as long as it moved
+# enough today. Confirmed concretely in real trading: ALMR (traded
+# 2026-08-11, real loss -$25.48) had only ~80 days of Alpaca daily bar
+# history at the time; EROC (on the 2026-08-12 watchlist) had only ~43.
+# Requires at least SCANNER_MIN_LISTING_AGE_DAYS trading days of daily bar
+# history via the same daily-bars endpoint refresh_daily_trend_maps_if_needed
+# already uses (see meets_min_listing_age below) -- no new API dependency.
+# Defaults ON given ALMR/EROC are concrete, confirmed real cases this
+# would have caught.
+USE_SCANNER_MIN_LISTING_AGE = os.getenv("USE_SCANNER_MIN_LISTING_AGE", "true").strip().lower() in ("1", "true", "yes")
+SCANNER_MIN_LISTING_AGE_DAYS = int(os.getenv("SCANNER_MIN_LISTING_AGE_DAYS", 100))
 
 # 2026-07-29 finding (see CLAUDE.md): the scanner's "top movers today"
 # picks backtest at profit factor 1.08 over 90 days; the same strategies
@@ -197,10 +270,42 @@ SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 50.0))
 # a big mover today. USE_SP500_UNIVERSE off returns to the pre-existing
 # movers-only behavior exactly.
 USE_SP500_UNIVERSE = os.getenv("USE_SP500_UNIVERSE", "true").strip().lower() in ("1", "true", "yes")
-# Scaled up alongside SCANNER_WATCHLIST_SIZE (2026-08-02) so the backstop
-# stays roughly the same ~1/3 share of the watchlist rather than being
-# diluted by the larger total -- see that constant's comment for why.
-SP500_MIN_WATCHLIST_SLOTS = int(os.getenv("SP500_MIN_WATCHLIST_SLOTS", 6))
+# Raised 6->10 (of 18) on 2026-08-23, the same day entry-fill slippage
+# was finally modeled honestly in backtest.py (see CLAUDE.md's "backtest.py
+# was assuming free entries" entry). That fix, combined with everything
+# else merged the same day, revealed something this constant's OLD value
+# was quietly working against: a full-system backtest on a fresh,
+# real-watchlist-derived symbol set (NIQ/CDNL/ONON/VREX/HZO/QNST/DOCS/
+# CRSR/TEAM/APPS/BLMN/SEDG) came back profit factor 0.39 at BOTH 90 and
+# 180 days once realistic slippage was included -- consistent, not a
+# thin-window fluke, and NOT explained by any single toggle (isolating
+# every individual change tested that same day -- USE_MULTI_TIMEFRAME_
+# FILTER on/off, USE_VWAP_REVERSION_TURN_UP_CONFIRMATION on/off, every
+# combination -- all stayed in the 0.27-0.39 PF range with slippage on;
+# only zeroing slippage itself flipped the picture positive). This lines
+# up exactly with the SAME day's real-money finding (see
+# scan_for_volatile_stocks' own comment above and CLAUDE.md): "momentum
+# mover" picks averaged -$2.17/trade in REAL trading even with every
+# known bug excluded, vs. +$51.56/trade for S&P 500 backstop picks --
+# same code, same risk rules, only the selected stock differing. Two
+# independent methods (real fills, and backtest once it stopped assuming
+# free entries) now agree: the S&P 500 backstop population is the only
+# part of this bot with a demonstrated positive edge, and the scanner's
+# momentum-mover population currently is not, even after the same day's
+# 4 new scanner-quality filters (SCANNER_MAX_EXTENSION_PCT tightened,
+# USE_SCANNER_OPENING_BLACKOUT, USE_SCANNER_MIN_LISTING_AGE, the
+# liquidity-window fix). Raised to 10 rather than all the way to
+# SCANNER_WATCHLIST_SIZE (abandoning momentum-mover picks entirely) --
+# that would be a bigger, more fundamental change than today's evidence
+# demands on its own, and the 4 new scanner filters deserve a real chance
+# to prove themselves in live trading now that they exist, just with a
+# smaller, more conservative share of the watchlist while that evidence
+# accumulates. This specific lever isn't independently backtestable
+# (backtest.py takes a fixed symbol list, it doesn't simulate the
+# scanner's own daily selection process) -- the justification rests on
+# the asymmetric evidence on each sub-population above, not a direct
+# before/after backtest of this exact change.
+SP500_MIN_WATCHLIST_SLOTS = int(os.getenv("SP500_MIN_WATCHLIST_SLOTS", 10))
 # The constituent list barely changes intraday -- a rare few times a year
 # -- so this is a slow-moving reference list, not a scan result. Cached
 # in-process rather than to disk: within one --duration-minutes job the
@@ -217,20 +322,93 @@ SP500_LIST_URL = os.getenv(
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
 )
 
-# 2026-07-31: multi-timeframe confirmation, SCANNER PICKS ONLY. A 90-day
-# backtest found requiring the prior day's daily trend to agree before
-# taking an intraday entry is a clear win specifically for the volatile,
-# low-cap names the movers scan picks (return +6.5% -> +9.8%, profit
-# factor 1.10 -> 1.27, max drawdown 8.9% -> 4.6%) -- but on liquid S&P
-# 500-type names it cut trade count in half for a LOWER total dollar
-# return (higher quality per trade, just far fewer of them taken). Since
-# the S&P 500 liquidity backstop puts both kinds of symbol on the same
-# watchlist every day now, this can't be "on for the whole watchlist" --
-# it has to know which symbols are S&P 500 members (skip) vs everything
-# else (apply), reusing the exact same fetch_sp500_symbols() membership
-# check already built for the backstop. See CLAUDE.md for the full
-# comparison this decision is based on.
-USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").strip().lower() in ("1", "true", "yes")
+# Multi-timeframe confirmation, SCANNER PICKS ONLY: requires the prior
+# day's daily EMA(9) > EMA(21) before an intraday entry on a non-S&P-500
+# name. Reuses the exact same fetch_sp500_symbols() membership check
+# built for the S&P 500 liquidity backstop, since that backstop puts both
+# kinds of symbol on the same watchlist every day -- this can't be "on
+# for the whole watchlist," it has to know which symbols to skip.
+#
+# DEFAULT FLIPPED BACK TO FALSE 2026-08-23. Originally shipped TRUE on
+# 2026-07-31 based on a single 90-day backtest called "a clear win... on
+# liquid S&P 500-type names it cut trade count in half for a LOWER total
+# dollar return" but "an unambiguous win" for scanner picks specifically
+# (return +6.5%->+9.8%, PF 1.10->1.27, max drawdown 8.9%->4.6%). That
+# characterization does not survive a real re-test with the mandatory
+# per-symbol outlier check this project now requires for every backtest
+# claim (see the project-wide methodology note this task was shipped
+# alongside). Four separate ON-vs-OFF comparisons were run, each with a
+# FULL leave-one-symbol-out sweep (12 exclusions) to check whether the
+# verdict depends on any single name:
+#
+#   1. Fixed 12-symbol "scanner" list (FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/
+#      RNG/INHD/FCUV/ATKR/SRAD -- the list used all week for
+#      comparability), 90 days: ON wins ($149 vs $39, PF 1.20 vs 1.03,
+#      DD 3.42% vs 3.89%). NOT robust on independent re-verification --
+#      excluding either of two symbols (PN, or FCUV) flips it to favor
+#      OFF instead, and the FCUV case is a textbook small-sample artifact
+#      (4 trades total, profit factor 35.73 -- near-zero losses inflating
+#      PF absurdly). This result doesn't survive its own leave-one-out
+#      check and shouldn't be trusted as evidence either way.
+#   2. SAME fixed list, 180 days: OFF wins ($752 vs $457, PF 1.32 vs
+#      1.36 -- roughly tied on quality per trade, OFF just takes ~1.7x
+#      more of them). ALSO robust to any single exclusion, including
+#      VEEE -- excluding VEEE still leaves OFF winning by ~$118. The
+#      90d/180d disagreement traces to a genuine regime split, not
+#      noise: splitting the 180d run at its midpoint, the RECENT ~90
+#      days inside it mildly favor ON (~+$51) while the OLDER 90-180
+#      days back favor OFF heavily (~+$346) -- two different periods
+#      behaving differently, confirmed by a strategy-level breakdown:
+#      trend_following's blocked trades are net LOSERS in the recent
+#      window (correctly refused) but net WINNERS in the older window
+#      (wrongly refused), same reversal for gap_continuation.
+#   3 & 4. A FRESH 12-symbol set (NIQ/CDNL/ONON/VREX/HZO/QNST/DOCS/CRSR/
+#      TEAM/APPS/BLMN/SEDG), drawn from the ACTUAL live watchlist history
+#      (2026-08-03 to 08-11) rather than the stale fixed list -- this
+#      matters because the fixed list turned out to have ZERO overlap
+#      with any symbol actually real-traded since this filter went live
+#      on 2026-07-31 (checked against Alpaca's real order history). On
+#      this genuinely current universe, OFF wins DECISIVELY on BOTH
+#      windows, robust to every single exclusion (24/24 leave-one-out
+#      checks, zero flips):
+#        90d:  ON $-32 (PF 0.96, net LOSING) vs OFF $+251 (PF 1.20)
+#        180d: ON $+128 (PF 1.08)            vs OFF $+674 (PF 1.26)
+#      Drawdown also favors OFF in both (3.77%->3.58% at 90d,
+#      4.10%->3.66% at 180d) -- not just a quantity/quality tradeoff
+#      here, OFF is better on every axis.
+#
+#   Verdict: 3 of these 4 tests favor OFF and hold up under their own
+#   leave-one-out check; only the fixed list's 90-day result favors ON,
+#   and that one does NOT hold up under leave-one-out on independent
+#   re-verification -- so it isn't real dissenting evidence, just noise
+#   from a symbol set no longer representative of what the bot actually
+#   trades. Combined with real-trading cross-checks: VEEE
+#   (the single biggest per-symbol contributor to the fixed list's
+#   180d OFF-favoring delta, ~60% of it) appeared on the REAL watchlist
+#   exactly once across this repo's entire watchlist_state.json history
+#   (2026-07-27) and has had zero real trades since 2026-07-28 -- three
+#   days before this filter even went live -- so whatever happened to it
+#   in these backtests has near-zero bearing on live trading either way.
+#   VEEE's own daily-bar history shows real, extreme (300%+ single-day
+#   return) volatility events, a plausible mechanism for why a ONE-
+#   PRIOR-DAY EMA read would badly lag a violent reversal -- but VEEE
+#   isn't uniquely volatile among its peers (INHD, PN show comparably
+#   extreme days) and isn't the majority driver of any of the 4 tests
+#   above, so this reads as a real but non-dominant contributing factor,
+#   not the whole story.
+#
+#   None of this makes OFF a "clean, unambiguous win" the way the
+#   2026-07-31 ON decision was originally described -- it's a real,
+#   multi-test, leave-one-out-robust preponderance of evidence, on a
+#   feature whose original validation turned out not to generalize.
+#   Given this project's default posture (off unless evidence justifies
+#   on) and that 3 of 4 independent robustness checks -- including both
+#   tests on the currently-representative universe -- favor OFF, this
+#   reverts to OFF. Re-test if re-enabling: this analysis is itself
+#   sensitive to which universe/window you pick (that's the whole
+#   finding), so don't trust one more single-window backtest as the
+#   final word either.
+USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "false").strip().lower() in ("1", "true", "yes")
 # Daily trend only changes once a day (it's driven by daily closes), so
 # this doesn't need refreshing anywhere near as often as the 5-minute
 # intraday cycle -- cached like SP500_REFRESH_HOURS for the same reason.
@@ -674,7 +852,46 @@ def fmt(dt: datetime) -> str:
 # PRICE DATA
 # ---------------------------------------------------------------------------
 
-def get_recent_bars_batch(symbols: list[str], lookback_days: int = 10) -> dict[str, pd.DataFrame]:
+def filter_to_regular_session(bars: pd.DataFrame) -> pd.DataFrame:
+    """
+    Drops every pre-market/after-hours bar, keeping only the 9:30am-4:00pm
+    ET regular session -- mirrors backtest.py's fetch_historical_bars
+    filter EXACTLY (same boundary condition, same inclusive/exclusive
+    edges), so a bar set that goes through this ends up on the same kind
+    of data a backtest would have computed indicators on. MARKET_TZ_FOR_LOGS
+    (defined above) is the same America/New_York zone used there -- it's
+    used for this filter too now, not just log timestamps.
+
+    2026-08-23: added because add_indicators's groupby(session_date)
+    columns (session_open_price, gap %, session_first_bar_high/volume,
+    VWAP) are all anchored to whichever bar prints FIRST each calendar
+    day -- pre-market or not -- when the input includes extended-hours
+    bars. Since backtest.py's fetch_historical_bars has always filtered
+    to the regular session before computing indicators but the live path
+    never did, live's gap_continuation/vwap_reversion/breakout signals
+    (the 3 most-traded live strategies) were being computed on session
+    anchors the backtest never saw: measured real divergence in
+    session_open_price of +0.35% to +1.8% on ordinary days with modest
+    pre-market activity. See get_recent_bars_batch's regular_session_only
+    param -- this is applied ONLY on the specific paths that feed
+    add_indicators, not to every bar fetch (the liquidity/dollar-volume
+    checks in fetch_sp500_candidates and scan_for_volatile_stocks
+    legitimately want raw bars, since pre/post-market volume is real
+    tradable-liquidity signal for those, not indicator input).
+    """
+    if bars.empty:
+        return bars
+    et_time = bars["timestamp"].dt.tz_convert(MARKET_TZ_FOR_LOGS)
+    is_regular_session = (
+        ((et_time.dt.hour > 9) | ((et_time.dt.hour == 9) & (et_time.dt.minute >= 30)))
+        & (et_time.dt.hour < 16)
+    )
+    return bars[is_regular_session].reset_index(drop=True)
+
+
+def get_recent_bars_batch(symbols: list[str], lookback_days: int = 10,
+                           regular_session_only: bool = False,
+                           end: datetime | None = None) -> dict[str, pd.DataFrame]:
     """
     Fetches recent intraday price bars for ALL given symbols in a SINGLE
     API call instead of one call per symbol. This is what keeps checking
@@ -684,6 +901,20 @@ def get_recent_bars_batch(symbols: list[str], lookback_days: int = 10) -> dict[s
     covers enough actual trading sessions to fill our indicator windows.
     Returns a dict of symbol -> DataFrame (missing/empty for any symbol
     with no data returned).
+
+    regular_session_only: when True, applies filter_to_regular_session
+    to the raw response before splitting it by symbol -- pass this ONLY
+    from callers whose bars feed straight into add_indicators (see that
+    function's docstring for why). Defaults to False so every OTHER
+    caller (the liquidity/dollar-volume checks) keeps seeing the exact
+    same raw, extended-hours-inclusive bars it always has -- this is an
+    additive opt-in, not a change to this function's default behavior.
+
+    `end`, if given, caps how recent the returned bars are (e.g. so a
+    liquidity check can look at trailing history WITHOUT today -- see
+    scan_for_volatile_stocks' dollar-volume check). Defaults to None,
+    i.e. through the most recent available bar, same as before this
+    parameter existed.
     """
     if not symbols:
         return {}
@@ -691,11 +922,16 @@ def get_recent_bars_batch(symbols: list[str], lookback_days: int = 10) -> dict[s
         symbol_or_symbols=symbols,
         timeframe=TimeFrame(BAR_MINUTES, TimeFrameUnit.Minute),
         start=datetime.now(timezone.utc) - timedelta(days=lookback_days),
+        end=end,
     )
     bars = data_client.get_stock_bars(request).df
     if bars.empty:
         return {}
     bars = bars.reset_index()
+    if regular_session_only:
+        bars = filter_to_regular_session(bars)
+        if bars.empty:
+            return {}
     return {
         symbol: group.drop(columns="symbol").reset_index(drop=True)
         for symbol, group in bars.groupby("symbol")
@@ -856,6 +1092,10 @@ def fetch_sp500_candidates(already_picked: set[str], needed: int) -> list[str]:
         return []
 
     try:
+        # regular_session_only left at its False default deliberately --
+        # this is a dollar-volume liquidity read, not indicator input, and
+        # pre/post-market volume is real tradable-liquidity signal here.
+        # See filter_to_regular_session's docstring.
         bars = get_recent_bars_batch(candidates, lookback_days=5)
     except Exception as e:
         log.warning(f"S&P 500: could not fetch bars for the liquidity backstop ({e}) -- skipping it this cycle.")
@@ -967,7 +1207,10 @@ def spy_regime_confirms_entry() -> bool:
     if not USE_SPY_REGIME_GATE:
         return True
     try:
-        bars_by_symbol = get_recent_bars_batch([SPY_REGIME_GATE_SYMBOL])
+        # regular_session_only=True: this feeds add_indicators (below) same
+        # as check_symbol's own bars do -- see filter_to_regular_session's
+        # docstring.
+        bars_by_symbol = get_recent_bars_batch([SPY_REGIME_GATE_SYMBOL], regular_session_only=True)
     except Exception as e:
         log.warning(f"SPY regime gate: could not fetch {SPY_REGIME_GATE_SYMBOL} bars ({e}) -- not blocking this cycle.")
         return True
@@ -991,6 +1234,54 @@ def spy_regime_confirms_entry() -> bool:
     return not spy_bearish
 
 
+def meets_min_listing_age(symbols: list[str], min_days: int) -> set[str]:
+    """
+    Returns the subset of `symbols` with at least `min_days` TRADING days
+    of daily-bar history available from Alpaca as of now. Alpaca simply
+    has no bars before a symbol's IPO/listing date, so a short history is
+    a free, reliable proxy for "recently listed, no real track record" --
+    see USE_SCANNER_MIN_LISTING_AGE's comment for the concrete real cases
+    (ALMR ~80 days, EROC ~43) this is meant to catch.
+
+    Reuses the exact same daily-bar StockBarsRequest pattern
+    refresh_daily_trend_maps_if_needed already uses above -- one batched
+    call, no new API dependency.
+
+    A symbol simply missing from the response (zero bars returned) is
+    treated the same as "not enough history" and excluded -- same
+    fail-toward-blocking-the-specific-candidate shape as
+    daily_trend_confirms_entry's "unknown trend" case and
+    is_leveraged_etf's verdict-None case above. A total request failure
+    (the endpoint itself down, not a per-symbol data gap) instead fails
+    OPEN -- same degrade-rather-than-return-nothing shape as the
+    dollar-volume liquidity check below, since a systemic outage isn't a
+    reason to block every candidate on a filter that was never actually
+    evaluated.
+    """
+    if not symbols:
+        return set()
+    # Comfortably covers min_days TRADING days even across weekends and
+    # market holidays -- same margin-of-safety style as the 60-calendar-
+    # days-for-21-trading-days figure in refresh_daily_trend_maps_if_needed
+    # above (roughly a 2x multiplier over the naive 5/7 weekday fraction).
+    calendar_days = min_days * 2 + 20
+    try:
+        request = StockBarsRequest(
+            symbol_or_symbols=symbols,
+            timeframe=TimeFrame(1, TimeFrameUnit.Day),
+            start=datetime.now(timezone.utc) - timedelta(days=calendar_days),
+        )
+        bars = data_client.get_stock_bars(request).df
+    except Exception as e:
+        log.warning(f"SCANNER: listing-age check failed ({e}) -- not filtering on listing age this cycle.")
+        return set(symbols)
+    if bars.empty:
+        return set()
+    bars = bars.reset_index()
+    counts = bars.groupby("symbol").size()
+    return {s for s in symbols if counts.get(s, 0) >= min_days}
+
+
 def scan_for_volatile_stocks() -> list[str]:
     """
     Builds a watchlist automatically using Alpaca's screener data instead
@@ -1003,18 +1294,27 @@ def scan_for_volatile_stocks() -> list[str]:
       3. Optionally excludes known leveraged/inverse ETFs (see denylist
          above) -- these move a lot structurally, not because anything
          unusual is actually happening.
-      4. Liquidity check: requires average DOLLAR volume (price x shares)
+      4. If USE_SCANNER_MIN_LISTING_AGE is on: requires at least
+         SCANNER_MIN_LISTING_AGE_DAYS trading days of daily-bar history
+         (see meets_min_listing_age) -- excludes genuinely recent, no-
+         track-record listings (real cases: ALMR ~80 days, EROC ~43).
+      5. Liquidity check: requires average DOLLAR volume (price x shares)
          of at least SCANNER_MIN_DOLLAR_VOLUME, measured from real recent
-         bars. Alpaca's "most actives" list is used only as a free fast
-         path (anything in it is already known liquid) and as a fallback
-         if the bar fetch fails -- deliberately NOT as a hard gate; see
-         SCANNER_MIN_DOLLAR_VOLUME's comment for the outage that caused.
-      5. If USE_NEWS_FILTER is on: drops candidates with fewer than
+         bars EXCLUDING today (see SCANNER_MIN_DOLLAR_VOLUME's comment --
+         today's bars are the very spike that got the candidate picked in
+         the first place, so including them would let a symbol qualify as
+         "liquid" purely off the abnormal volume of the day being
+         evaluated). Alpaca's "most actives" list is used only as a free
+         fast path (anything in it is already known liquid) and as a
+         fallback if the bar fetch fails -- deliberately NOT as a hard
+         gate; see SCANNER_MIN_DOLLAR_VOLUME's comment for the outage
+         that caused.
+      6. If USE_NEWS_FILTER is on: drops candidates with fewer than
          MIN_NEWS_ITEMS recent articles (a mover with no news behind it
          is more likely noise/thin-volume than a real catalyst) -- unless
          that would eliminate every candidate this cycle, in which case
          the filter is skipped for now rather than returning nothing.
-      6. Ranks the survivors by size of move and returns the top N.
+      7. Ranks the survivors by size of move and returns the top N.
 
     Returns an empty list if the scan fails or nothing qualifies --
     callers should fall back to the manual SYMBOLS list in that case.
@@ -1084,12 +1384,40 @@ def scan_for_volatile_stocks() -> list[str]:
         if not prefiltered:
             log.warning("SCANNER: every candidate this cycle was a leveraged/inverse ETF.")
 
+    # Minimum listing-age filter -- see USE_SCANNER_MIN_LISTING_AGE's
+    # comment. Cheap (one batched daily-bar call) and runs before the
+    # liquidity check so a too-new symbol doesn't cost an extra intraday
+    # bar fetch it was always going to be excluded from anyway.
+    if USE_SCANNER_MIN_LISTING_AGE and prefiltered:
+        old_enough = meets_min_listing_age(
+            [m.symbol for m in prefiltered], SCANNER_MIN_LISTING_AGE_DAYS)
+        kept = [m for m in prefiltered if m.symbol in old_enough]
+        if len(kept) < len(prefiltered):
+            log.info(f"SCANNER: excluded {len(prefiltered) - len(kept)} candidate(s) with fewer than "
+                      f"{SCANNER_MIN_LISTING_AGE_DAYS} trading days of listing history "
+                      f"from {len(prefiltered)} candidate(s).")
+        prefiltered = kept
+        if not prefiltered:
+            log.warning(f"SCANNER: every candidate this cycle had fewer than "
+                         f"{SCANNER_MIN_LISTING_AGE_DAYS} trading days of listing history.")
+
     # Dollar-volume liquidity check on whatever isn't already known liquid.
+    # Bars are fetched with `end` capped at the start of TODAY (ET) so the
+    # average deliberately EXCLUDES today's session -- see this function's
+    # docstring, step 5. Without this, a stock only has to be loud today to
+    # pass, not reliably liquid on an ordinary day; lookback_days is bumped
+    # from 5 to 6 so the window still covers a comparable amount of real
+    # trailing history once today itself is cut off the end of it.
     needs_check = [m.symbol for m in prefiltered if m.symbol not in known_liquid]
     liquid_enough = set(known_liquid)
     if needs_check:
         try:
-            bars = get_recent_bars_batch(needs_check, lookback_days=5)
+            # regular_session_only left at its False default deliberately,
+            # same reasoning as fetch_sp500_candidates above -- this is a
+            # liquidity read, not indicator input.
+            now_et = datetime.now(MARKET_TZ_FOR_LOGS)
+            today_start_et = now_et.replace(hour=0, minute=0, second=0, microsecond=0)
+            bars = get_recent_bars_batch(needs_check, lookback_days=6, end=today_start_et)
             for symbol, df in bars.items():
                 if df is None or df.empty:
                     continue
@@ -1965,6 +2293,23 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         and sector_relative_mean_reversion_blocks_entry(symbol, enriched, i, sector_etf_bars)
     )
 
+    # Scanner opening-range entry blackout -- scanner picks (non-S&P-500
+    # names) ONLY, see USE_SCANNER_OPENING_BLACKOUT's comment. DIFFERENT
+    # FROM and ADDITIVE TO in_lunch_blackout below (that one targets the
+    # low-volume midday chop window; this one targets the dangerous first
+    # few minutes after the open), and unlike vwap_volume_blocks_entry
+    # above (reason_key-scoped) this applies to EVERY strategy's BUY
+    # signal, not just one -- the real losses this is modeled on (RGEN,
+    # ALMR, NN, ATRO, CHYM) weren't all the same strategy, just all
+    # entries into a still-running opening spike. Minutes checked before
+    # the S&P-500 membership lookup so the common case (well past the
+    # opening window) never pays for that call.
+    scanner_opening_blackout_blocks_entry = (
+        USE_SCANNER_OPENING_BLACKOUT and signal == "BUY"
+        and minutes_since_open_now < SCANNER_OPENING_BLACKOUT_MINUTES
+        and symbol not in fetch_sp500_symbols()
+    )
+
     # Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT and
     # breakout_invalidated_at() in strategy.py for the reasoning. Reads the
     # frozen entry-time level from open_position_context (persisted by
@@ -2004,6 +2349,10 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif sector_relative_blocks_entry:
                 log.info(f"[{symbol}] ACTION: No trade (sector-relative mean reversion filter -- "
                           f"not meaningfully weaker than its own sector ETF over the same window).")
+            elif scanner_opening_blackout_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (scanner opening-range blackout -- within "
+                          f"{SCANNER_OPENING_BLACKOUT_MINUTES:.0f} min of the open on a non-S&P-500 "
+                          f"scanner pick, real-money-confirmed as the most dangerous entry window).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
@@ -2404,7 +2753,11 @@ def run_one_cycle() -> float:
 
     bars_by_symbol = {}
     try:
-        bars_by_symbol = get_recent_bars_batch(symbols_to_check)
+        # regular_session_only=True: this is what check_symbol runs
+        # add_indicators on for every symbol this cycle -- see
+        # filter_to_regular_session's docstring for why extended-hours
+        # bars need to be dropped here specifically.
+        bars_by_symbol = get_recent_bars_batch(symbols_to_check, regular_session_only=True)
     except Exception as e:
         log.error(f"Could not fetch price data for this cycle's watchlist: {e}")
 
@@ -2429,6 +2782,16 @@ def run_one_cycle() -> float:
         })
         if needed_etfs:
             try:
+                # NOTE: regular_session_only left at its False default here.
+                # sector_relative_mean_reversion_blocks_entry (below) reads
+                # these bars directly (raw close-price returns), never
+                # through add_indicators, so it's out of scope for THIS fix
+                # (see filter_to_regular_session's docstring) -- flagged as
+                # a separate, smaller version of the same class of bug:
+                # backtest.py's fetch_sector_etf_bars DOES go through
+                # fetch_historical_bars (regular-session filtered), so this
+                # is still a live/backtest mismatch, just not the one this
+                # commit addresses.
                 sector_etf_bars = get_recent_bars_batch(needed_etfs)
             except Exception as e:
                 log.warning(f"Sector-relative mean reversion: could not fetch sector ETF bars "
@@ -2586,12 +2949,19 @@ if __name__ == "__main__":
                   f"Fallback list: {', '.join(SYMBOLS)}")
     else:
         log.info(f"Watchlist mode: MANUAL. Symbols: {', '.join(SYMBOLS)}")
+    if USE_SCANNER_MIN_LISTING_AGE:
+        log.info(f"Scanner minimum listing age: ON -- requires >= {SCANNER_MIN_LISTING_AGE_DAYS} trading "
+                  f"days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)")
     log.info(f"Bar size: {BAR_MINUTES}min | Check interval while market open: {CHECK_INTERVAL_MINUTES}min")
     log.info(f"Active strategies: {', '.join(active_strategies)}")
     log.info(f"Trend strategy: EMA {FAST_MA}/{SLOW_MA} crossover | Range strategy: RSI {RSI_PERIOD} "
               f"({RSI_OVERSOLD}/{RSI_OVERBOUGHT}) | Switched by ADX {ADX_PERIOD} (threshold {ADX_TREND_THRESHOLD})")
     log.info(f"No new entries between {ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min after "
               f"the open (historically weak window in backtesting)")
+    if USE_SCANNER_OPENING_BLACKOUT:
+        log.info(f"Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the "
+                  f"first {SCANNER_OPENING_BLACKOUT_MINUTES} min after the open (real-money-confirmed, "
+                  f"additive to the lunch-window blackout above, not a replacement for it)")
     if USE_ATR_STOPS:
         log.info(f"Risk management: ATR-based stops on every buy (stop {ATR_STOP_MULTIPLIER:.1f}x ATR / "
                   f"target {ATR_TARGET_MULTIPLIER:.1f}x ATR)")

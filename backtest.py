@@ -31,11 +31,13 @@ recomputing them bar-by-bar on a growing slice was pure waste. Expect
 roughly an order of magnitude faster than the old ~20s/symbol/60-days.
 
 IMPORTANT LIMITATIONS (read this before trusting the numbers):
-- Entries/exits assume you get filled at the exact bar's close price
-  (or the exact stop/take-profit level for those exits). Real trading
-  has slippage -- your real fill will often be slightly worse,
-  especially on fast-moving or halted stocks like the ones this bot
-  favors. Treat these results as an upper bound, not a guarantee.
+- Entries are no longer assumed to fill at a perfect price -- see
+  ENTRY_SLIPPAGE_PCT_SCANNER / ENTRY_SLIPPAGE_PCT_SP500 below, calibrated
+  from real BUY fills the same way STOP_SLIPPAGE_ATR_FRACTION was.
+  Take-profit exits and strategy-SELL exits still assume a perfect fill
+  at the exact level/close, though -- there isn't yet a measured, real
+  sample of those to calibrate against the way entries and stop-outs
+  have been. Treat what's left as an upper bound, not a guarantee.
 - When a single bar's price range touches BOTH the stop-loss and the
   take-profit level, this assumes the stop-loss hit first (the more
   conservative, pessimistic assumption), since we don't have tick-by-
@@ -101,12 +103,49 @@ DEFAULT_BACKTEST_EQUITY = float(os.getenv("DEFAULT_BACKTEST_EQUITY", 100_000))
 # but be aware that assumption systematically flatters volatile stocks.
 STOP_SLIPPAGE_ATR_FRACTION = float(os.getenv("STOP_SLIPPAGE_ATR_FRACTION", 0.5))
 
+# Entry-fill slippage -- simulate()'s old assumption was a PERFECT BUY
+# fill at the decision bar's close, but place_buy_order re-prices off a
+# fresh quote and fills via a real market order, both of which move the
+# price. Measured the same way STOP_SLIPPAGE_ATR_FRACTION was: trades.csv's
+# logged decision-bar close vs. the REAL post-fill price
+# (reconcile_bracket_with_real_fill in trading_bot.py) for every real BUY
+# since that reconciliation logging shipped 2026-07-29, excluding the
+# already-known UFPT sizing-bug trade -- 33 fills as of 2026-08-12.
+#
+# The blended mean across all 33 is +0.61%, but that hides a real split:
+#   scanner picks (non-S&P-500 symbols): +1.09% mean, n=20 (still +0.88%
+#       with the single largest outlier, HURN, dropped -- not a one-
+#       symbol result)
+#   S&P 500 names:                       -0.11% mean, n=13 (standard
+#       error ~0.14%, i.e. statistically indistinguishable from zero --
+#       inventing a positive number here would be a guess, not a
+#       measurement, so this is left at 0)
+# Scoped by the same S&P-500-membership mechanism as
+# USE_MULTI_TIMEFRAME_FILTER/USE_VWAP_VOLUME_CONFIRMATION below, but
+# UNCONDITIONAL -- this isn't an
+# optional feature to A/B, it's the same "tell the truth about what a
+# real trade actually costs" job STOP_SLIPPAGE_ATR_FRACTION already does
+# for stop-loss exits, so there is no USE_ENTRY_SLIPPAGE toggle to turn
+# it off. Set either to 0 to restore the old perfect-fill assumption for
+# that universe.
+ENTRY_SLIPPAGE_PCT_SCANNER = float(os.getenv("ENTRY_SLIPPAGE_PCT_SCANNER", 1.1))
+ENTRY_SLIPPAGE_PCT_SP500 = float(os.getenv("ENTRY_SLIPPAGE_PCT_SP500", 0.0))
+
 # Mirrors trading_bot.py's USE_MULTI_TIMEFRAME_FILTER -- SCANNER PICKS
 # ONLY (non-S&P-500 symbols). See that file's comment for the full
-# reasoning and the 90-day comparison this is based on. A one-shot fetch
-# here (not the TTL-cached version trading_bot.py uses), since a
-# backtest run fetches once and exits rather than running for hours.
-USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "true").strip().lower() in ("1", "true", "yes")
+# reasoning. A one-shot fetch here (not the TTL-cached version
+# trading_bot.py uses), since a backtest run fetches once and exits
+# rather than running for hours.
+#
+# DEFAULT FLIPPED BACK TO FALSE 2026-08-23 -- the original 2026-07-31
+# "unambiguous win" claim did not survive a re-test with a mandatory
+# leave-one-symbol-out check (12 exclusions) across 4 independent
+# ON-vs-OFF comparisons (2 windows x 2 symbol universes, one of them the
+# actual current live watchlist rather than the stale fixed comparison
+# list): 3 of 4 robustly favor OFF. See trading_bot.py's comment on this
+# same constant for the full numbers and reasoning -- not repeated here
+# to avoid the two copies drifting out of sync with each other.
+USE_MULTI_TIMEFRAME_FILTER = os.getenv("USE_MULTI_TIMEFRAME_FILTER", "false").strip().lower() in ("1", "true", "yes")
 # Mirrors trading_bot.py's USE_VWAP_VOLUME_CONFIRMATION -- SCANNER PICKS
 # ONLY, same S&P 500 exemption and same reasoning (see
 # VWAP_REVERSION_MIN_VOLUME_MULT's comment in strategy.py).
@@ -115,6 +154,52 @@ SP500_LIST_URL = os.getenv(
     "SP500_LIST_URL",
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
 )
+
+# 2026-08-23 scanner robustness investigation (see trading_bot.py's
+# SCANNER_MAX_EXTENSION_PCT comment for the full real-money evidence:
+# real losing "mover" trades -- RGEN, ALMR, NN, ATRO, CHYM -- entered
+# 14-30% into an already-running move). trading_bot.py enforces this ONCE,
+# at scanner watchlist-refresh time, against Alpaca's own daily
+# percent_change field -- backtest.py has NO watchlist/candidate-selection
+# step to mirror that literally (symbols here are given directly on the
+# CLI). This is instead an ENTRY-TIME proxy, scoped to non-S&P-500 symbols
+# the same way as the filters above: at each bar considered for a new
+# entry, blocks it if the symbol has already moved more than this % from
+# TODAY's session open (strategy.add_indicators' session_open_price column
+# -- the same "from the open" framing the real-trade evidence above uses).
+# Arguably a MORE conservative check than the live one (re-evaluated every
+# bar instead of only every SCANNER_REFRESH_HOURS), which is the right
+# direction to err in for a filter motivated by real losses.
+SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 20.0))
+
+# Mirrors trading_bot.py's USE_SCANNER_OPENING_BLACKOUT -- SCANNER PICKS
+# ONLY, same S&P-500-exempt scoping, DIFFERENT FROM and ADDITIVE TO the
+# ENTRY_BLACKOUT_START/END_MINUTES (lunch-window) mirror below. See that
+# file's comment for the full real-money evidence (30-90-min-since-open
+# bucket the single worst, net -$55.70 across 12 real trades).
+USE_SCANNER_OPENING_BLACKOUT = os.getenv("USE_SCANNER_OPENING_BLACKOUT", "true").strip().lower() in ("1", "true", "yes")
+# Default 45 -- see trading_bot.py's comment for the full reasoning. Sized
+# to comfortably cover the 3 concrete real cases (RGEN 30.4 min, CHYM
+# 34.2, ATRO 32.4 since open) without extrapolating out to 90 min: THIS
+# file's own entry-time proxy was used to sweep window sizes on the
+# scanner-universe backtest, and 90 min backtests markedly worse than 45
+# at both 90 and 180 days (180d: blackout alone swings the universe from
+# +$98.47 to -$98.19 at 90 min, vs. only +$46.57 at 45 min), dominated by
+# a couple of single-trade effects rather than a real, generalizable
+# pattern -- see CLAUDE.md for the full window-size sweep.
+SCANNER_OPENING_BLACKOUT_MINUTES = int(os.getenv("SCANNER_OPENING_BLACKOUT_MINUTES", 45))
+
+# Mirrors trading_bot.py's USE_SCANNER_MIN_LISTING_AGE -- SCANNER PICKS
+# ONLY. Unlike the per-bar filters above, this is a per-SYMBOL, whole-run
+# gate (a symbol's listing age doesn't change bar to bar): checked ONCE
+# per symbol before backtesting it at all (see meets_min_listing_age
+# below), and a symbol that fails is skipped for the entire run --
+# mirroring "this symbol would never have reached the live scanner
+# watchlist in the first place" as closely as a standalone per-symbol CLI
+# tool can. See trading_bot.py's comment for the concrete real cases
+# (ALMR ~80 days, EROC ~43) this is meant to catch.
+USE_SCANNER_MIN_LISTING_AGE = os.getenv("USE_SCANNER_MIN_LISTING_AGE", "true").strip().lower() in ("1", "true", "yes")
+SCANNER_MIN_LISTING_AGE_DAYS = int(os.getenv("SCANNER_MIN_LISTING_AGE_DAYS", 100))
 
 # Broad-market regime gate: veto new long entries in EVERY symbol when
 # SPY itself is in a confirmed downtrend on this same BAR_MINUTES
@@ -285,6 +370,38 @@ def fetch_daily_trend_map(symbol: str, days_back: int) -> dict:
     if "symbol" in daily.columns:
         daily = daily[daily["symbol"] == symbol].reset_index(drop=True)
     return compute_daily_trend_map(daily)
+
+
+def meets_min_listing_age(symbol: str, min_days: int) -> bool:
+    """
+    Standalone mirror of trading_bot.py's meets_min_listing_age -- own
+    StockBarsRequest call (backtest.py doesn't import trading_bot.py, see
+    module docstring), same daily-bar-count-as-a-listing-age-proxy logic.
+    True if `symbol` has at least `min_days` TRADING days of daily bar
+    history available from Alpaca as of NOW (this checks the symbol's
+    CURRENT eligibility for the scanner watchlist, same as the live
+    filter would evaluate it today, not eligibility as of some point
+    inside the backtest window).
+
+    Fails OPEN (returns True) on a request failure -- a systemic outage
+    isn't a reason to exclude a symbol from the whole backtest run on a
+    filter that was never actually evaluated, same reasoning as every
+    other fail-open case in this file.
+    """
+    calendar_days = min_days * 2 + 20
+    try:
+        request = StockBarsRequest(
+            symbol_or_symbols=symbol,
+            timeframe=TimeFrame(1, TimeFrameUnit.Day),
+            start=datetime.now(timezone.utc) - timedelta(days=calendar_days),
+        )
+        daily = data_client.get_stock_bars(request).df
+    except Exception as e:
+        print(f"  (listing-age check failed for {symbol}: {e} -- not filtering on listing age this run)")
+        return True
+    if daily.empty:
+        return False
+    return len(daily) >= min_days
 
 
 def fetch_spy_regime_bars(days_back: int) -> pd.DataFrame | None:
@@ -466,7 +583,10 @@ def minutes_until_close(timestamp) -> float:
 def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
              daily_trend_map: dict | None = None, apply_vwap_volume_filter: bool = False,
              spy_regime_bars: pd.DataFrame | None = None,
-             sector_etf_bars: pd.DataFrame | None = None) -> list[dict]:
+             sector_etf_bars: pd.DataFrame | None = None,
+             apply_scanner_opening_blackout: bool = False,
+             apply_scanner_extension_filter: bool = False,
+             is_scanner_pick: bool = False) -> list[dict]:
     """
     Walks through the bars one at a time, calling the SAME decision logic
     the live bot uses (decide_signal_at), using only data up to and
@@ -500,6 +620,19 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     off), same fail-open philosophy as every other sector lookup in this
     project.
 
+    apply_scanner_opening_blackout / apply_scanner_extension_filter:
+    caller only passes True for non-S&P-500 (scanner-pick) symbols, same
+    scoping mechanism as apply_vwap_volume_filter above -- see
+    USE_SCANNER_OPENING_BLACKOUT and SCANNER_MAX_EXTENSION_PCT's comments.
+
+    is_scanner_pick: True for a non-S&P-500 symbol, False for an S&P 500
+    one -- selects which of ENTRY_SLIPPAGE_PCT_SCANNER / _SP500 is used
+    to haircut every entry fill below (see that constant's comment for
+    the measured split). Defaults to False, i.e. the SP500 value (0.0 by
+    default), so any caller that doesn't pass this explicitly gets
+    exactly the old zero-slippage-entry behavior rather than silently
+    picking up the scanner-pick haircut.
+
     Returns a list of completed trades.
     """
     trades = []
@@ -507,6 +640,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
     enriched = add_indicators(bars)
     n = len(enriched)
     equity = starting_equity
+    entry_slippage_pct = ENTRY_SLIPPAGE_PCT_SCANNER if is_scanner_pick else ENTRY_SLIPPAGE_PCT_SP500
 
     spy_bearish_now = None
     if USE_SPY_REGIME_GATE and spy_regime_bars is not None and not spy_regime_bars.empty:
@@ -617,6 +751,12 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 continue  # too close to the bell to open something new today
             if ENTRY_BLACKOUT_START_MINUTES <= current_bar["minutes_since_open"] < ENTRY_BLACKOUT_END_MINUTES:
                 continue  # historically weak entry window (see strategy.py)
+            if apply_scanner_opening_blackout and current_bar["minutes_since_open"] < SCANNER_OPENING_BLACKOUT_MINUTES:
+                # Scanner opening-range blackout -- mirrors trading_bot.py's
+                # check_symbol exactly. DIFFERENT FROM and ADDITIVE TO the
+                # lunch-window blackout just above; see
+                # USE_SCANNER_OPENING_BLACKOUT's comment.
+                continue
             if daily_trend_map is not None:
                 # Multi-timeframe confirmation -- mirrors trading_bot.py's
                 # daily_trend_confirms_entry exactly. None here (vs. an
@@ -635,6 +775,19 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 continue
 
             signal, reason_key, reason = decide_signal_at(enriched, i)
+            if signal == "BUY" and apply_scanner_extension_filter:
+                # Scanner max-extension filter, entry-time proxy -- see
+                # SCANNER_MAX_EXTENSION_PCT's comment above for why this
+                # is a proxy rather than a literal mirror (backtest.py has
+                # no watchlist-selection step of its own). Blocks a new
+                # entry already more than SCANNER_MAX_EXTENSION_PCT% away
+                # from today's session open, in EITHER direction, same
+                # abs() semantics as the live prefilter.
+                session_open = current_bar["session_open_price"]
+                if not pd.isna(session_open) and session_open > 0:
+                    extension_pct = abs(current_bar["close"] - session_open) / session_open * 100
+                    if extension_pct > SCANNER_MAX_EXTENSION_PCT:
+                        continue
             if (signal == "BUY" and apply_vwap_volume_filter and reason_key == "vwap_reversion"
                     and not vwap_reversion_volume_confirms(enriched, i)):
                 # Scanner-picks-only volume confirmation -- mirrors
@@ -650,7 +803,15 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 # USE_SECTOR_RELATIVE_MEAN_REVERSION's comment there.
                 continue
             if signal == "BUY":
-                entry_price = current_bar["close"]
+                # A BUY is a real market order, not a perfect fill at the
+                # decision bar's close -- see ENTRY_SLIPPAGE_PCT_SCANNER/
+                # _SP500 above. Computed off the ADJUSTED price from here
+                # on (stop/target, the noise guard, and position sizing
+                # all read `entry_price`), so the whole position's risk
+                # math stays internally consistent with what was actually
+                # paid, the same way live's place_buy_order prices its
+                # bracket off the real fill rather than the stale quote.
+                entry_price = current_bar["close"] * (1 + entry_slippage_pct / 100)
                 stop_price, take_profit_price = compute_stop_and_target(entry_price, current_bar["atr"])
                 # Same volatility guard the live bot applies -- a stop
                 # inside the stock's own bar-to-bar noise isn't a stop.
@@ -780,6 +941,59 @@ def print_entry_reason_breakdown(trades: list[dict]) -> None:
               f"total P&L ${group['pnl'].sum():+.2f}")
 
 
+def print_symbol_pnl_breakdown_and_outlier_warning(trades: list[dict]) -> None:
+    """
+    Always-on reporting safeguard (2026-08-23). This week's whole
+    backtest-validation approach was shown to be broken by single-symbol
+    outliers on at least 3 separate features, one of them (USE_BREAKOUT_
+    INVALIDATION_EXIT) actually shipped live on the strength of it: a
+    180-day robustness re-test with a per-symbol breakdown found ONE
+    symbol, SMCI, accounted for 85-100%+ of its claimed 90-day/180-day
+    scanner-universe improvement, and excluding it reversed EVERY
+    combined metric. That trap is invisible unless someone remembers to
+    break the combined total down by symbol -- so this does it
+    automatically, on every run, rather than depending on anyone
+    remembering to check.
+
+    Prints each symbol's own total contribution to this run's COMBINED
+    P&L, sorted highest to lowest, then flags every symbol whose
+    contribution exceeds ~50% of the combined total (positive OR
+    negative -- a single symbol dragging the combined result sharply
+    negative is just as much a concentration problem as one carrying it).
+    A flagged result is NOT evidence of a real, generalizable edge on its
+    own; it means "re-run excluding that symbol before trusting this."
+
+    Deliberately not a toggle -- this is a reporting improvement, not a
+    strategy change, so it always runs wherever COMBINED stats do.
+    """
+    if not trades:
+        return
+    df = pd.DataFrame(trades)
+    by_symbol = df.groupby("symbol")["pnl"].sum().sort_values(ascending=False)
+    combined_total = by_symbol.sum()
+
+    print("\n  By symbol contribution to combined P&L:")
+    outliers = []
+    for symbol, symbol_pnl in by_symbol.items():
+        if combined_total != 0:
+            pct_of_combined = symbol_pnl / combined_total * 100
+            print(f"    {symbol}: ${symbol_pnl:+.2f}  ({pct_of_combined:+.0f}% of combined total)")
+            if abs(pct_of_combined) > 50:
+                outliers.append((symbol, symbol_pnl, pct_of_combined))
+        else:
+            # Combined total nets to ~$0 -- individual symbols can still be
+            # large in magnitude and just cancel out; % of a ~$0 total is
+            # undefined (not "0% outlier"), so this is shown instead of a
+            # misleading percentage.
+            print(f"    {symbol}: ${symbol_pnl:+.2f}  (combined total is ~$0.00 -- % contribution undefined)")
+
+    for symbol, symbol_pnl, pct_of_combined in outliers:
+        print(f"    *** OUTLIER WARNING: {symbol} accounts for {pct_of_combined:.0f}% of total combined "
+              f"P&L (${symbol_pnl:+.2f} of ${combined_total:+.2f} combined) -- this result is driven by "
+              f"a single symbol, NOT evidence of a real, generalizable edge until it holds with {symbol} "
+              f"excluded. ***")
+
+
 # ---------------------------------------------------------------------------
 # MAIN
 # ---------------------------------------------------------------------------
@@ -818,15 +1032,30 @@ if __name__ == "__main__":
                   "structurally a no-op right now (see strategy.HIGH_CONVICTION_STRATEGIES)\n")
     print("=" * 70)
 
-    needs_sp500_list = USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION
-    sp500_symbols = fetch_sp500_symbols_once() if needs_sp500_list else set()
+    # Unconditional now, regardless of the toggles below: entry slippage
+    # (ENTRY_SLIPPAGE_PCT_SCANNER/_SP500) needs to know which symbols are
+    # scanner picks on EVERY run, not just when one of these optional
+    # filters happens to be on.
+    sp500_symbols = fetch_sp500_symbols_once()
+    print(f"Entry slippage: scanner picks {ENTRY_SLIPPAGE_PCT_SCANNER:+.2f}%, S&P 500 names "
+          f"{ENTRY_SLIPPAGE_PCT_SP500:+.2f}% (always on -- see ENTRY_SLIPPAGE_PCT_SCANNER/_SP500)")
     if USE_MULTI_TIMEFRAME_FILTER:
         print(f"Multi-timeframe filter: ON, scanner-picks-only ({len(sp500_symbols)} S&P 500 "
               f"symbol(s) exempt)")
     if USE_VWAP_VOLUME_CONFIRMATION:
         print(f"vwap_reversion volume confirmation: ON, scanner-picks-only")
-    if USE_MULTI_TIMEFRAME_FILTER or USE_VWAP_VOLUME_CONFIRMATION:
-        print()
+    print(f"Scanner max-extension filter (entry-time proxy): ON, scanner-picks-only, "
+          f"{SCANNER_MAX_EXTENSION_PCT:.0f}% from today's session open")
+    if USE_SCANNER_OPENING_BLACKOUT:
+        print(f"Scanner opening-range blackout: ON, scanner-picks-only, first "
+              f"{SCANNER_OPENING_BLACKOUT_MINUTES} min after the open "
+              f"(additive to the {ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} "
+              f"min lunch-window blackout below)")
+    if USE_SCANNER_MIN_LISTING_AGE:
+        print(f"Scanner minimum listing age: ON, scanner-picks-only, requires >= "
+              f"{SCANNER_MIN_LISTING_AGE_DAYS} trading days of daily bar history "
+              f"(symbols that fail are skipped for this whole run)")
+    print()
 
     spy_regime_bars = None
     if USE_SPY_REGIME_GATE:
@@ -848,6 +1077,15 @@ if __name__ == "__main__":
 
     for symbol in symbols:
         print(f"\n{symbol}")
+
+        is_scanner_pick = symbol not in sp500_symbols
+
+        if USE_SCANNER_MIN_LISTING_AGE and is_scanner_pick:
+            if not meets_min_listing_age(symbol, SCANNER_MIN_LISTING_AGE_DAYS):
+                print(f"  Skipped: fewer than {SCANNER_MIN_LISTING_AGE_DAYS} trading days of listing "
+                      f"history -- would never have reached the live scanner watchlist.")
+                continue
+
         try:
             bars = fetch_historical_bars(symbol, args.days)
         except Exception as e:
@@ -860,8 +1098,6 @@ if __name__ == "__main__":
 
         print(f"  ({len(bars)} bars loaded)")
 
-        is_scanner_pick = symbol not in sp500_symbols
-
         daily_trend_map = None
         if USE_MULTI_TIMEFRAME_FILTER and is_scanner_pick:
             daily_trend_map = fetch_daily_trend_map(symbol, args.days)
@@ -869,6 +1105,8 @@ if __name__ == "__main__":
                 print(f"  (multi-timeframe filter: no daily data for {symbol} -- entries blocked all period)")
 
         apply_vwap_volume_filter = USE_VWAP_VOLUME_CONFIRMATION and is_scanner_pick
+        apply_scanner_opening_blackout = USE_SCANNER_OPENING_BLACKOUT and is_scanner_pick
+        apply_scanner_extension_filter = is_scanner_pick
 
         symbol_sector_etf_bars = None
         if USE_SECTOR_RELATIVE_MEAN_REVERSION:
@@ -876,7 +1114,9 @@ if __name__ == "__main__":
             symbol_sector_etf_bars = sector_etf_bars_by_etf.get(etf_symbol) if etf_symbol else None
 
         trades = simulate(symbol, bars, starting_equity, daily_trend_map, apply_vwap_volume_filter,
-                           spy_regime_bars, symbol_sector_etf_bars)
+                           spy_regime_bars, symbol_sector_etf_bars,
+                           apply_scanner_opening_blackout, apply_scanner_extension_filter,
+                           is_scanner_pick)
         all_trades.extend(trades)
 
         print_stats(compute_stats(trades, starting_equity))
@@ -888,6 +1128,7 @@ if __name__ == "__main__":
         combined_capital = starting_equity * len(symbols)
         print_stats(compute_stats(all_trades, combined_capital))
         print_entry_reason_breakdown(all_trades)
+        print_symbol_pnl_breakdown_and_outlier_warning(all_trades)
 
     # Save detailed trade-by-trade log
     if all_trades:

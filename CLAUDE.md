@@ -28,14 +28,19 @@ context instead of just inferring from what's on disk.
   underlying stock itself is normally fractionable. This was a real bug
   found and fixed — the original version tried fractional qty on
   brackets and every buy on a fractionable stock would have failed.
-- **Backtester filters out pre-market/after-hours bars.** Alpaca's
-  historical bar data includes extended hours by default, with no
-  request-level flag to exclude it. The live bot only ever trades while
-  `clock.is_open` (regular 9:30am-4pm ET session), so an unfiltered
-  backtest was testing trades that could never happen live. This was a
-  real bug that initially made the strategy look unprofitable when it
-  wasn't — 69% of "trades" in one early backtest run were outside real
-  market hours.
+- **Backtester filters out pre-market/after-hours bars — and so does the
+  live bot's indicator path, since 2026-08-23.** Alpaca's historical bar
+  data includes extended hours by default, with no request-level flag to
+  exclude it. The live bot only ever trades while `clock.is_open` (regular
+  9:30am-4pm ET session), so an unfiltered backtest was testing trades
+  that could never happen live. This was a real bug that initially made
+  the strategy look unprofitable when it wasn't — 69% of "trades" in one
+  early backtest run were outside real market hours. `backtest.py` has
+  filtered since the start, but `trading_bot.py::get_recent_bars_batch`
+  didn't until 2026-08-23, when 60-61% of a real live day's bars were
+  found to be extended-hours, contaminating every session-anchored
+  indicator (`session_open_price`, gap %, VWAP) live computed but
+  backtest never did — see that date's entry below for the fix.
 - **STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE (default 90)** exists because
   backtesting showed the last ~90 minutes of the session performing much
   worse than the rest of the day (25% win rate vs 56%) — likely not
@@ -1767,3 +1772,559 @@ once a strategy shows a consistent edge across backtest AND real trading,
 not just one or the other. 9 new unit tests (the safety-guard boundary
 sweep, env-var parsing, the precedence test, structural-inertness proof
 against the real default), 130/130 test functions pass.
+
+## 2026-08-23: live/backtest indicator parity fix, breakout-invalidation-exit reverted after a single-symbol-outlier finding, and a permanent per-symbol outlier check added to backtest.py
+
+Three fixes, all from the same investigation, which found this week's
+whole backtest-validation approach had been fooled by single-symbol
+outliers on at least 3 separate features -- one of which (see below) was
+live for a few hours on the strength of exactly that kind of result.
+
+**1. Live indicators were computed on extended-hours-contaminated data;
+backtest.py never was.** `backtest.py::fetch_historical_bars` has always
+filtered to the 9:30am-4pm ET regular session before computing indicators
+(see the "Backtester filters out pre-market/after-hours bars" decision
+above) -- but `trading_bot.py::get_recent_bars_batch`, the function that
+feeds `check_symbol`'s `add_indicators(df)` every live cycle, never did.
+Confirmed empirically on real 2026-08-21 data: 60-61% of a live day's
+15-min bars for NVDA/TSLA/COIN/AMD/PLTR were pre/post-market. Since
+`session_open_price`, gap %, `session_first_bar_high/volume`, and VWAP
+are all computed via `groupby(session_date)` (calendar date, not regular-
+session boundary), live's version of these columns was anchored to
+whatever bar printed first each day -- pre-market or not. Measured real
+divergence in `session_open_price`: +0.02% to +1.09% on that same day
+across the 5 megacap symbols, and on 2 of the 5 the divergence was enough
+to flip the ENTIRE decided regime (mean_reversion <-> trend_following),
+not just nudge a number.
+
+**Fix**: added `trading_bot.filter_to_regular_session()`, mirroring
+`fetch_historical_bars`'s exact boundary condition, and a new
+`regular_session_only` kwarg on `get_recent_bars_batch` (default `False`,
+so every existing caller is unaffected). Wired to `True` at exactly the
+two call sites whose bars feed `add_indicators` -- the main per-cycle
+watchlist fetch in `run_one_cycle` and `spy_regime_confirms_entry`'s SPY
+fetch. Deliberately left `False` (raw, extended-hours-inclusive bars) at
+the liquidity/dollar-volume call sites (`fetch_sp500_candidates`,
+`scan_for_volatile_stocks`) since pre/post-market volume is real
+tradable-liquidity signal there, not indicator input -- and at the
+sector-ETF-bars fetch for `USE_SECTOR_RELATIVE_MEAN_REVERSION`, which
+reads raw closes directly and never goes through `add_indicators` (a
+smaller version of the same live/backtest mismatch class, flagged in
+that call site's comment as an explicit known gap, not fixed here). 7 new
+tests in `test_trading_bot.py` prove the filter boundary matches
+`fetch_historical_bars` exactly, that it never drops a genuine
+regular-session bar, that filtering a contaminated bar set reproduces the
+same `session_open_price`/VWAP a clean regular-session-only set would,
+and that the right call sites (and only those) request it.
+
+**2. `USE_BREAKOUT_INVALIDATION_EXIT` reverted back to off by default.**
+Enabled live 2026-08-12 (commit c774afb) on real 90-day scanner-universe
+backtest evidence. A 180-day robustness re-test with a per-symbol P&L
+breakdown found the ENTIRE claimed improvement, on BOTH the 90-day and
+180-day windows, was driven by ONE symbol, SMCI (85-100%+ of the delta on
+both). SMCI has also appeared in the real live watchlist exactly once in
+5 weeks (2026-07-22, before live trading even started), so the
+concentrated benefit had little real expected value going forward
+regardless of whether the effect was real. The mechanism itself
+(`breakout_invalidated_at()`) is untouched and still fully tested --
+confirmed via `git diff` against commit 0380590 (the commit right before
+this feature was enabled) that its actual logic in both `strategy.py` and
+`backtest.py`'s `simulate()` is byte-identical; only comments and the
+external `.env`/`trade.yml` overrides changed. A live megacap-universe
+backtest (30 days, run back-to-back against the same command on the
+0380590 code) confirmed the revert restores 0380590's output exactly --
+every trade, every stat, byte-for-byte identical except for this
+session's two purely additive new report lines (the trend-following-gate
+banner from an unrelated in-progress feature, and the new per-symbol
+outlier section below). See `strategy.py`'s `USE_BREAKOUT_INVALIDATION_EXIT`
+comment and `.env`'s for the full numbers.
+
+**3. `backtest.py`'s COMBINED section now prints a per-symbol P&L
+breakdown with an automatic outlier warning, always on.** This is the
+generalizable fix for the actual root cause above: a single symbol's
+outsized swing being invisible unless someone remembers to check per-
+symbol manually. `print_symbol_pnl_breakdown_and_outlier_warning()` shows
+every symbol's own contribution to the combined total, sorted, and flags
+`*** OUTLIER WARNING ***` whenever any single symbol's contribution
+exceeds ~50% of the combined total (positive or negative -- note the %
+is signed contribution / combined total, so when the combined total
+itself is small and made of offsetting swings, MULTIPLE symbols can
+legitimately cross 50% at once; that is itself a sign the aggregate is
+fragile, not a bug in the check). Verified it fires correctly on a known
+outlier case: re-running the scanner universe with
+`USE_BREAKOUT_INVALIDATION_EXIT=true` forced back on (both 90d and 180d)
+correctly flags SMCI every time, and on 180d specifically shows SMCI
+responsible for ~83% of the ON-vs-OFF combined P&L delta ($50.43 of
+$61.06) -- matching the finding that motivated fix #2. Not a toggle --
+this is a reporting change, not a strategy change, so it runs on every
+future multi-symbol backtest without anyone having to remember it.
+
+140/140 test functions pass across all 4 runners
+(`py test_strategy.py`, `py test_trading_bot.py`, `py
+test_trade_recorder.py`, `py test_daily_summary.py`).
+
+## 2026-08-23: a real daily coverage gap -- the 2026-07-24 cron fix was real but incomplete, self-dispatch closes it
+
+The 2026-07-24 fix (this file, "GitHub ran the bot 5 times, not 96") inverted
+the model from a high-frequency cron heartbeat to a 20-min cron starting a
+150-minute `--duration-minutes` job, banking on "GitHub permits one running +
+one queued run per concurrency group, so the queued job starts the moment the
+current one ends." That section explicitly flagged this as **unproven**:
+"Still unproven until a live session: ... GitHub's actual queuing behavior
+under the new 150-min/20-min arrangement." It wasn't proven wrong either --
+until now.
+
+**Confirmed real gap, not a hypothesis -- but real frequency needed a second,
+more careful pass to pin down.** Cross-referencing every job's
+`=== Adaptive Intraday Trading Bot starting` / `Duration window finished` log
+markers against each other found a dead gap with zero logged cycles on some
+sampled trading days. An initial read (comparing log-file line order
+directly) suggested this on all 12 of 12 days checked -- but this repo's log
+files are written by concurrent GitHub Actions jobs and merged back via a
+union merge driver, which can interleave two jobs' lines out of their real
+chronological order within a single day's file. Independently re-sorting by
+each line's actual embedded timestamp (not file position) found the true
+rate is **4 of 13 sampled days** (07-27, 07-28, 07-29, 08-06) show a genuine
+150+ minute dead gap; the other 9 show a clean, near-instant (<1 min)
+hand-off -- the existing concurrency queue mechanism was already working
+correctly most days. Real, confirmed consequence on 08-06 (the worst case,
+514 minutes, 16:01 -> 00:35 the next day): cycles never resumed before the
+close, so 5 positions (MSFT, PRAX, HUBS, CHYM, MGNI) got carried overnight
+against `FLATTEN_BEFORE_CLOSE`'s explicit same-day-close design intent.
+Worth fixing at 4/13 (~31%), just not the "essentially every day" picture
+the unsorted logs first suggested -- recorded here at the corrected
+frequency so a future reader doesn't treat the higher number as settled.
+
+**Root cause: the concurrency hand-off design is correct, but its input
+(a queued run) never gets created if every cron tick inside the running
+job's ~150-165 min window is dropped that particular day.** `schedule` is
+GitHub's own documented best-effort mechanism -- it can silently drop
+ticks under load, same root cause as 07-24, just recurring at the coarser
+20-min cadence on an unlucky subset of days instead of the 5-min cadence
+every day. `run_for_duration()` itself (trading_bot.py) is not at fault --
+it runs its internal loop for exactly the requested duration every time,
+and the concurrency group's one-running-plus-one-queued behavior is not at
+fault either -- it correctly starts a queued job the instant the running
+one ends, whenever one actually exists to start. On the 4 bad days,
+nothing was ever queued.
+
+**Fix: don't depend on `schedule` firing more than once a day.** Added a
+new first step to trade.yml, before checkout/setup/the trading loop can
+fail or hang -- `gh workflow run trade.yml` (a direct, authenticated
+`workflow_dispatch` REST call, retried 3x), which is NOT a `schedule` event
+and isn't subject to the same best-effort dropping; `workflow_dispatch` is
+specifically exempt from the "GITHUB_TOKEN-triggered events don't create
+new workflow runs" recursion guard, so a workflow queuing another run of
+itself via the token is normal, supported behavior. Added `actions: write`
+to `permissions:` (required for the dispatch call). Gated to weekdays,
+current UTC hour < 21 (mirrors the cron's own `12-21` hour range), so the
+chain self-terminates for the day instead of dispatching all night -- the
+FIRST job of each new trading day is still started by cron, unchanged. A
+stray cron tick landing later in the window just cancels-and-replaces the
+self-dispatched pending run (concurrency group keeps only the latest
+pending run); either way something is queued when the current job ends, so
+this is strictly additive to the existing mechanism, not a replacement of
+it.
+
+**Verified as rigorously as scheduling infra allows.** YAML re-parses
+clean (`yaml.safe_load`) with the expected step order and
+`permissions: {contents: write, actions: write}`; every `run:` block passes
+`bash -n` after stripping `${{ }}` expressions. With self-dispatch as step
+zero, a pending successor exists within seconds of each job starting, so
+even the 4 confirmed-bad days should collapse to residual runner-
+provisioning latency (typically well under a minute) rather than the
+observed 150-165+ minute gaps -- not proven against a live GitHub Actions
+environment, since this sandbox has no push/Actions access to the real
+repo, and scheduling-infrastructure fixes are inherently hard to fully
+verify without observing several subsequent live trading days. Flagging
+that honestly rather than claiming certainty.
+
+## 2026-08-23: scanner stock-SELECTION process itself found to be a real-money loss source, independent of any strategy bug -- four fixes built
+
+A real-money reconstruction (85 filled round-trip trades, 2026-07-09 to
+2026-08-12) found that WHICH stock the scanner hands to the strategies
+matters more than any strategy-logic bug found so far: "momentum mover"
+picks averaged -$2.17/trade in REAL trading vs. +$51.56/trade for S&P 500
+backstop picks -- same code, same risk rules, only the selected stock
+differing. Four root causes were confirmed by reading `scan_for_volatile_stocks`
+directly and tracing 5 real losing trades (RGEN, CHYM, ALMR, NN, ATRO)
+against real intraday price bars.
+
+**Root cause 1 -- `SCANNER_MAX_EXTENSION_PCT=50` far too loose.** Fetched
+real 5-min bars for all 5 trades and computed extension from the session's
+own opening bar to the real fill price: ALMR entered at +28.1%, NN at
++23.5% -- both comfortably under the old 50% cutoff. Tightened the default
+to 20%, which cleanly catches both (RGEN +8.9%, CHYM +10.1%, ATRO +7.3%
+are under ANY sane threshold -- see root cause 2 for those).
+
+**Root cause 2 -- no blackout on the opening spike window.** The existing
+`ENTRY_BLACKOUT_START/END_MINUTES` targets the low-volume 1-2pm ET chop
+window, not the open. New `USE_SCANNER_OPENING_BLACKOUT` /
+`SCANNER_OPENING_BLACKOUT_MINUTES`, scoped to scanner picks only (same
+S&P-500-exempt mechanism as `USE_MULTI_TIMEFRAME_FILTER`), additive to the
+lunch blackout. **The default took two passes to get right.** First pass:
+90 minutes, sized to real trading's own "30-90-min-since-open bucket is
+the single worst" framing (net -$55.70 on 12 real trades) -- and directly
+justified by exact timestamp math on the 5 real trades (RGEN 30.4 min
+since open, CHYM 34.2, ATRO 32.4 -- all three slip through a 30-min cutoff
+by just a few minutes). But backtesting that 90-minute default on the
+scanner universe (see below) showed it net HURTS the 180-day result by
+nearly $200 in isolation, dominated by a couple of single-trade effects
+(one QBTS breakout entered at literally 0 minutes since open and hit
+take-profit for +$48.27 pre-fix; a wide blackout delays it into a
+different, worse trade instead). Swept window sizes in isolation (30/35/
+45/60/90 min) and found the response is NOT monotonic -- a small-sample
+overfitting signature, not something to trust past what the real cases
+actually justify. Shipped at **45 minutes**: still comfortably covers all
+3 real cases with room to spare, and backtests far less damaging than 90
+(180d, blackout alone: +$98.47 -> -$98.19 at 90 min, vs. only +$46.57 at
+45 min).
+
+**Root cause 3 -- liquidity check contaminated by the pick-day spike
+itself.** The dollar-volume average was computed from `get_recent_bars_batch(...,
+lookback_days=5)` with no `end`, i.e. through the current moment --
+including today's own abnormal-volume bars, the very thing that got the
+symbol picked. A stock only had to be loud TODAY, not reliably liquid on
+an ordinary day. Fixed by adding an `end` parameter to
+`get_recent_bars_batch` and pinning it to the start of today (ET) for
+this specific check, bumping `lookback_days` 5->6 to keep roughly the same
+amount of real trailing history once today is cut off the end of it.
+Live-only -- `backtest.py` has no liquidity filtering at all to mirror
+(confirmed by grep; it just takes a fixed symbol list from the CLI).
+
+**Root cause 4 -- no listing-age filter anywhere.** Confirmed live via the
+API: ALMR (traded 2026-08-11, real loss -$25.48) had 88 trading days of
+daily-bar history as of today (2026-08-23; ~80 at trade time); EROC (on
+the 2026-08-12 watchlist) had 51 (~43 at the time). New
+`USE_SCANNER_MIN_LISTING_AGE` / `SCANNER_MIN_LISTING_AGE_DAYS=100`, via a
+new `meets_min_listing_age` helper (one batched daily-bar `StockBarsRequest`,
+same pattern `refresh_daily_trend_maps_if_needed` already uses -- no new
+API dependency). Directly verified: `meets_min_listing_age(["ALMR", "EROC"], 100)`
+returns `False` for both, `True` for RGEN/NN/ATRO/CHYM (their real losses
+were never a listing-age problem). Fails OPEN on a total request failure,
+fails CLOSED (excluded) on a per-symbol data gap -- same shape as
+`is_leveraged_etf`'s verdict-`None` case and `daily_trend_confirms_entry`'s
+unknown-trend case.
+
+**Mirrored in `backtest.py` where it could be** (the file has NO
+watchlist/candidate-selection step of its own -- symbols come from the
+CLI -- so nothing here is a literal mirror; each is a documented proxy).
+Extension-pct: an entry-time check against `session_open_price` (already
+computed by `add_indicators`), re-evaluated every bar instead of once per
+`SCANNER_REFRESH_HOURS` -- arguably stricter than live, the right
+direction to err. Opening blackout: a straightforward `continue` alongside
+the existing `ENTRY_BLACKOUT_START/END_MINUTES` mirror. Listing age: a
+standalone `meets_min_listing_age` (own API call, `backtest.py` still
+doesn't import `trading_bot.py`) that skips a symbol for the WHOLE run if
+it fails -- as close to "never reached the live watchlist" as a per-symbol
+CLI tool can get.
+
+**Backtest results -- scanner universe (FBRX VEEE PN TRAX QBTS SMCI SAFT
+RNG INHD FCUV ATKR SRAD), before vs. after, WITH the mandatory per-symbol
+breakdown:**
+
+*90 days*: combined -$23.40 -> +$10.71 (profit factor 0.95 -> 1.03).
+Per-symbol delta vs. the $34.11 total swing: TRAX's listing-age exclusion
+alone is +$38.05 -- MORE than the entire net improvement. Every other
+symbol's delta is small and mixed-sign (SAFT +$10.15, QBTS -$6.08, FBRX
+-$3.76, RNG -$3.37, SRAD -$0.80, ATKR -$0.08). **This is a single-
+exclusion-driven result, not broad-based evidence of better trade
+quality on the symbols still being traded** -- said plainly rather than
+presented as a clean win.
+
+*180 days*: combined +$98.47 -> +$70.33 (profit factor 1.15 -> 1.14,
+essentially unchanged risk-adjusted). Per-symbol deltas vs. the $28.14 net
+swing: QBTS -$45.88, TRAX (excluded) +$38.05, RNG -$30.15, SAFT +$17.86 --
+FOUR different symbols each individually exceed the total delta's
+magnitude, with opposite signs mostly canceling out. **The modest
+aggregate number is not a broadly modest effect -- it's a wash of large,
+mostly-canceling single-symbol swings**, another one-symbol(-and-then-
+some)-driven read, not a clean signal either way.
+
+*Sanity check*: the megacap universe (TSLA NVDA COIN AMD PLTR) is
+BYTE-IDENTICAL before/after at 90 days (confirmed via diff) -- every one
+of the 5 is currently an S&P 500 member, so all four fixes correctly
+never touch them. Correct scoping confirmed the hard way, not assumed.
+
+**Honest bottom line**: the REAL-money evidence for all four root causes
+is solid and direct (real fills, real intraday bars, real API listing-age
+lookups) -- that part is settled. Whether this specific 12-symbol
+"scanner universe" fixed list is a reliable place to VALIDATE the fix,
+though, is doubtful: it's the same stale list flagged elsewhere in this
+file (TRAX itself is one of the reasons it's stale -- it no longer clears
+the listing-age bar), and both backtest windows show results dominated by
+2-4 individual symbols' idiosyncratic trades rather than a broad,
+consistent improvement. Shipped anyway (all four default ON) because the
+underlying real-trading evidence stands on its own regardless of what
+this specific small backtest universe says -- but the honest read is
+"real evidence says fix this; small-universe backtest is too noisy to
+confirm or deny it," not "backtest proves this works." Re-validate once
+the LIVE scanner has run under the new filters long enough to reconstruct
+fresh real trades, the same way this investigation started.
+
+19 new unit tests (`meets_min_listing_age`'s trading-day-count/fail-open/
+empty-input cases, extension-pct/listing-age/liquidity-window wiring
+inside `scan_for_volatile_stocks`, the opening blackout's S&P-500 scoping/
+cross-strategy applicability/disable/window-boundary behavior in
+`check_symbol`), all 4 project test runners green (`test_strategy.py`,
+`test_trading_bot.py`, `test_trade_recorder.py`, `test_daily_summary.py`).
+
+## 2026-08-23: vwap_reversion "turning up" requirement made toggleable (shipped OFF, i.e. the requirement removed by default); USE_MULTI_TIMEFRAME_FILTER re-tested and reverted to OFF
+
+Two related pieces of work, triggered by a project-wide finding: this
+week's whole backtest-validation approach had been broken by single-
+symbol outliers on at least 3 separate features, one still live at the
+time. Going forward, every backtest claim needs a per-symbol breakdown
+flagging any single symbol driving >50% of a claimed delta.
+
+**Part 1: vwap_reversion's hardcoded "must already be turning up"
+requirement.** `vwap_reversion_at()` in strategy.py required
+`close_now > close_prev` on top of being stretched below VWAP, with no
+toggle. A sensitivity sweep (90d AND 180d, both universes, per-symbol
+checked -- 7-8 of 12 scanner symbols improved individually, not one name
+carrying the average) found removing it improves every metric tested:
+
+    90d megacap:  82->117 trades, PF 1.57->1.43 (down), return +4.75%->+5.79%
+    90d scanner: 102->149 trades, PF 0.97->1.20,        return -0.22%->+2.49%
+    180d megacap:      PF 1.50->1.51 (tie),               return +7.85%->+12.24%
+    180d scanner:      PF 1.17->1.37,                      return +2.25%->+7.75%
+
+Made toggleable as `USE_VWAP_REVERSION_TURN_UP_CONFIRMATION`, default
+FALSE (ships the improved behavior; the old stricter behavior is still
+available by setting it true). ADX (`VWAP_REVERSION_MAX_ADX`) was
+already the real knife-catching guard here -- the turn-up check was
+mostly adding a one-bar entry lag on top of it, not real extra safety.
+
+**Part 2: USE_MULTI_TIMEFRAME_FILTER re-tested, reverted to OFF.** This
+had been live since 2026-07-31 on a single 90-day backtest calling it
+"an unambiguous win... drawdown roughly halves." A robustness re-test
+found the OPPOSITE on a 180-day scanner window (OFF $465 vs ON $135,
+even drawdown worse ON), traced at first glance to VEEE alone (72% of
+the swing) -- which would normally mean "one outlier, not real evidence
+either way." The job here was to actually check that with rigor instead
+of trusting either headline number.
+
+*Leave-one-out (12 exclusions), both windows, fixed scanner list
+(FBRX/VEEE/PN/TRAX/QBTS/SMCI/SAFT/RNG/INHD/FCUV/ATKR/SRAD):* the 180-day
+cut is genuinely robust -- OFF wins regardless of which single symbol is
+dropped, including VEEE itself (excluding VEEE still leaves OFF winning
+by a wide margin). The 90-day cut's pro-ON result is NOT robust the same
+way, on independent re-verification: excluding either of two different
+symbols (PN, or FCUV) flips it to favor OFF instead, and the FCUV case is
+a textbook small-sample artifact (4 trades total, profit factor 35.73 --
+near-zero losses inflating PF absurdly). So the naive "VEEE is the
+outlier, exclude it and decide" shortcut was wrong on its own terms (VEEE
+itself was never what made either window fragile) -- but so would trusting
+the 90-day fixed-list result as settled; it doesn't survive its own
+leave-one-out check the way the 180-day cut does.
+
+*Why the two windows disagree:* split the 180d run at its midpoint --
+the recent ~90 days inside it mildly favor ON (+$51), the older 90-180
+days back heavily favor OFF (+$346). A strategy-level breakdown of
+blocked-vs-allowed trades shows why: in the recent window, blocked
+trend_following/vwap_reversion trades are net LOSERS (the filter is
+doing its job); in the older window, the SAME check blocks net WINNERS
+for trend_following and gap_continuation instead. Real regime
+dependence, not noise concentrated in one symbol.
+
+*VEEE structural check:* real, extreme (300%+ single-day) volatility
+events in VEEE's daily-bar history, a plausible mechanism for why a
+ONE-PRIOR-DAY EMA(9)/EMA(21) read lags a violent reversal badly -- but
+VEEE isn't uniquely volatile among its scanner peers (INHD and PN show
+comparably extreme days) and isn't the majority driver of any of the
+tests below, so this is a real contributing factor, not the whole
+story.
+
+*Real-trading cross-check:* VEEE appeared in `watchlist_state.json`'s
+entire git history exactly ONCE (2026-07-27) and has had zero real
+trades since 2026-07-28 -- three days before this filter even went
+live. Checking the fixed 12-symbol comparison list against real Alpaca
+order history further showed it has ZERO overlap with any symbol
+actually real-traded since 2026-07-31: the list used for comparability
+all week is a stale snapshot, not a current sample of what the scanner
+actually picks now.
+
+*Re-ran the SAME leave-one-out methodology on a FRESH 12-symbol set
+drawn from the actual live watchlist (NIQ/CDNL/ONON/VREX/HZO/QNST/DOCS/
+CRSR/TEAM/APPS/BLMN/SEDG, 2026-08-03 to 08-11) instead of the stale
+list.* This is the most decision-relevant test run, since it's the
+closest available proxy for what the bot will actually encounter going
+forward. OFF won DECISIVELY on both windows, robust to every single
+exclusion (24/24 leave-one-out checks, zero flips):
+
+    90d:  ON $-32 (PF 0.96, net LOSING) vs OFF $+251 (PF 1.20), DD 3.77%->3.58%
+    180d: ON $+128 (PF 1.08)            vs OFF $+674 (PF 1.26), DD 4.10%->3.66%
+
+Unlike the fixed list's 180d result (roughly tied profit factor, mostly
+a trade-count story), this one favors OFF on every axis at once --
+return, profit factor, AND drawdown.
+
+**Verdict: 3 of 4 ON-vs-OFF tests favor OFF, and hold up under leave-
+one-out** (fixed-list 180d, fresh-list 90d, fresh-list 180d, the last two
+being the most decision-relevant since they reflect the current live
+watchlist, not a stale snapshot). The 4th (fixed-list 90d) nominally
+favored ON but turned out not to be robust to its own leave-one-out check
+on independent re-verification -- so it doesn't actually stand as
+dissenting evidence, it's just noise. Reverted `USE_MULTI_TIMEFRAME_
+FILTER` to false in trading_bot.py/backtest.py/.env/trade.yml, matching
+this project's default posture (off unless evidence justifies on) now
+that the original "unambiguous win" framing doesn't survive a proper
+re-test. This is NOT "VEEE was the problem, excluding it fixes
+everything" -- the leave-one-out check specifically rules that shortcut
+out. If re-enabling this in the future, don't trust a single window/
+universe combination as the final word, and always run the leave-one-out
+check yourself rather than taking a "zero flips" claim at face value --
+this whole investigation is the demonstration of why.
+
+All 4 test runners green after both changes (`py test_strategy.py`,
+`py test_trading_bot.py`, `py test_trade_recorder.py`, `py
+test_daily_summary.py`). No mechanism changes to `daily_trend_confirms_
+entry`'s S&P-500-exemption logic or `compute_daily_trend_map`'s shift-
+by-one-day logic -- only the default flipped, so existing tests for
+those (which explicitly patch the toggle either way) still hold.
+
+## 2026-08-23: backtest.py was assuming free entries -- real, measured slippage now modeled (unconditional, no toggle)
+
+`simulate()`'s old assumption was a PERFECT BUY fill at the decision
+bar's close. Live, `place_buy_order` re-prices off a fresh quote and
+fills via a real market order -- both introduce real slippage, and this
+project's own history already had a concrete case on record (HURN,
+2026-07-29: quoted $149.055, filled $154.30, +3.5%).
+
+**Measured directly from `trades.csv`**, joining each real BUY's logged
+decision-bar close against its real post-fill price (33 fills since the
+reconciliation logging shipped 2026-07-29, UFPT sizing-bug trade
+excluded): mean entry slippage +0.61% (median +0.28%), 61% of trades
+adverse, mean $7.65/trade, $252.46 total measured -- but that blended
+figure hides a real, direction-flipping split by S&P-500 membership:
+scanner picks average **+1.09%** (n=20, still +0.88% with the single
+largest outlier, HURN, dropped -- not a one-trade result), S&P 500 names
+average **-0.11%** (n=13, standard error ~0.14%, statistically
+indistinguishable from zero -- left at 0 rather than inventing a number
+the data doesn't support).
+
+**Modeled as two new constants**, `ENTRY_SLIPPAGE_PCT_SCANNER` (default
+1.1) and `ENTRY_SLIPPAGE_PCT_SP500` (default 0.0), scoped by the same
+S&P-500-membership mechanism as `USE_MULTI_TIMEFRAME_FILTER` /
+`USE_VWAP_VOLUME_CONFIRMATION` -- but UNCONDITIONAL, no `USE_` toggle,
+matching `STOP_SLIPPAGE_ATR_FRACTION`'s own precedent: this isn't an
+optional feature to A/B, it's the same "tell the truth about what a real
+trade actually costs" job that constant already does for stop-loss
+exits. Entry price is adjusted BEFORE the stop/target/noise-guard/sizing
+math runs, so a position's whole risk calculation stays internally
+consistent with what was actually paid -- verified by a dedicated test
+proving `stop_is_wider_than_noise` and `compute_stop_and_target` both
+receive the slippage-adjusted price, never the raw bar close.
+
+**Backtest impact, before vs. after, both universes, both windows:**
+
+```
+                    90 days                    180 days
+megacap (S&P 500):  $118.66 -> $118.66 (=0)     $180.65 -> $180.65 (=0)
+scanner (11/12      -$23.40 -> -$282.10          $98.47 -> -$432.83
+ non-S&P-500):       (-$258.70 delta)            (-$531.30 delta)
+```
+
+Megacap is a **mechanically guaranteed no-op** -- all 5 symbols are S&P
+500 members and the measured S&P-500 slippage is statistically zero, not
+an outlier artifact. The scanner universe is not small: the 180-day
+swing (-$531) is LARGER than the entire ~$600-650 real slippage cost
+estimated across all real trades, and genuinely broad-based (checked
+per-symbol on both windows -- largest single contributor 21% at 90d, 35%
+at 180d, both under the 50% single-symbol-outlier flag this project now
+requires). A few trades flip outcome entirely as a real, verified
+knock-on effect: a higher, slippage-adjusted entry implies a higher stop
+level too, so some positions that used to ride to an end-of-day flatten
+now get stopped out earlier instead (confirmed trade-by-trade on QBTS,
+2026-05-21: a +$31.00 EOD-flatten win under the old free-entry assumption
+becomes a -$27.92 stop-loss with slippage included).
+
+**What this means going forward, stated plainly rather than buried**:
+`USE_TREND_FOLLOWING_SP500_GATE` (not shipped), `USE_MULTI_TIMEFRAME_
+FILTER`, and `USE_VWAP_VOLUME_CONFIRMATION` were all evaluated, at least
+partly, on scanner-pick backtests generated under the free-entry
+assumption this fix removes. Their evidence was mostly RELATIVE (with
+vs. without the filter, both sides under the same zero-slippage
+assumption), which partially cancels the bias -- but the ABSOLUTE case
+for trading scanner-picked names at all, the backdrop those relative
+comparisons were made against, is measurably weaker than it looked a
+week ago. Re-running those comparisons with slippage included is a
+natural next check, not done as part of this task.
+
+153/153 test functions pass across all 5 project test runners
+(`test_strategy.py`, `test_trading_bot.py`, `test_trade_recorder.py`,
+`test_daily_summary.py`, new `test_backtest.py` for `simulate()`-level
+coverage this project didn't have a dedicated file for before).
+
+## 2026-08-23: full-system regression check (all 5 of today's fixes merged together) surfaced a real finding none of them caught alone -- SP500_MIN_WATCHLIST_SLOTS raised 6->10
+
+Five real, independently-evidenced fixes landed today (session-filter for
+live indicators, the breakout-invalidation-exit outlier revert, four
+scanner-selection quality filters, the vwap_reversion turn-up removal +
+`USE_MULTI_TIMEFRAME_FILTER` revert, and honest entry-fill slippage in
+`backtest.py`). Each was independently built and adversarially verified.
+Merging all five together and re-running the combined system is what this
+project's own process has called for since the trend_following/SMCI
+false positive earlier today -- and it caught something real that no
+single candidate's own testing could have.
+
+**The full merged system, backtested on a fresh, real-watchlist-derived
+symbol set (NIQ/CDNL/ONON/VREX/HZO/QNST/DOCS/CRSR/TEAM/APPS/BLMN/SEDG,
+the same one `USE_MULTI_TIMEFRAME_FILTER`'s re-test used), came back
+profit factor 0.39 at BOTH 90 and 180 days** -- a real, consistent,
+window-independent result, not a fluke. Isolated the cause methodically
+rather than guessing:
+
+```
+config                                                    PF      total $
+all new defaults (slippage ON)                            0.39   -$897.87
+  + USE_MULTI_TIMEFRAME_FILTER=true                        0.30   -$708.93
+  + USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=true            0.34   -$607.60
+  + both of the above                                      0.27   -$492.32
+  + ENTRY_SLIPPAGE_PCT_SCANNER=0 / _SP500=0 (else new)     1.15   +$124.71
+everything reverted to pre-2026-08-23 behavior              0.81   -$109.88
+```
+
+Neither `USE_MULTI_TIMEFRAME_FILTER` nor `USE_VWAP_REVERSION_TURN_UP_
+CONFIRMATION` explains this -- restoring either, or both, with slippage
+still on stays firmly in the 0.27-0.34 PF range. Zeroing entry slippage
+alone, leaving every other new default in place, is the only single
+change that flips the picture positive. This isn't a bug in the slippage
+model (it's independently verified, honest, measured from real fills) --
+it's the slippage fix doing exactly its intended job: once trade
+frequency is realistic (`vwap_reversion` fires far more often with the
+turn-up requirement gone) AND entries cost what they really cost, the
+scanner-pick population's edge is revealed as currently negative, not
+just weaker-looking than a free-entry backtest showed.
+
+**This independently confirms, via a completely different method, the
+SAME conclusion the scanner-selection investigation already reached with
+real money** (see the "scanner stock-SELECTION process" entry above):
+momentum-mover picks averaged -$2.17/trade in real trading even with
+every known bug excluded, vs. +$51.56/trade for S&P 500 backstop picks --
+same code, same risk rules, only the selected stock differing. Real
+fills and an honest backtest now agree, by two independent routes: the
+S&P 500 backstop is this bot's only currently-demonstrated source of
+edge; the scanner's momentum-mover population is not, even after today's
+4 new scanner-quality filters.
+
+**Action taken**: raised `SP500_MIN_WATCHLIST_SLOTS` 6->10 (of
+`SCANNER_WATCHLIST_SIZE=18`), shifting the watchlist's guaranteed
+composition from 1/3 backstop to over half. NOT raised all the way to
+18 (abandoning momentum-mover picks entirely) -- that's a bigger,
+more fundamental change than today's evidence demands on its own, and
+today's 4 new scanner filters deserve a real chance to prove themselves
+in live trading now that they exist, just with a smaller, more
+conservative share of the watchlist while that evidence accumulates.
+
+**Honestly flagged limitation**: this specific lever is NOT independently
+backtestable with current tooling -- `backtest.py` takes a fixed symbol
+list on the command line, it doesn't simulate the scanner's own daily
+selection-and-mixing process, so there's no direct before/after backtest
+of "what if 10 of 18 slots were reserved instead of 6." The justification
+rests entirely on the asymmetric evidence on each sub-population
+(real trades AND the honest full-system backtest both say S&P 500 good,
+scanner-mover currently not), not a direct measurement of this exact
+change's effect. Re-validate once enough real trades accumulate under
+the new allocation to reconstruct fresh real-money evidence, the same
+way this whole investigation started.

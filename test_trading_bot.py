@@ -1098,6 +1098,141 @@ def test_scan_caps_total_watchlist_size_with_backstop_included():
           {"AAPL", "MSFT", "NVDA", "AMD"} <= set(picked))
 
 
+# ---------------------------------------------------------------------------
+# SCANNER ROBUSTNESS -- 2026-08-2x, real-money-confirmed investigation.
+# "Momentum mover" picks averaged -$2.17/trade in REAL trading vs.
+# +$51.56/trade for S&P 500 backstop picks, same code/risk rules, only the
+# selected stock differing. Four root causes, four fixes: a tighter
+# SCANNER_MAX_EXTENSION_PCT, a new scanner-picks-only opening-range
+# blackout (covered in the check_symbol section above), a liquidity check
+# that excludes the spike day itself, and a minimum listing-age filter.
+# ---------------------------------------------------------------------------
+
+def _fake_mover(symbol, price, percent_change):
+    return types.SimpleNamespace(symbol=symbol, price=price, percent_change=percent_change)
+
+
+def test_meets_min_listing_age_filters_by_trading_day_count():
+    bars_df = pd.DataFrame({"symbol": ["OLDCO"] * 120 + ["NEWCO"] * 40})
+    fake_response = types.SimpleNamespace(df=bars_df)
+    with patch.object(tb.data_client, "get_stock_bars", return_value=fake_response):
+        result = tb.meets_min_listing_age(["OLDCO", "NEWCO", "MISSING"], min_days=100)
+    check("a symbol with >= min_days of daily bars passes", "OLDCO" in result)
+    check("a symbol with fewer than min_days of daily bars is excluded", "NEWCO" not in result)
+    check("a symbol missing from the response entirely is excluded (real cases: ALMR ~80d, EROC ~43d)",
+          "MISSING" not in result)
+
+
+def test_meets_min_listing_age_fails_open_on_request_failure():
+    """A systemic endpoint outage isn't a reason to exclude every
+    candidate on a filter that was never actually evaluated -- same
+    fail-open shape as the dollar-volume liquidity check's own try/except."""
+    with patch.object(tb.data_client, "get_stock_bars", side_effect=RuntimeError("API down")):
+        result = tb.meets_min_listing_age(["ANY"], min_days=100)
+    check("a total request failure fails OPEN rather than blocking everything", result == {"ANY"})
+
+
+def test_meets_min_listing_age_empty_input_is_a_noop():
+    with patch.object(tb.data_client, "get_stock_bars") as mock_fetch:
+        result = tb.meets_min_listing_age([], min_days=100)
+    check("an empty symbol list returns empty without calling the API",
+          result == set() and not mock_fetch.called)
+
+
+def test_scan_excludes_candidates_beyond_max_extension_pct():
+    """See SCANNER_MAX_EXTENSION_PCT's 2026-08-2x comment -- real losing
+    trades traced against real intraday bars (ALMR +27.4%, NN +23%)
+    entered comfortably under the OLD 50% cutoff. Pins that the new,
+    tighter default actually excludes that range."""
+    movers = types.SimpleNamespace(
+        gainers=[_fake_mover("ALMRLIKE", 20.0, 27.4), _fake_mover("MILD", 20.0, 8.0)],
+        losers=[],
+    )
+    with patch.object(tb.screener_client, "get_market_movers", return_value=movers), \
+         patch.object(tb.screener_client, "get_most_actives",
+                       return_value=types.SimpleNamespace(most_actives=[])), \
+         patch.object(tb, "SCANNER_MAX_EXTENSION_PCT", 20.0), \
+         patch.object(tb, "EXCLUDE_LEVERAGED_ETFS", False), \
+         patch.object(tb, "USE_SCANNER_MIN_LISTING_AGE", False), \
+         patch.object(tb, "USE_NEWS_FILTER", False), \
+         patch.object(tb, "USE_SP500_UNIVERSE", False), \
+         patch.object(tb, "get_recent_bars_batch", return_value={
+             "MILD": pd.DataFrame({"close": [50.0] * 5, "volume": [1_000_000] * 5}),
+         }):
+        result = tb.scan_for_volatile_stocks()
+    check("a candidate past the extension cutoff (27.4% > 20%) is excluded", "ALMRLIKE" not in result)
+    check("a candidate under the cutoff and otherwise qualified is kept", "MILD" in result)
+
+
+def test_scan_excludes_candidates_below_min_listing_age():
+    movers = types.SimpleNamespace(
+        gainers=[_fake_mover("NEWCO", 20.0, 5.0), _fake_mover("OLDCO", 20.0, 5.0)],
+        losers=[],
+    )
+    with patch.object(tb.screener_client, "get_market_movers", return_value=movers), \
+         patch.object(tb.screener_client, "get_most_actives",
+                       return_value=types.SimpleNamespace(most_actives=[])), \
+         patch.object(tb, "EXCLUDE_LEVERAGED_ETFS", False), \
+         patch.object(tb, "USE_SCANNER_MIN_LISTING_AGE", True), \
+         patch.object(tb, "SCANNER_MIN_LISTING_AGE_DAYS", 100), \
+         patch.object(tb, "meets_min_listing_age", return_value={"OLDCO"}) as mock_listing_age, \
+         patch.object(tb, "USE_NEWS_FILTER", False), \
+         patch.object(tb, "USE_SP500_UNIVERSE", False), \
+         patch.object(tb, "get_recent_bars_batch", return_value={
+             "OLDCO": pd.DataFrame({"close": [50.0] * 5, "volume": [1_000_000] * 5}),
+         }):
+        result = tb.scan_for_volatile_stocks()
+    check("the listing-age check is consulted with the prefiltered candidates", mock_listing_age.called)
+    check("a too-new symbol (real cases: ALMR ~80d, EROC ~43d) is excluded", "NEWCO" not in result)
+    check("an old-enough symbol is kept", "OLDCO" in result)
+
+
+def test_scan_listing_age_filter_noop_when_disabled():
+    movers = types.SimpleNamespace(gainers=[_fake_mover("NEWCO", 20.0, 5.0)], losers=[])
+    with patch.object(tb.screener_client, "get_market_movers", return_value=movers), \
+         patch.object(tb.screener_client, "get_most_actives",
+                       return_value=types.SimpleNamespace(most_actives=[])), \
+         patch.object(tb, "EXCLUDE_LEVERAGED_ETFS", False), \
+         patch.object(tb, "USE_SCANNER_MIN_LISTING_AGE", False), \
+         patch.object(tb, "meets_min_listing_age") as mock_listing_age, \
+         patch.object(tb, "USE_NEWS_FILTER", False), \
+         patch.object(tb, "USE_SP500_UNIVERSE", False), \
+         patch.object(tb, "get_recent_bars_batch", return_value={
+             "NEWCO": pd.DataFrame({"close": [50.0] * 5, "volume": [1_000_000] * 5}),
+         }):
+        result = tb.scan_for_volatile_stocks()
+    check("with the filter off, meets_min_listing_age is never even called", not mock_listing_age.called)
+    check("the candidate is kept", "NEWCO" in result)
+
+
+def test_scan_liquidity_check_excludes_todays_bars():
+    """See SCANNER_MIN_DOLLAR_VOLUME's fix -- the average must be computed
+    from bars ending at the START of today (ET), not through the current
+    moment, so today's own abnormal spike volume can't count toward "is
+    this normally liquid.\""""
+    movers = types.SimpleNamespace(gainers=[_fake_mover("SPIKY", 20.0, 5.0)], losers=[])
+    with patch.object(tb.screener_client, "get_market_movers", return_value=movers), \
+         patch.object(tb.screener_client, "get_most_actives",
+                       return_value=types.SimpleNamespace(most_actives=[])), \
+         patch.object(tb, "EXCLUDE_LEVERAGED_ETFS", False), \
+         patch.object(tb, "USE_SCANNER_MIN_LISTING_AGE", False), \
+         patch.object(tb, "USE_NEWS_FILTER", False), \
+         patch.object(tb, "USE_SP500_UNIVERSE", False), \
+         patch.object(tb, "get_recent_bars_batch", return_value={
+             "SPIKY": pd.DataFrame({"close": [50.0] * 5, "volume": [1_000_000] * 5}),
+         }) as mock_bars:
+        tb.scan_for_volatile_stocks()
+    check("the liquidity bar fetch is called", mock_bars.called)
+    _, kwargs = mock_bars.call_args
+    end_arg = kwargs.get("end")
+    check("an explicit `end` cutoff is passed (not None, i.e. not through the live moment)",
+          end_arg is not None)
+    now_et = tb.datetime.now(tb.MARKET_TZ_FOR_LOGS)
+    check("the cutoff is pinned to the START of today (midnight ET), excluding today's own bars",
+          end_arg is not None and end_arg.date() == now_et.date()
+          and end_arg.hour == 0 and end_arg.minute == 0)
+
+
 def _fake_order(status, filled_avg_price=None, legs=None, order_id="ord-1", symbol="HURN"):
     return types.SimpleNamespace(id=order_id, symbol=symbol, status=status,
                                  filled_avg_price=filled_avg_price, legs=legs or [])
@@ -1199,17 +1334,21 @@ def test_reconcile_bracket_survives_a_failed_leg_replace():
 
 
 # ---------------------------------------------------------------------------
-# MULTI-TIMEFRAME FILTER -- 2026-07-31, scanner picks only. S&P 500 names
-# must always bypass the filter regardless of daily trend; everything else
-# must be gated on it. This is the whole point of the feature (see
-# CLAUDE.md for the 90-day comparison), so it's the property most worth
-# pinning with a test.
+# MULTI-TIMEFRAME FILTER -- scanner picks only. S&P 500 names must always
+# bypass the filter regardless of daily trend; everything else must be
+# gated on it. This is the whole point of the feature (see CLAUDE.md for
+# the full evidence), so it's the property most worth pinning with a
+# test. USE_MULTI_TIMEFRAME_FILTER defaults OFF as of 2026-08-23 (see
+# that constant's comment), so every test below that exercises the
+# GATING mechanism itself explicitly patches it True -- only the
+# noop-when-disabled test below relies on patching it False.
 # ---------------------------------------------------------------------------
 
 def test_daily_trend_confirms_entry_exempts_sp500_regardless_of_trend():
     from datetime import date
     today = date(2026, 7, 31)
-    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+    with patch.object(tb, "USE_MULTI_TIMEFRAME_FILTER", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
          patch.object(tb, "_daily_trend_cache", {"AAPL": {"map": {today: False}, "fetched_at": None}}):
         check("an S&P 500 name is exempt even though its OWN trend is down",
               tb.daily_trend_confirms_entry("AAPL", today) is True)
@@ -1218,7 +1357,8 @@ def test_daily_trend_confirms_entry_exempts_sp500_regardless_of_trend():
 def test_daily_trend_confirms_entry_gates_non_sp500_on_real_trend():
     from datetime import date
     today = date(2026, 7, 31)
-    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+    with patch.object(tb, "USE_MULTI_TIMEFRAME_FILTER", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
          patch.object(tb, "_daily_trend_cache", {
              "VEEE": {"map": {today: True}, "fetched_at": None},
              "TRAX": {"map": {today: False}, "fetched_at": None},
@@ -1232,7 +1372,8 @@ def test_daily_trend_confirms_entry_gates_non_sp500_on_real_trend():
 def test_daily_trend_confirms_entry_fails_closed_on_unknown_symbol():
     from datetime import date
     today = date(2026, 7, 31)
-    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL"]), \
+    with patch.object(tb, "USE_MULTI_TIMEFRAME_FILTER", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL"]), \
          patch.object(tb, "_daily_trend_cache", {}):
         check("a symbol with no cached trend at all is blocked, not silently allowed",
               tb.daily_trend_confirms_entry("QBTS", today) is False)
@@ -1435,6 +1576,192 @@ def test_spy_regime_confirms_entry_fails_open_during_warmup():
     check("SPY's own indicators still warming up (NaN) fails open, not closed", result is True)
 
 
+# ---------------------------------------------------------------------------
+# filter_to_regular_session / get_recent_bars_batch's regular_session_only --
+# 2026-08-23: live indicators used to be computed on extended-hours-
+# contaminated data while backtest.py's fetch_historical_bars already
+# filtered to the 9:30am-4pm ET regular session. See filter_to_regular_
+# session's own docstring for the full reasoning.
+# ---------------------------------------------------------------------------
+
+def _et_bar(date_str: str, hour: int, minute: int, **cols) -> dict:
+    """One raw bar's worth of columns, timestamped at the given ET
+    wall-clock time on date_str but stored the way real Alpaca bars
+    arrive: tz-aware, converted to UTC."""
+    ts = pd.Timestamp(f"{date_str} {hour:02d}:{minute:02d}:00", tz="America/New_York").tz_convert("UTC")
+    row = {"timestamp": ts, "open": 100.0, "high": 101.0, "low": 99.0, "close": 100.0, "volume": 1000.0}
+    row.update(cols)
+    return row
+
+
+def test_filter_to_regular_session_drops_pre_and_post_market_bars():
+    """The exact boundary backtest.py's fetch_historical_bars uses:
+    9:30am (inclusive) through 4:00pm (exclusive) ET."""
+    raw = pd.DataFrame([
+        _et_bar("2026-08-20", 4, 0),      # pre-market, way early
+        _et_bar("2026-08-20", 9, 29),     # one minute before the open -- OUT
+        _et_bar("2026-08-20", 9, 30),     # the open itself -- IN
+        _et_bar("2026-08-20", 12, 0),     # midday -- IN
+        _et_bar("2026-08-20", 15, 59),    # last regular-session minute -- IN
+        _et_bar("2026-08-20", 16, 0),     # the close itself -- OUT (exclusive)
+        _et_bar("2026-08-20", 19, 45),    # after-hours -- OUT
+    ])
+    filtered = tb.filter_to_regular_session(raw)
+    kept_times = filtered["timestamp"].dt.tz_convert("America/New_York").dt.strftime("%H:%M").tolist()
+    check("pre-market and after-hours bars are dropped, exactly the regular-session ones remain",
+          kept_times == ["09:30", "12:00", "15:59"], detail=str(kept_times))
+
+
+def test_filter_to_regular_session_keeps_every_regular_session_bar():
+    """(b) from the task: the filter must never drop a genuine
+    regular-session bar. One bar per 15 minutes across a whole session,
+    plus contamination on both ends, and every regular-session one must
+    survive."""
+    et_minutes = list(range(0, 24 * 60, 15))  # every 15 min across a full day
+    raw = pd.DataFrame([
+        _et_bar("2026-08-20", m // 60, m % 60) for m in et_minutes
+    ])
+    expected_regular = [
+        m for m in et_minutes if (m >= 9 * 60 + 30) and (m < 16 * 60)
+    ]
+    filtered = tb.filter_to_regular_session(raw)
+    kept_minutes = [
+        h * 60 + mi for h, mi in
+        zip(filtered["timestamp"].dt.tz_convert("America/New_York").dt.hour,
+            filtered["timestamp"].dt.tz_convert("America/New_York").dt.minute)
+    ]
+    check("every regular-session bar (9:30am-3:59:59pm ET) survives filtering, none extra",
+          kept_minutes == expected_regular, detail=f"{kept_minutes} vs {expected_regular}")
+
+
+def test_filter_to_regular_session_empty_input_is_a_noop():
+    empty = pd.DataFrame(columns=["timestamp", "open", "high", "low", "close", "volume"])
+    result = tb.filter_to_regular_session(empty)
+    check("an empty bar set filters to an empty bar set, no crash", result.empty)
+
+
+def test_filter_to_regular_session_matches_what_backtest_would_compute():
+    """(a) from the task: a raw bar set contaminated with a pre-market
+    bar, once filtered, must produce the SAME session_open_price/
+    session_first_bar_high/session_first_bar_volume/vwap that
+    backtest.py's fetch_historical_bars-then-add_indicators pipeline
+    would produce on the same underlying regular-session data --
+    because backtest.py's filter is this exact same boundary condition,
+    the true test is that add_indicators sees the REGULAR session's own
+    first bar as "first", not whatever printed earliest in the
+    calendar day.
+    """
+    contaminated = pd.DataFrame([
+        # Pre-market bar: a materially different open/high/volume than
+        # the true regular-session open -- if this leaks through,
+        # session_open_price/session_first_bar_high/session_first_bar_volume
+        # get anchored to IT instead of the 9:30 bar.
+        _et_bar("2026-08-20", 8, 0, open=95.0, high=96.0, low=94.5, close=95.5, volume=500_000.0),
+        _et_bar("2026-08-20", 9, 30, open=100.0, high=100.5, low=99.5, close=100.2, volume=20_000.0),
+        _et_bar("2026-08-20", 9, 45, open=100.2, high=101.0, low=100.0, close=100.8, volume=18_000.0),
+        _et_bar("2026-08-20", 10, 0, open=100.8, high=101.5, low=100.5, close=101.2, volume=17_000.0),
+    ])
+    # The reference: what a backtest would have started from -- the
+    # regular session's bars ONLY, already hand-picked here (the whole
+    # point of this test is that filter_to_regular_session must derive
+    # the identical set on its own from the contaminated input).
+    reference_regular_only = contaminated.iloc[1:].reset_index(drop=True)
+
+    filtered = tb.filter_to_regular_session(contaminated)
+    from strategy import add_indicators
+    enriched_from_filtered = add_indicators(filtered)
+    enriched_from_reference = add_indicators(reference_regular_only)
+
+    check("filtering the contaminated input reproduces the SAME row count as the "
+          "hand-picked regular-session-only reference",
+          len(filtered) == len(reference_regular_only))
+    check("session_open_price matches the regular session's own true open (100.0), "
+          "not the pre-market bar's (95.0)",
+          enriched_from_filtered["session_open_price"].iat[0] == 100.0)
+    check("session_open_price is identical between the filtered-contaminated path and the "
+          "already-clean reference backtest.py would have used",
+          (enriched_from_filtered["session_open_price"] == enriched_from_reference["session_open_price"]).all())
+    check("session_first_bar_high matches the regular session's own first bar (100.5), "
+          "not the pre-market bar's (96.0)",
+          enriched_from_filtered["session_first_bar_high"].iat[0] == 100.5)
+    check("session_first_bar_volume matches the regular session's own first bar (20000), "
+          "not the pre-market bar's (500000)",
+          enriched_from_filtered["session_first_bar_volume"].iat[0] == 20_000.0)
+    check("vwap is identical between the filtered-contaminated path and the clean reference "
+          "(both anchor to the same regular-session bars)",
+          np.allclose(enriched_from_filtered["vwap"].to_numpy(), enriched_from_reference["vwap"].to_numpy()))
+
+    # And the contrast that motivated this fix in the first place: running
+    # add_indicators on the UNFILTERED, contaminated bars directly (the
+    # live bot's behavior before this fix) gives a WRONG session_open_price.
+    enriched_contaminated_unfiltered = add_indicators(contaminated)
+    check("without this fix, the contaminated (unfiltered) input anchors "
+          "session_open_price to the pre-market bar instead -- proving the "
+          "filter is what fixes the real divergence",
+          enriched_contaminated_unfiltered["session_open_price"].iat[0] == 95.0)
+
+
+def test_get_recent_bars_batch_regular_session_only_filters_each_symbol():
+    """get_recent_bars_batch's own wiring: regular_session_only=True must
+    filter EVERY symbol's bars in the batch, and the default (False) must
+    leave the raw response completely untouched (backward compatible with
+    every caller that doesn't pass it)."""
+    raw_multi = pd.DataFrame([
+        {**_et_bar("2026-08-20", 8, 0), "symbol": "AAA"},
+        {**_et_bar("2026-08-20", 9, 30), "symbol": "AAA"},
+        {**_et_bar("2026-08-20", 8, 0), "symbol": "BBB"},
+        {**_et_bar("2026-08-20", 10, 0), "symbol": "BBB"},
+    ]).set_index(["symbol", "timestamp"])
+
+    fake_response = MagicMock()
+    fake_response.df = raw_multi
+
+    with patch.object(tb.data_client, "get_stock_bars", return_value=fake_response):
+        filtered_result = tb.get_recent_bars_batch(["AAA", "BBB"], regular_session_only=True)
+        unfiltered_result = tb.get_recent_bars_batch(["AAA", "BBB"], regular_session_only=False)
+
+    check("regular_session_only=True drops AAA's pre-market bar, keeps its regular-session one",
+          len(filtered_result["AAA"]) == 1)
+    check("regular_session_only=True drops BBB's pre-market bar, keeps its regular-session one",
+          len(filtered_result["BBB"]) == 1)
+    check("the default (regular_session_only=False) is completely unaffected -- both of "
+          "AAA's raw bars still come back, pre-market included",
+          len(unfiltered_result["AAA"]) == 2)
+    check("the default (regular_session_only=False) is completely unaffected -- both of "
+          "BBB's raw bars still come back, pre-market included",
+          len(unfiltered_result["BBB"]) == 2)
+
+
+def test_spy_regime_confirms_entry_requests_regular_session_only_bars():
+    """spy_regime_confirms_entry feeds its bars straight into
+    add_indicators (same as check_symbol does), so it must opt into
+    regular_session_only -- this is one of the two call sites the
+    2026-08-23 fix targets."""
+    fake_bars = pd.DataFrame({"close": [500.0]})
+    with patch.object(tb, "USE_SPY_REGIME_GATE", True), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"SPY": fake_bars}) as mock_fetch, \
+         patch.object(tb, "add_indicators", return_value=make_fake_spy_enriched(10.0, 500.0, 500.0)):
+        tb.spy_regime_confirms_entry()
+    check("spy_regime_confirms_entry fetches with regular_session_only=True",
+          mock_fetch.call_args.kwargs.get("regular_session_only") is True)
+
+
+def test_sp500_backstop_and_scanner_liquidity_checks_do_not_request_regular_session_only():
+    """fetch_sp500_candidates and scan_for_volatile_stocks's dollar-volume
+    check use these bars for a LIQUIDITY read (pre/post-market volume is
+    real tradable-liquidity signal there), never through add_indicators --
+    they must keep seeing raw, unfiltered bars, i.e. must NOT pass
+    regular_session_only=True."""
+    def bars_of(close, volume):
+        return pd.DataFrame({"close": [close] * 5, "volume": [volume] * 5})
+
+    with patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL"]), \
+         patch.object(tb, "get_recent_bars_batch", return_value={"AAPL": bars_of(200.0, 1_000_000)}) as mock_fetch:
+        tb.fetch_sp500_candidates(already_picked=set(), needed=1)
+    check("fetch_sp500_candidates's liquidity backstop does not request regular_session_only",
+          mock_fetch.call_args.kwargs.get("regular_session_only") is not True)
+
+
 def test_check_symbol_blocks_buy_when_spy_regime_blocks_entry():
     df_input = pd.DataFrame({"close": [100.0]})
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
@@ -1610,6 +1937,94 @@ def test_sector_relative_filter_noop_when_disabled():
     check("with the filter disabled, check_symbol short-circuits before ever calling the gate "
           "function, so a mocked True result has no effect", mock_buy.called)
     check("the entry reports its notional", notional == 500.0)
+
+
+def test_check_symbol_blocks_scanner_opening_blackout_on_non_sp500_symbol():
+    """
+    See USE_SCANNER_OPENING_BLACKOUT -- real-money-confirmed evidence that
+    the first minutes after the open are the single worst window for
+    scanner-picked (non-S&P-500) entries, independent of and additive to
+    the pre-existing lunch-window ENTRY_BLACKOUT.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    early_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES / 2
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("SMALLCAP", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a BUY within the opening blackout on a non-S&P-500 symbol is refused",
+          not mock_buy.called)
+    check("a blocked entry reports no notional opened", notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("the same early entry is taken on an S&P 500 symbol", mock_buy.called)
+    check("a taken entry reports its notional", notional == 500.0)
+
+
+def test_scanner_opening_blackout_applies_to_every_strategy():
+    """
+    Unlike the reason_key-scoped filters (vwap_volume, trend_following
+    gate), the opening blackout is modeled on REAL losses that weren't
+    all the same strategy -- it must block ANY strategy's BUY signal
+    during the window, not just one.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    early_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES / 2
+    for reason_key in ("breakout", "trend_following", "vwap_reversion", "mean_reversion"):
+        with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+             patch.object(tb, "decide_signal_at", return_value=("BUY", reason_key, "test buy")), \
+             patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", True), \
+             patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
+             patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+             patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+            notional = tb.check_symbol("SMALLCAP", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check(f"the opening blackout blocks a {reason_key} BUY too", not mock_buy.called and notional == 0.0)
+
+
+def test_scanner_opening_blackout_noop_when_disabled():
+    df_input = pd.DataFrame({"close": [100.0]})
+    early_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES / 2
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", False), \
+         patch.object(tb, "fetch_sp500_symbols") as mock_fetch, \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("SMALLCAP", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("with the gate disabled, check_symbol short-circuits before ever calling fetch_sp500_symbols",
+          not mock_fetch.called)
+    check("the entry is taken normally", mock_buy.called and notional == 500.0)
+
+
+def test_scanner_opening_blackout_does_not_block_after_the_window():
+    """Past SCANNER_OPENING_BLACKOUT_MINUTES, a scanner-pick BUY proceeds normally."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    late_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES + 5
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(late_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", True), \
+         patch.object(tb, "fetch_sp500_symbols", return_value=["AAPL", "MSFT"]), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("SMALLCAP", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a BUY past the opening blackout window is taken normally",
+          mock_buy.called and notional == 500.0)
 
 
 def test_symbol_cooldown_blocks_immediate_reentry():
@@ -2103,6 +2518,17 @@ if __name__ == "__main__":
         test_sp500_backstop_requests_nothing_when_not_needed,
         test_scan_reserves_slots_for_sp500_even_when_movers_scan_finds_nothing,
         test_scan_caps_total_watchlist_size_with_backstop_included,
+        test_meets_min_listing_age_filters_by_trading_day_count,
+        test_meets_min_listing_age_fails_open_on_request_failure,
+        test_meets_min_listing_age_empty_input_is_a_noop,
+        test_scan_excludes_candidates_beyond_max_extension_pct,
+        test_scan_excludes_candidates_below_min_listing_age,
+        test_scan_listing_age_filter_noop_when_disabled,
+        test_scan_liquidity_check_excludes_todays_bars,
+        test_check_symbol_blocks_scanner_opening_blackout_on_non_sp500_symbol,
+        test_scanner_opening_blackout_applies_to_every_strategy,
+        test_scanner_opening_blackout_noop_when_disabled,
+        test_scanner_opening_blackout_does_not_block_after_the_window,
         test_vwap_volume_filter_exempts_sp500_even_when_volume_is_weak,
         test_vwap_volume_filter_blocks_non_sp500_with_weak_volume,
         test_vwap_volume_filter_allows_non_sp500_with_strong_volume,
@@ -2120,6 +2546,13 @@ if __name__ == "__main__":
         test_spy_regime_confirms_entry_fails_open_on_fetch_failure,
         test_spy_regime_confirms_entry_fails_open_on_missing_data,
         test_spy_regime_confirms_entry_fails_open_during_warmup,
+        test_filter_to_regular_session_drops_pre_and_post_market_bars,
+        test_filter_to_regular_session_keeps_every_regular_session_bar,
+        test_filter_to_regular_session_empty_input_is_a_noop,
+        test_filter_to_regular_session_matches_what_backtest_would_compute,
+        test_get_recent_bars_batch_regular_session_only_filters_each_symbol,
+        test_spy_regime_confirms_entry_requests_regular_session_only_bars,
+        test_sp500_backstop_and_scanner_liquidity_checks_do_not_request_regular_session_only,
         test_check_symbol_blocks_buy_when_spy_regime_blocks_entry,
         test_get_sector_etf_resolves_via_sector_map_and_etf_map,
         test_get_sector_etf_none_when_sector_unknown,
