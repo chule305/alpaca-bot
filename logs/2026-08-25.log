@@ -1,0 +1,245 @@
+2026-08-25 14:54:03,153 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-25 14:54:03,153 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 50%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-25 14:54:03,153 | Bar size: 15min | Check interval while market open: 15min
+2026-08-25 14:54:03,153 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-25 14:54:03,153 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-25 14:54:03,153 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-25 14:54:03,153 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-25 14:54:03,153 | Position sizing: flat $500 per trade
+2026-08-25 14:54:03,153 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-25 14:54:03,153 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-25 14:54:03,153 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-25 14:54:03,153 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-25 14:54:03,154 | Loaded saved watchlist from previous run: MU, NVDA, SNDK, TSLA, AAPL, MRNA
+2026-08-25 14:54:03,154 | Restored daily risk state from previous run: day 2026-08-24, breaker tripped: False
+2026-08-25 14:54:03,154 | Restored open-position context for 3 symbol(s) from previous run.
+2026-08-25 14:54:03,154 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-25 14:54:03,474 | Daily loss circuit breaker: tracking from starting equity $99,485.03 (limit -3%).
+2026-08-25 14:54:03,474 | SCANNER: refreshing watchlist...
+2026-08-25 14:54:04,709 | SCANNER: excluded 5 leveraged/inverse ETF(s) from 13 candidate(s).
+2026-08-25 14:54:05,334 | SCANNER: candidate SDOT -- -32.2% today, $15.71, liquid, 3 recent news item(s)
+2026-08-25 14:54:05,334 | SCANNER: candidate DKS -- -27.4% today, $130.12, liquid, 14 recent news item(s)
+2026-08-25 14:54:05,335 | SCANNER: candidate DFNS -- +23.6% today, $13.61, liquid, 2 recent news item(s)
+2026-08-25 14:54:05,368 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-25 14:54:15,948 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 14:54:15,949 | SCANNER: new watchlist -> SDOT, DKS, DFNS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 14:54:16,177 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 14:54:17,172 | Multi-timeframe filter: refreshed daily trend for 9 symbol(s).
+2026-08-25 14:54:17,214 | [AAPL] trending (ADX 37.2) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $309.86
+2026-08-25 14:54:17,214 | [AAPL] ACTION: No trade.
+2026-08-25 14:54:17,323 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.45
+2026-08-25 14:54:17,323 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 14:54:17,427 | [DKS] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $130.84
+2026-08-25 14:54:17,428 | [DKS] ACTION: No trade.
+2026-08-25 14:54:17,467 | [MSFT] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $487.50
+2026-08-25 14:54:17,467 | [MSFT] ACTION: No trade.
+2026-08-25 14:54:17,506 | [MU] trending (ADX 31.6) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $924.95
+2026-08-25 14:54:17,506 | [MU] ACTION: No trade.
+2026-08-25 14:54:17,546 | [NVDA] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.53
+2026-08-25 14:54:17,546 | [NVDA] ACTION: No trade.
+2026-08-25 14:54:17,652 | [SDOT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $16.13
+2026-08-25 14:54:17,652 | [SDOT] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 14:54:17,770 | [SNDK] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1498.64
+2026-08-25 14:54:17,770 | [SNDK] ACTION: No trade.
+2026-08-25 14:54:17,812 | [TSLA] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.03
+2026-08-25 14:54:17,812 | [TSLA] ACTION: No trade.
+2026-08-25 15:09:18,332 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 15:09:19,420 | [AAPL] trending (ADX 35.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.09
+2026-08-25 15:09:19,420 | [AAPL] ACTION: No trade.
+2026-08-25 15:09:19,457 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.60
+2026-08-25 15:09:19,457 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 15:09:19,492 | [DKS] trending (ADX 59.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $130.90
+2026-08-25 15:09:19,492 | [DKS] ACTION: No trade.
+2026-08-25 15:09:19,530 | [MSFT] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.23
+2026-08-25 15:09:19,530 | [MSFT] ACTION: No trade.
+2026-08-25 15:09:19,569 | [MU] trending (ADX 31.4) -> trend-following strategy | Signal: BUY | Shares held: 0.0 | Last price: $929.45
+2026-08-25 15:09:19,644 | [MU] Computed position size is 0 shares at $927.94 (flat $ sizing) -- skipping this trade.
+2026-08-25 15:09:19,684 | [NVDA] trending (ADX 34.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.02
+2026-08-25 15:09:19,684 | [NVDA] ACTION: No trade.
+2026-08-25 15:09:19,721 | [SDOT] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.31
+2026-08-25 15:09:19,722 | [SDOT] ACTION: No trade.
+2026-08-25 15:09:19,760 | [SNDK] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1501.20
+2026-08-25 15:09:19,760 | [SNDK] ACTION: No trade.
+2026-08-25 15:09:19,799 | [TSLA] choppy/sideways (ADX 13.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.01
+2026-08-25 15:09:19,799 | [TSLA] ACTION: No trade.
+2026-08-25 15:24:20,091 | SCANNER: refreshing watchlist...
+2026-08-25 15:24:20,725 | SCANNER: excluded 4 leveraged/inverse ETF(s) from 12 candidate(s).
+2026-08-25 15:24:21,336 | SCANNER: candidate SDOT -- -34.8% today, $15.10, liquid, 3 recent news item(s)
+2026-08-25 15:24:21,336 | SCANNER: candidate DKS -- -27.2% today, $130.48, liquid, 17 recent news item(s)
+2026-08-25 15:24:21,336 | SCANNER: candidate DFNS -- +20.7% today, $13.29, liquid, 2 recent news item(s)
+2026-08-25 15:24:32,200 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 15:24:32,202 | SCANNER: new watchlist -> SDOT, DKS, DFNS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 15:24:32,421 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 15:24:33,259 | [AAPL] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.40
+2026-08-25 15:24:33,259 | [AAPL] ACTION: No trade.
+2026-08-25 15:24:33,295 | [DFNS] trending (ADX 29.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.00
+2026-08-25 15:24:33,295 | [DFNS] ACTION: No trade.
+2026-08-25 15:24:33,330 | [DKS] trending (ADX 61.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $130.84
+2026-08-25 15:24:33,330 | [DKS] ACTION: No trade.
+2026-08-25 15:24:33,368 | [MSFT] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.33
+2026-08-25 15:24:33,369 | [MSFT] ACTION: No trade.
+2026-08-25 15:24:33,407 | [MU] Gap Pattern (Type A) continuation, gap held and extended | Signal: BUY | Shares held: 0.0 | Last price: $930.74
+2026-08-25 15:24:33,475 | [MU] Computed position size is 0 shares at $932.31 (flat $ sizing) -- skipping this trade.
+2026-08-25 15:24:33,514 | [NVDA] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.39
+2026-08-25 15:24:33,514 | [NVDA] ACTION: No trade.
+2026-08-25 15:24:33,551 | [SDOT] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.88
+2026-08-25 15:24:33,551 | [SDOT] ACTION: No trade.
+2026-08-25 15:24:33,589 | [SNDK] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1504.73
+2026-08-25 15:24:33,589 | [SNDK] ACTION: No trade.
+2026-08-25 15:24:33,627 | [TSLA] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.83
+2026-08-25 15:24:33,628 | [TSLA] ACTION: No trade.
+2026-08-25 15:39:34,148 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 15:39:35,280 | [AAPL] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.31
+2026-08-25 15:39:35,280 | [AAPL] ACTION: No trade.
+2026-08-25 15:39:35,316 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.19
+2026-08-25 15:39:35,317 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 15:39:35,352 | [DKS] trending (ADX 63.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $129.19
+2026-08-25 15:39:35,352 | [DKS] ACTION: No trade.
+2026-08-25 15:39:35,390 | [MSFT] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.39
+2026-08-25 15:39:35,390 | [MSFT] ACTION: No trade.
+2026-08-25 15:39:35,428 | [MU] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $934.02
+2026-08-25 15:39:35,428 | [MU] ACTION: No trade.
+2026-08-25 15:39:35,466 | [NVDA] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.19
+2026-08-25 15:39:35,466 | [NVDA] ACTION: No trade.
+2026-08-25 15:39:35,503 | [SDOT] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.51
+2026-08-25 15:39:35,503 | [SDOT] ACTION: No trade.
+2026-08-25 15:39:35,541 | [SNDK] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1511.28
+2026-08-25 15:39:35,541 | [SNDK] ACTION: No trade.
+2026-08-25 15:39:35,579 | [TSLA] choppy/sideways (ADX 14.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $354.38
+2026-08-25 15:39:35,579 | [TSLA] ACTION: No trade.
+2026-08-25 15:54:35,875 | SCANNER: refreshing watchlist...
+2026-08-25 15:54:36,177 | SCANNER: excluded 3 leveraged/inverse ETF(s) from 10 candidate(s).
+2026-08-25 15:54:36,764 | SCANNER: candidate SDOT -- -37.9% today, $14.39, liquid, 3 recent news item(s)
+2026-08-25 15:54:36,764 | SCANNER: candidate DKS -- -27.6% today, $129.84, liquid, 17 recent news item(s)
+2026-08-25 15:54:36,764 | SCANNER: candidate DFNS -- +20.6% today, $13.28, liquid, 2 recent news item(s)
+2026-08-25 15:54:47,996 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 15:54:47,998 | SCANNER: new watchlist -> SDOT, DKS, DFNS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 15:54:48,205 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 15:54:49,555 | [AAPL] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.77
+2026-08-25 15:54:49,555 | [AAPL] ACTION: No trade.
+2026-08-25 15:54:49,591 | [DFNS] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.04
+2026-08-25 15:54:49,591 | [DFNS] ACTION: No trade.
+2026-08-25 15:54:49,625 | [DKS] trending (ADX 64.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $129.81
+2026-08-25 15:54:49,625 | [DKS] ACTION: No trade.
+2026-08-25 15:54:49,663 | [MSFT] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.63
+2026-08-25 15:54:49,663 | [MSFT] ACTION: No trade.
+2026-08-25 15:54:49,701 | [MU] trending (ADX 31.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $929.62
+2026-08-25 15:54:49,701 | [MU] ACTION: No trade.
+2026-08-25 15:54:49,739 | [NVDA] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.31
+2026-08-25 15:54:49,739 | [NVDA] ACTION: No trade.
+2026-08-25 15:54:49,775 | [SDOT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.85
+2026-08-25 15:54:49,775 | [SDOT] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 15:54:49,813 | [SNDK] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1505.10
+2026-08-25 15:54:49,813 | [SNDK] ACTION: No trade.
+2026-08-25 15:54:49,852 | [TSLA] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.35
+2026-08-25 15:54:49,852 | [TSLA] ACTION: No trade.
+2026-08-25 16:09:50,352 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 16:09:51,562 | [AAPL] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.60
+2026-08-25 16:09:51,563 | [AAPL] ACTION: No trade.
+2026-08-25 16:09:51,599 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.45
+2026-08-25 16:09:51,599 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 16:09:51,634 | [DKS] trending (ADX 66.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $129.79
+2026-08-25 16:09:51,634 | [DKS] ACTION: No trade.
+2026-08-25 16:09:51,673 | [MSFT] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.14
+2026-08-25 16:09:51,673 | [MSFT] ACTION: No trade.
+2026-08-25 16:09:51,711 | [MU] trending (ADX 31.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $926.73
+2026-08-25 16:09:51,711 | [MU] ACTION: No trade.
+2026-08-25 16:09:51,750 | [NVDA] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.62
+2026-08-25 16:09:51,750 | [NVDA] ACTION: No trade.
+2026-08-25 16:09:51,787 | [SDOT] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.49
+2026-08-25 16:09:51,787 | [SDOT] ACTION: No trade.
+2026-08-25 16:09:51,825 | [SNDK] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1504.12
+2026-08-25 16:09:51,825 | [SNDK] ACTION: No trade.
+2026-08-25 16:09:51,864 | [TSLA] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $353.50
+2026-08-25 16:09:51,864 | [TSLA] ACTION: No trade.
+2026-08-25 16:24:52,166 | SCANNER: refreshing watchlist...
+2026-08-25 16:24:52,526 | SCANNER: excluded 2 leveraged/inverse ETF(s) from 10 candidate(s).
+2026-08-25 16:24:53,152 | SCANNER: candidate SDOT -- -38.0% today, $14.35, liquid, 3 recent news item(s)
+2026-08-25 16:24:53,152 | SCANNER: candidate DKS -- -28.4% today, $128.42, liquid, 18 recent news item(s)
+2026-08-25 16:24:53,152 | SCANNER: candidate DFNS -- +19.2% today, $13.12, liquid, 2 recent news item(s)
+2026-08-25 16:25:03,884 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 16:25:03,886 | SCANNER: new watchlist -> SDOT, DKS, DFNS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 16:25:04,092 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 16:25:05,410 | [AAPL] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.55
+2026-08-25 16:25:05,410 | [AAPL] ACTION: No trade.
+2026-08-25 16:25:05,446 | [DFNS] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.35
+2026-08-25 16:25:05,446 | [DFNS] ACTION: No trade.
+2026-08-25 16:25:05,481 | [DKS] trending (ADX 67.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $128.97
+2026-08-25 16:25:05,481 | [DKS] ACTION: No trade.
+2026-08-25 16:25:05,520 | [MSFT] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.31
+2026-08-25 16:25:05,520 | [MSFT] ACTION: No trade.
+2026-08-25 16:25:05,559 | [MU] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $929.01
+2026-08-25 16:25:05,559 | [MU] ACTION: No trade.
+2026-08-25 16:25:05,598 | [NVDA] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.87
+2026-08-25 16:25:05,598 | [NVDA] ACTION: No trade.
+2026-08-25 16:25:05,635 | [SDOT] trending (ADX 37.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.25
+2026-08-25 16:25:05,635 | [SDOT] ACTION: No trade.
+2026-08-25 16:25:05,674 | [SNDK] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1507.27
+2026-08-25 16:25:05,674 | [SNDK] ACTION: No trade.
+2026-08-25 16:25:05,713 | [TSLA] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $353.91
+2026-08-25 16:25:05,713 | [TSLA] ACTION: No trade.
+2026-08-25 16:40:06,216 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 16:40:07,545 | [AAPL] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.95
+2026-08-25 16:40:07,545 | [AAPL] ACTION: No trade.
+2026-08-25 16:40:07,581 | [DFNS] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.07
+2026-08-25 16:40:07,581 | [DFNS] ACTION: No trade.
+2026-08-25 16:40:07,617 | [DKS] trending (ADX 68.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.68
+2026-08-25 16:40:07,617 | [DKS] ACTION: No trade.
+2026-08-25 16:40:07,655 | [MSFT] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.48
+2026-08-25 16:40:07,655 | [MSFT] ACTION: No trade.
+2026-08-25 16:40:07,694 | [MU] Gap Pattern (Type A) continuation, gap held and extended | Signal: BUY | Shares held: 0.0 | Last price: $930.11
+2026-08-25 16:40:07,759 | [MU] Computed position size is 0 shares at $927.71 (flat $ sizing) -- skipping this trade.
+2026-08-25 16:40:07,798 | [NVDA] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.20
+2026-08-25 16:40:07,799 | [NVDA] ACTION: No trade.
+2026-08-25 16:40:07,835 | [SDOT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.48
+2026-08-25 16:40:07,835 | [SDOT] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 16:40:07,874 | [SNDK] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1505.19
+2026-08-25 16:40:07,874 | [SNDK] ACTION: No trade.
+2026-08-25 16:40:07,913 | [TSLA] choppy/sideways (ADX 17.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $354.44
+2026-08-25 16:40:07,913 | [TSLA] ACTION: No trade.
+2026-08-25 16:55:08,488 | SCANNER: refreshing watchlist...
+2026-08-25 16:55:09,086 | SCANNER: excluded 2 leveraged/inverse ETF(s) from 9 candidate(s).
+2026-08-25 16:55:09,687 | SCANNER: candidate SDOT -- -36.7% today, $14.67, liquid, 3 recent news item(s)
+2026-08-25 16:55:09,687 | SCANNER: candidate DKS -- -28.9% today, $127.43, liquid, 18 recent news item(s)
+2026-08-25 16:55:09,687 | SCANNER: candidate DFNS -- +24.1% today, $13.66, liquid, 3 recent news item(s)
+2026-08-25 16:55:21,842 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 16:55:21,844 | SCANNER: new watchlist -> SDOT, DKS, DFNS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 16:55:22,088 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 16:55:23,080 | [AAPL] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.78
+2026-08-25 16:55:23,080 | [AAPL] ACTION: No trade.
+2026-08-25 16:55:23,116 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.52
+2026-08-25 16:55:23,116 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 16:55:23,152 | [DKS] trending (ADX 70.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.01
+2026-08-25 16:55:23,152 | [DKS] ACTION: No trade.
+2026-08-25 16:55:23,192 | [MSFT] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.35
+2026-08-25 16:55:23,192 | [MSFT] ACTION: No trade.
+2026-08-25 16:55:23,232 | [MU] trending (ADX 29.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $926.05
+2026-08-25 16:55:23,232 | [MU] ACTION: No trade.
+2026-08-25 16:55:23,272 | [NVDA] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.21
+2026-08-25 16:55:23,272 | [NVDA] ACTION: No trade.
+2026-08-25 16:55:23,309 | [SDOT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $14.75
+2026-08-25 16:55:23,310 | [SDOT] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 16:55:23,349 | [SNDK] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1496.66
+2026-08-25 16:55:23,349 | [SNDK] ACTION: No trade.
+2026-08-25 16:55:23,389 | [TSLA] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $354.59
+2026-08-25 16:55:23,389 | [TSLA] ACTION: No trade.
+2026-08-25 17:10:23,918 | Market is open (closes 2026-08-25 22:00:00 CEST your local time). Checking 9 symbols: AAPL, DFNS, DKS, MSFT, MU, NVDA, SDOT, SNDK, TSLA
+2026-08-25 17:10:25,353 | [AAPL] choppy/sideways (ADX 24.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $310.04
+2026-08-25 17:10:25,353 | [AAPL] ACTION: No trade.
+2026-08-25 17:10:25,391 | [DFNS] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $13.80
+2026-08-25 17:10:25,391 | [DFNS] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 17:10:25,427 | [DKS] trending (ADX 71.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.17
+2026-08-25 17:10:25,428 | [DKS] ACTION: No trade.
+2026-08-25 17:10:25,467 | [MSFT] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 1.0 | Last price: $489.70
+2026-08-25 17:10:25,468 | [MSFT] ACTION: No trade.
+2026-08-25 17:10:25,507 | [MU] trending (ADX 27.6) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $925.13
+2026-08-25 17:10:25,507 | [MU] ACTION: No trade.
+2026-08-25 17:10:25,546 | [NVDA] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $212.18
+2026-08-25 17:10:25,546 | [NVDA] ACTION: No trade.
+2026-08-25 17:10:25,583 | [SDOT] stretched below VWAP and turning back up | Signal: BUY | Shares held: 0.0 | Last price: $15.00
+2026-08-25 17:10:25,584 | [SDOT] ACTION: No trade (multi-timeframe filter -- the prior day's daily trend isn't confirmed up).
+2026-08-25 17:10:25,623 | [SNDK] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1489.37
+2026-08-25 17:10:25,623 | [SNDK] ACTION: No trade.
+2026-08-25 17:10:25,662 | [TSLA] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.31
+2026-08-25 17:10:25,663 | [TSLA] ACTION: No trade.
+2026-08-25 17:24:03,154 | Duration window finished.
