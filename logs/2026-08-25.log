@@ -1754,6 +1754,27 @@
 2026-08-25 20:34:21,079 | Market is closed. Next open: 2026-08-26 15:30:00 CEST (your local time) -- in 16.9 hours.
 2026-08-25 20:34:21,084 | Market is closed for the day -- exiting early instead of idling.
 2026-08-25 20:34:21,084 | Duration window finished.
+2026-08-25 20:36:22,412 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-25 20:36:22,412 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-25 20:36:22,412 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
+2026-08-25 20:36:22,412 | Bar size: 15min | Check interval while market open: 15min
+2026-08-25 20:36:22,412 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-25 20:36:22,412 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-25 20:36:22,412 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-25 20:36:22,412 | Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the first 45 min after the open (real-money-confirmed, additive to the lunch-window blackout above, not a replacement for it)
+2026-08-25 20:36:22,412 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-25 20:36:22,412 | Position sizing: flat $500 per trade
+2026-08-25 20:36:22,413 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-25 20:36:22,413 | Portfolio heat cap: max $450 aggregate $-at-risk across all open positions
+2026-08-25 20:36:22,413 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-25 20:36:22,413 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-25 20:36:22,413 | Loaded saved watchlist from previous run: SDOT, DKS, NVDA, MU, SNDK, TSLA, AAPL, MSFT
+2026-08-25 20:36:22,413 | Restored daily risk state from previous run: day 2026-08-25, breaker tripped: False
+2026-08-25 20:36:22,413 | Restored open-position context for 2 symbol(s) from previous run.
+2026-08-25 20:36:22,413 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-25 20:36:22,646 | Market is closed. Next open: 2026-08-26 15:30:00 CEST (your local time) -- in 16.9 hours.
+2026-08-25 20:36:22,701 | Market is closed for the day -- exiting early instead of idling.
+2026-08-25 20:36:22,701 | Duration window finished.
 2026-08-25 20:35:35,021 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
 2026-08-25 20:35:35,021 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
 2026-08-25 20:35:35,021 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
