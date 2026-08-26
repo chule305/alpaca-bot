@@ -208,6 +208,37 @@ To use a different provider instead (e.g. Gmail), set `EMAIL_ADDRESS`/
 unset, so removing the `EMAIL_SMTP_SERVER` line entirely would also
 work for Gmail).
 
+## Autonomous self-improvement pipeline (ACTIVE — runs every weekday evening)
+
+`.github/workflows/auto_improve.yml` is a second, separate pipeline that
+researches this bot's own real performance and can ship a code or
+parameter change on its own, no human review per change. Runs on a
+schedule (21:45 UTC weekdays, after that day's market close) as of
+2026-08-26, with `workflow_dispatch` still available for manual/test
+runs. See [`CLAUDE.md`](CLAUDE.md)'s 2026-08-25 and 2026-08-26 entries
+for the full design reasoning and activation history.
+
+What it does each run: checks real Alpaca performance since any change
+it shipped before (auto-reverting one that's lost more than 5% of its
+deployed capital over 10+ real trades), then — if nothing needed
+reverting and it's not rate-limited — runs a headless
+[Claude Code](https://claude.com/claude-code) pipeline
+([`auto_improve_prompt.md`](auto_improve_prompt.md)) that may propose,
+implement, test, and ship exactly one change. Every proposed change has
+to clear, in order: a shell-only check that it didn't touch its own
+guardrails or the CI config, a substantive check that it didn't loosen
+any hard sizing/risk limit (`auto_improve.py`), and the full test suite
+— before it's pushed. You get one email (reusing the same SMTP setup as
+the daily summary above) whenever a run actually ships, blocks, or
+reverts a change; a quiet day sends nothing.
+
+**Still required before the first scheduled run can do anything**: add
+an `ANTHROPIC_API_KEY` secret under Repo Settings → Secrets and
+variables → Actions. Every other secret it needs already exists from the
+sections above. Without it, the run fails cleanly with an actionable
+error at the very first relevant step — it doesn't do anything unsafe
+either way.
+
 ## Risk management
 
 ### Position sizing: flat dollar amount by default
@@ -220,6 +251,36 @@ TRADE_AMOUNT_USD=500
 Every trade spends exactly `TRADE_AMOUNT_USD`, regardless of account
 size or how volatile the stock is. Simple, predictable, and what this
 bot actually runs live.
+
+### Conviction sizing: a bigger, bounded pool for strong setups
+
+```
+USE_CONVICTION_SIZING=true
+MAX_DAILY_DEPLOYED_CAPITAL_USD=25000
+CONVICTION_ADX_THRESHOLD=35
+CONVICTION_VOLUME_RATIO_THRESHOLD=2.5
+CONVICTION_TIER1_USD=5000
+HIGH_CONVICTION_STRATEGIES=
+```
+
+On top of the flat `TRADE_AMOUNT_USD` baseline, a trade can size up when
+it shows real, measured confirmation — turned on 2026-08-26 at the
+user's explicit request, giving the bot a **shared $25,000/day pool** to
+draw from (this is paper-money research, not a live account — see
+`CLAUDE.md`'s 2026-08-26 entry for the full reasoning and how it relates
+to the risk-based-sizing incident below). A trade earns up to 3 points —
+one each for its strategy being in `HIGH_CONVICTION_STRATEGIES` (empty
+by default — no strategy has consistent real-world evidence of an edge
+yet), its ADX reading clearing `CONVICTION_ADX_THRESHOLD`, and its
+volume clearing `CONVICTION_VOLUME_RATIO_THRESHOLD` times its own
+trailing average. **Zero points → `TRADE_AMOUNT_USD`. One point →
+`CONVICTION_TIER1_USD`. Two or three points → the full remaining pool**
+— deliberately reachable on two signals rather than gated behind all
+three, since the empty strategy list would otherwise make the top tier
+permanently unreachable. `MAX_DAILY_DEPLOYED_CAPITAL_USD` is the hard
+ceiling regardless: it applies to every trade that day, not just
+boosted ones, and once it's spent, new entries size at $0 (skipped)
+until the next trading day resets it.
 
 **Risk-based sizing exists as an option but is off by default, on a
 real lesson learned.** With `USE_RISK_BASED_SIZING=true`, each position
@@ -306,7 +367,7 @@ toggle caps it, in FIXED DOLLARS rather than a percentage, on by default:
 
 ```
 USE_PORTFOLIO_HEAT_CAP=true
-MAX_PORTFOLIO_HEAT_USD=450
+MAX_PORTFOLIO_HEAT_USD=2000
 ```
 
 A percentage-of-equity ceiling here would risk repeating the exact
@@ -315,16 +376,18 @@ under one sizing mode and a large real dollar figure under another.
 `MAX_PORTFOLIO_HEAT_USD` sidesteps that by being a plain dollar figure:
 before opening a new position, the bot adds up (entry − stop) × qty
 across every currently open position PLUS what the new one would add, and
-skips the entry if that total would exceed this ceiling. 450 is exactly
-18 positions' worth of a $25 stop-loss risk each — the default $500 flat
-size at a 5% stop (`500 × 5% = $25`/position) — matching the
-`MAX_CONCURRENT_POSITIONS=18` cap above so the heat cap doesn't become
-the binding constraint before the position-count cap does: at most
-0.45% of this account's equity can be at risk across every open position
-combined, no matter how many slots are technically available. On by default
-(unlike most new toggles in this project) because it's purely
-restrictive: it can only ever block a trade, never add exposure, so
-there's no downside to leaving it active.
+skips the entry if that total would exceed this ceiling. Raised from an
+original 450 to 2,000 on 2026-08-26 alongside conviction sizing above —
+a single top-tier $25,000 conviction trade carries $1,250 of heat alone
+at the standard 5% stop, which the old ceiling would have silently
+blocked before that trade was ever evaluated on its own merits. 2,000
+covers one such trade plus room for smaller concurrent ones. Still a
+hard, fixed-dollar ceiling either way — at most 2% of this account's
+equity can be at risk across every open position combined, no matter how
+many slots are technically available. On by default (unlike most new
+toggles in this project) because it's purely restrictive: it can only
+ever block a trade, never add exposure, so there's no downside to
+leaving it active.
 
 ```
 USE_SECTOR_CONCENTRATION_CAP=true

@@ -517,34 +517,35 @@ if VOLATILITY_SCALED_REDUCED_USD > TRADE_AMOUNT_USD:
         f"high-vol tercile, it must never raise it above the existing flat-sizing baseline."
     )
 
-# Capped-boost sizing: the SAFE alternative to an earlier, REJECTED idea
-# from the same conversation as the 2026-08-05 incident cited in
-# VOLATILITY_SCALED_REDUCED_USD's comment above -- staking up to ~$90k on
-# a "high-conviction" trade based on a vague, unvalidated confidence
-# read. That idea was declined for the exact same underlying reason the
-# %-of-equity sizing mode was: this bot has no real confidence score, and
-# a lever that's allowed to scale position size off anything other than
-# a flat dollar figure has already, once, for real, on 2026-08-05,
-# produced $15,700-19,900 single positions on a ~$99,645 account instead
-# of the intended $500 -- from a mode whose backtest metrics (win rate,
-# profit factor, drawdown-as-%-of-equity) all looked fine, because none
-# of those metrics surface the ABSOLUTE DOLLAR size of a single position.
-# What follows is the approved, structurally-bounded alternative: a
-# strategy with REAL evidence of a meaningfully better win rate trades a
-# bit bigger (one fixed, capped bump), everything else stays at
-# TRADE_AMOUNT_USD. Applied externally in trading_bot.py's
-# place_buy_order()/estimate_new_position_risk_usd() and backtest.py's
-# simulate() -- same "strategy.py computes, callers decide sizing" split
-# TRADE_AMOUNT_USD / VOLATILITY_SCALED_REDUCED_USD / USE_RISK_BASED_SIZING
-# above already use.
+# Graduated conviction sizing, v2 -- superseded the original flat, single-
+# tier CONVICTION_BOOST_USD (capped at 2x TRADE_AMOUNT_USD) on 2026-08-26
+# at the user's explicit, direct request: a shared $25k/day pool, sized up
+# toward the full pool when multiple independently-measured signals align,
+# not a vague confidence read. Authorized specifically BECAUSE this account
+# is paper money used for research (the user's own words) -- NOT a
+# reversal of the reasoning behind the 2026-08-05 incident or the original
+# 2x cap below. That reasoning (an UNBOUNDED lever tied to a vague
+# confidence score, scaling with equity, is dangerous regardless of the
+# stakes) still fully applies and is still fully honored here: this
+# lever is bounded (MAX_DAILY_DEPLOYED_CAPITAL_USD is a hard, human-set,
+# fixed-dollar ceiling, never a fraction of equity), and it's driven by
+# REAL, already-computed signals (ADX, volume vs. its own trailing
+# average, and the same HIGH_CONVICTION_STRATEGIES evidence gate as
+# before) -- not a vague read. What changed is the SIZE of the bound the
+# user is willing to accept, not whether a bound exists at all. See
+# MAX_DAILY_DEPLOYED_CAPITAL_USD below and auto_improve.py's
+# IMMUTABLE_CONSTANTS -- exactly like TRADE_AMOUNT_USD, only a human may
+# ever move this ceiling; the autonomous pipeline mechanically cannot.
 USE_CONVICTION_SIZING = os.getenv("USE_CONVICTION_SIZING", "false").strip().lower() in ("1", "true", "yes")
 
 # Comma-separated reason_key strings (e.g. "trend_following,rvol_spike")
 # naming which strategies currently have real evidence of a meaningfully
-# better win rate and therefore qualify for CONVICTION_BOOST_USD below.
-# Parsed once at import time like every other env-driven constant in
-# this file: split on comma, strip whitespace, drop empty entries, build
-# a set (membership-tested, not order-sensitive).
+# better win rate -- one of three independent conviction signals scored
+# by compute_conviction_trade_amount() below (the other two, ADX and
+# volume, are read directly off already-computed indicator values, not
+# strategy identity). Parsed once at import time like every other env-
+# driven constant in this file: split on comma, strip whitespace, drop
+# empty entries, build a set (membership-tested, not order-sensitive).
 #
 # DEFAULT IS DELIBERATELY EMPTY. This is not a stub left for later --
 # it's the honest, currently-correct state of the evidence, and shipping
@@ -566,40 +567,99 @@ USE_CONVICTION_SIZING = os.getenv("USE_CONVICTION_SIZING", "false").strip().lowe
 # So the qualifying list is empty, on purpose, until some strategy
 # someday shows a real, consistent edge across all three sources at
 # once. Adding a name here should cite fresh evidence, never be a
-# default.
+# default. Losing this one point still leaves a trade needing BOTH real
+# ADX strength AND real volume confirmation to reach the top tier below.
 HIGH_CONVICTION_STRATEGIES = {
     s.strip() for s in os.getenv("HIGH_CONVICTION_STRATEGIES", "").split(",") if s.strip()
 }
 
-# Flat dollar figure, same rule as TRADE_AMOUNT_USD and
-# VOLATILITY_SCALED_REDUCED_USD -- never a percentage of equity, never a
-# multiplier applied to equity. $750 against the $500 baseline is a
-# deliberately modest bump (1.5x), chosen to be worth having without
-# inviting the "why not push it further" instinct that produced the
-# rejected $90k idea in the first place.
-CONVICTION_BOOST_USD = float(os.getenv("CONVICTION_BOOST_USD", 750))
-if CONVICTION_BOOST_USD > TRADE_AMOUNT_USD * 2:
-    # Hard, structural ceiling: this feature must NEVER be able to more
-    # than double the normal flat trade size, regardless of env var
-    # misconfiguration. This guard is the direct, structural answer to
-    # why the earlier "$90k on a strong signal" idea (see this block's
-    # opening comment) was rejected -- that idea had no ceiling at all,
-    # tied position size to a vague confidence read, and scaled with
-    # equity. The 2026-08-05 incident (VOLATILITY_SCALED_REDUCED_USD's
-    # comment above) is the real-money proof of what an unbounded sizing
-    # lever costs: $15,700-19,900 single positions instead of $500, from
-    # a mode whose own backtest metrics looked fine right up until it
-    # was run for real. A 2x cap here means even a badly misconfigured
-    # CONVICTION_BOOST_USD can only ever produce a $1,000 position on a
-    # $500 baseline -- never anywhere close to a five-figure one.
+# The other two conviction signals: real, already-computed values (df["adx"]
+# / a volume-vs-its-own-trailing-average ratio, the same columns
+# rvol_spike_at() and the SPY regime gate already read), not new indicators
+# invented for this feature. Each threshold is deliberately set ABOVE the
+# bar this bot already uses for a plain entry signal (ADX_TREND_THRESHOLD=25
+# for trend_following/mean_reversion regime-switching; RVOL_MULTIPLIER=3.0
+# for the separate rvol_spike strategy) so that scoring a conviction point
+# means "unusually strong even by this bot's own already-generous
+# standards," not "cleared the same low bar every ordinary trade clears."
+CONVICTION_ADX_THRESHOLD = float(os.getenv("CONVICTION_ADX_THRESHOLD", 35))
+CONVICTION_VOLUME_RATIO_THRESHOLD = float(os.getenv("CONVICTION_VOLUME_RATIO_THRESHOLD", 2.5))
+
+# The daily pool -- the true governor. $25,000/day, chosen by the user
+# directly (2026-08-26), fixed-dollar and IMMUTABLE (see comment above),
+# never a percentage of equity. This is the absolute ceiling on dollars
+# committed to NEW entries across an entire trading day, regardless of
+# how many strong signals fire or how the tiers below are configured --
+# trading_bot.py/backtest.py track cumulative same-day deployment and
+# clamp every trade's size to whatever's left of this, all the way down
+# to $0 once exhausted (see would_exceed_daily_capital_pool()-style gates
+# in each caller). Ordinary, non-boosted trades draw from this same pool
+# too -- there is no separate carve-out that lets a plain $500 trade
+# ignore an exhausted pool.
+MAX_DAILY_DEPLOYED_CAPITAL_USD = float(os.getenv("MAX_DAILY_DEPLOYED_CAPITAL_USD", 25000))
+
+# Tier 1 (exactly one of the three signals below confirms) -- a flat
+# dollar figure like every other lever in this file, capped below at
+# MAX_DAILY_DEPLOYED_CAPITAL_USD so even a badly misconfigured env var
+# can't set it above the one human-set ceiling that actually matters.
+# Two-or-more-signal trades skip straight to the full remaining daily
+# pool (see compute_conviction_trade_amount) rather than stopping at an
+# intermediate tier -- DELIBERATE, not an oversight: HIGH_CONVICTION_
+# STRATEGIES is currently EMPTY (see its own comment -- no strategy has
+# real evidence yet), which means "all three signals confirm" can never
+# actually happen today. Gating the full $25k pool behind all three
+# would make the ceiling the user explicitly asked for permanently
+# unreachable in practice, not just rare -- so ANY two confirming
+# signals (in practice, almost always ADX + volume, the two genuinely
+# objective "risk analysis" signals) unlock the full pool instead. A
+# populated HIGH_CONVICTION_STRATEGIES set still matters going forward --
+# it can substitute for either technical signal once real evidence exists
+# -- it just isn't a mandatory third leg on top of two already-strong
+# technical confirmations.
+CONVICTION_TIER1_USD = float(os.getenv("CONVICTION_TIER1_USD", 5000))
+if CONVICTION_TIER1_USD > MAX_DAILY_DEPLOYED_CAPITAL_USD:
     raise ValueError(
-        f"CONVICTION_BOOST_USD (${CONVICTION_BOOST_USD:.0f}) must not exceed 2x "
-        f"TRADE_AMOUNT_USD (${TRADE_AMOUNT_USD:.0f} x 2 = ${TRADE_AMOUNT_USD * 2:.0f}) -- "
-        f"this lever must never be able to more than double the normal flat trade size. "
-        f"This is the same structural lesson the 2026-08-05 %-of-equity incident cost real "
-        f"money to learn, and the direct reason the earlier $90k 'high-conviction' sizing "
-        f"idea was rejected instead of built: no sizing lever in this bot may be unbounded."
+        f"CONVICTION_TIER1_USD (${CONVICTION_TIER1_USD:.0f}) must not exceed "
+        f"MAX_DAILY_DEPLOYED_CAPITAL_USD (${MAX_DAILY_DEPLOYED_CAPITAL_USD:.0f}) -- no single "
+        f"conviction tier may be configured above the one human-set daily ceiling that's "
+        f"supposed to bound all of them."
     )
+
+
+def compute_conviction_trade_amount(reason_key: str, adx_value: float | None, volume_ratio: float | None,
+                                     remaining_daily_pool_usd: float) -> tuple[float, int]:
+    """
+    Returns (trade_amount_usd, conviction_score). Score is 0-3: one point
+    each for reason_key in HIGH_CONVICTION_STRATEGIES, adx_value >=
+    CONVICTION_ADX_THRESHOLD, and volume_ratio >=
+    CONVICTION_VOLUME_RATIO_THRESHOLD. Score maps to a size (0 ->
+    TRADE_AMOUNT_USD, 1 -> CONVICTION_TIER1_USD, 2-or-3 -> the full
+    remaining pool -- see CONVICTION_TIER1_USD's comment for why 2 is
+    already the top tier, not a stepping stone to a 3rd) and the result
+    is ALWAYS clamped to remaining_daily_pool_usd (floored at 0) -- the
+    daily pool is the true ceiling no matter how high the score is or how
+    the tier is configured. Only ever called when USE_CONVICTION_SIZING
+    is on and high_vol_tercile's size-DOWN doesn't already apply (see
+    callers in trading_bot.py/backtest.py) -- safety-driven size-down
+    always takes precedence over this return-seeking size-up, same rule
+    as before.
+    """
+    score = 0
+    if reason_key in HIGH_CONVICTION_STRATEGIES:
+        score += 1
+    if adx_value is not None and adx_value >= CONVICTION_ADX_THRESHOLD:
+        score += 1
+    if volume_ratio is not None and volume_ratio >= CONVICTION_VOLUME_RATIO_THRESHOLD:
+        score += 1
+
+    if score >= 2:
+        target = MAX_DAILY_DEPLOYED_CAPITAL_USD
+    elif score == 1:
+        target = CONVICTION_TIER1_USD
+    else:
+        target = TRADE_AMOUNT_USD
+
+    return min(target, max(remaining_daily_pool_usd, 0.0)), score
 
 FLATTEN_BEFORE_CLOSE = os.getenv("FLATTEN_BEFORE_CLOSE", "true").strip().lower() in ("1", "true", "yes")
 FLATTEN_MINUTES_BEFORE_CLOSE = int(os.getenv("FLATTEN_MINUTES_BEFORE_CLOSE", 10))

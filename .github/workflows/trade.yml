@@ -156,11 +156,39 @@ jobs:
           RISK_PER_TRADE_PCT: "1.0"
           MAX_POSITION_PCT_OF_EQUITY: "5"
           TRADE_AMOUNT_USD: "500"
+          # Graduated conviction sizing (2026-08-26) -- see strategy.py's
+          # USE_CONVICTION_SIZING/CONVICTION_TIER1_USD comments and
+          # CLAUDE.md's 2026-08-26 entry. Turned ON at the user's direct
+          # request (paper account, own research). A trade scores 0-3
+          # points (strategy in HIGH_CONVICTION_STRATEGIES / ADX >=
+          # CONVICTION_ADX_THRESHOLD / volume >=
+          # CONVICTION_VOLUME_RATIO_THRESHOLD); exactly 1 point sizes at
+          # CONVICTION_TIER1_USD, 2 or more sizes at the FULL remaining
+          # daily pool (deliberately reachable on 2 signals, not gated
+          # behind all 3 -- HIGH_CONVICTION_STRATEGIES is empty below, so
+          # requiring all 3 would make the pool permanently unreachable).
+          # MAX_DAILY_DEPLOYED_CAPITAL_USD applies to EVERY trade that
+          # day, baseline included, not just conviction-boosted ones.
+          USE_CONVICTION_SIZING: "true"
+          MAX_DAILY_DEPLOYED_CAPITAL_USD: "25000"
+          CONVICTION_ADX_THRESHOLD: "35"
+          CONVICTION_VOLUME_RATIO_THRESHOLD: "2.5"
+          CONVICTION_TIER1_USD: "5000"
+          # Deliberately empty -- see HIGH_CONVICTION_STRATEGIES' comment
+          # in strategy.py. No strategy has real, consistent 3-source
+          # evidence yet; the pool is still fully reachable on ADX +
+          # volume alone without this.
+          HIGH_CONVICTION_STRATEGIES: ""
           MAX_CONCURRENT_POSITIONS: "18"
           MAX_PORTFOLIO_RISK_PCT: "5.0"
           MAX_DAILY_LOSS_PCT: "3"
           USE_PORTFOLIO_HEAT_CAP: "true"
-          MAX_PORTFOLIO_HEAT_USD: "450"
+          # Raised 450 -> 2000 on 2026-08-26 alongside conviction sizing --
+          # see trading_bot.py's MAX_PORTFOLIO_HEAT_USD comment for the
+          # exact math (a single top-tier $25,000 conviction trade carries
+          # $1,250 of heat on its own at a 5% stop; the old 450 ceiling
+          # would have silently blocked it regardless of the trade's merits).
+          MAX_PORTFOLIO_HEAT_USD: "2000"
           USE_SECTOR_CONCENTRATION_CAP: "true"
           MAX_POSITIONS_PER_SECTOR: "2"
           CHECK_INTERVAL_MINUTES: "15"
