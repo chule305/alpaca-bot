@@ -2328,3 +2328,298 @@ scanner-mover currently not), not a direct measurement of this exact
 change's effect. Re-validate once enough real trades accumulate under
 the new allocation to reconstruct fresh real-money evidence, the same
 way this whole investigation started.
+
+## 2026-08-25: guardrailed autonomous self-improvement pipeline built -- NOT active
+
+Following the 2026-08-23 root-cause investigation above, the user asked
+for a way for the bot to research its own real performance daily and
+improve itself without daily human input. First pass was research-only
+(what mechanisms exist, what they'd cost, what they can't do -- cloud
+routines were ruled out for this specific purpose since they have zero
+access to local files/credentials). Second pass was a direct question:
+given this is paper trading with nothing real at risk, should validation
+rigor be loosened along with giving the research more freedom? Answer:
+no -- validation rigor (multi-window backtests, the per-symbol outlier
+check, leave-one-out on thin samples) is a statistics problem, not a
+risk-tolerance problem, and this file is full of results above that
+would have shipped wrong if it had been skipped. What CAN scale with
+"nothing real is at risk" is how bold the pipeline is allowed to be about
+WHAT it tries -- not how carefully it validates before shipping. Today's
+ask: build the whole thing for real, but leave it fully inert until
+explicitly turned on later.
+
+**What exists now, all committed but dormant:**
+- [`auto_improve.py`](auto_improve.py) -- the guardrail/rate-limit/
+  rollback/notify module, plus a small CLI (`snapshot-baseline`,
+  `rollback-check`, `rate-limit-check`, `verify-guardrails`,
+  `record-change`, `record-revert`, `notify`) that
+  `.github/workflows/auto_improve.yml` calls. 27 tests in
+  [`test_auto_improve.py`](test_auto_improve.py).
+- [`.github/workflows/auto_improve.yml`](.github/workflows/auto_improve.yml)
+  -- `workflow_dispatch` ONLY, no `schedule:` block. Two jobs: `rollback`
+  runs first and checks real Alpaca performance since each past
+  autonomous change, reverting the first one that's crossed a real loss
+  threshold; `propose` runs only if nothing needed reverting, and runs a
+  headless Claude Code pipeline that may research, implement, and ship
+  exactly one change.
+- [`auto_improve_prompt.md`](auto_improve_prompt.md) -- the instructions
+  given to that headless pipeline: pull real order history the same
+  FIFO/reconstruction way this file's own investigations always have,
+  look for an evidenced problem, validate it the same way this project
+  had to learn to (mandatory per-symbol outlier check, leave-one-out on
+  thin samples, honest claims in commit messages -- both of those
+  lessons came from real mistakes documented earlier in this file), then
+  implement, test, and document it the way this codebase already does.
+  Explicitly told: doing nothing today is a fine outcome.
+- `auto_improve_state.json` -- starts empty; tracks each shipped change's
+  commit SHA, date, and summary for the rate limiter and rollback checker
+  to use.
+
+**Why nothing here can go uncontrolled, mechanically, not just by
+prompting the pipeline to behave:**
+1. A pure-shell gate in the workflow YAML itself -- not a repo-provided
+   Python file -- runs `git diff --name-only` against a hardcoded
+   denylist (the workflow files themselves, `auto_improve.py`,
+   `test_auto_improve.py`, `auto_improve_prompt.md`, `requirements.txt`,
+   `.env`, anything named like a secret) before any repo Python is
+   trusted at all. This has to be shell, not Python: if the pipeline step
+   edited `auto_improve.py` as part of its own change, a Python-level
+   check using that same (possibly tampered) file couldn't be trusted to
+   block anything. `test_auto_improve.py` asserts the YAML's hardcoded
+   list and `auto_improve.py`'s `PROTECTED_FILES` stay in sync -- a
+   drift check for a human reading test output, not itself a security
+   control, since it only runs after the shell gate already ran for real.
+2. Only once that passes does `auto_improve.py verify-guardrails` run,
+   checking the actual post-change values: `USE_RISK_BASED_SIZING` can
+   never resolve to `True` (this is the exact setting behind the
+   2026-08-04 $15,700-$19,900 position-sizing incident -- see the entry
+   in this file), `TRADE_AMOUNT_USD` can never change at all, any NEW
+   flat-dollar sizing constant must carry the same
+   `if NEW > TRADE_AMOUNT_USD * 2: raise ValueError` guard that
+   `VOLATILITY_SCALED_REDUCED_USD`/`CONVICTION_BOOST_USD` already do, and
+   `STOP_LOSS_PCT`/`TAKE_PROFIT_PCT`/`MAX_PORTFOLIO_HEAT_USD`/
+   `MAX_CONCURRENT_POSITIONS`/`MAX_POSITION_PCT_OF_EQUITY` all stay
+   within fixed ranges regardless of how convincing the pipeline's own
+   backtest evidence for going further looks.
+3. Rate limited to at most one shipped change per 20 hours and 3 per
+   rolling 7 days, checked before the pipeline is even asked to do work.
+4. Every run first checks real Alpaca performance since each past
+   autonomous change; one that's lost more than 5% of its deployed
+   capital over at least 10 real trades gets `git revert`-ed
+   automatically, tested, and pushed, before any new change is
+   considered that day.
+5. The pipeline step runs with `--dangerously-skip-permissions`
+   (required -- nothing can answer an interactive approval prompt in
+   unattended CI), which means it can technically do anything in the
+   checkout. Nothing above trusts its restraint; all five points above
+   are what actually contain it. `git push` credentials are only added
+   to the remote after every gate passes -- the pipeline step itself has
+   no way to push even if it tried.
+
+**Notifications**: reuses `daily_summary.py`'s already-working
+`send_email` (same SMTP secrets already configured for the daily summary
+email) via a `notify()` wrapper. Fires exactly once per run that does
+something real -- shipped a change, blocked one, or reverted one -- and
+stays silent for a routine no-op (rate-limited, or the pipeline itself
+found nothing worth changing), so the signal-to-noise stays high.
+
+**To actually turn this on** (not done yet -- both are required):
+1. Add an `ANTHROPIC_API_KEY` secret under the repo's Settings -> Secrets
+   and variables -> Actions. Every other secret this workflow uses
+   already exists (`ALPACA_API_KEY`, `ALPACA_SECRET_KEY`,
+   `EMAIL_ADDRESS`, `EMAIL_APP_PASSWORD`, `EMAIL_TO`) since `trade.yml`
+   and `daily_summary.yml` already depend on them.
+2. Add a `schedule:` trigger to `auto_improve.yml` -- deliberately not
+   included yet. Until it's added, this workflow only runs when someone
+   manually clicks "Run workflow" (or calls the dispatch API directly).
+
+**Not yet done, worth knowing**: the exact `--dangerously-skip-
+permissions` / `--model` flag spelling in the pipeline step was set from
+memory, not confirmed against a live `claude --help` in this environment
+(the CLI isn't installed in this session's shell). First manual
+`workflow_dispatch` run will surface immediately if either flag name has
+drifted -- check that step's log first if the `pipeline` step fails at
+the CLI invocation itself rather than partway through its actual work.
+
+## 2026-08-26: auto_improve.yml activated (scheduled, no longer manual-only); graduated conviction sizing built and turned on with a $25,000/day pool
+
+Two changes today, both at the user's direct, explicit request the day
+after the guardrail infrastructure above was built and reviewed.
+
+**1. Activation.** `.github/workflows/auto_improve.yml` now has a
+`schedule:` trigger -- `cron: "45 21 * * 1-5"` (21:45 UTC weekdays,
+after that day's market close AND after `daily_summary.yml`'s own 21:15
+UTC run, so the pipeline's real-order-history research sees a full,
+settled day rather than racing the summary email for the same data).
+`workflow_dispatch` stays available alongside it for manual/test runs.
+Nothing about the guardrail architecture itself changed -- the shell
+gate, `auto_improve.py`'s substantive checks, the rate limiter, and the
+rollback checker are exactly as built and documented in the entry above.
+Still required before the first scheduled run can do anything: the user
+adding an `ANTHROPIC_API_KEY` secret themselves (unchanged from
+yesterday's entry).
+
+**2. Graduated conviction sizing, replacing the old flat $750 boost.**
+The user asked directly: give the bot a $25,000/day pool, sized per-trade
+by how promising a signal looks, explicitly because this is a paper
+account used for research and nothing real is at risk. This is
+substantively the SAME request declined earlier in this project's
+history (the rejected "$90k on a strong signal" idea cited throughout
+`strategy.py`'s sizing comments) -- the difference this time is explicit,
+repeated, reasoned authorization from the user, directly engaging with
+the "guardrailed vs. looser" distinction worked out in this file's prior
+entries: validation rigor doesn't loosen just because the stakes are
+fake, but how BOLD the system is allowed to be does, and position sizing
+specifically was flagged as a place where a non-financial safety
+consideration still exists (a reckless experiment could crash the paper
+account toward zero and brick it as a continuous research testbed).
+$25,000 is a deliberate, bounded ceiling chosen by a human in a reviewed
+session, not the pipeline's own unbounded discretion.
+
+**What was built** (`strategy.py`'s `USE_CONVICTION_SIZING` block,
+`compute_conviction_trade_amount()`, mirrored in `trading_bot.py`'s
+`place_buy_order`/`estimate_new_position_risk_usd`/`check_symbol` and
+`backtest.py`'s `simulate()`):
+- `MAX_DAILY_DEPLOYED_CAPITAL_USD` ($25,000) -- the true ceiling. Total
+  $ committed to NEW entries across an ENTIRE trading day, baseline
+  trades included, not just conviction-boosted ones. Tracked in a new
+  `daily_deployed_capital_usd` global, persisted in `daily_risk_state.json`
+  alongside the existing daily-loss-breaker state, reset on the same
+  day-rollover check. IMMUTABLE from the autonomous pipeline's
+  perspective (see `auto_improve.py` below) -- exactly like
+  `TRADE_AMOUNT_USD`, only a human moves this number.
+- A trade scores 0-3 points: one each for its strategy being in
+  `HIGH_CONVICTION_STRATEGIES` (still empty -- see that set's own
+  comment, no strategy has real 3-source evidence yet), ADX >=
+  `CONVICTION_ADX_THRESHOLD` (35, deliberately above the 25 this bot
+  already uses for a plain entry signal), and volume >=
+  `CONVICTION_VOLUME_RATIO_THRESHOLD` (2.5x trailing average). Score 0
+  sizes at plain `TRADE_AMOUNT_USD` ($500); score 1 sizes at
+  `CONVICTION_TIER1_USD` ($5,000); **score 2 or 3 sizes at the FULL
+  remaining daily pool.**
+- **A real design correction made before shipping, worth recording**:
+  the first version of this gated the full $25k pool behind ALL THREE
+  signals (a genuine "tier 3"), with an intermediate `CONVICTION_TIER2_USD`
+  ($10k) at exactly two. Caught before committing that this made the
+  user's actual ask -- "use the full $25k on something promising" --
+  PERMANENTLY unreachable in practice, not just rare: `HIGH_CONVICTION_
+  STRATEGIES` is empty by design and has been for this project's whole
+  history, so "all three" could never happen without a future,
+  independent evidence-population event. Redesigned so ANY two of the
+  three signals (in practice, almost always ADX + volume, the two
+  genuinely objective "risk analysis" signals) unlock the full pool --
+  `CONVICTION_TIER2_USD` was removed as redundant (nothing sits between
+  "2 signals" and the ceiling once 2 signals already reaches it). A
+  populated `HIGH_CONVICTION_STRATEGIES` set still matters going forward
+  -- it can substitute for either technical signal -- it just isn't a
+  mandatory third leg stacked on top of two already-strong ones.
+- `MAX_PORTFOLIO_HEAT_USD` raised 450 -> 2,000 (`.env`, `trade.yml`,
+  `auto_improve.yml`'s guardrail-check env block). Necessary, not
+  optional: a single top-tier $25,000 position at the standard 5% stop
+  carries $1,250 of heat alone, which the old 450 ceiling would have
+  silently blocked at the EXISTING portfolio-heat gate before a
+  conviction trade was ever evaluated on its own merits -- quietly
+  neutering the feature just built. 2,000 covers one max-tier trade
+  ($1,250) plus roughly $750 more of smaller concurrent risk; still a
+  hard, fixed-dollar, purely-restrictive ceiling (2% of this account's
+  ~$100k equity), just recalibrated to the new sizing range.
+- `auto_improve.py`'s guardrails updated to match: `IMMUTABLE_CONSTANTS`
+  now includes `MAX_DAILY_DEPLOYED_CAPITAL_USD` alongside
+  `TRADE_AMOUNT_USD`; `BOUNDED_RANGES["MAX_PORTFOLIO_HEAT_USD"]` widened
+  to `(100, 3000)` to fit the new live default with headroom;
+  `check_new_sizing_constants_have_guards` now accepts EITHER a size-up
+  guard (`> MAX_DAILY_DEPLOYED_CAPITAL_USD`, the shape `CONVICTION_TIER1_
+  USD` uses) or a size-down guard (`> TRADE_AMOUNT_USD`, the shape
+  `VOLATILITY_SCALED_REDUCED_USD` uses) -- verified end-to-end against
+  the real, live codebase (not just synthetic fixtures) to produce zero
+  false positives on the unmodified config and a real, correct violation
+  when either immutable constant is tampered with via env var.
+- `backtest.py` deliberately does NOT simulate the daily pool's cross-
+  symbol exhaustion -- consistent with its own pre-existing, honestly-
+  documented limitation that it tests one symbol in isolation and has no
+  notion of portfolio-level state (`MAX_CONCURRENT_POSITIONS`,
+  `MAX_PORTFOLIO_RISK_PCT`, the daily loss breaker are already named
+  there for the same reason). `simulate()` calls `compute_conviction_
+  trade_amount()` with an unlimited pool, so the TIER-SCORING logic
+  itself is fully backtested, just not whether the account-wide pool
+  would have already run dry by the time a given signal fired that day.
+- Full test suite updated and re-verified end-to-end: `test_strategy.py`
+  (new `test_compute_conviction_trade_amount_scores_and_tiers`,
+  `test_conviction_tier_never_exceeds_daily_pool_ceiling`,
+  `test_bad_conviction_tier_env_var_fails_at_import`), `test_trading_bot.py`
+  (existing conviction tests updated -- and a real bug caught while
+  updating them: `compute_conviction_trade_amount` reads `HIGH_CONVICTION_
+  STRATEGIES`/`CONVICTION_TIER1_USD`/threshold constants from `strategy.py`'s
+  OWN module namespace, not from `trading_bot.py`'s imported copies, so a
+  test that monkey-patched `tb.HIGH_CONVICTION_STRATEGIES` would silently
+  have zero effect on the function's actual behavior even though the
+  toggle check itself, read directly in `trading_bot.py`, still worked --
+  fixed by patching `strategy`'s own namespace via a fresh `import
+  strategy as strat` in the test file, which binds to the same already-
+  loaded module object), `test_auto_improve.py` (27 -> 31 tests). All
+  five test files pass clean.
+
+## 2026-08-26: trade.yml's self-dispatch chain looped ~89 times in one hour -- root-caused and fixed
+
+Found while pushing the entries above: `git log` on the remote showed
+185 new commits since this session's last sync, with 89 "Update bot
+state" commits landing between 20:00:02 and 20:59:37 UTC on 2026-08-25 --
+one every ~35-45 SECONDS, not the intended one per ~2.5h window. No
+billing impact (this repo is public -- GitHub Actions minutes are
+unlimited and free there), but it's a real bug in a mechanism this
+project relies on for coverage, worth fixing properly rather than
+leaving as a curiosity.
+
+**Root cause, confirmed by reading the actual step, not guessed**:
+`trade.yml`'s "Queue next run (self-chaining handoff)" step (added
+2026-08-23, see that entry above) dispatches its own successor
+unconditionally as the very FIRST thing the job does, gated only on
+weekday + hour<21 UTC -- with zero awareness of how long the run it's
+about to queue will actually take. `trading_bot.py`'s own `--duration-
+minutes` loop exits almost immediately once the market clock reads
+closed ("Market is closed for the day -- exiting early instead of
+idling.") -- correct and intentional on its own; there's no reason to
+hold a runner alive for 150 minutes doing nothing. But the dispatch step
+has no way to know that's about to happen. While the market stays
+closed, each run finishes in well under a minute (checkout + cached pip
+install + an instant Python exit + a quick state commit) -- and because
+the dispatch step already queued its OWN successor as its first action,
+that successor starts almost immediately once the `concurrency:` group's
+single slot frees up, and immediately does the exact same thing again.
+The hour<21 gate is what eventually stopped it (matching the observed
+89-then-3-then-nothing pattern across the 20:00/21:00 UTC hours), not
+anything that paced the individual links -- there was no minimum spacing
+between one dispatch and the next at all.
+
+**Fix**: before dispatching, check how long ago the MOST RECENT OTHER
+run of this workflow actually started, via `gh run list --workflow=
+trade.yml --json databaseId,createdAt --jq "[.[] | select(.databaseId
+!= ${{ github.run_id }})][0].createdAt"` -- no new committed state
+needed, GitHub's own run history already has this. Skip dispatching if
+that was less than 15 minutes ago (deliberately just under the cron's
+own 20-minute cadence, so self-dispatch can still beat a dropped cron
+tick -- the entire reason this mechanism exists -- while making a sub-
+minute re-trigger structurally impossible). The regular cron tick is
+still running underneath the whole time regardless and picks up the
+slack once real spacing has passed, exactly as it always has.
+**Deliberately fails OPEN**: if the `gh run list` check itself errors or
+the timestamp doesn't parse, spacing is treated as satisfied and
+dispatch proceeds anyway, logged with a warning. The crash-resilience
+property this step exists for takes priority over the throttle -- worst
+case on a check failure is a return to today's already-bounded (by
+hour<21) behavior, not a silent multi-hour gap like the ORIGINAL bug
+this step was built to fix in the first place (2026-07-24/2026-08-23
+entries above).
+
+**Verified**: the exact date-arithmetic/decision logic was extracted and
+run standalone against 7 mocked scenarios (a mocked `gh` and a
+controlled "now") before shipping -- prior run 2 min ago correctly
+skips, 25/150 min ago correctly dispatches, no-prior-run and unparseable-
+timestamp both correctly fail open and dispatch. Not added as a
+permanent test file: this logic lives in a single YAML shell step
+(matching this project's existing, established style for this specific
+file -- the weekday/hour gate it's built on top of was never unit-tested
+either), and GitHub's real scheduling/dispatch behavior isn't something
+a local test can exercise anyway -- the actual confirmation will be
+watching real run timestamps over the next few trading days, the same
+way the 2026-07-24 and 2026-08-23 fixes were originally verified.

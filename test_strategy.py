@@ -866,53 +866,61 @@ def test_bad_volatility_scaled_env_var_fails_at_import():
 
 
 # ---------------------------------------------------------------------------
-# Conviction-boost sizing candidate: the SAFE alternative to the rejected
-# $90k "high-conviction" idea. See USE_CONVICTION_SIZING's comment block
-# in strategy.py for the full lineage. Mirrors the volatility-scaled
-# sizing tests directly above -- same shape of safety guard, same reason
-# a subprocess is needed for the import-time ValueError check.
+# Graduated conviction sizing (v2, 2026-08-26): a shared $25k/day pool,
+# sized up toward the full pool when multiple independently-measured
+# signals align. Superseded the original single-tier CONVICTION_BOOST_USD
+# (capped at 2x TRADE_AMOUNT_USD) at the user's explicit request -- see
+# USE_CONVICTION_SIZING's comment block in strategy.py for the full
+# lineage, including why the ORIGINAL reasoning against an unbounded
+# lever still fully applies (this one is bounded too, just at a much
+# larger, deliberately human-authorized ceiling). Mirrors the volatility-
+# scaled sizing tests above -- same shape of safety guard, same reason a
+# subprocess is needed for the import-time ValueError checks.
 # ---------------------------------------------------------------------------
 
-def test_conviction_boost_usd_never_exceeds_double_trade_amount_usd():
+def test_conviction_tier_never_exceeds_daily_pool_ceiling():
     """
     Pins the CRITICAL safety constraint directly, mirroring
     test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd
-    above: whatever values .env/the environment currently resolve these
-    to, CONVICTION_BOOST_USD must never be more than double
-    TRADE_AMOUNT_USD. strategy.py additionally raises ValueError AT
-    IMPORT TIME if this is ever violated (see the guard next to
-    CONVICTION_BOOST_USD) -- that's exercised separately, in a fresh
-    subprocess, by test_bad_conviction_boost_env_var_fails_at_import
-    below, since mutating env vars and reloading this module in-process
-    would leak into every later test in this same run.
+    above: whatever value .env/the environment currently resolves it to,
+    CONVICTION_TIER1_USD may not exceed MAX_DAILY_DEPLOYED_CAPITAL_USD.
+    strategy.py additionally raises ValueError AT IMPORT TIME if this is
+    ever violated (see the guard next to the constant) -- that's
+    exercised separately, in a fresh subprocess, by
+    test_bad_conviction_tier_env_var_fails_at_import below, since
+    mutating env vars and reloading this module in-process would leak
+    into every later test in this same run.
 
-    Also pins the honest, evidence-based shipped default: USE_CONVICTION_
-    SIZING off, and HIGH_CONVICTION_STRATEGIES an EMPTY set -- not a
-    stub, a deliberate "no strategy has real evidence yet" state (see
-    that set's comment for the three-way research finding behind it).
+    Also pins the real shipped state as of 2026-08-26: USE_CONVICTION_
+    SIZING now ON (raised from off, alongside the $25k/day pool), and
+    HIGH_CONVICTION_STRATEGIES still an EMPTY set -- not a stub, a
+    deliberate "no strategy has real evidence yet" state unchanged by
+    this candidate (see that set's comment for the three-way research
+    finding behind it; the two OTHER conviction signals, ADX and volume,
+    don't depend on this set being populated -- see
+    CONVICTION_TIER1_USD's own comment for why the full pool is reachable
+    on those two alone, without needing this set populated too).
     """
-    check("CONVICTION_BOOST_USD does not exceed 2x TRADE_AMOUNT_USD under the current config",
-          strat.CONVICTION_BOOST_USD <= strat.TRADE_AMOUNT_USD * 2,
-          f"boost=${strat.CONVICTION_BOOST_USD}, baseline=${strat.TRADE_AMOUNT_USD}")
-    check("USE_CONVICTION_SIZING defaults off (every untested lever in this project does)",
-          strat.USE_CONVICTION_SIZING is False)
-    check("HIGH_CONVICTION_STRATEGIES defaults to an EMPTY set -- no strategy currently has "
+    check("CONVICTION_TIER1_USD does not exceed MAX_DAILY_DEPLOYED_CAPITAL_USD under the current config",
+          strat.CONVICTION_TIER1_USD <= strat.MAX_DAILY_DEPLOYED_CAPITAL_USD,
+          f"tier1=${strat.CONVICTION_TIER1_USD}, ceiling=${strat.MAX_DAILY_DEPLOYED_CAPITAL_USD}")
+    check("USE_CONVICTION_SIZING is ON (raised 2026-08-26 alongside the $25k/day pool)",
+          strat.USE_CONVICTION_SIZING is True)
+    check("HIGH_CONVICTION_STRATEGIES still defaults to an EMPTY set -- no strategy currently has "
           "real, consistent evidence of an edge across all three research sources",
           strat.HIGH_CONVICTION_STRATEGIES == set(),
           f"got {strat.HIGH_CONVICTION_STRATEGIES!r}")
 
 
-def test_bad_conviction_boost_env_var_fails_at_import():
+def test_bad_conviction_tier_env_var_fails_at_import():
     """
     Runs strategy.py's import-time guard in an isolated subprocess (see
     test_bad_volatility_scaled_env_var_fails_at_import's docstring for
     why a fresh subprocess, not an in-process reload, is required).
-    Directly proves the shape of harm this guard exists to prevent --
-    the same shape as the 2026-08-05 incident, and the reason the
-    rejected $90k "high-conviction" idea was never built -- cannot
-    happen here even via a bad env var: CONVICTION_BOOST_USD can never
-    end up more than double TRADE_AMOUNT_USD, not just "wasn't set that
-    way in this repo's current .env."
+    Directly proves the shape of harm this guard exists to prevent -- the
+    same shape as the 2026-08-05 incident -- cannot happen here even via
+    a bad env var: the tier can never end up above the daily ceiling, not
+    just "wasn't set that way in this repo's current .env."
     """
     import os
     import subprocess
@@ -921,30 +929,93 @@ def test_bad_conviction_boost_env_var_fails_at_import():
     here = os.path.dirname(os.path.abspath(__file__)) or "."
 
     env_over_cap = dict(os.environ)
-    env_over_cap["TRADE_AMOUNT_USD"] = "500"
-    env_over_cap["CONVICTION_BOOST_USD"] = "1001"  # ABOVE 2x the $500 baseline ($1000)
+    env_over_cap["MAX_DAILY_DEPLOYED_CAPITAL_USD"] = "25000"
+    env_over_cap["CONVICTION_TIER1_USD"] = "30000"  # ABOVE the $25,000 ceiling
     result_bad = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
                                  env=env_over_cap, capture_output=True, text=True)
-    check("importing with CONVICTION_BOOST_USD set above 2x TRADE_AMOUNT_USD raises, not silently loads",
-          result_bad.returncode != 0 and "must not exceed 2x" in result_bad.stderr,
+    check("importing with CONVICTION_TIER1_USD above MAX_DAILY_DEPLOYED_CAPITAL_USD raises, not silently loads",
+          result_bad.returncode != 0 and "must not exceed" in result_bad.stderr,
           f"returncode={result_bad.returncode}, stderr tail: {result_bad.stderr[-400:]}")
 
     env_at_cap = dict(os.environ)
-    env_at_cap["TRADE_AMOUNT_USD"] = "500"
-    env_at_cap["CONVICTION_BOOST_USD"] = "1000"  # EXACTLY 2x -- allowed, only strictly over blocks
+    env_at_cap["MAX_DAILY_DEPLOYED_CAPITAL_USD"] = "25000"
+    env_at_cap["CONVICTION_TIER1_USD"] = "25000"  # EXACTLY at the ceiling -- allowed
     result_at_cap = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
                                     env=env_at_cap, capture_output=True, text=True)
-    check("importing with CONVICTION_BOOST_USD set to EXACTLY 2x TRADE_AMOUNT_USD loads cleanly "
-          "(only strictly OVER the cap blocks)",
+    check("importing with CONVICTION_TIER1_USD set to EXACTLY the ceiling loads cleanly "
+          "(only strictly OVER blocks)",
           result_at_cap.returncode == 0, f"stderr tail: {result_at_cap.stderr[-400:]}")
 
     env_ok = dict(os.environ)
-    env_ok["TRADE_AMOUNT_USD"] = "500"
-    env_ok["CONVICTION_BOOST_USD"] = "750"
+    env_ok["MAX_DAILY_DEPLOYED_CAPITAL_USD"] = "25000"
+    env_ok["CONVICTION_TIER1_USD"] = "5000"
     result_ok = subprocess.run([sys.executable, "-c", "import strategy"], cwd=here,
                                 env=env_ok, capture_output=True, text=True)
-    check("importing with the real shipped default ($750 boost on a $500 baseline) loads cleanly",
+    check("importing with the real shipped defaults ($5k tier, $25k ceiling) loads cleanly",
           result_ok.returncode == 0, f"stderr tail: {result_ok.stderr[-400:]}")
+
+
+def test_compute_conviction_trade_amount_scores_and_tiers():
+    """
+    Direct unit coverage of the actual scoring/tiering function, in-
+    process (safe here -- unlike the env-var guard tests above, this
+    doesn't touch os.environ or reload the module, it just calls the
+    function with different arguments against whatever HIGH_CONVICTION_
+    STRATEGIES/thresholds/tier the current process already has loaded).
+
+    Specifically pins that the FULL pool is reachable on 2 of 3 signals
+    (in practice: ADX + volume alone, since HIGH_CONVICTION_STRATEGIES is
+    empty by default) -- NOT gated behind all 3, which would make the
+    user's explicit "use the full $25k on something promising" ask
+    permanently unreachable in this project's current, real evidence
+    state. See CONVICTION_TIER1_USD's comment in strategy.py for the
+    full reasoning.
+    """
+    adx_hi = strat.CONVICTION_ADX_THRESHOLD + 5
+    adx_lo = strat.CONVICTION_ADX_THRESHOLD - 5
+    vol_hi = strat.CONVICTION_VOLUME_RATIO_THRESHOLD + 1
+    vol_lo = strat.CONVICTION_VOLUME_RATIO_THRESHOLD - 1
+    big_pool = strat.MAX_DAILY_DEPLOYED_CAPITAL_USD
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", adx_lo, vol_lo, big_pool)
+    check("score 0 (nothing confirms) sizes at the plain TRADE_AMOUNT_USD baseline",
+          score == 0 and amount == strat.TRADE_AMOUNT_USD, f"got amount={amount}, score={score}")
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", adx_hi, vol_lo, big_pool)
+    check("score 1 (ADX alone confirms) sizes at CONVICTION_TIER1_USD",
+          score == 1 and amount == strat.CONVICTION_TIER1_USD, f"got amount={amount}, score={score}")
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", adx_hi, vol_hi, big_pool)
+    check("score 2 (ADX + volume confirm, NO strategy evidence needed) sizes at the FULL remaining "
+          "pool -- this is the realistic, reachable-TODAY path to $25k",
+          score == 2 and amount == big_pool, f"got amount={amount}, score={score}")
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", adx_hi, vol_hi, 1234.0)
+    check("score 2 with a partially-spent pool is clamped to what's actually left, not the full ceiling",
+          score == 2 and amount == 1234.0, f"got amount={amount}, score={score}")
+
+    strategies_backup = strat.HIGH_CONVICTION_STRATEGIES
+    try:
+        strat.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        amount, score = strat.compute_conviction_trade_amount("trend_following", adx_hi, vol_hi, big_pool)
+        check("score 3 (all three confirm) also sizes at the full pool -- there's nothing above the "
+              "ceiling for a 3rd confirming signal to reach",
+              score == 3 and amount == big_pool, f"got amount={amount}, score={score}")
+
+        amount, score = strat.compute_conviction_trade_amount("trend_following", adx_lo, vol_lo, big_pool)
+        check("strategy evidence ALONE (no ADX/volume confirmation) still only reaches score 1 -> tier1, "
+              "not the full pool -- one signal is one signal regardless of which one it is",
+              score == 1 and amount == strat.CONVICTION_TIER1_USD, f"got amount={amount}, score={score}")
+    finally:
+        strat.HIGH_CONVICTION_STRATEGIES = strategies_backup
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", adx_hi, vol_hi, 0.0)
+    check("an exhausted pool ($0 left) sizes even a top-scoring trade at $0, not the full ceiling",
+          amount == 0.0, f"got amount={amount}, score={score}")
+
+    amount, score = strat.compute_conviction_trade_amount("unknown", None, None, big_pool)
+    check("None ADX/volume never crash and never count as confirming (fails closed, not open)",
+          score == 0 and amount == strat.TRADE_AMOUNT_USD, f"got amount={amount}, score={score}")
 
 
 def test_high_conviction_strategies_parsing():
@@ -1014,8 +1085,9 @@ if __name__ == "__main__":
         test_volatility_scaled_reduced_usd_never_exceeds_trade_amount_usd,
         test_bad_volatility_scaled_env_var_fails_at_import,
         test_mean_reversion_turning_confirmation,
-        test_conviction_boost_usd_never_exceeds_double_trade_amount_usd,
-        test_bad_conviction_boost_env_var_fails_at_import,
+        test_conviction_tier_never_exceeds_daily_pool_ceiling,
+        test_bad_conviction_tier_env_var_fails_at_import,
+        test_compute_conviction_trade_amount_scores_and_tiers,
         test_high_conviction_strategies_parsing,
     ]
     for t in tests:
