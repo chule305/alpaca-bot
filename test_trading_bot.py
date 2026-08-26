@@ -32,6 +32,19 @@ os.environ["LOG_DIR"] = tempfile.mkdtemp()
 
 import trading_bot as tb
 import trade_recorder
+# compute_conviction_trade_amount (called from trading_bot.py) reads
+# HIGH_CONVICTION_STRATEGIES/CONVICTION_TIER1_USD/CONVICTION_ADX_THRESHOLD/
+# CONVICTION_VOLUME_RATIO_THRESHOLD from STRATEGY's own module globals, not
+# from trading_bot.py's imported copies of those names -- `import strategy
+# as strat` here binds to the exact same already-loaded module object
+# (Python caches modules in sys.modules), so patching strat.X below is
+# actually visible to that function, whereas patching tb.X would silently
+# have no effect on its behavior even though tb.X itself changed. Only
+# USE_CONVICTION_SIZING/USE_RISK_BASED_SIZING/USE_VOLATILITY_SCALED_SIZING/
+# VOLATILITY_SCALED_REDUCED_USD are exempt from this -- those are read
+# directly inside trading_bot.py's own code, not inside the shared function,
+# so patching tb.X for those still works as it always has.
+import strategy as strat
 
 # Likewise: check_symbol records real trades, so without this the suite
 # appends test rows to the project's actual trades.csv, which is committed
@@ -240,7 +253,7 @@ def test_estimate_new_position_risk_usd_volatility_scaled():
 def test_estimate_new_position_risk_usd_conviction_boosted():
     """
     Mirrors test_estimate_new_position_risk_usd_volatility_scaled exactly,
-    for the conviction-boost lever instead. Only ever a fixed-dollar
+    for the graduated conviction lever instead. Only ever a fixed-dollar
     SUBSTITUTION inside the flat-sizing branch (never risk-based, never
     a fraction of equity), and this function's own docstring promises to
     mirror place_buy_order's real qty exactly -- pinned here so the
@@ -252,12 +265,13 @@ def test_estimate_new_position_risk_usd_conviction_boosted():
     atr_value = 1.0
     original_mode = tb.USE_RISK_BASED_SIZING
     original_toggle = tb.USE_CONVICTION_SIZING
-    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
-    original_boost = tb.CONVICTION_BOOST_USD
+    original_strategies = strat.HIGH_CONVICTION_STRATEGIES
+    original_tier1 = strat.CONVICTION_TIER1_USD
+    original_adx_thresh = strat.CONVICTION_ADX_THRESHOLD
     try:
         tb.USE_RISK_BASED_SIZING = False
         tb.USE_CONVICTION_SIZING = False
-        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        strat.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
         stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
         risk_per_share = last_price - stop_price
 
@@ -267,7 +281,9 @@ def test_estimate_new_position_risk_usd_conviction_boosted():
                                                              reason_key="trend_following"), expected_unboosted))
 
         tb.USE_CONVICTION_SIZING = True
-        tb.CONVICTION_BOOST_USD = 750.0
+        strat.CONVICTION_TIER1_USD = 750.0
+        # Only the strategy-membership signal fires here (adx_value/
+        # volume_ratio left None) -- score 1, tier1.
         expected_boosted = int(750.0 // last_price) * risk_per_share
         got_boosted = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
                                                           reason_key="trend_following")
@@ -278,9 +294,22 @@ def test_estimate_new_position_risk_usd_conviction_boosted():
 
         got_not_qualifying = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0,
                                                                  reason_key="mean_reversion")
-        check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES still uses the full "
-              "TRADE_AMOUNT_USD",
+        check("toggle ON but reason_key NOT in HIGH_CONVICTION_STRATEGIES (and no ADX/volume "
+              "confirmation) still uses the full TRADE_AMOUNT_USD",
               np.isclose(got_not_qualifying, expected_unboosted))
+
+        # A SECOND confirming signal (ADX) on top of the strategy match
+        # pushes score to 2, which reaches the full remaining pool, not
+        # just tier1 -- confirms adx_value actually threads through this
+        # estimator, not just reason_key.
+        strat.CONVICTION_ADX_THRESHOLD = 30.0
+        got_two_signals = tb.estimate_new_position_risk_usd(
+            last_price, atr_value, 10000.0, reason_key="trend_following",
+            adx_value=40.0, remaining_daily_pool_usd=5000.0)
+        expected_two_signals = int(5000.0 // last_price) * risk_per_share
+        check("strategy match + confirming ADX (score 2) reaches the remaining pool, not just tier1",
+              np.isclose(got_two_signals, expected_two_signals),
+              f"got {got_two_signals}, expected {expected_two_signals}")
 
         tb.USE_RISK_BASED_SIZING = True
         equity = 10000.0
@@ -295,8 +324,9 @@ def test_estimate_new_position_risk_usd_conviction_boosted():
     finally:
         tb.USE_RISK_BASED_SIZING = original_mode
         tb.USE_CONVICTION_SIZING = original_toggle
-        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
-        tb.CONVICTION_BOOST_USD = original_boost
+        strat.HIGH_CONVICTION_STRATEGIES = original_strategies
+        strat.CONVICTION_TIER1_USD = original_tier1
+        strat.CONVICTION_ADX_THRESHOLD = original_adx_thresh
 
 
 def test_estimate_new_position_risk_usd_volatility_precedes_conviction():
@@ -321,15 +351,19 @@ def test_estimate_new_position_risk_usd_volatility_precedes_conviction():
     original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
     original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
     original_conv_toggle = tb.USE_CONVICTION_SIZING
-    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
-    original_boost = tb.CONVICTION_BOOST_USD
+    original_strategies = strat.HIGH_CONVICTION_STRATEGIES
+    original_tier1 = strat.CONVICTION_TIER1_USD
     try:
         tb.USE_RISK_BASED_SIZING = False
         tb.USE_VOLATILITY_SCALED_SIZING = True
         tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
         tb.USE_CONVICTION_SIZING = True
-        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
-        tb.CONVICTION_BOOST_USD = 750.0
+        strat.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        strat.CONVICTION_TIER1_USD = 750.0
+        # adx_value/volume_ratio left None throughout this test -- only
+        # the strategy-membership signal fires, keeping conviction at
+        # exactly score 1 (tier1) so it's cleanly distinguishable from
+        # the reduced amount, same as before this candidate existed.
 
         stop_price, _ = tb.compute_stop_and_target(last_price, atr_value)
         risk_per_share = last_price - stop_price
@@ -370,21 +404,31 @@ def test_estimate_new_position_risk_usd_volatility_precedes_conviction():
         tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
         tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
         tb.USE_CONVICTION_SIZING = original_conv_toggle
-        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
-        tb.CONVICTION_BOOST_USD = original_boost
+        strat.HIGH_CONVICTION_STRATEGIES = original_strategies
+        strat.CONVICTION_TIER1_USD = original_tier1
 
 
-def test_conviction_sizing_structurally_inert_with_real_shipped_default():
+def test_conviction_sizing_strategy_identity_alone_is_inert_with_real_shipped_default():
     """
     Confirms the REAL shipped default (HIGH_CONVICTION_STRATEGIES as
     loaded from the actual, unmodified environment -- not a test-
-    populated one) means USE_CONVICTION_SIZING=true is a complete no-op
-    regardless of reason_key. This is not "empirically happens to do
-    nothing today" -- HIGH_CONVICTION_STRATEGIES is structurally an empty
-    set by default (see strategy.py's comment on why), so the
-    `reason_key in HIGH_CONVICTION_STRATEGIES` membership test can never
-    be True for ANY reason_key without someone deliberately repopulating
-    the set first.
+    populated one) means reason_key/strategy IDENTITY ALONE can never
+    move sizing off the baseline, for ANY reason_key, without someone
+    deliberately repopulating the set first -- HIGH_CONVICTION_STRATEGIES
+    is structurally an empty set by default (see strategy.py's comment on
+    why), so the `reason_key in HIGH_CONVICTION_STRATEGIES` membership
+    test can never be True on its own.
+
+    NOTE: this does NOT mean USE_CONVICTION_SIZING=true is a total no-op
+    with the real default -- unlike the original single-tier design, the
+    other two conviction signals (ADX, volume) don't depend on this set
+    at all, so a strong technical setup can still size up even with zero
+    qualifying strategies (see test_estimate_new_position_risk_usd_
+    conviction_boosted's two-signal case, and
+    test_compute_conviction_trade_amount_scores_and_tiers in
+    test_strategy.py). adx_value/volume_ratio are left at their neutral
+    None default below specifically to isolate the strategy-identity
+    signal from those other two.
     """
     check("the real shipped default really is an empty set (sanity check on the fixture itself, "
           "not just the assumption behind this test)",
@@ -401,8 +445,8 @@ def test_conviction_sizing_structurally_inert_with_real_shipped_default():
         for reason_key in ("trend_following", "vwap_reversion", "rvol_spike",
                             "breakout", "mean_reversion", "gap_continuation", "unknown"):
             got = tb.estimate_new_position_risk_usd(last_price, atr_value, 10000.0, reason_key=reason_key)
-            check(f"USE_CONVICTION_SIZING=true with the real empty default set: "
-                  f"reason_key={reason_key!r} still uses plain TRADE_AMOUNT_USD",
+            check(f"USE_CONVICTION_SIZING=true with the real empty default set and no ADX/volume "
+                  f"confirmation: reason_key={reason_key!r} still uses plain TRADE_AMOUNT_USD",
                   np.isclose(got, expected), f"got {got}, expected {expected}")
     finally:
         tb.USE_CONVICTION_SIZING = original_toggle
@@ -574,8 +618,13 @@ def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
          patch.object(tb, "place_buy_order", return_value=(fake_order, 350.0)) as mock_buy:
         tb.check_symbol("AAA", df_input, entries_paused_reason=None,
                          at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
+    # place_buy_order's positional call shape from check_symbol is now
+    # (symbol, last_price, atr_value, equity, reason_key, high_vol_tercile,
+    # adx_value, volume_ratio, remaining_daily_pool_usd) -- high_vol_tercile
+    # is index 5, no longer the last positional arg, since the conviction-
+    # sizing inputs were appended after it (2026-08-26).
     check("high_vol_tercile=True on the enriched row is forwarded to place_buy_order",
-          bool(mock_buy.call_args.args[-1]) is True, f"call args: {mock_buy.call_args}")
+          bool(mock_buy.call_args.args[5]) is True, f"call args: {mock_buy.call_args}")
 
     with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100, high_vol_tercile=False)), \
          patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test breakout")), \
@@ -583,7 +632,7 @@ def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
         tb.check_symbol("AAA", df_input, entries_paused_reason=None,
                          at_position_cap=False, current_qty=0.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("high_vol_tercile=False on the enriched row is forwarded to place_buy_order too",
-          bool(mock_buy.call_args.args[-1]) is False, f"call args: {mock_buy.call_args}")
+          bool(mock_buy.call_args.args[5]) is False, f"call args: {mock_buy.call_args}")
 
 
 def test_place_buy_order_conviction_sizing():
@@ -603,12 +652,14 @@ def test_place_buy_order_conviction_sizing():
 
     original_rb = tb.USE_RISK_BASED_SIZING
     original_toggle = tb.USE_CONVICTION_SIZING
-    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
-    original_boost = tb.CONVICTION_BOOST_USD
+    original_strategies = strat.HIGH_CONVICTION_STRATEGIES
+    original_tier1 = strat.CONVICTION_TIER1_USD
     try:
         tb.USE_RISK_BASED_SIZING = False
-        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
-        tb.CONVICTION_BOOST_USD = 750.0
+        strat.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        strat.CONVICTION_TIER1_USD = 750.0
+        # adx_value/volume_ratio left at their None default throughout --
+        # only the strategy-membership signal fires (score 1, tier1).
 
         with patch.object(tb, "trading_client", fake_client), \
              patch.object(tb, "get_latest_price", return_value=last_price), \
@@ -643,8 +694,8 @@ def test_place_buy_order_conviction_sizing():
     finally:
         tb.USE_RISK_BASED_SIZING = original_rb
         tb.USE_CONVICTION_SIZING = original_toggle
-        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
-        tb.CONVICTION_BOOST_USD = original_boost
+        strat.HIGH_CONVICTION_STRATEGIES = original_strategies
+        strat.CONVICTION_TIER1_USD = original_tier1
 
 
 def test_place_buy_order_volatility_precedes_conviction():
@@ -653,7 +704,7 @@ def test_place_buy_order_volatility_precedes_conviction():
     the mirrored math in estimate_new_position_risk_usd): a trade that is
     BOTH in a high-conviction strategy AND in its own high-vol tercile
     must submit an order sized off VOLATILITY_SCALED_REDUCED_USD, never
-    CONVICTION_BOOST_USD. Written so it would actually FAIL if the
+    the conviction tier. Written so it would actually FAIL if the
     precedence were implemented backwards -- the reduced/boosted qtys are
     chosen to be clearly distinguishable ($350 vs $750 on a $500 baseline
     -> 7 vs 15 shares at $50), and the assertion pins the exact reduced
@@ -668,15 +719,18 @@ def test_place_buy_order_volatility_precedes_conviction():
     original_vol_toggle = tb.USE_VOLATILITY_SCALED_SIZING
     original_reduced = tb.VOLATILITY_SCALED_REDUCED_USD
     original_conv_toggle = tb.USE_CONVICTION_SIZING
-    original_strategies = tb.HIGH_CONVICTION_STRATEGIES
-    original_boost = tb.CONVICTION_BOOST_USD
+    original_strategies = strat.HIGH_CONVICTION_STRATEGIES
+    original_tier1 = strat.CONVICTION_TIER1_USD
     try:
         tb.USE_RISK_BASED_SIZING = False
         tb.USE_VOLATILITY_SCALED_SIZING = True
         tb.VOLATILITY_SCALED_REDUCED_USD = 350.0
         tb.USE_CONVICTION_SIZING = True
-        tb.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
-        tb.CONVICTION_BOOST_USD = 750.0
+        strat.HIGH_CONVICTION_STRATEGIES = {"trend_following"}
+        strat.CONVICTION_TIER1_USD = 750.0
+        # adx_value/volume_ratio left at their None default -- only the
+        # strategy-membership signal fires (score 1, tier1), same
+        # isolation reasoning as test_place_buy_order_conviction_sizing.
 
         with patch.object(tb, "trading_client", fake_client), \
              patch.object(tb, "get_latest_price", return_value=last_price), \
@@ -699,8 +753,8 @@ def test_place_buy_order_volatility_precedes_conviction():
         tb.USE_VOLATILITY_SCALED_SIZING = original_vol_toggle
         tb.VOLATILITY_SCALED_REDUCED_USD = original_reduced
         tb.USE_CONVICTION_SIZING = original_conv_toggle
-        tb.HIGH_CONVICTION_STRATEGIES = original_strategies
-        tb.CONVICTION_BOOST_USD = original_boost
+        strat.HIGH_CONVICTION_STRATEGIES = original_strategies
+        strat.CONVICTION_TIER1_USD = original_tier1
 
 
 def test_check_symbol_gating_portfolio_heat_cap():
@@ -2489,7 +2543,7 @@ if __name__ == "__main__":
         test_estimate_new_position_risk_usd_volatility_scaled,
         test_estimate_new_position_risk_usd_conviction_boosted,
         test_estimate_new_position_risk_usd_volatility_precedes_conviction,
-        test_conviction_sizing_structurally_inert_with_real_shipped_default,
+        test_conviction_sizing_strategy_identity_alone_is_inert_with_real_shipped_default,
         test_would_exceed_portfolio_heat_cap,
         test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,

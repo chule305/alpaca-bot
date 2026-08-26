@@ -1,0 +1,444 @@
+name: Autonomous self-improvement (guardrailed)
+
+# ACTIVATED 2026-08-26 at the user's explicit request -- runs on its own
+# every weekday evening now (see the `schedule:` cron below), no human
+# click required. Before this date it was workflow_dispatch-only,
+# deliberately inert, while the guardrail infrastructure was built and
+# reviewed -- see auto_improve.py's module docstring and CLAUDE.md's
+# 2026-08-25/2026-08-26 entries for that history. workflow_dispatch stays
+# available alongside the schedule for manual/test runs.
+#
+# REQUIRES a secret this workflow cannot create for you:
+# ANTHROPIC_API_KEY, under Settings -> Secrets and variables -> Actions.
+# Every other secret referenced below (ALPACA_API_KEY, ALPACA_SECRET_KEY,
+# EMAIL_ADDRESS, EMAIL_APP_PASSWORD, EMAIL_TO) already exists -- trade.yml
+# and daily_summary.yml already use them. Until that secret is added, the
+# scheduled run fails cleanly and loudly at the "Confirm ANTHROPIC_API_KEY
+# is configured" step in the `propose` job, with an actionable error --
+# it does not silently do nothing and does not do anything unsafe either
+# way, since that check runs before anything else in that job.
+#
+# WHAT THIS DOES: once triggered (by the schedule, or manually), two jobs
+# run in sequence.
+#   1. `rollback` -- checks real Alpaca performance since each past
+#      autonomous change and reverts the first one that's crossed a real
+#      loss threshold (see auto_improve.py). Runs before anything else so
+#      a new change never gets stacked on top of one already being undone.
+#   2. `propose` -- only runs if job 1 found nothing to revert. Runs a
+#      headless Claude Code pipeline (auto_improve_prompt.md) that
+#      researches real vs. backtested performance and may propose,
+#      implement, and commit ONE change. That change is squashed to a
+#      single commit, then must clear, in order: a shell-only protected-
+#      file gate, this repo's substantive guardrails (auto_improve.py),
+#      and the full test suite -- before it's pushed. Any failure at any
+#      of those gates discards the change locally (nothing partial is
+#      ever pushed) and emails you why.
+#
+# You get exactly one email per run that actually DOES something: shipped
+# a change, blocked one, or reverted one. A run that finds nothing to do
+# (rate-limited, or the pipeline itself decided no change was warranted)
+# stays silent in your inbox -- check the Actions tab for that.
+
+on:
+  schedule:
+    # 21:45 UTC, weekdays -- after that day's market close (20:00 UTC
+    # EDT / 21:00 UTC EST) AND after daily_summary.yml's own 21:15 UTC
+    # run, so this pipeline's real-order-history research sees the full,
+    # settled picture of the day rather than a partial one, and doesn't
+    # race the summary email for the same Alpaca data. Chosen over a
+    # before-market-open time deliberately: "after" means analyzing a
+    # complete day's real fills, "before" would mean analyzing yesterday's
+    # (or Friday's, on a Monday) already-summarized data instead, and
+    # risks colliding with trade.yml's own pre-open startup window
+    # (12:40 UTC).
+    - cron: "45 21 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: auto-improve
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  # Mirrors trade.yml's tuned config exactly (keep these two in sync by
+  # hand -- nothing currently enforces it). This matters more here than
+  # it would look: strategy.py's own code-level default for
+  # USE_RISK_BASED_SIZING is "true" -- only trade.yml and this block
+  # override it to "false" for the deployed bot. Without this env block,
+  # every fresh `import strategy` in the guardrail check below would see
+  # the untuned code default instead of what's actually running live,
+  # making the check meaningless (or permanently red) rather than a real
+  # reflection of production.
+  SYMBOLS: "TSLA,NVDA,COIN,AMD,PLTR"
+  USE_RISK_BASED_SIZING: "false"
+  RISK_PER_TRADE_PCT: "1.0"
+  MAX_POSITION_PCT_OF_EQUITY: "5"
+  TRADE_AMOUNT_USD: "500"
+  # Graduated conviction sizing (2026-08-26) -- kept in sync with
+  # trade.yml by hand, see that file's comment for the full reasoning.
+  USE_CONVICTION_SIZING: "true"
+  MAX_DAILY_DEPLOYED_CAPITAL_USD: "25000"
+  CONVICTION_ADX_THRESHOLD: "35"
+  CONVICTION_VOLUME_RATIO_THRESHOLD: "2.5"
+  CONVICTION_TIER1_USD: "5000"
+  HIGH_CONVICTION_STRATEGIES: ""
+  MAX_CONCURRENT_POSITIONS: "18"
+  MAX_PORTFOLIO_RISK_PCT: "5.0"
+  MAX_DAILY_LOSS_PCT: "3"
+  USE_PORTFOLIO_HEAT_CAP: "true"
+  MAX_PORTFOLIO_HEAT_USD: "2000"
+  USE_SECTOR_CONCENTRATION_CAP: "true"
+  MAX_POSITIONS_PER_SECTOR: "2"
+  CHECK_INTERVAL_MINUTES: "15"
+  BAR_MINUTES: "15"
+  USE_SCANNER: "true"
+  SCANNER_WATCHLIST_SIZE: "18"
+  SCANNER_MIN_WATCHLIST_SIZE: "5"
+  SCANNER_MIN_PRICE: "10"
+  SCANNER_MIN_DOLLAR_VOLUME: "10000000"
+  USE_SP500_UNIVERSE: "true"
+  SP500_MIN_WATCHLIST_SLOTS: "10"
+  USE_MULTI_TIMEFRAME_FILTER: "false"
+  USE_VWAP_VOLUME_CONFIRMATION: "true"
+  DAILY_TREND_REFRESH_HOURS: "4"
+  SYMBOL_COOLDOWN_MINUTES: "60"
+  MIN_STOP_TO_ATR_RATIO: "2.0"
+  VWAP_REVERSION_MAX_ADX: "50"
+  USE_VWAP_REVERSION_TURN_UP_CONFIRMATION: "false"
+  SCANNER_REFRESH_HOURS: "0.5"
+  SCANNER_MAX_EXTENSION_PCT: "20"
+  USE_SCANNER_OPENING_BLACKOUT: "true"
+  SCANNER_OPENING_BLACKOUT_MINUTES: "45"
+  USE_SCANNER_MIN_LISTING_AGE: "true"
+  SCANNER_MIN_LISTING_AGE_DAYS: "100"
+  USE_NEWS_FILTER: "true"
+  NEWS_LOOKBACK_HOURS: "24"
+  MIN_NEWS_ITEMS: "1"
+  EXCLUDE_LEVERAGED_ETFS: "true"
+  FAST_MA: "9"
+  SLOW_MA: "21"
+  RSI_PERIOD: "14"
+  RSI_OVERSOLD: "25"
+  RSI_OVERBOUGHT: "75"
+  BREAKOUT_LOOKBACK: "20"
+  BREAKOUT_VOLUME_MULTIPLIER: "2.0"
+  USE_TIME_OF_DAY_VOLUME_NORM: "true"
+  TIME_OF_DAY_VOLUME_BUCKET_MINUTES: "30"
+  USE_BREAKOUT_INVALIDATION_EXIT: "false"
+  USE_BREAKOUT: "true"
+  USE_GAP_PATTERN: "true"
+  USE_SMASH_DAY_PATTERN: "false"
+  USE_ROSS_HOOK: "false"
+  USE_ORB: "false"
+  USE_RVOL_SPIKE: "false"
+  USE_VWAP_REVERSION: "true"
+  ADX_PERIOD: "14"
+  ADX_TREND_THRESHOLD: "25"
+  STOP_LOSS_PCT: "5"
+  TAKE_PROFIT_PCT: "10"
+  USE_ATR_STOPS: "false"
+  FLATTEN_BEFORE_CLOSE: "true"
+  FLATTEN_MINUTES_BEFORE_CLOSE: "10"
+  STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE: "90"
+  ENTRY_BLACKOUT_START_MINUTES: "210"
+  ENTRY_BLACKOUT_END_MINUTES: "270"
+  LOCAL_TIMEZONE: "Europe/Zagreb"
+
+jobs:
+  # ---------------------------------------------------------------------
+  # JOB 1: has any past autonomous change gone bad in real trading?
+  # ---------------------------------------------------------------------
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      action: ${{ steps.rollback.outputs.action }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check real performance of past autonomous changes
+        id: rollback
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          result=$(python auto_improve.py rollback-check)
+          echo "Rollback check: $result"
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+          action=$(echo "$result" | python -c "import json,sys; print(json.load(sys.stdin)['action'])")
+          echo "action=$action" >> "$GITHUB_OUTPUT"
+
+      - name: Revert, test, and push
+        id: revert
+        if: fromJSON(steps.rollback.outputs.result).action == 'revert'
+        continue-on-error: true
+        env:
+          SHA: ${{ fromJSON(steps.rollback.outputs.result).commit_sha }}
+        run: |
+          git config user.name "auto-improve-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git revert --no-edit "$SHA"
+          python test_strategy.py
+          python test_trading_bot.py
+          python test_backtest.py
+          python test_auto_improve.py
+          python auto_improve.py record-revert --sha "$SHA"
+          git add auto_improve_state.json
+          git commit --amend --no-edit
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push origin HEAD:"${{ github.ref_name }}"
+
+      - name: Notify -- reverted a change
+        if: fromJSON(steps.rollback.outputs.result).action == 'revert' && steps.revert.outcome == 'success'
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SMTP_SERVER: smtp.mail.me.com
+          EMAIL_SMTP_PORT: "587"
+        run: |
+          python auto_improve.py notify --subject "Reverted an autonomous change" <<EOF
+          The self-improvement pipeline reverted a change it made earlier -- real trading results since it shipped crossed the loss threshold.
+
+          Commit: ${{ fromJSON(steps.rollback.outputs.result).commit_sha }}
+          What it was: ${{ fromJSON(steps.rollback.outputs.result).summary }}
+          Real performance since it shipped: ${{ fromJSON(steps.rollback.outputs.result).pnl_pct }}% over ${{ fromJSON(steps.rollback.outputs.result).n_trades }} real trades (revert threshold: -5%).
+
+          It's been reverted and pushed, tests pass. No new change was proposed in this run -- the next run will consider one.
+          EOF
+
+      - name: Notify -- revert attempt failed
+        if: fromJSON(steps.rollback.outputs.result).action == 'revert' && steps.revert.outcome == 'failure'
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SMTP_SERVER: smtp.mail.me.com
+          EMAIL_SMTP_PORT: "587"
+        run: |
+          python auto_improve.py notify --subject "PROBLEM -- could not revert an underperforming change" <<EOF
+          The pipeline flagged a change for revert (real performance ${{ fromJSON(steps.rollback.outputs.result).pnl_pct }}% over ${{ fromJSON(steps.rollback.outputs.result).n_trades }} real trades, commit ${{ fromJSON(steps.rollback.outputs.result).commit_sha }}) but the revert attempt itself failed -- most likely a merge conflict or a test failure after reverting.
+
+          Nothing was pushed. This needs a human to look directly: check the "rollback" job's log in GitHub Actions.
+          EOF
+
+  # ---------------------------------------------------------------------
+  # JOB 2: research + propose + build + gate + ship ONE change.
+  # Only runs if job 1 found nothing to revert (never stack a new change
+  # on one that's actively being undone).
+  # ---------------------------------------------------------------------
+  propose:
+    needs: rollback
+    if: needs.rollback.outputs.action == 'none'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Rate limit check
+        id: ratelimit
+        run: |
+          result=$(python auto_improve.py rate-limit-check)
+          echo "Rate limit check: $result"
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm ANTHROPIC_API_KEY is configured
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set. Add it under Settings -> Secrets and variables -> Actions -- see auto_improve_prompt.md."
+            exit 1
+          fi
+
+      - name: Snapshot baseline (clean checkout, before any changes)
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        id: pre
+        run: |
+          python auto_improve.py snapshot-baseline > baseline.json
+          cat baseline.json
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run the research / propose / build pipeline
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        id: pipeline
+        timeout-minutes: 30
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          git config user.name "auto-improve-bot"
+          git config user.email "actions@users.noreply.github.com"
+          # NOTE: --dangerously-skip-permissions is required for unattended
+          # CI (nothing here can answer an interactive tool-approval
+          # prompt). That means this step can do literally anything in the
+          # checkout -- edit any file, run any shell command. That's why
+          # nothing below trusts this step's own restraint: the gate step
+          # right after this one is what actually enforces the boundary,
+          # using plain shell, not the pipeline's cooperation.
+          #
+          # Flag name/spelling last confirmed against the CLI's --help
+          # output on 2026-08-25 from a local session -- if this step
+          # starts failing at the CLI invocation itself (not the prompt
+          # logic), check `claude --help` for the current flag first.
+          claude -p "$(cat auto_improve_prompt.md)" --dangerously-skip-permissions --model claude-sonnet-5
+
+      - name: Squash into a single commit (or detect a no-op run)
+        if: fromJSON(steps.ratelimit.outputs.result).blocked == false
+        id: squash
+        run: |
+          if git diff --quiet "${{ steps.pre.outputs.sha }}" HEAD; then
+            echo "Pipeline made no changes this run."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            MSG=$(git log "${{ steps.pre.outputs.sha }}"..HEAD --format=%B | head -c 2000)
+            git reset --soft "${{ steps.pre.outputs.sha }}"
+            git commit -m "$MSG"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- GATE: pure shell, hardcoded list, runs before ANY repo Python
+      # (including auto_improve.py itself) is trusted with a decision.
+      # If the pipeline step above edited auto_improve.py as part of its
+      # change, a Python-level check using that same file could no longer
+      # be trusted to actually block anything -- this is why the real
+      # enforcement of the protected-file list has to live here, in the
+      # workflow YAML, and not in a repo-provided .py file. Keep this
+      # list in sync with auto_improve.py's PROTECTED_FILES by hand --
+      # test_auto_improve.py asserts they match (a drift check for a
+      # human reviewing test output, not a runtime control -- see that
+      # test's docstring). ---
+      - name: "GATE: reject the change if it touched anything protected"
+        if: steps.squash.outputs.changed == 'true'
+        id: gate
+        run: |
+          BLOCKED=""
+          CHANGED=$(git diff --name-only "${{ steps.pre.outputs.sha }}" "${{ steps.squash.outputs.sha }}")
+          echo "Changed files:"
+          echo "$CHANGED"
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              auto_improve.py|test_auto_improve.py|auto_improve_prompt.md|requirements.txt|.env|.env.example|.gitignore)
+                BLOCKED="$BLOCKED $f" ;;
+              .github/workflows/*)
+                BLOCKED="$BLOCKED $f" ;;
+            esac
+            case "$(echo "$f" | tr '[:upper:]' '[:lower:]')" in
+              *secret*|*credential*)
+                BLOCKED="$BLOCKED $f" ;;
+            esac
+          done <<< "$CHANGED"
+          if [ -n "$BLOCKED" ]; then
+            echo "::error::Protected file(s) touched -- rejecting this change:$BLOCKED"
+            echo "reason=touched protected file(s):$BLOCKED" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "Gate passed -- no protected files touched."
+
+      - name: Verify substantive guardrails (sizing caps, immutable constants, bounded ranges)
+        if: steps.squash.outputs.changed == 'true' && success()
+        id: guardrails
+        run: |
+          result=$(python auto_improve.py verify-guardrails --baseline baseline.json)
+          echo "Guardrail check: $result"
+          count=$(echo "$result" | python -c "import json,sys; print(len(json.load(sys.stdin)['violations']))")
+          if [ "$count" -gt 0 ]; then
+            echo "::error::Guardrail violation(s): $result"
+            echo "reason=guardrail violation(s): $result" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Run the test suite
+        if: steps.squash.outputs.changed == 'true' && success()
+        run: |
+          python test_strategy.py
+          python test_trading_bot.py
+          python test_backtest.py
+          python test_auto_improve.py
+
+      - name: Record the change and push
+        if: steps.squash.outputs.changed == 'true' && success()
+        run: |
+          python auto_improve.py record-change --sha "${{ steps.squash.outputs.sha }}" --summary "$(git log -1 --format=%s ${{ steps.squash.outputs.sha }})"
+          git add auto_improve_state.json
+          git commit -m "Record auto-improve state for ${{ steps.squash.outputs.sha }}"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push origin HEAD:"${{ github.ref_name }}"
+
+      - name: Notify -- shipped a change
+        if: steps.squash.outputs.changed == 'true' && success()
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SMTP_SERVER: smtp.mail.me.com
+          EMAIL_SMTP_PORT: "587"
+        run: |
+          python auto_improve.py notify --subject "Shipped an autonomous change" <<EOF
+          The self-improvement pipeline shipped a change on its own.
+
+          Commit: ${{ steps.squash.outputs.sha }}
+          Summary: $(git log -1 --format=%B ${{ steps.squash.outputs.sha }})
+
+          It passed the protected-file gate, the substantive guardrails, and the full test suite before being pushed. Real performance will be checked automatically before each future run, and it'll be auto-reverted if it loses more than 5% of deployed capital over at least 10 real trades.
+          EOF
+
+      - name: Reset to baseline (a gate above failed)
+        if: steps.squash.outputs.changed == 'true' && failure()
+        run: |
+          git reset --hard "${{ steps.pre.outputs.sha }}"
+          echo "Discarded the proposed change locally -- nothing was pushed."
+
+      - name: Notify -- blocked a change
+        if: steps.squash.outputs.changed == 'true' && failure()
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SMTP_SERVER: smtp.mail.me.com
+          EMAIL_SMTP_PORT: "587"
+        run: |
+          python auto_improve.py notify --subject "Blocked an autonomous change" <<EOF
+          The self-improvement pipeline proposed a change today that did NOT ship -- it failed a safety check before ever being pushed.
+
+          Reason: ${{ steps.gate.outputs.reason || steps.guardrails.outputs.reason || 'a guardrail or the test suite failed -- check the "propose" job log in GitHub Actions for which one' }}
+
+          Nothing was pushed; the repo is unchanged. No further action needed unless you want to look at what it tried to do.
+          EOF

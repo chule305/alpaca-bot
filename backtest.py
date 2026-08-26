@@ -48,9 +48,16 @@ IMPORTANT LIMITATIONS (read this before trusting the numbers):
 - This tests each symbol in isolation -- it does NOT simulate
   portfolio-level controls that only make sense across your whole
   account at once, namely MAX_CONCURRENT_POSITIONS, MAX_PORTFOLIO_RISK_PCT,
-  and the daily loss circuit breaker (all three live in trading_bot.py
-  only). A single-symbol backtest has no notion of "how many other
-  positions are open right now" or "today's total account P&L."
+  the daily loss circuit breaker, and (added 2026-08-26) the daily
+  conviction-sizing pool (strategy.MAX_DAILY_DEPLOYED_CAPITAL_USD) --
+  all four live in trading_bot.py only. A single-symbol backtest has no
+  notion of "how many other positions are open right now", "today's
+  total account P&L", or "how much of today's $-pool other symbols
+  already spent". What IS backtested is the conviction TIER logic itself
+  (does a strong ADX/volume/strategy combination score higher and size
+  bigger) -- simulate() calls it with an unlimited pool, so a backtest
+  can show what a signal WOULD be sized at, just not whether the
+  account-wide pool would have already run dry by the time it fired.
 """
 
 import argparse
@@ -78,7 +85,8 @@ from strategy import (
     STOP_NEW_ENTRIES_MINUTES_BEFORE_CLOSE, ENTRY_BLACKOUT_START_MINUTES, ENTRY_BLACKOUT_END_MINUTES,
     ADX_TREND_THRESHOLD, RSI_PERIOD,
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
-    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, CONVICTION_BOOST_USD,
+    USE_CONVICTION_SIZING, compute_conviction_trade_amount,
+    HIGH_CONVICTION_STRATEGIES, CONVICTION_TIER1_USD, MAX_DAILY_DEPLOYED_CAPITAL_USD,
     USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
 )
 
@@ -824,7 +832,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 # place_buy_order's identical reasoning in trading_bot.py;
                 # set here so it's always defined for the position dict
                 # below regardless of which sizing branch runs.
-                conviction_boosted = False
+                conviction_score = 0
                 if USE_RISK_BASED_SIZING:
                     qty = compute_position_size(equity, entry_price, stop_price)
                 else:
@@ -838,18 +846,44 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     if USE_VOLATILITY_SCALED_SIZING and high_vol_tercile:
                         trade_amount = VOLATILITY_SCALED_REDUCED_USD
                     # elif, not a second independent if: see
-                    # USE_CONVICTION_SIZING in strategy.py. EXPLICIT
-                    # PRECEDENCE RULE, mirroring trading_bot.py's
-                    # place_buy_order exactly: a trade that is BOTH in a
-                    # high-conviction strategy AND in its own high-vol
-                    # tercile gets the REDUCED (volatility) amount above,
-                    # never the boosted one below -- safety (size down on
-                    # real, measured noise) always wins over a return-
-                    # chasing boost (size up on an unconfirmed strategy-
-                    # level edge), every time, no exceptions.
-                    elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
-                        trade_amount = CONVICTION_BOOST_USD
-                        conviction_boosted = True
+                    # USE_CONVICTION_SIZING/compute_conviction_trade_amount
+                    # in strategy.py. EXPLICIT PRECEDENCE RULE, mirroring
+                    # trading_bot.py's place_buy_order exactly: a trade
+                    # that is BOTH conviction-eligible AND in its own
+                    # high-vol tercile gets the REDUCED (volatility) amount
+                    # above, never the boosted one below -- safety (size
+                    # down on real, measured noise) always wins over a
+                    # return-chasing boost, every time, no exceptions.
+                    #
+                    # remaining_daily_pool_usd is passed as infinite here,
+                    # deliberately -- this backtester already tests one
+                    # symbol in isolation and explicitly does NOT simulate
+                    # portfolio-level, cross-symbol controls (see this
+                    # file's own module docstring: MAX_CONCURRENT_POSITIONS,
+                    # MAX_PORTFOLIO_RISK_PCT, the daily loss breaker are all
+                    # named as out of scope for the same reason). The daily
+                    # $-pool is exactly that same category of thing -- a
+                    # cross-symbol, whole-account total -- so it gets the
+                    # same honest treatment as the other three rather than
+                    # a fake single-symbol approximation of a portfolio-
+                    # level constraint. What IS still fully tested here is
+                    # the TIER logic itself (does a strong ADX/volume/
+                    # strategy combination correctly score higher and size
+                    # bigger) -- only the "did today's whole-account pool
+                    # run dry" interaction is out of reach of a per-symbol
+                    # backtest, same limitation as always.
+                    adx_value = current_bar["adx"] if "adx" in current_bar else None
+                    if adx_value is not None and pd.isna(adx_value):
+                        adx_value = None
+                    volume_ratio = None
+                    if "rvol_avg_volume" in current_bar:
+                        avg_volume = current_bar["rvol_avg_volume"]
+                        bar_volume = current_bar["volume"]
+                        if not pd.isna(avg_volume) and avg_volume > 0 and not pd.isna(bar_volume):
+                            volume_ratio = bar_volume / avg_volume
+                    if USE_CONVICTION_SIZING:
+                        trade_amount, conviction_score = compute_conviction_trade_amount(
+                            reason_key, adx_value, volume_ratio, float("inf"))
                     qty = int(trade_amount // entry_price)
                 if qty < 1:
                     continue  # not enough simulated capital/risk budget for even 1 share
@@ -874,7 +908,7 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     "stop_price": stop_price,
                     "take_profit_price": take_profit_price,
                     "high_vol_tercile": high_vol_tercile,
-                    "conviction_boosted": conviction_boosted,
+                    "conviction_boosted": conviction_score > 0,
                     "invalidation_level": invalidation_level,
                 }
 
@@ -1022,14 +1056,15 @@ if __name__ == "__main__":
               f"${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
               f"(only applies under flat sizing, i.e. USE_RISK_BASED_SIZING=false)\n")
     if USE_CONVICTION_SIZING:
-        if HIGH_CONVICTION_STRATEGIES:
-            print(f"Conviction-boosted sizing: ON -- {', '.join(sorted(HIGH_CONVICTION_STRATEGIES))} "
-                  f"trade at ${CONVICTION_BOOST_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
-                  f"(only applies under flat sizing; volatility-based size-down always wins if a "
-                  f"trade qualifies for both)\n")
-        else:
-            print("Conviction-boosted sizing: ON but HIGH_CONVICTION_STRATEGIES is empty -- "
-                  "structurally a no-op right now (see strategy.HIGH_CONVICTION_STRATEGIES)\n")
+        strategies_desc = (', '.join(sorted(HIGH_CONVICTION_STRATEGIES))
+                            if HIGH_CONVICTION_STRATEGIES else "none yet (real evidence-gated, see strategy.py)")
+        print(f"Graduated conviction sizing: ON -- qualifying strategies: {strategies_desc}. "
+              f"1 of 3 confirming signals (strategy match / ADX >= threshold / volume >= threshold) "
+              f"trades at ${CONVICTION_TIER1_USD:.0f}; 2 or more trades at up to the full remaining "
+              f"${MAX_DAILY_DEPLOYED_CAPITAL_USD:.0f}/day pool (only applies under flat sizing; "
+              f"volatility-based size-down always wins if a trade qualifies for both; NOTE: this "
+              f"backtester tests one symbol in isolation and does not simulate the pool being shared "
+              f"or exhausted across other symbols -- see this file's module docstring)\n")
     print("=" * 70)
 
     # Unconditional now, regardless of the toggles below: entry slippage

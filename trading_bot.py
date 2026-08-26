@@ -65,7 +65,9 @@ from strategy import (
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, USE_ATR_STOPS, ATR_STOP_MULTIPLIER, ATR_TARGET_MULTIPLIER,
     USE_RISK_BASED_SIZING, RISK_PER_TRADE_PCT, MAX_POSITION_PCT_OF_EQUITY,
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
-    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, CONVICTION_BOOST_USD,
+    USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, compute_conviction_trade_amount,
+    MAX_DAILY_DEPLOYED_CAPITAL_USD, CONVICTION_ADX_THRESHOLD, CONVICTION_VOLUME_RATIO_THRESHOLD,
+    CONVICTION_TIER1_USD,
     FAST_MA, SLOW_MA, RSI_PERIOD, RSI_OVERSOLD, RSI_OVERBOUGHT,
     ADX_PERIOD, ADX_TREND_THRESHOLD,
     USE_BREAKOUT, USE_SMASH_DAY_PATTERN, USE_GAP_PATTERN, USE_ROSS_HOOK, USE_ORB,
@@ -516,17 +518,26 @@ MAX_PORTFOLIO_RISK_PCT = float(os.getenv("MAX_PORTFOLIO_RISK_PCT", 5.0))
 #
 # Raised twice on 2026-08-09, in lockstep with MAX_CONCURRENT_POSITIONS
 # each time (200 -> 250 -> 450), so the heat cap never becomes the
-# binding constraint before the position-count cap does. 450 is exactly
+# binding constraint before the position-count cap does. 450 was exactly
 # 18 positions' worth of a $25 stop-loss risk each (the default $500
 # flat size at a 5% stop: 500 * 0.05 = $25/position), matching
-# MAX_CONCURRENT_POSITIONS=18 1:1. Still a hard, fixed-dollar ceiling
-# either way -- at most 0.45% of this account's equity can be at risk
-# across ALL open positions combined, regardless of how many slots are
-# technically available. ON by default (unlike most new toggles here)
-# since it is purely restrictive -- it can only ever block a trade,
-# never add exposure, so there is no downside risk to leaving it active.
+# MAX_CONCURRENT_POSITIONS=18 1:1.
+#
+# Raised again, 450 -> 2000, on 2026-08-26 alongside the graduated
+# conviction-sizing pool (see strategy.MAX_DAILY_DEPLOYED_CAPITAL_USD):
+# a single top-tier conviction trade can now be sized up to $25,000, which
+# at the same 5% stop is $1,250 of heat FROM ONE POSITION ALONE -- old
+# 450 would have silently blocked every top-tier trade at this exact
+# gate, before it ever got evaluated on its own merits, which is not what
+# "give it $25k/day, sized by conviction" is supposed to mean. $2,000
+# covers one max-tier trade ($1,250) plus roughly $750 more of smaller
+# concurrent risk (tier-2/tier-1/baseline positions running alongside
+# it) -- still a hard, fixed-dollar ceiling that can only ever block a
+# trade, never add exposure (2% of this account's ~$100k equity, not a
+# blank check), just recalibrated to the new sizing range instead of the
+# old flat-$500-only one.
 USE_PORTFOLIO_HEAT_CAP = os.getenv("USE_PORTFOLIO_HEAT_CAP", "true").strip().lower() in ("1", "true", "yes")
-MAX_PORTFOLIO_HEAT_USD = float(os.getenv("MAX_PORTFOLIO_HEAT_USD", 450))
+MAX_PORTFOLIO_HEAT_USD = float(os.getenv("MAX_PORTFOLIO_HEAT_USD", 2000))
 
 # Portfolio-CONSTRUCTION control: caps how many currently open positions
 # may share the same sector, checked before a new entry (never affects
@@ -754,6 +765,11 @@ last_flatten_date: date | None = None
 current_trading_day: date | None = None
 day_start_equity: float | None = None
 daily_loss_breaker_tripped = False
+# Cumulative $ committed to NEW entries so far this trading day, against
+# MAX_DAILY_DEPLOYED_CAPITAL_USD -- see strategy.compute_conviction_trade_amount.
+# Reset to 0.0 on the same day-rollover check that resets day_start_equity/
+# daily_loss_breaker_tripped below, persisted the same way.
+daily_deployed_capital_usd = 0.0
 # Symbols that recently had a position close, and the time they become
 # eligible to buy again. See SYMBOL_COOLDOWN_MINUTES.
 symbol_cooldown_until: dict[str, datetime] = {}
@@ -1575,6 +1591,7 @@ def save_daily_risk_state() -> None:
                 "day_start_equity": day_start_equity,
                 "current_trading_day": current_trading_day.isoformat() if current_trading_day else None,
                 "daily_loss_breaker_tripped": daily_loss_breaker_tripped,
+                "daily_deployed_capital_usd": daily_deployed_capital_usd,
                 "symbol_cooldown_until": {s: t.isoformat() for s, t in symbol_cooldown_until.items()},
                 "previously_held": sorted(previously_held),
             }, f)
@@ -1591,7 +1608,7 @@ def load_daily_risk_state() -> None:
     here for stale state.
     """
     global day_start_equity, current_trading_day, daily_loss_breaker_tripped, \
-        symbol_cooldown_until, previously_held
+        daily_deployed_capital_usd, symbol_cooldown_until, previously_held
     try:
         with open(DAILY_RISK_STATE_FILE, "r") as f:
             data = json.load(f)
@@ -1600,6 +1617,7 @@ def load_daily_risk_state() -> None:
             current_trading_day = date.fromisoformat(saved_day)
             day_start_equity = data.get("day_start_equity")
             daily_loss_breaker_tripped = bool(data.get("daily_loss_breaker_tripped", False))
+            daily_deployed_capital_usd = float(data.get("daily_deployed_capital_usd", 0.0) or 0.0)
             # Cooldowns must survive across runs: each GitHub Actions job
             # is a separate process, so without this a re-entry ban simply
             # evaporates whenever one job hands over to the next.
@@ -1748,7 +1766,9 @@ def would_exceed_portfolio_risk_cap(equity: float | None, portfolio_risk_estimat
 
 
 def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, equity: float | None,
-                                    high_vol_tercile: bool = False, reason_key: str = "unknown") -> float:
+                                    high_vol_tercile: bool = False, reason_key: str = "unknown",
+                                    adx_value: float | None = None, volume_ratio: float | None = None,
+                                    remaining_daily_pool_usd: float = float("inf")) -> float:
     """
     Best-effort $-at-risk of a position that WOULD be opened right now --
     (entry - stop) * qty -- computed with the exact same
@@ -1757,20 +1777,21 @@ def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, e
     a number that actually matches what would really be opened, under
     EITHER sizing mode (flat-$ or risk-based), including the
     USE_VOLATILITY_SCALED_SIZING reduction and the USE_CONVICTION_SIZING
-    boost (see place_buy_order) when high_vol_tercile / reason_key say
-    one of them applies.
+    tiered boost (see place_buy_order) when high_vol_tercile / reason_key /
+    adx_value / volume_ratio say one of them applies.
 
-    reason_key is only consulted for the CONVICTION_BOOST_USD substitution
-    (mirroring place_buy_order's own flat-sizing branch exactly, including
-    its precedence rule: if a trade is BOTH in a high-conviction strategy
-    AND in its own high-vol tercile, the volatility-based size-DOWN wins,
-    never the conviction-based size-up). Getting this wrong has a real
-    direction of harm, unlike the vol-scaled case: overestimating risk
-    only makes the heat-cap gate stricter than necessary (still safe), but
-    UNDER-estimating a conviction-boosted trade's risk would make the gate
-    laxer than its own docstring promises -- silently letting more heat
-    onto the book than MAX_PORTFOLIO_HEAT_USD is supposed to allow. Passing
-    reason_key here is what keeps that from happening.
+    reason_key/adx_value/volume_ratio/remaining_daily_pool_usd are only
+    consulted for the conviction-tier substitution (mirroring place_buy_
+    order's own flat-sizing branch exactly, including its precedence rule:
+    if a trade is BOTH conviction-eligible AND in its own high-vol tercile,
+    the volatility-based size-DOWN wins, never the conviction-based size-
+    up). Getting this wrong has a real direction of harm, unlike the vol-
+    scaled case: overestimating risk only makes the heat-cap gate stricter
+    than necessary (still safe), but UNDER-estimating a conviction-boosted
+    trade's risk would make the gate laxer than its own docstring promises
+    -- silently letting more heat onto the book than MAX_PORTFOLIO_HEAT_USD
+    is supposed to allow. Passing all four here is what keeps that from
+    happening.
 
     Uses the last completed bar's close rather than a fresh quote --
     place_buy_order re-checks that right before submitting -- since this
@@ -1795,8 +1816,9 @@ def estimate_new_position_risk_usd(last_price: float, atr_value: float | None, e
         # always takes precedence over conviction-based size-up when a
         # trade qualifies for both (see place_buy_order's identical
         # branch for the full precedence rationale).
-        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
-            trade_amount = CONVICTION_BOOST_USD
+        elif USE_CONVICTION_SIZING:
+            trade_amount, _score = compute_conviction_trade_amount(
+                reason_key, adx_value, volume_ratio, remaining_daily_pool_usd)
         qty = int(trade_amount // last_price)
     return risk_per_share * qty
 
@@ -2059,7 +2081,9 @@ def reconcile_bracket_with_real_fill(order, atr_value: float | None, reference_p
 
 
 def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equity: float | None,
-                     reason_key: str = "unknown", high_vol_tercile: bool = False):
+                     reason_key: str = "unknown", high_vol_tercile: bool = False,
+                     adx_value: float | None = None, volume_ratio: float | None = None,
+                     remaining_daily_pool_usd: float = float("inf")):
     """
     Buys a stop-loss/take-profit-protected position ("bracket" order).
 
@@ -2084,18 +2108,21 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     its own mechanism -- stacking a second, independent size cut on top
     of that hasn't been backtested and isn't this candidate's claim.
 
-    reason_key also feeds the FLAT-sizing branch's conviction-boost check,
-    gated by USE_CONVICTION_SIZING (default off): if reason_key is in
-    HIGH_CONVICTION_STRATEGIES (default EMPTY -- see that set's comment in
-    strategy.py for why), this trade spends CONVICTION_BOOST_USD instead
-    of TRADE_AMOUNT_USD -- again a flat dollar figure, capped at 2x
-    TRADE_AMOUNT_USD by strategy.py's own import-time guard, never a
-    fraction of equity. EXPLICIT PRECEDENCE RULE: if a trade is BOTH in a
-    high-conviction strategy AND in its own high-vol tercile, the
-    volatility-based SIZE-DOWN above always wins over this size-up --
-    safety takes precedence over a return-chasing boost, every time, no
-    exceptions. Also ignored entirely under risk-based sizing, same
-    reasoning as high_vol_tercile above.
+    reason_key/adx_value/volume_ratio/remaining_daily_pool_usd feed the
+    FLAT-sizing branch's graduated conviction check instead, gated by
+    USE_CONVICTION_SIZING (see strategy.compute_conviction_trade_amount):
+    a trade scoring 1 point (exactly one of strategy in HIGH_CONVICTION_
+    STRATEGIES / ADX >= CONVICTION_ADX_THRESHOLD / volume_ratio >=
+    CONVICTION_VOLUME_RATIO_THRESHOLD) spends CONVICTION_TIER1_USD; 2 or
+    3 points spends up to the full remaining daily pool -- always a flat
+    dollar figure clamped to whatever's left of MAX_DAILY_DEPLOYED_
+    CAPITAL_USD today, never a fraction of equity. EXPLICIT PRECEDENCE
+    RULE: if a trade is BOTH conviction-eligible AND in its own high-vol
+    tercile, the volatility-based SIZE-DOWN above always wins over this
+    size-up -- safety takes precedence
+    over a return-chasing boost, every time, no exceptions. Also ignored
+    entirely under risk-based sizing, same reasoning as high_vol_tercile
+    above.
 
     Bracket orders on Alpaca don't reliably support fractional
     quantities (unlike plain market orders), regardless of whether the
@@ -2153,7 +2180,7 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
     # Never boosted under risk-based sizing -- see high_vol_tercile's
     # identical reasoning in the docstring above; set here so it's always
     # defined for last_details below regardless of which branch runs.
-    conviction_boosted = False
+    conviction_score = 0
     if USE_RISK_BASED_SIZING and equity is not None and equity > 0:
         qty = compute_position_size(equity, reference_price, stop_price)
         sizing_style = f"risk-based, {RISK_PER_TRADE_PCT:.1f}% of ${equity:,.0f}"
@@ -2166,16 +2193,17 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         # elif, not a second independent if: this makes the two branches
         # structurally mutually exclusive, not just documented as such.
         # EXPLICIT PRECEDENCE RULE -- see this function's docstring: a
-        # trade that is BOTH in a high-conviction strategy AND in its own
-        # high-vol tercile gets the REDUCED (volatility) amount above,
-        # never the boosted one below. Safety (size down on real,
-        # measured noise) always wins over a return-chasing boost (size
-        # up on an unconfirmed strategy-level edge), every time, no
-        # exceptions.
-        elif USE_CONVICTION_SIZING and reason_key in HIGH_CONVICTION_STRATEGIES:
-            trade_amount = CONVICTION_BOOST_USD
-            conviction_boosted = True
-            sizing_style = f"flat $ (conviction-boosted, {reason_key} -> ${trade_amount:.0f})"
+        # trade that is BOTH conviction-eligible AND in its own high-vol
+        # tercile gets the REDUCED (volatility) amount above, never the
+        # boosted one below. Safety (size down on real, measured noise)
+        # always wins over a return-chasing boost (size up on multiple
+        # confirming signals), every time, no exceptions.
+        elif USE_CONVICTION_SIZING:
+            trade_amount, conviction_score = compute_conviction_trade_amount(
+                reason_key, adx_value, volume_ratio, remaining_daily_pool_usd)
+            if conviction_score > 0:
+                sizing_style = (f"flat $ (conviction tier {conviction_score}/3, {reason_key} -> "
+                                 f"${trade_amount:,.0f}, ${remaining_daily_pool_usd:,.0f} left in today's pool)")
         qty = int(trade_amount // reference_price)
 
     if qty < 1:
@@ -2214,7 +2242,7 @@ def place_buy_order(symbol: str, last_price: float, atr_value: float | None, equ
         "take_profit": recorded_target,
         "sizing_style": sizing_style,
         "equity": equity,
-        "conviction_boosted": conviction_boosted,
+        "conviction_boosted": conviction_score > 0,
     }
     return order, notional
 
@@ -2253,14 +2281,21 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                   current_qty: float, equity: float | None, portfolio_risk_estimate: float,
                   in_cooldown: bool = False, daily_trend_blocks_entry: bool = False,
                   spy_regime_blocks_entry: bool = False, sector_cap_blocks_entry: bool = False,
-                  sector_etf_bars: dict[str, pd.DataFrame] | None = None) -> float:
+                  sector_etf_bars: dict[str, pd.DataFrame] | None = None,
+                  remaining_daily_pool_usd: float = float("inf")) -> float:
     """
     Checks one symbol and acts on its signal. Returns the notional $
     amount of a newly opened position (0.0 if none), so the caller can
     track MAX_CONCURRENT_POSITIONS, the sector concentration cap, the
     portfolio risk caps (both the %-of-equity one and the fixed-dollar
-    heat cap), and the running equity estimate live across a single
-    cycle without an extra API call per symbol.
+    heat cap), the running equity estimate, and the daily conviction-
+    sizing pool (remaining_daily_pool_usd, see strategy.
+    compute_conviction_trade_amount) live across a single cycle without
+    an extra API call per symbol. remaining_daily_pool_usd is a snapshot
+    passed in by the caller (same pattern as portfolio_risk_estimate) --
+    this function never reads or writes the daily_deployed_capital_usd
+    global directly, so a symbol earlier in the same cycle spending part
+    of the pool is reflected in what a later symbol sees this cycle.
     """
     if df is None or df.empty:
         log.warning(f"[{symbol}] No price data returned, skipping this check.")
@@ -2327,6 +2362,26 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             breakout_invalidation_triggered = breakout_invalidated_at(
                 enriched, i, entry_context["invalidation_level"])
 
+    # Conviction sizing inputs -- only meaningful when USE_CONVICTION_SIZING
+    # is on, but cheap enough (two column reads off the already-computed
+    # indicators frame) to just always compute rather than gate. adx comes
+    # straight from strategy.add_indicators' own "adx" column (same one the
+    # SPY regime gate and trend_following/mean_reversion regime-switching
+    # already read); volume_ratio is this bar's volume against its own
+    # trailing average (df["rvol_avg_volume"], the same baseline
+    # rvol_spike_at() compares against) -- None (never a false "confirmed")
+    # if either input isn't available yet (e.g. too early in the window for
+    # the rolling average to have filled in).
+    adx_value = enriched["adx"].iat[i] if "adx" in enriched.columns else None
+    if adx_value is not None and pd.isna(adx_value):
+        adx_value = None
+    volume_ratio = None
+    if "rvol_avg_volume" in enriched.columns:
+        avg_volume = enriched["rvol_avg_volume"].iat[i]
+        bar_volume = enriched["volume"].iat[i]
+        if not pd.isna(avg_volume) and avg_volume > 0 and not pd.isna(bar_volume):
+            volume_ratio = bar_volume / avg_volume
+
     log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
     notional_opened = 0.0
@@ -2366,12 +2421,14 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                           f"{MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate risk cap).")
             elif would_exceed_portfolio_heat_cap(
                     portfolio_risk_estimate,
-                    estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile, reason_key)):
+                    estimate_new_position_risk_usd(last_price, atr_value, equity, high_vol_tercile, reason_key,
+                                                    adx_value, volume_ratio, remaining_daily_pool_usd)):
                 log.info(f"[{symbol}] ACTION: No trade (would exceed MAX_PORTFOLIO_HEAT_USD="
                           f"${MAX_PORTFOLIO_HEAT_USD:,.0f} fixed-dollar aggregate risk cap).")
             else:
                 order, notional = place_buy_order(symbol, last_price, atr_value, equity, reason_key,
-                                                   high_vol_tercile)
+                                                   high_vol_tercile, adx_value, volume_ratio,
+                                                   remaining_daily_pool_usd)
                 if order is not None:
                     log.info(f"[{symbol}] ACTION: BUY (order id {order.id}, strategy: {reason_key})")
                     notional_opened = notional
@@ -2648,7 +2705,7 @@ def run_one_cycle() -> float:
     not a behavior change.
     """
     global active_watchlist, last_scan_time, current_trading_day, day_start_equity, \
-        daily_loss_breaker_tripped, last_flatten_date, previously_held
+        daily_loss_breaker_tripped, daily_deployed_capital_usd, last_flatten_date, previously_held
 
     try:
         clock = trading_client.get_clock()
@@ -2671,9 +2728,11 @@ def run_one_cycle() -> float:
             day_start_equity = equity_now_for_day_start
             current_trading_day = today_key
             daily_loss_breaker_tripped = False
+            daily_deployed_capital_usd = 0.0
             save_daily_risk_state()
             log.info(f"Daily loss circuit breaker: tracking from starting equity "
                       f"${day_start_equity:,.2f} (limit -{MAX_DAILY_LOSS_PCT:.0f}%).")
+            log.info(f"Daily conviction-sizing pool reset: ${MAX_DAILY_DEPLOYED_CAPITAL_USD:,.0f} available today.")
         # else: leave current_trading_day unset so this retries next check.
 
     seconds_left_today = seconds_until(clock.next_close, clock.timestamp)
@@ -2744,6 +2803,16 @@ def run_one_cycle() -> float:
         if (USE_RISK_BASED_SIZING or USE_PORTFOLIO_HEAT_CAP) else 0.0
     )
     equity_estimate = equity_now
+    # Unlike portfolio_risk_estimate/equity_estimate above (recomputed
+    # fresh each cycle from real position data), the daily pool has to
+    # PERSIST across cycles within the same trading day -- it's a running
+    # total of what's already been spent today, not a live snapshot of
+    # current positions. Starts from the global (restored from
+    # daily_risk_state.json at process start, reset to 0 on day rollover
+    # above), decremented locally as this cycle's own symbols open
+    # positions (same live-tracking pattern as portfolio_risk_estimate),
+    # written back to the global once at the end of this function.
+    remaining_daily_pool_usd = max(MAX_DAILY_DEPLOYED_CAPITAL_USD - daily_deployed_capital_usd, 0.0)
 
     symbols_to_check = sorted(set(active_watchlist) | open_position_symbols)
 
@@ -2815,7 +2884,8 @@ def run_one_cycle() -> float:
                                  in_cooldown=in_cooldown, daily_trend_blocks_entry=daily_trend_blocks_entry,
                                  spy_regime_blocks_entry=spy_regime_blocks_entry_this_cycle,
                                  sector_cap_blocks_entry=sector_cap_blocks_entry,
-                                 sector_etf_bars=sector_etf_bars)
+                                 sector_etf_bars=sector_etf_bars,
+                                 remaining_daily_pool_usd=remaining_daily_pool_usd)
         if notional > 0:
             open_count += 1
             open_symbols_this_cycle.add(symbol)
@@ -2831,6 +2901,11 @@ def run_one_cycle() -> float:
             portfolio_risk_estimate += actual_new_risk
             if equity_estimate is not None:
                 equity_estimate -= notional
+            remaining_daily_pool_usd = max(remaining_daily_pool_usd - notional, 0.0)
+
+    if USE_CONVICTION_SIZING:
+        daily_deployed_capital_usd = max(MAX_DAILY_DEPLOYED_CAPITAL_USD - remaining_daily_pool_usd, 0.0)
+        save_daily_risk_state()
 
     try:
         clock = trading_client.get_clock()
@@ -2978,14 +3053,14 @@ if __name__ == "__main__":
                       f"tercile sized at ${VOLATILITY_SCALED_REDUCED_USD:.0f} instead of "
                       f"${TRADE_AMOUNT_USD:.0f} (see strategy.VOL_PERCENTILE_LOOKBACK)")
         if USE_CONVICTION_SIZING:
-            if HIGH_CONVICTION_STRATEGIES:
-                log.info(f"Conviction-boosted sizing: ON -- {', '.join(sorted(HIGH_CONVICTION_STRATEGIES))} "
-                          f"sized at ${CONVICTION_BOOST_USD:.0f} instead of ${TRADE_AMOUNT_USD:.0f} "
-                          f"(volatility-based size-down always wins when a trade qualifies for both)")
-            else:
-                log.info("Conviction-boosted sizing: ON but HIGH_CONVICTION_STRATEGIES is empty -- "
-                          "structurally a no-op right now (no strategy currently has real evidence "
-                          "supporting a boost, see strategy.HIGH_CONVICTION_STRATEGIES)")
+            strategies_desc = (', '.join(sorted(HIGH_CONVICTION_STRATEGIES))
+                                if HIGH_CONVICTION_STRATEGIES else "none yet (real evidence-gated, see strategy.py)")
+            log.info(f"Graduated conviction sizing: ON -- qualifying strategies: {strategies_desc}. "
+                      f"1 of 3 confirming signals (strategy match / ADX >= {CONVICTION_ADX_THRESHOLD:.0f} / "
+                      f"volume >= {CONVICTION_VOLUME_RATIO_THRESHOLD:.1f}x avg) sizes at "
+                      f"${CONVICTION_TIER1_USD:.0f}; 2 or more signals sizes at up to the full remaining "
+                      f"${MAX_DAILY_DEPLOYED_CAPITAL_USD:,.0f}/day pool (volatility-based size-down "
+                      f"always wins when a trade qualifies for both)")
     log.info(f"Position limits: max {MAX_CONCURRENT_POSITIONS} concurrent positions | "
               f"max {MAX_PORTFOLIO_RISK_PCT:.1f}% aggregate portfolio risk | "
               f"daily loss circuit breaker at -{MAX_DAILY_LOSS_PCT:.0f}% (pauses new entries only)")
@@ -3013,6 +3088,7 @@ if __name__ == "__main__":
     current_trading_day = None
     day_start_equity = None
     daily_loss_breaker_tripped = False
+    daily_deployed_capital_usd = 0.0
     load_daily_risk_state()
 
     load_open_position_context()
