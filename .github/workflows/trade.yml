@@ -94,6 +94,43 @@ jobs:
       # the chain self-terminates for the day rather than dispatching all
       # night; the FIRST job of each new trading day is still started by
       # cron as before, same as it always was.
+      #
+      # 2026-08-26: this design had a real bug, confirmed via git history --
+      # on 2026-08-25 it produced 89 "Update bot state" commits between
+      # 20:00:02 and 20:59:37 UTC, one every ~35-45 SECONDS, not the
+      # intended one per ~2.5h window. Mechanism: this step dispatches
+      # unconditionally (subject only to the weekday/hour gate below) with
+      # zero awareness of how long the run it's queuing will actually take.
+      # trading_bot.py's --duration-minutes loop exits almost immediately
+      # once the market reads closed ("Market is closed for the day --
+      # exiting early instead of idling.") -- correct and intentional for
+      # THAT code, since there's no reason to hold a runner alive for 150
+      # minutes doing nothing. But this step doesn't know that's about to
+      # happen: while the market stays closed, each run finishes in well
+      # under a minute (checkout + cached pip install + an instant Python
+      # exit + a quick commit), and because this step already queued its
+      # own successor as its very first action, that successor starts
+      # almost immediately once the concurrency group frees up -- and
+      # immediately does the same thing again. The hour<21 gate is what
+      # finally stopped it, not anything that paced the individual links.
+      #
+      # Fix: also check how long ago the MOST RECENT other run of this
+      # workflow actually started, via `gh run list` (no new committed
+      # state needed -- GitHub's own run history already has this).
+      # Skip dispatching if that was less than MIN_SPACING_MINUTES ago;
+      # the regular cron tick (every 20 min, 12-21 UTC) is still running
+      # underneath this the whole time and picks up the slack once real
+      # spacing has passed. 15 min is deliberately just under the cron's
+      # own 20-min cadence -- enough to let self-dispatch still beat a
+      # dropped cron tick (the entire reason this mechanism exists), but
+      # nowhere near enough for a fast-exit run to re-trigger another one
+      # a few seconds later. If the `gh run list` check itself fails for
+      # any reason, this fails OPEN (treats spacing as satisfied, dispatch
+      # proceeds) -- the crash-resilience property this step exists for
+      # takes priority over the throttle; worst case on a check failure is
+      # a return to today's already-bounded (by hour<21) behavior, not a
+      # silent multi-hour gap like the ORIGINAL bug this step was built to
+      # fix (see the 2026-07-24/2026-08-23 CLAUDE.md entries).
       - name: Queue next run (self-chaining handoff)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -101,18 +138,40 @@ jobs:
           hour=$(date -u +%H)
           dow=$(date -u +%u)   # 1=Mon .. 7=Sun
           if [ "$dow" -ge 1 ] && [ "$dow" -le 5 ] && [ "$hour" -lt 21 ]; then
-            queued=false
-            for attempt in 1 2 3; do
-              if gh workflow run trade.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"; then
-                echo "Queued next run on attempt $attempt."
-                queued=true
-                break
+            min_spacing_minutes=15
+            age_minutes=999999
+            prior_created_at=$(gh run list --workflow=trade.yml --repo "${{ github.repository }}" --limit 5 \
+              --json databaseId,createdAt --jq "[.[] | select(.databaseId != ${{ github.run_id }})][0].createdAt" 2>/dev/null || true)
+            if [ -n "$prior_created_at" ]; then
+              prior_epoch=$(date -u -d "$prior_created_at" +%s 2>/dev/null || true)
+              now_epoch=$(date -u +%s)
+              if [ -n "$prior_epoch" ]; then
+                age_minutes=$(( (now_epoch - prior_epoch) / 60 ))
+              else
+                echo "::warning::Could not parse prior run timestamp '$prior_created_at' -- treating spacing as satisfied (fail open)."
               fi
-              echo "workflow_dispatch failed (attempt $attempt) -- retrying."
-              sleep $((attempt * 5))
-            done
-            if [ "$queued" = false ]; then
-              echo "::warning::Could not queue the next run after 3 attempts -- relying on a cron tick landing during this job's window instead."
+            else
+              echo "No prior run found (or the spacing check itself failed) -- treating spacing as satisfied (fail open)."
+            fi
+
+            if [ "$age_minutes" -lt "$min_spacing_minutes" ]; then
+              echo "Most recent other run started only ${age_minutes} min ago (< ${min_spacing_minutes} min minimum) -- " \
+                   "not queuing a successor to avoid a fast-exit re-trigger loop (see 2026-08-26 comment above). " \
+                   "The regular cron tick or a later self-dispatch once spacing has passed will cover this."
+            else
+              queued=false
+              for attempt in 1 2 3; do
+                if gh workflow run trade.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"; then
+                  echo "Queued next run on attempt $attempt (prior run was ${age_minutes} min ago)."
+                  queued=true
+                  break
+                fi
+                echo "workflow_dispatch failed (attempt $attempt) -- retrying."
+                sleep $((attempt * 5))
+              done
+              if [ "$queued" = false ]; then
+                echo "::warning::Could not queue the next run after 3 attempts -- relying on a cron tick landing during this job's window instead."
+              fi
             fi
           else
             echo "Outside the self-chaining window (dow=$dow hour=$hour UTC) -- not queuing a successor; next weekday's cron tick starts the day."

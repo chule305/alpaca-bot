@@ -2558,3 +2558,68 @@ session, not the pipeline's own unbounded discretion.
   strategy as strat` in the test file, which binds to the same already-
   loaded module object), `test_auto_improve.py` (27 -> 31 tests). All
   five test files pass clean.
+
+## 2026-08-26: trade.yml's self-dispatch chain looped ~89 times in one hour -- root-caused and fixed
+
+Found while pushing the entries above: `git log` on the remote showed
+185 new commits since this session's last sync, with 89 "Update bot
+state" commits landing between 20:00:02 and 20:59:37 UTC on 2026-08-25 --
+one every ~35-45 SECONDS, not the intended one per ~2.5h window. No
+billing impact (this repo is public -- GitHub Actions minutes are
+unlimited and free there), but it's a real bug in a mechanism this
+project relies on for coverage, worth fixing properly rather than
+leaving as a curiosity.
+
+**Root cause, confirmed by reading the actual step, not guessed**:
+`trade.yml`'s "Queue next run (self-chaining handoff)" step (added
+2026-08-23, see that entry above) dispatches its own successor
+unconditionally as the very FIRST thing the job does, gated only on
+weekday + hour<21 UTC -- with zero awareness of how long the run it's
+about to queue will actually take. `trading_bot.py`'s own `--duration-
+minutes` loop exits almost immediately once the market clock reads
+closed ("Market is closed for the day -- exiting early instead of
+idling.") -- correct and intentional on its own; there's no reason to
+hold a runner alive for 150 minutes doing nothing. But the dispatch step
+has no way to know that's about to happen. While the market stays
+closed, each run finishes in well under a minute (checkout + cached pip
+install + an instant Python exit + a quick state commit) -- and because
+the dispatch step already queued its OWN successor as its first action,
+that successor starts almost immediately once the `concurrency:` group's
+single slot frees up, and immediately does the exact same thing again.
+The hour<21 gate is what eventually stopped it (matching the observed
+89-then-3-then-nothing pattern across the 20:00/21:00 UTC hours), not
+anything that paced the individual links -- there was no minimum spacing
+between one dispatch and the next at all.
+
+**Fix**: before dispatching, check how long ago the MOST RECENT OTHER
+run of this workflow actually started, via `gh run list --workflow=
+trade.yml --json databaseId,createdAt --jq "[.[] | select(.databaseId
+!= ${{ github.run_id }})][0].createdAt"` -- no new committed state
+needed, GitHub's own run history already has this. Skip dispatching if
+that was less than 15 minutes ago (deliberately just under the cron's
+own 20-minute cadence, so self-dispatch can still beat a dropped cron
+tick -- the entire reason this mechanism exists -- while making a sub-
+minute re-trigger structurally impossible). The regular cron tick is
+still running underneath the whole time regardless and picks up the
+slack once real spacing has passed, exactly as it always has.
+**Deliberately fails OPEN**: if the `gh run list` check itself errors or
+the timestamp doesn't parse, spacing is treated as satisfied and
+dispatch proceeds anyway, logged with a warning. The crash-resilience
+property this step exists for takes priority over the throttle -- worst
+case on a check failure is a return to today's already-bounded (by
+hour<21) behavior, not a silent multi-hour gap like the ORIGINAL bug
+this step was built to fix in the first place (2026-07-24/2026-08-23
+entries above).
+
+**Verified**: the exact date-arithmetic/decision logic was extracted and
+run standalone against 7 mocked scenarios (a mocked `gh` and a
+controlled "now") before shipping -- prior run 2 min ago correctly
+skips, 25/150 min ago correctly dispatches, no-prior-run and unparseable-
+timestamp both correctly fail open and dispatch. Not added as a
+permanent test file: this logic lives in a single YAML shell step
+(matching this project's existing, established style for this specific
+file -- the weekday/hour gate it's built on top of was never unit-tested
+either), and GitHub's real scheduling/dispatch behavior isn't something
+a local test can exercise anyway -- the actual confirmation will be
+watching real run timestamps over the next few trading days, the same
+way the 2026-07-24 and 2026-08-23 fixes were originally verified.
