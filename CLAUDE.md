@@ -2623,3 +2623,33 @@ either), and GitHub's real scheduling/dispatch behavior isn't something
 a local test can exercise anyway -- the actual confirmation will be
 watching real run timestamps over the next few trading days, the same
 way the 2026-07-24 and 2026-08-23 fixes were originally verified.
+
+## 2026-08-30: auto_improve.yml turned back off -- cost, not a design problem
+
+Four days after activating it (2026-08-25/26 entries above), the user
+asked what running the pipeline actually costs and, after hearing a
+realistic estimate (a genuine agentic coding session each run --
+CLAUDE.md/README.md/real order history/possibly a backtest and a code
+change, not one cheap API call -- roughly $0.50-2/run, maybe $10-40/month
+on a daily weekday cadence, against Anthropic API billing that's
+completely separate from any claude.ai subscription and has no free
+tier), decided to turn it back off. Their plan instead: ask for this
+kind of research/improve pass manually, on their own cadence ("weekly"),
+rather than have it fire on a schedule.
+
+**What changed**: removed the `schedule:` trigger from `auto_improve.yml`
+(back to `workflow_dispatch` only, its original 2026-08-25 state) and
+updated its header comment, `auto_improve.py`'s module docstring, and
+`README.md`'s description to match. **Nothing about the guardrail
+architecture changed** -- the shell-only protected-file gate, the
+substantive sizing/risk checks, the rate limiter, and the rollback
+checker are all exactly as built and verified in the 2026-08-25 entry.
+A manual `workflow_dispatch` run still works exactly as before, and
+turning the schedule back on later is, once again, the one-line change
+it was always designed to be.
+
+Separately, conviction sizing (the $25,000/day pool, same 2026-08-26
+work) was NOT touched by this -- the user only asked to turn off the
+auto-improve pipeline specifically, not the sizing change, and there's
+no cost consideration there (it's the live trading bot's own sizing
+logic, not a separate paid API call).

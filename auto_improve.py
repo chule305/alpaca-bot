@@ -1,10 +1,13 @@
 """
 Autonomous Self-Improvement Guardrails
 -----------------------------------------
-ACTIVE as of 2026-08-26 -- see .github/workflows/auto_improve.yml's
-`schedule:` trigger (weekday evenings, after market close). Built and
-left deliberately inert on 2026-08-25 while this enforcement layer was
-reviewed, then turned on the next day at the user's explicit request.
+INACTIVE AGAIN as of 2026-08-30 -- see .github/workflows/auto_improve.yml,
+workflow_dispatch only, no `schedule:`. Built inert on 2026-08-25, briefly
+activated 2026-08-26, then turned back off four days later once the user
+priced out the real recurring Anthropic API cost of running a genuine
+agentic coding session every weekday -- their plan instead is to ask for
+this kind of pass manually, on their own cadence. See CLAUDE.md's
+2026-08-30 entry.
 
 WHAT THIS IS: the enforcement layer for a daily, LLM-driven pipeline
 (see auto_improve_prompt.md) that researches the bot's real performance

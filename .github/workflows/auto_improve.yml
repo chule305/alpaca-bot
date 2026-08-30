@@ -1,24 +1,34 @@
 name: Autonomous self-improvement (guardrailed)
 
-# ACTIVATED 2026-08-26 at the user's explicit request -- runs on its own
-# every weekday evening now (see the `schedule:` cron below), no human
-# click required. Before this date it was workflow_dispatch-only,
-# deliberately inert, while the guardrail infrastructure was built and
-# reviewed -- see auto_improve.py's module docstring and CLAUDE.md's
-# 2026-08-25/2026-08-26 entries for that history. workflow_dispatch stays
-# available alongside the schedule for manual/test runs.
+# INACTIVE AGAIN as of 2026-08-30 -- workflow_dispatch only, no
+# `schedule:` trigger. Was briefly activated 2026-08-26 (weekday-evening
+# cron) at the user's request, then explicitly turned back off four days
+# later once they'd priced out what running it daily would actually cost
+# in real Anthropic API usage (this pipeline is a genuine agentic coding
+# session each run -- reading CLAUDE.md/README.md, pulling real order
+# history, researching, possibly implementing and testing a change --
+# not one cheap API call, so daily runs add up to a real recurring cost,
+# not a one-time one). The user's plan instead: ask for this kind of
+# research/improvement pass manually, on their own cadence (weekly, in
+# their words), rather than have it run itself. Nothing about the
+# guardrail architecture changed -- the shell gate, auto_improve.py's
+# substantive checks, the rate limiter, and the rollback checker are
+# exactly as built and documented in the 2026-08-25 entry below, and
+# turning the schedule back on later is, once again, the single line
+# it was designed to be. See CLAUDE.md's 2026-08-30 entry.
 #
 # REQUIRES a secret this workflow cannot create for you:
 # ANTHROPIC_API_KEY, under Settings -> Secrets and variables -> Actions.
 # Every other secret referenced below (ALPACA_API_KEY, ALPACA_SECRET_KEY,
 # EMAIL_ADDRESS, EMAIL_APP_PASSWORD, EMAIL_TO) already exists -- trade.yml
-# and daily_summary.yml already use them. Until that secret is added, the
-# scheduled run fails cleanly and loudly at the "Confirm ANTHROPIC_API_KEY
-# is configured" step in the `propose` job, with an actionable error --
-# it does not silently do nothing and does not do anything unsafe either
-# way, since that check runs before anything else in that job.
+# and daily_summary.yml already use them. Until that secret is added, a
+# manually-triggered run fails cleanly and loudly at the "Confirm
+# ANTHROPIC_API_KEY is configured" step in the `propose` job, with an
+# actionable error -- it does not silently do nothing and does not do
+# anything unsafe either way, since that check runs before anything else
+# in that job.
 #
-# WHAT THIS DOES: once triggered (by the schedule, or manually), two jobs
+# WHAT THIS DOES: once triggered manually (workflow_dispatch), two jobs
 # run in sequence.
 #   1. `rollback` -- checks real Alpaca performance since each past
 #      autonomous change and reverts the first one that's crossed a real
@@ -40,18 +50,6 @@ name: Autonomous self-improvement (guardrailed)
 # stays silent in your inbox -- check the Actions tab for that.
 
 on:
-  schedule:
-    # 21:45 UTC, weekdays -- after that day's market close (20:00 UTC
-    # EDT / 21:00 UTC EST) AND after daily_summary.yml's own 21:15 UTC
-    # run, so this pipeline's real-order-history research sees the full,
-    # settled picture of the day rather than a partial one, and doesn't
-    # race the summary email for the same Alpaca data. Chosen over a
-    # before-market-open time deliberately: "after" means analyzing a
-    # complete day's real fills, "before" would mean analyzing yesterday's
-    # (or Friday's, on a Monday) already-summarized data instead, and
-    # risks colliding with trade.yml's own pre-open startup window
-    # (12:40 UTC).
-    - cron: "45 21 * * 1-5"
   workflow_dispatch:
 
 concurrency:

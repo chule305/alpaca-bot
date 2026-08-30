@@ -208,15 +208,17 @@ To use a different provider instead (e.g. Gmail), set `EMAIL_ADDRESS`/
 unset, so removing the `EMAIL_SMTP_SERVER` line entirely would also
 work for Gmail).
 
-## Autonomous self-improvement pipeline (ACTIVE — runs every weekday evening)
+## Autonomous self-improvement pipeline (built, currently INACTIVE)
 
 `.github/workflows/auto_improve.yml` is a second, separate pipeline that
 researches this bot's own real performance and can ship a code or
-parameter change on its own, no human review per change. Runs on a
-schedule (21:45 UTC weekdays, after that day's market close) as of
-2026-08-26, with `workflow_dispatch` still available for manual/test
-runs. See [`CLAUDE.md`](CLAUDE.md)'s 2026-08-25 and 2026-08-26 entries
-for the full design reasoning and activation history.
+parameter change on its own, no human review per change. Briefly ran on
+a schedule (21:45 UTC weekdays) starting 2026-08-26; turned back off
+2026-08-30 once the real recurring Anthropic API cost of a daily
+agentic-coding-session run was priced out — see
+[`CLAUDE.md`](CLAUDE.md)'s 2026-08-25/26/30 entries. `workflow_dispatch`
+still works for a manual, one-off run any time (e.g. "analyze this week
+and improve" on whatever cadence you want to ask for it).
 
 What it does each run: checks real Alpaca performance since any change
 it shipped before (auto-reverting one that's lost more than 5% of its
@@ -232,12 +234,12 @@ any hard sizing/risk limit (`auto_improve.py`), and the full test suite
 the daily summary above) whenever a run actually ships, blocks, or
 reverts a change; a quiet day sends nothing.
 
-**Still required before the first scheduled run can do anything**: add
-an `ANTHROPIC_API_KEY` secret under Repo Settings → Secrets and
-variables → Actions. Every other secret it needs already exists from the
-sections above. Without it, the run fails cleanly with an actionable
-error at the very first relevant step — it doesn't do anything unsafe
-either way.
+To run it manually: Actions tab → "Autonomous self-improvement
+(guardrailed)" → Run workflow. Still requires an `ANTHROPIC_API_KEY`
+secret under Repo Settings → Secrets and variables → Actions — every
+other secret it needs already exists from the sections above. Without
+it, the run fails cleanly with an actionable error at the very first
+relevant step.
 
 ## Risk management
 
