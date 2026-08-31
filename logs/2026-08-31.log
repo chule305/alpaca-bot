@@ -20,3 +20,176 @@
 2026-08-31 20:00:25,740 | Market is closed. Next open: 2026-09-01 15:30:00 CEST (your local time) -- in 17.5 hours.
 2026-08-31 20:00:25,745 | Market is closed for the day -- exiting early instead of idling.
 2026-08-31 20:00:25,745 | Duration window finished.
+2026-08-31 18:21:00,637 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-08-31 18:21:00,637 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-08-31 18:21:00,637 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
+2026-08-31 18:21:00,637 | Bar size: 15min | Check interval while market open: 15min
+2026-08-31 18:21:00,637 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-08-31 18:21:00,637 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-08-31 18:21:00,637 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-08-31 18:21:00,637 | Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the first 45 min after the open (real-money-confirmed, additive to the lunch-window blackout above, not a replacement for it)
+2026-08-31 18:21:00,637 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-08-31 18:21:00,637 | Position sizing: flat $500 per trade
+2026-08-31 18:21:00,637 | Graduated conviction sizing: ON -- qualifying strategies: none yet (real evidence-gated, see strategy.py). 1 of 3 confirming signals (strategy match / ADX >= 35 / volume >= 2.5x avg) sizes at $5000; 2 or more signals sizes at up to the full remaining $25,000/day pool (volatility-based size-down always wins when a trade qualifies for both)
+2026-08-31 18:21:00,637 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-08-31 18:21:00,637 | Portfolio heat cap: max $2,000 aggregate $-at-risk across all open positions
+2026-08-31 18:21:00,637 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-08-31 18:21:00,637 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-08-31 18:21:00,637 | Loaded saved watchlist from previous run: GENB, BZ, NVDA, MU, SNDK, TSLA, META, AAPL, MSFT, AMD, GOOGL, INTC
+2026-08-31 18:21:00,637 | Restored daily risk state from previous run: day 2026-08-26, breaker tripped: False
+2026-08-31 18:21:00,637 | Restored open-position context for 2 symbol(s) from previous run.
+2026-08-31 18:21:00,637 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-08-31 18:21:00,900 | Daily loss circuit breaker: tracking from starting equity $99,537.80 (limit -3%).
+2026-08-31 18:21:00,900 | Daily conviction-sizing pool reset: $25,000 available today.
+2026-08-31 18:21:00,900 | SCANNER: refreshing watchlist...
+2026-08-31 18:21:01,307 | SCANNER: excluded 1 leveraged/inverse ETF(s) from 3 candidate(s).
+2026-08-31 18:21:01,902 | SCANNER: candidate PCG -- -18.4% today, $13.54, liquid, 11 recent news item(s)
+2026-08-31 18:21:02,064 | S&P 500: refreshed constituent list (503 symbols).
+2026-08-31 18:21:12,893 | S&P 500 liquidity backstop -> NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 18:21:12,986 | SCANNER: new watchlist -> PCG, NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 18:21:13,088 | [BZ] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-08-31 18:21:13,347 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, SNDK, TSLA
+2026-08-31 18:21:14,217 | [AAPL] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.36
+2026-08-31 18:21:14,218 | [AAPL] ACTION: No trade.
+2026-08-31 18:21:14,237 | [AMZN] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.33
+2026-08-31 18:21:14,237 | [AMZN] ACTION: No trade.
+2026-08-31 18:21:14,257 | [CRM] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $261.96
+2026-08-31 18:21:14,257 | [CRM] ACTION: No trade.
+2026-08-31 18:21:14,328 | [MRVL] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.37
+2026-08-31 18:21:14,328 | [MRVL] ACTION: No trade.
+2026-08-31 18:21:14,348 | [MSFT] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.65
+2026-08-31 18:21:14,348 | [MSFT] ACTION: No trade.
+2026-08-31 18:21:14,367 | [MU] trending (ADX 30.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $947.90
+2026-08-31 18:21:14,368 | [MU] ACTION: No trade.
+2026-08-31 18:21:14,387 | [NVDA] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.33
+2026-08-31 18:21:14,387 | [NVDA] ACTION: No trade.
+2026-08-31 18:21:14,458 | [PCG] trending (ADX 58.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.56
+2026-08-31 18:21:14,458 | [PCG] ACTION: No trade.
+2026-08-31 18:21:14,530 | [SNDK] choppy/sideways (ADX 14.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1502.13
+2026-08-31 18:21:14,530 | [SNDK] ACTION: No trade.
+2026-08-31 18:21:14,550 | [TSLA] trending (ADX 47.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $367.65
+2026-08-31 18:21:14,550 | [TSLA] ACTION: No trade.
+2026-08-31 18:36:14,865 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-31 18:36:15,779 | [AAPL] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.69
+2026-08-31 18:36:15,779 | [AAPL] ACTION: No trade.
+2026-08-31 18:36:15,798 | [AMZN] trending (ADX 26.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $257.82
+2026-08-31 18:36:15,798 | [AMZN] ACTION: No trade.
+2026-08-31 18:36:15,817 | [CRM] trending (ADX 40.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $261.47
+2026-08-31 18:36:15,817 | [CRM] ACTION: No trade.
+2026-08-31 18:36:15,836 | [MRVL] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.35
+2026-08-31 18:36:15,836 | [MRVL] ACTION: No trade.
+2026-08-31 18:36:15,855 | [MSFT] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.93
+2026-08-31 18:36:15,855 | [MSFT] ACTION: No trade.
+2026-08-31 18:36:15,874 | [MU] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $947.56
+2026-08-31 18:36:15,874 | [MU] ACTION: No trade.
+2026-08-31 18:36:15,893 | [NVDA] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.97
+2026-08-31 18:36:15,893 | [NVDA] ACTION: No trade.
+2026-08-31 18:36:15,912 | [PCG] trending (ADX 58.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.54
+2026-08-31 18:36:15,913 | [PCG] ACTION: No trade.
+2026-08-31 18:36:15,931 | [SNDK] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1506.51
+2026-08-31 18:36:15,932 | [SNDK] ACTION: No trade.
+2026-08-31 18:36:15,950 | [TSLA] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $367.51
+2026-08-31 18:36:15,950 | [TSLA] ACTION: No trade.
+2026-08-31 18:51:16,198 | SCANNER: refreshing watchlist...
+2026-08-31 18:51:17,064 | SCANNER: candidate PCG -- -18.5% today, $13.53, liquid, 12 recent news item(s)
+2026-08-31 18:51:17,064 | SCANNER: candidate PMI -- +18.1% today, $10.39, liquid, 1 recent news item(s)
+2026-08-31 18:51:26,754 | S&P 500 liquidity backstop -> NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 18:51:26,756 | SCANNER: new watchlist -> PCG, PMI, NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 18:51:26,809 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, PMI, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-31 18:51:27,610 | [AAPL] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.27
+2026-08-31 18:51:27,610 | [AAPL] ACTION: No trade.
+2026-08-31 18:51:27,630 | [AMZN] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $257.66
+2026-08-31 18:51:27,630 | [AMZN] ACTION: No trade.
+2026-08-31 18:51:27,649 | [CRM] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $260.93
+2026-08-31 18:51:27,649 | [CRM] ACTION: No trade.
+2026-08-31 18:51:27,669 | [MRVL] trending (ADX 43.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.85
+2026-08-31 18:51:27,669 | [MRVL] ACTION: No trade.
+2026-08-31 18:51:27,688 | [MSFT] choppy/sideways (ADX 18.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.21
+2026-08-31 18:51:27,688 | [MSFT] ACTION: No trade.
+2026-08-31 18:51:27,707 | [MU] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $944.29
+2026-08-31 18:51:27,707 | [MU] ACTION: No trade.
+2026-08-31 18:51:27,726 | [NVDA] choppy/sideways (ADX 14.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.15
+2026-08-31 18:51:27,726 | [NVDA] ACTION: No trade.
+2026-08-31 18:51:27,745 | [PCG] trending (ADX 57.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.56
+2026-08-31 18:51:27,745 | [PCG] ACTION: No trade.
+2026-08-31 18:51:27,816 | [PMI] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.07
+2026-08-31 18:51:27,816 | [PMI] ACTION: No trade.
+2026-08-31 18:51:27,835 | [SNDK] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1504.50
+2026-08-31 18:51:27,835 | [SNDK] ACTION: No trade.
+2026-08-31 18:51:27,855 | [TSLA] trending (ADX 46.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $365.86
+2026-08-31 18:51:27,855 | [TSLA] ACTION: No trade.
+2026-08-31 19:06:28,160 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 11 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, PMI, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-31 19:06:29,246 | [AAPL] choppy/sideways (ADX 23.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.39
+2026-08-31 19:06:29,246 | [AAPL] ACTION: No trade.
+2026-08-31 19:06:29,265 | [AMZN] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.63
+2026-08-31 19:06:29,265 | [AMZN] ACTION: No trade.
+2026-08-31 19:06:29,284 | [CRM] trending (ADX 39.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $261.33
+2026-08-31 19:06:29,284 | [CRM] ACTION: No trade.
+2026-08-31 19:06:29,303 | [MRVL] trending (ADX 42.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.69
+2026-08-31 19:06:29,303 | [MRVL] ACTION: No trade.
+2026-08-31 19:06:29,322 | [MSFT] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.05
+2026-08-31 19:06:29,322 | [MSFT] ACTION: No trade.
+2026-08-31 19:06:29,341 | [MU] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $939.88
+2026-08-31 19:06:29,342 | [MU] ACTION: No trade.
+2026-08-31 19:06:29,360 | [NVDA] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.57
+2026-08-31 19:06:29,361 | [NVDA] ACTION: No trade.
+2026-08-31 19:06:29,380 | [PCG] trending (ADX 56.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.39
+2026-08-31 19:06:29,380 | [PCG] ACTION: No trade.
+2026-08-31 19:06:29,399 | [PMI] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $10.63
+2026-08-31 19:06:29,399 | [PMI] ACTION: No trade.
+2026-08-31 19:06:29,418 | [SNDK] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $1472.21
+2026-08-31 19:06:29,418 | [SNDK] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-31 19:06:29,437 | [TSLA] trending (ADX 45.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $365.80
+2026-08-31 19:06:29,437 | [TSLA] ACTION: No trade.
+2026-08-31 19:21:29,693 | SCANNER: refreshing watchlist...
+2026-08-31 19:21:30,189 | SCANNER: excluded 4 leveraged/inverse ETF(s) from 6 candidate(s).
+2026-08-31 19:21:30,717 | SCANNER: candidate PCG -- -19.0% today, $13.44, liquid, 12 recent news item(s)
+2026-08-31 19:21:39,709 | S&P 500 liquidity backstop -> NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 19:21:39,711 | SCANNER: new watchlist -> PCG, NVDA, MU, TSLA, SNDK, MSFT, AAPL, AMZN, CRM, MRVL
+2026-08-31 19:21:39,766 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-31 19:21:40,697 | [AAPL] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.02
+2026-08-31 19:21:40,697 | [AAPL] ACTION: No trade.
+2026-08-31 19:21:40,716 | [AMZN] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.74
+2026-08-31 19:21:40,716 | [AMZN] ACTION: No trade.
+2026-08-31 19:21:40,735 | [CRM] trending (ADX 38.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $260.83
+2026-08-31 19:21:40,735 | [CRM] ACTION: No trade.
+2026-08-31 19:21:40,754 | [MRVL] trending (ADX 42.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $210.81
+2026-08-31 19:21:40,755 | [MRVL] ACTION: No trade.
+2026-08-31 19:21:40,774 | [MSFT] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.09
+2026-08-31 19:21:40,774 | [MSFT] ACTION: No trade.
+2026-08-31 19:21:40,793 | [MU] trending (ADX 27.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $939.32
+2026-08-31 19:21:40,793 | [MU] ACTION: No trade.
+2026-08-31 19:21:40,812 | [NVDA] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.94
+2026-08-31 19:21:40,812 | [NVDA] ACTION: No trade.
+2026-08-31 19:21:40,831 | [PCG] trending (ADX 56.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.45
+2026-08-31 19:21:40,831 | [PCG] ACTION: No trade.
+2026-08-31 19:21:40,851 | [SNDK] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $1456.77
+2026-08-31 19:21:40,851 | [SNDK] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-31 19:21:40,870 | [TSLA] trending (ADX 44.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $366.03
+2026-08-31 19:21:40,870 | [TSLA] ACTION: No trade.
+2026-08-31 19:36:41,188 | Market is open (closes 2026-08-31 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AMZN, CRM, MRVL, MSFT, MU, NVDA, PCG, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-08-31 19:36:42,197 | [AAPL] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.02
+2026-08-31 19:36:42,198 | [AAPL] ACTION: No trade.
+2026-08-31 19:36:42,217 | [AMZN] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.98
+2026-08-31 19:36:42,217 | [AMZN] ACTION: No trade.
+2026-08-31 19:36:42,236 | [CRM] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $260.12
+2026-08-31 19:36:42,236 | [CRM] ACTION: No trade.
+2026-08-31 19:36:42,255 | [MRVL] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.03
+2026-08-31 19:36:42,255 | [MRVL] ACTION: No trade.
+2026-08-31 19:36:42,274 | [MSFT] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.60
+2026-08-31 19:36:42,274 | [MSFT] ACTION: No trade.
+2026-08-31 19:36:42,293 | [MU] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $947.20
+2026-08-31 19:36:42,293 | [MU] ACTION: No trade.
+2026-08-31 19:36:42,312 | [NVDA] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.81
+2026-08-31 19:36:42,312 | [NVDA] ACTION: No trade.
+2026-08-31 19:36:42,331 | [PCG] trending (ADX 55.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.53
+2026-08-31 19:36:42,331 | [PCG] ACTION: No trade.
+2026-08-31 19:36:42,350 | [SNDK] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $1475.17
+2026-08-31 19:36:42,350 | [SNDK] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-08-31 19:36:42,369 | [TSLA] trending (ADX 43.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $366.67
+2026-08-31 19:36:42,369 | [TSLA] ACTION: No trade.
+2026-08-31 19:50:02,230 | Within 10 min of close -- flattening all positions for the day.
+2026-08-31 19:50:02,287 | EOD FLATTEN: no open positions to close.
+2026-08-31 20:00:02,082 | Market is closed. Next open: 2026-09-01 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-08-31 20:00:02,137 | Market is closed for the day -- exiting early instead of idling.
+2026-08-31 20:00:02,137 | Duration window finished.
