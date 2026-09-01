@@ -155,3 +155,4 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-08-26T17:57:58+00:00,2026-08-26,BHVN,TARGET_HIT,breakout,TARGET_HIT (order type OrderType.LIMIT),31,17.77,550.87,,,,,,,76495274-9d52-4238-a6a2-bd768b58b082,,,,,,,,,,,,,,,,
 2026-08-26T19:51:04+00:00,2026-08-26,BZ,FLATTEN,end_of_day,Flattened before market close,26,,,,,,,,,,,,,,,,,,,,,,,,,
 2026-08-31T18:21:13+00:00,2026-08-31,BZ,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),26,18.92,491.92,,,,,,,30dfc059-ec88-471c-a074-e34ecd6b176b,,,,,,,,,,,,,,,,
+2026-09-01T19:51:04+00:00,2026-09-01,MMED,FLATTEN,end_of_day,Flattened before market close,221,,,,,,,,,,,,,,,,,,,,,,,,,
