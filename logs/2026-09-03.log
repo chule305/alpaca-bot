@@ -1,0 +1,222 @@
+2026-09-03 17:54:33,246 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-09-03 17:54:33,246 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-09-03 17:54:33,247 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
+2026-09-03 17:54:33,247 | Bar size: 15min | Check interval while market open: 15min
+2026-09-03 17:54:33,247 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-09-03 17:54:33,247 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-09-03 17:54:33,247 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-09-03 17:54:33,247 | Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the first 45 min after the open (real-money-confirmed, additive to the lunch-window blackout above, not a replacement for it)
+2026-09-03 17:54:33,247 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-09-03 17:54:33,247 | Position sizing: flat $500 per trade
+2026-09-03 17:54:33,247 | Graduated conviction sizing: ON -- qualifying strategies: none yet (real evidence-gated, see strategy.py). 1 of 3 confirming signals (strategy match / ADX >= 35 / volume >= 2.5x avg) sizes at $5000; 2 or more signals sizes at up to the full remaining $25,000/day pool (volatility-based size-down always wins when a trade qualifies for both)
+2026-09-03 17:54:33,247 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-09-03 17:54:33,247 | Portfolio heat cap: max $2,000 aggregate $-at-risk across all open positions
+2026-09-03 17:54:33,247 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-09-03 17:54:33,247 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-09-03 17:54:33,247 | Loaded saved watchlist from previous run: NVDA, MU, SNDK, TSLA, AAPL, MSFT, GOOGL, AMZN, DELL, META
+2026-09-03 17:54:33,247 | Restored daily risk state from previous run: day 2026-09-02, breaker tripped: False
+2026-09-03 17:54:33,248 | Restored open-position context for 2 symbol(s) from previous run.
+2026-09-03 17:54:33,248 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-09-03 17:54:33,300 | Daily loss circuit breaker: tracking from starting equity $99,420.09 (limit -3%).
+2026-09-03 17:54:33,301 | Daily conviction-sizing pool reset: $25,000 available today.
+2026-09-03 17:54:33,301 | SCANNER: refreshing watchlist...
+2026-09-03 17:54:33,374 | SCANNER: no candidates survived the price/extension filters.
+2026-09-03 17:54:33,374 | SCANNER: every candidate this cycle was a leveraged/inverse ETF.
+2026-09-03 17:54:33,412 | S&P 500: refreshed constituent list (503 symbols).
+2026-09-03 17:54:46,580 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 17:54:46,581 | SCANNER: new watchlist -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 17:54:46,596 | [NVDA] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-09-03 17:54:46,647 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA
+2026-09-03 17:54:47,487 | [AAPL] trending (ADX 37.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $326.92
+2026-09-03 17:54:47,487 | [AAPL] ACTION: No trade.
+2026-09-03 17:54:47,514 | [AVGO] trending (ADX 29.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $354.24
+2026-09-03 17:54:47,514 | [AVGO] ACTION: No trade.
+2026-09-03 17:54:47,540 | [DELL] trending (ADX 43.5) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $515.16
+2026-09-03 17:54:47,540 | [DELL] ACTION: No trade.
+2026-09-03 17:54:47,566 | [GOOGL] choppy/sideways (ADX 22.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.70
+2026-09-03 17:54:47,566 | [GOOGL] ACTION: No trade.
+2026-09-03 17:54:47,593 | [META] trending (ADX 43.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.51
+2026-09-03 17:54:47,593 | [META] ACTION: No trade.
+2026-09-03 17:54:47,619 | [MSFT] trending (ADX 42.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.19
+2026-09-03 17:54:47,619 | [MSFT] ACTION: No trade.
+2026-09-03 17:54:47,645 | [MU] choppy/sideways (ADX 12.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $943.10
+2026-09-03 17:54:47,645 | [MU] ACTION: No trade.
+2026-09-03 17:54:47,671 | [NVDA] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.83
+2026-09-03 17:54:47,671 | [NVDA] ACTION: No trade.
+2026-09-03 17:54:47,704 | [SNDK] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1554.74
+2026-09-03 17:54:47,704 | [SNDK] ACTION: No trade.
+2026-09-03 17:54:47,730 | [TSLA] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $382.48
+2026-09-03 17:54:47,730 | [TSLA] ACTION: No trade.
+2026-09-03 18:09:47,819 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA
+2026-09-03 18:09:48,479 | [AAPL] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $326.90
+2026-09-03 18:09:48,480 | [AAPL] ACTION: No trade.
+2026-09-03 18:09:48,507 | [AVGO] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.67
+2026-09-03 18:09:48,507 | [AVGO] ACTION: No trade.
+2026-09-03 18:09:48,534 | [DELL] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $515.84
+2026-09-03 18:09:48,534 | [DELL] ACTION: No trade.
+2026-09-03 18:09:48,562 | [GOOGL] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.84
+2026-09-03 18:09:48,562 | [GOOGL] ACTION: No trade.
+2026-09-03 18:09:48,589 | [META] trending (ADX 42.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.88
+2026-09-03 18:09:48,589 | [META] ACTION: No trade.
+2026-09-03 18:09:48,616 | [MSFT] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.00
+2026-09-03 18:09:48,616 | [MSFT] ACTION: No trade.
+2026-09-03 18:09:48,643 | [MU] choppy/sideways (ADX 12.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $945.60
+2026-09-03 18:09:48,643 | [MU] ACTION: No trade.
+2026-09-03 18:09:48,670 | [NVDA] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $230.02
+2026-09-03 18:09:48,670 | [NVDA] ACTION: No trade (cooling off for 60 min after this symbol's last position closed).
+2026-09-03 18:09:48,698 | [SNDK] choppy/sideways (ADX 17.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1563.73
+2026-09-03 18:09:48,698 | [SNDK] ACTION: No trade.
+2026-09-03 18:09:48,725 | [TSLA] trending (ADX 54.3) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $382.46
+2026-09-03 18:09:48,725 | [TSLA] ACTION: No trade.
+2026-09-03 18:24:48,802 | SCANNER: refreshing watchlist...
+2026-09-03 18:24:48,871 | SCANNER: no candidates survived the price/extension filters.
+2026-09-03 18:24:48,871 | SCANNER: every candidate this cycle was a leveraged/inverse ETF.
+2026-09-03 18:24:59,986 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 18:24:59,989 | SCANNER: new watchlist -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 18:25:00,016 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA
+2026-09-03 18:25:00,969 | [AAPL] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $327.33
+2026-09-03 18:25:00,969 | [AAPL] ACTION: No trade.
+2026-09-03 18:25:00,995 | [AVGO] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.56
+2026-09-03 18:25:00,995 | [AVGO] ACTION: No trade.
+2026-09-03 18:25:01,021 | [DELL] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $514.75
+2026-09-03 18:25:01,022 | [DELL] ACTION: No trade.
+2026-09-03 18:25:01,047 | [GOOGL] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.75
+2026-09-03 18:25:01,047 | [GOOGL] ACTION: No trade.
+2026-09-03 18:25:01,073 | [META] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.47
+2026-09-03 18:25:01,073 | [META] ACTION: No trade.
+2026-09-03 18:25:01,099 | [MSFT] trending (ADX 42.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $514.64
+2026-09-03 18:25:01,100 | [MSFT] ACTION: No trade.
+2026-09-03 18:25:01,126 | [MU] choppy/sideways (ADX 12.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $948.73
+2026-09-03 18:25:01,126 | [MU] ACTION: No trade.
+2026-09-03 18:25:01,151 | [NVDA] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.14
+2026-09-03 18:25:01,151 | [NVDA] ACTION: No trade.
+2026-09-03 18:25:01,177 | [SNDK] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1561.92
+2026-09-03 18:25:01,177 | [SNDK] ACTION: No trade.
+2026-09-03 18:25:01,204 | [TSLA] trending (ADX 54.7) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $382.41
+2026-09-03 18:25:01,204 | [TSLA] ACTION: No trade.
+2026-09-03 18:40:01,271 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-09-03 18:40:02,684 | [AAPL] trending (ADX 31.8) -> trend-following strategy | Signal: SELL | Shares held: 0.0 | Last price: $327.12
+2026-09-03 18:40:02,684 | [AAPL] ACTION: No trade.
+2026-09-03 18:40:02,710 | [AVGO] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.47
+2026-09-03 18:40:02,711 | [AVGO] ACTION: No trade.
+2026-09-03 18:40:02,737 | [DELL] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $516.32
+2026-09-03 18:40:02,737 | [DELL] ACTION: No trade.
+2026-09-03 18:40:02,763 | [GOOGL] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $343.62
+2026-09-03 18:40:02,763 | [GOOGL] ACTION: No trade.
+2026-09-03 18:40:02,790 | [META] trending (ADX 42.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.49
+2026-09-03 18:40:02,790 | [META] ACTION: No trade.
+2026-09-03 18:40:02,817 | [MSFT] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $514.73
+2026-09-03 18:40:02,817 | [MSFT] ACTION: No trade.
+2026-09-03 18:40:02,843 | [MU] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $951.05
+2026-09-03 18:40:02,843 | [MU] ACTION: No trade.
+2026-09-03 18:40:02,870 | [NVDA] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.51
+2026-09-03 18:40:02,870 | [NVDA] ACTION: No trade.
+2026-09-03 18:40:02,896 | [SNDK] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1560.05
+2026-09-03 18:40:02,896 | [SNDK] ACTION: No trade.
+2026-09-03 18:40:02,923 | [TSLA] trending (ADX 54.6) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $382.23
+2026-09-03 18:40:02,923 | [TSLA] ACTION: No trade.
+2026-09-03 18:55:02,977 | SCANNER: refreshing watchlist...
+2026-09-03 18:55:03,031 | SCANNER: no candidates survived the price/extension filters.
+2026-09-03 18:55:03,031 | SCANNER: every candidate this cycle was a leveraged/inverse ETF.
+2026-09-03 18:55:23,414 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 18:55:23,417 | SCANNER: new watchlist -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 18:55:23,436 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-09-03 18:55:24,608 | [AAPL] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $326.90
+2026-09-03 18:55:24,608 | [AAPL] ACTION: No trade.
+2026-09-03 18:55:24,636 | [AVGO] choppy/sideways (ADX 23.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.32
+2026-09-03 18:55:24,636 | [AVGO] ACTION: No trade.
+2026-09-03 18:55:24,664 | [DELL] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $512.63
+2026-09-03 18:55:24,664 | [DELL] ACTION: No trade.
+2026-09-03 18:55:24,691 | [GOOGL] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.78
+2026-09-03 18:55:24,692 | [GOOGL] ACTION: No trade.
+2026-09-03 18:55:24,719 | [META] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.63
+2026-09-03 18:55:24,719 | [META] ACTION: No trade.
+2026-09-03 18:55:24,747 | [MSFT] trending (ADX 42.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $513.32
+2026-09-03 18:55:24,747 | [MSFT] ACTION: No trade.
+2026-09-03 18:55:24,775 | [MU] choppy/sideways (ADX 13.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $952.39
+2026-09-03 18:55:24,775 | [MU] ACTION: No trade.
+2026-09-03 18:55:24,804 | [NVDA] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.57
+2026-09-03 18:55:24,805 | [NVDA] ACTION: No trade.
+2026-09-03 18:55:24,832 | [SNDK] choppy/sideways (ADX 21.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1563.80
+2026-09-03 18:55:24,832 | [SNDK] ACTION: No trade.
+2026-09-03 18:55:24,860 | [TSLA] trending (ADX 54.2) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $381.08
+2026-09-03 18:55:24,861 | [TSLA] ACTION: No trade.
+2026-09-03 19:10:24,944 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-09-03 19:10:26,176 | [AAPL] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $327.19
+2026-09-03 19:10:26,176 | [AAPL] ACTION: No trade.
+2026-09-03 19:10:26,202 | [AVGO] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $357.09
+2026-09-03 19:10:26,202 | [AVGO] ACTION: No trade.
+2026-09-03 19:10:26,229 | [DELL] trending (ADX 36.4) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $514.06
+2026-09-03 19:10:26,229 | [DELL] ACTION: No trade.
+2026-09-03 19:10:26,263 | [GOOGL] choppy/sideways (ADX 24.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.79
+2026-09-03 19:10:26,263 | [GOOGL] ACTION: No trade.
+2026-09-03 19:10:26,291 | [META] trending (ADX 40.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $613.85
+2026-09-03 19:10:26,291 | [META] ACTION: No trade.
+2026-09-03 19:10:26,317 | [MSFT] trending (ADX 41.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $512.36
+2026-09-03 19:10:26,317 | [MSFT] ACTION: No trade.
+2026-09-03 19:10:26,343 | [MU] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $956.17
+2026-09-03 19:10:26,343 | [MU] ACTION: No trade.
+2026-09-03 19:10:26,368 | [NVDA] trending (ADX 33.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.44
+2026-09-03 19:10:26,368 | [NVDA] ACTION: No trade.
+2026-09-03 19:10:26,394 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1564.62
+2026-09-03 19:10:26,394 | [SNDK] ACTION: No trade (within 90 min of close -- not enough runway left today for a new position).
+2026-09-03 19:10:26,420 | [TSLA] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $380.94
+2026-09-03 19:10:26,420 | [TSLA] ACTION: No trade.
+2026-09-03 19:25:26,485 | SCANNER: refreshing watchlist...
+2026-09-03 19:25:26,543 | SCANNER: no candidates survived the price/extension filters.
+2026-09-03 19:25:26,543 | SCANNER: every candidate this cycle was a leveraged/inverse ETF.
+2026-09-03 19:25:43,420 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 19:25:43,423 | SCANNER: new watchlist -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-03 19:25:43,440 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-09-03 19:25:44,269 | [AAPL] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $327.35
+2026-09-03 19:25:44,269 | [AAPL] ACTION: No trade.
+2026-09-03 19:25:44,295 | [AVGO] choppy/sideways (ADX 20.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $357.06
+2026-09-03 19:25:44,295 | [AVGO] ACTION: No trade.
+2026-09-03 19:25:44,320 | [DELL] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $514.41
+2026-09-03 19:25:44,320 | [DELL] ACTION: No trade.
+2026-09-03 19:25:44,346 | [GOOGL] choppy/sideways (ADX 24.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $343.26
+2026-09-03 19:25:44,346 | [GOOGL] ACTION: No trade.
+2026-09-03 19:25:44,371 | [META] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $614.11
+2026-09-03 19:25:44,372 | [META] ACTION: No trade.
+2026-09-03 19:25:44,397 | [MSFT] trending (ADX 40.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.32
+2026-09-03 19:25:44,397 | [MSFT] ACTION: No trade.
+2026-09-03 19:25:44,423 | [MU] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $950.48
+2026-09-03 19:25:44,423 | [MU] ACTION: No trade.
+2026-09-03 19:25:44,448 | [NVDA] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.35
+2026-09-03 19:25:44,448 | [NVDA] ACTION: No trade.
+2026-09-03 19:25:44,474 | [SNDK] choppy/sideways (ADX 23.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1547.92
+2026-09-03 19:25:44,474 | [SNDK] ACTION: No trade.
+2026-09-03 19:25:44,499 | [TSLA] trending (ADX 52.5) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $381.07
+2026-09-03 19:25:44,499 | [TSLA] ACTION: No trade.
+2026-09-03 19:40:44,611 | Market is open (closes 2026-09-03 22:00:00 CEST your local time). Checking 10 symbols: AAPL, AVGO, DELL, GOOGL, META, MSFT, MU, NVDA, SNDK, TSLA (within 90 min of close -- not enough runway left today for a new position)
+2026-09-03 19:40:45,479 | [AAPL] trending (ADX 25.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $327.80
+2026-09-03 19:40:45,479 | [AAPL] ACTION: No trade.
+2026-09-03 19:40:45,504 | [AVGO] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $358.20
+2026-09-03 19:40:45,505 | [AVGO] ACTION: No trade.
+2026-09-03 19:40:45,530 | [DELL] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 9.0 | Last price: $514.07
+2026-09-03 19:40:45,530 | [DELL] ACTION: No trade.
+2026-09-03 19:40:45,556 | [GOOGL] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $343.18
+2026-09-03 19:40:45,556 | [GOOGL] ACTION: No trade.
+2026-09-03 19:40:45,583 | [META] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $612.78
+2026-09-03 19:40:45,583 | [META] ACTION: No trade.
+2026-09-03 19:40:45,609 | [MSFT] trending (ADX 38.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $511.37
+2026-09-03 19:40:45,610 | [MSFT] ACTION: No trade.
+2026-09-03 19:40:45,636 | [MU] choppy/sideways (ADX 14.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $949.13
+2026-09-03 19:40:45,636 | [MU] ACTION: No trade.
+2026-09-03 19:40:45,662 | [NVDA] trending (ADX 33.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $229.54
+2026-09-03 19:40:45,662 | [NVDA] ACTION: No trade.
+2026-09-03 19:40:45,688 | [SNDK] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1542.69
+2026-09-03 19:40:45,688 | [SNDK] ACTION: No trade.
+2026-09-03 19:40:45,715 | [TSLA] trending (ADX 51.4) -> trend-following strategy | Signal: HOLD | Shares held: 13.0 | Last price: $380.90
+2026-09-03 19:40:45,716 | [TSLA] ACTION: No trade.
+2026-09-03 19:50:02,061 | Within 10 min of close -- flattening all positions for the day.
+2026-09-03 19:50:02,103 | [DELL] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"9","held_for_orders":"9","message":"insufficient qty available for order (requested: 9, available: 0)","symbol":"DELL"} -- position likely still open, will retry.
+2026-09-03 19:50:02,111 | [TSLA] EOD FLATTEN FAILED: {"available":"0","code":40310000,"existing_qty":"13","held_for_orders":"13","message":"insufficient qty available for order (requested: 13, available: 0)","symbol":"TSLA"} -- position likely still open, will retry.
+2026-09-03 19:50:02,111 | EOD FLATTEN: one or more positions failed to close -- NOT marking today's flatten as done, will retry next cycle.
+2026-09-03 19:51:04,121 | Within 10 min of close -- flattening all positions for the day.
+2026-09-03 19:51:04,166 | [DELL] EOD FLATTEN: close order submitted for 9.0 share(s).
+2026-09-03 19:51:04,175 | [TSLA] EOD FLATTEN: close order submitted for 13.0 share(s).
+2026-09-03 19:51:04,175 | EOD FLATTEN: all positions closed, all pending orders cancelled.
+2026-09-03 20:00:02,007 | Market is closed. Next open: 2026-09-04 15:30:00 CEST (your local time) -- in 17.5 hours.
+2026-09-03 20:00:02,012 | Market is closed for the day -- exiting early instead of idling.
+2026-09-03 20:00:02,012 | Duration window finished.

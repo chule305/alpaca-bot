@@ -161,3 +161,6 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-09-02T19:51:04+00:00,2026-09-02,NVDA,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,,,,
 2026-09-02T15:30:48+00:00,2026-09-02,MMED,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),221,22.42,4954.82,,,,,,,1e31741f-c342-4287-928d-9eb83c038f4d,,,,,,,,,,,,,,,,
 2026-09-02T16:01:18+00:00,2026-09-02,NVDA,BUY,breakout,volume-confirmed breakout above 20-bar high,2,227.445,454.89,216.05,250.17,flat $,99504.5,,135,315cf369-5c09-4c5a-bc16-dedab15cc48e,breakout-1788364876,227.605,80.6579,32.8189,1.27752,224.748,222.225,223.918,8.48564e+06,4.84822e+06,227.03,220.13,217.54,0.511111,False,False
+2026-09-03T17:54:46+00:00,2026-09-03,NVDA,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),2,224.3,448.6,,,,,,,e8d76e03-0279-40d4-8399-c01139a7f20b,,,,,,,,,,,,,,,,
+2026-09-03T19:51:04+00:00,2026-09-03,DELL,FLATTEN,end_of_day,Flattened before market close,9,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-09-03T19:51:04+00:00,2026-09-03,TSLA,FLATTEN,end_of_day,Flattened before market close,13,,,,,,,,,,,,,,,,,,,,,,,,,
