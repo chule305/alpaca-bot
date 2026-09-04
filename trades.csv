@@ -170,3 +170,6 @@ timestamp_utc,trading_day_et,symbol,action,strategy,reason,qty,price,notional,st
 2026-09-04T17:51:14+00:00,2026-09-04,DELL,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),9,513.347,4620.12,,,,,,,f9fe5ea1-2284-4e39-8527-15f376b27406,,,,,,,,,,,,,,,,
 2026-09-04T17:51:14+00:00,2026-09-04,TSLA,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),13,378.443,4919.76,,,,,,,44de09a6-1237-459d-adb2-255815296c4f,,,,,,,,,,,,,,,,
 2026-09-04T19:51:04+00:00,2026-09-04,SNDK,FLATTEN,end_of_day,Flattened before market close,2,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-09-04T15:20:42+00:00,2026-09-04,DELL,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),9,513.347,4620.12,,,,,,,f9fe5ea1-2284-4e39-8527-15f376b27406,,,,,,,,,,,,,,,,
+2026-09-04T15:20:42+00:00,2026-09-04,TSLA,AUTO_EXIT,breakout,AUTO_EXIT (order type OrderType.MARKET),13,378.443,4919.76,,,,,,,44de09a6-1237-459d-adb2-255815296c4f,,,,,,,,,,,,,,,,
+2026-09-04T16:52:34+00:00,2026-09-04,SNDK,BUY,breakout,volume-confirmed breakout above 20-bar high,2,1724.99,3449.98,1638.24,1896.91,"flat $ (conviction tier 1/3, breakout -> $5,000, $25,000 left in today's pool)",99356.9,,180,4d8073d4-34d9-45ee-98c8-2d50a658b082,breakout-1788540753,1717.94,84.7982,50.2282,17.1378,1689.65,1649.36,1666.56,514401,550139,1708.46,1656.99,1555.05,0.377778,False,True
