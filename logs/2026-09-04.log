@@ -1,0 +1,316 @@
+2026-09-04 15:20:09,638 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-09-04 15:20:09,638 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, top 18 movers of 50 candidates, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-09-04 15:20:09,638 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
+2026-09-04 15:20:09,638 | Bar size: 15min | Check interval while market open: 15min
+2026-09-04 15:20:09,638 | Active strategies: breakout, gap_continuation, vwap_reversion, trend_following, mean_reversion (regime-switched by ADX)
+2026-09-04 15:20:09,638 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-09-04 15:20:09,638 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-09-04 15:20:09,638 | Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the first 45 min after the open (real-money-confirmed, additive to the lunch-window blackout above, not a replacement for it)
+2026-09-04 15:20:09,638 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-09-04 15:20:09,638 | Position sizing: flat $500 per trade
+2026-09-04 15:20:09,638 | Graduated conviction sizing: ON -- qualifying strategies: none yet (real evidence-gated, see strategy.py). 1 of 3 confirming signals (strategy match / ADX >= 35 / volume >= 2.5x avg) sizes at $5000; 2 or more signals sizes at up to the full remaining $25,000/day pool (volatility-based size-down always wins when a trade qualifies for both)
+2026-09-04 15:20:09,638 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-09-04 15:20:09,638 | Portfolio heat cap: max $2,000 aggregate $-at-risk across all open positions
+2026-09-04 15:20:09,639 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-09-04 15:20:09,639 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-09-04 15:20:09,639 | Loaded saved watchlist from previous run: NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, DELL, META, GOOGL
+2026-09-04 15:20:09,639 | Restored daily risk state from previous run: day 2026-09-03, breaker tripped: False
+2026-09-04 15:20:09,639 | Restored open-position context for 4 symbol(s) from previous run.
+2026-09-04 15:20:09,639 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-09-04 15:20:09,728 | Daily loss circuit breaker: tracking from starting equity $99,356.90 (limit -3%).
+2026-09-04 15:20:09,728 | Daily conviction-sizing pool reset: $25,000 available today.
+2026-09-04 15:20:09,728 | SCANNER: refreshing watchlist...
+2026-09-04 15:20:09,990 | SCANNER: excluded 9 leveraged/inverse ETF(s) from 16 candidate(s).
+2026-09-04 15:20:10,749 | SCANNER: candidate LULU -- -18.3% today, $99.54, liquid, 24 recent news item(s)
+2026-09-04 15:20:10,749 | SCANNER: candidate FICO -- -17.5% today, $922.76, liquid, 2 recent news item(s)
+2026-09-04 15:20:10,749 | SCANNER: candidate OXM -- -16.8% today, $30.49, liquid, 9 recent news item(s)
+2026-09-04 15:20:10,749 | SCANNER: candidate PATH -- -14.7% today, $15.54, liquid, 21 recent news item(s)
+2026-09-04 15:20:10,803 | S&P 500: refreshed constituent list (503 symbols).
+2026-09-04 15:20:41,777 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 15:20:41,779 | SCANNER: new watchlist -> LULU, FICO, OXM, PATH, NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 15:20:41,884 | [DELL] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-09-04 15:20:42,013 | [TSLA] Position closed -- no re-entry for 60 min (guards against repeatedly buying the same falling stock).
+2026-09-04 15:20:42,049 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 15:20:44,045 | [AAPL] trending (ADX 33.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $319.28
+2026-09-04 15:20:44,045 | [AAPL] ACTION: No trade.
+2026-09-04 15:20:44,072 | [AVGO] choppy/sideways (ADX 14.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $357.40
+2026-09-04 15:20:44,072 | [AVGO] ACTION: No trade.
+2026-09-04 15:20:44,110 | [FICO] trending (ADX 43.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $922.90
+2026-09-04 15:20:44,110 | [FICO] ACTION: No trade.
+2026-09-04 15:20:44,146 | [LULU] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $98.91
+2026-09-04 15:20:44,146 | [LULU] ACTION: No trade.
+2026-09-04 15:20:44,173 | [META] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $611.50
+2026-09-04 15:20:44,173 | [META] ACTION: No trade.
+2026-09-04 15:20:44,200 | [MSFT] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.61
+2026-09-04 15:20:44,200 | [MSFT] ACTION: No trade.
+2026-09-04 15:20:44,226 | [MU] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.45
+2026-09-04 15:20:44,226 | [MU] ACTION: No trade.
+2026-09-04 15:20:44,253 | [NVDA] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $232.47
+2026-09-04 15:20:44,253 | [NVDA] ACTION: No trade.
+2026-09-04 15:20:44,295 | [OXM] trending (ADX 34.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.70
+2026-09-04 15:20:44,295 | [OXM] ACTION: No trade.
+2026-09-04 15:20:44,335 | [PATH] trending (ADX 39.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.62
+2026-09-04 15:20:44,335 | [PATH] ACTION: No trade.
+2026-09-04 15:20:44,373 | [SNDK] trending (ADX 38.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1689.72
+2026-09-04 15:20:44,373 | [SNDK] ACTION: No trade.
+2026-09-04 15:20:44,400 | [TSLA] trending (ADX 53.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $353.21
+2026-09-04 15:20:44,400 | [TSLA] ACTION: No trade.
+2026-09-04 15:35:44,489 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 15:35:47,643 | [AAPL] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $319.47
+2026-09-04 15:35:47,643 | [AAPL] ACTION: No trade.
+2026-09-04 15:35:47,669 | [AVGO] choppy/sideways (ADX 13.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.19
+2026-09-04 15:35:47,670 | [AVGO] ACTION: No trade.
+2026-09-04 15:35:47,696 | [FICO] trending (ADX 46.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $924.21
+2026-09-04 15:35:47,696 | [FICO] ACTION: No trade.
+2026-09-04 15:35:47,723 | [LULU] trending (ADX 49.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.19
+2026-09-04 15:35:47,723 | [LULU] ACTION: No trade.
+2026-09-04 15:35:47,750 | [META] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $612.01
+2026-09-04 15:35:47,750 | [META] ACTION: No trade.
+2026-09-04 15:35:47,777 | [MSFT] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.94
+2026-09-04 15:35:47,777 | [MSFT] ACTION: No trade.
+2026-09-04 15:35:47,804 | [MU] trending (ADX 37.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.79
+2026-09-04 15:35:47,804 | [MU] ACTION: No trade.
+2026-09-04 15:35:47,830 | [NVDA] trending (ADX 37.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.78
+2026-09-04 15:35:47,830 | [NVDA] ACTION: No trade.
+2026-09-04 15:35:47,857 | [OXM] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.43
+2026-09-04 15:35:47,857 | [OXM] ACTION: No trade.
+2026-09-04 15:35:47,884 | [PATH] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.40
+2026-09-04 15:35:47,884 | [PATH] ACTION: No trade.
+2026-09-04 15:35:47,912 | [SNDK] trending (ADX 40.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1691.01
+2026-09-04 15:35:47,912 | [SNDK] ACTION: No trade.
+2026-09-04 15:35:47,939 | [TSLA] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $353.12
+2026-09-04 15:35:47,939 | [TSLA] ACTION: No trade.
+2026-09-04 15:50:48,009 | SCANNER: refreshing watchlist...
+2026-09-04 15:50:48,114 | SCANNER: excluded 7 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-09-04 15:50:49,147 | SCANNER: candidate LULU -- -18.0% today, $99.90, liquid, 24 recent news item(s)
+2026-09-04 15:50:49,147 | SCANNER: candidate PATH -- -16.4% today, $15.23, liquid, 22 recent news item(s)
+2026-09-04 15:50:49,147 | SCANNER: candidate OXM -- -16.3% today, $30.66, liquid, 9 recent news item(s)
+2026-09-04 15:50:49,148 | SCANNER: candidate FICO -- -15.9% today, $940.47, liquid, 2 recent news item(s)
+2026-09-04 15:51:25,542 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 15:51:25,545 | SCANNER: new watchlist -> LULU, PATH, OXM, FICO, NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 15:51:25,568 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 15:51:28,925 | [AAPL] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $320.34
+2026-09-04 15:51:28,925 | [AAPL] ACTION: No trade.
+2026-09-04 15:51:28,951 | [AVGO] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.96
+2026-09-04 15:51:28,951 | [AVGO] ACTION: No trade.
+2026-09-04 15:51:28,977 | [FICO] trending (ADX 49.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $924.40
+2026-09-04 15:51:28,977 | [FICO] ACTION: No trade.
+2026-09-04 15:51:29,004 | [LULU] trending (ADX 50.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $99.98
+2026-09-04 15:51:29,004 | [LULU] ACTION: No trade.
+2026-09-04 15:51:29,030 | [META] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $611.42
+2026-09-04 15:51:29,030 | [META] ACTION: No trade.
+2026-09-04 15:51:29,056 | [MSFT] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.77
+2026-09-04 15:51:29,056 | [MSFT] ACTION: No trade.
+2026-09-04 15:51:29,082 | [MU] trending (ADX 39.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.36
+2026-09-04 15:51:29,082 | [MU] ACTION: No trade.
+2026-09-04 15:51:29,108 | [NVDA] trending (ADX 36.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.87
+2026-09-04 15:51:29,108 | [NVDA] ACTION: No trade.
+2026-09-04 15:51:29,134 | [OXM] trending (ADX 38.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.66
+2026-09-04 15:51:29,134 | [OXM] ACTION: No trade.
+2026-09-04 15:51:29,160 | [PATH] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.31
+2026-09-04 15:51:29,161 | [PATH] ACTION: No trade.
+2026-09-04 15:51:29,187 | [SNDK] trending (ADX 42.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1687.38
+2026-09-04 15:51:29,187 | [SNDK] ACTION: No trade.
+2026-09-04 15:51:29,212 | [TSLA] trending (ADX 53.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.39
+2026-09-04 15:51:29,212 | [TSLA] ACTION: No trade.
+2026-09-04 16:06:29,790 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 16:06:32,375 | [AAPL] trending (ADX 35.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $321.02
+2026-09-04 16:06:32,376 | [AAPL] ACTION: No trade.
+2026-09-04 16:06:32,401 | [AVGO] choppy/sideways (ADX 13.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.20
+2026-09-04 16:06:32,401 | [AVGO] ACTION: No trade.
+2026-09-04 16:06:32,427 | [FICO] trending (ADX 49.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $947.96
+2026-09-04 16:06:32,427 | [FICO] ACTION: No trade.
+2026-09-04 16:06:32,453 | [LULU] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $99.90
+2026-09-04 16:06:32,453 | [LULU] ACTION: No trade.
+2026-09-04 16:06:32,478 | [META] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $611.67
+2026-09-04 16:06:32,478 | [META] ACTION: No trade.
+2026-09-04 16:06:32,504 | [MSFT] trending (ADX 35.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.01
+2026-09-04 16:06:32,504 | [MSFT] ACTION: No trade.
+2026-09-04 16:06:32,530 | [MU] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.24
+2026-09-04 16:06:32,531 | [MU] ACTION: No trade.
+2026-09-04 16:06:32,556 | [NVDA] trending (ADX 34.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.04
+2026-09-04 16:06:32,557 | [NVDA] ACTION: No trade.
+2026-09-04 16:06:32,582 | [OXM] trending (ADX 39.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.30
+2026-09-04 16:06:32,582 | [OXM] ACTION: No trade.
+2026-09-04 16:06:32,608 | [PATH] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $15.21
+2026-09-04 16:06:32,608 | [PATH] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-09-04 16:06:32,634 | [SNDK] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1699.43
+2026-09-04 16:06:32,634 | [SNDK] ACTION: No trade.
+2026-09-04 16:06:32,660 | [TSLA] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.71
+2026-09-04 16:06:32,660 | [TSLA] ACTION: No trade.
+2026-09-04 16:21:32,731 | SCANNER: refreshing watchlist...
+2026-09-04 16:21:32,853 | SCANNER: excluded 8 leveraged/inverse ETF(s) from 14 candidate(s).
+2026-09-04 16:21:33,215 | SCANNER: candidate LULU -- -17.7% today, $100.27, liquid, 25 recent news item(s)
+2026-09-04 16:21:33,215 | SCANNER: candidate OXM -- -17.1% today, $30.39, liquid, 9 recent news item(s)
+2026-09-04 16:21:33,215 | SCANNER: candidate PATH -- -16.0% today, $15.30, liquid, 21 recent news item(s)
+2026-09-04 16:21:33,215 | SCANNER: candidate FICO -- -15.5% today, $945.97, liquid, 3 recent news item(s)
+2026-09-04 16:21:58,457 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 16:21:58,461 | SCANNER: new watchlist -> LULU, OXM, PATH, FICO, NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 16:21:58,485 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 16:22:01,030 | [AAPL] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $321.05
+2026-09-04 16:22:01,031 | [AAPL] ACTION: No trade.
+2026-09-04 16:22:01,058 | [AVGO] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.96
+2026-09-04 16:22:01,058 | [AVGO] ACTION: No trade.
+2026-09-04 16:22:01,085 | [FICO] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $948.38
+2026-09-04 16:22:01,085 | [FICO] ACTION: No trade.
+2026-09-04 16:22:01,113 | [LULU] trending (ADX 52.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.25
+2026-09-04 16:22:01,113 | [LULU] ACTION: No trade.
+2026-09-04 16:22:01,140 | [META] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $612.18
+2026-09-04 16:22:01,140 | [META] ACTION: No trade.
+2026-09-04 16:22:01,168 | [MSFT] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.24
+2026-09-04 16:22:01,168 | [MSFT] ACTION: No trade.
+2026-09-04 16:22:01,198 | [MU] trending (ADX 41.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1000.11
+2026-09-04 16:22:01,198 | [MU] ACTION: No trade.
+2026-09-04 16:22:01,226 | [NVDA] trending (ADX 32.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.17
+2026-09-04 16:22:01,227 | [NVDA] ACTION: No trade.
+2026-09-04 16:22:01,255 | [OXM] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.49
+2026-09-04 16:22:01,255 | [OXM] ACTION: No trade.
+2026-09-04 16:22:01,283 | [PATH] trending (ADX 46.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.38
+2026-09-04 16:22:01,283 | [PATH] ACTION: No trade.
+2026-09-04 16:22:01,312 | [SNDK] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1698.52
+2026-09-04 16:22:01,312 | [SNDK] ACTION: No trade.
+2026-09-04 16:22:01,342 | [TSLA] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.46
+2026-09-04 16:22:01,342 | [TSLA] ACTION: No trade.
+2026-09-04 16:37:01,434 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 16:37:03,353 | [AAPL] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $320.50
+2026-09-04 16:37:03,353 | [AAPL] ACTION: No trade.
+2026-09-04 16:37:03,381 | [AVGO] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.31
+2026-09-04 16:37:03,381 | [AVGO] ACTION: No trade.
+2026-09-04 16:37:03,410 | [FICO] trending (ADX 50.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $940.76
+2026-09-04 16:37:03,410 | [FICO] ACTION: No trade.
+2026-09-04 16:37:03,438 | [LULU] trending (ADX 53.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.09
+2026-09-04 16:37:03,438 | [LULU] ACTION: No trade.
+2026-09-04 16:37:03,467 | [META] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $612.88
+2026-09-04 16:37:03,467 | [META] ACTION: No trade.
+2026-09-04 16:37:03,495 | [MSFT] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.07
+2026-09-04 16:37:03,495 | [MSFT] ACTION: No trade.
+2026-09-04 16:37:03,524 | [MU] trending (ADX 42.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1006.35
+2026-09-04 16:37:03,524 | [MU] ACTION: No trade.
+2026-09-04 16:37:03,552 | [NVDA] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.16
+2026-09-04 16:37:03,552 | [NVDA] ACTION: No trade.
+2026-09-04 16:37:03,580 | [OXM] trending (ADX 42.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.24
+2026-09-04 16:37:03,580 | [OXM] ACTION: No trade.
+2026-09-04 16:37:03,608 | [PATH] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $15.26
+2026-09-04 16:37:03,608 | [PATH] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-09-04 16:37:03,637 | [SNDK] trending (ADX 48.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1708.46
+2026-09-04 16:37:03,637 | [SNDK] ACTION: No trade.
+2026-09-04 16:37:03,665 | [TSLA] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.93
+2026-09-04 16:37:03,665 | [TSLA] ACTION: No trade.
+2026-09-04 16:52:04,017 | SCANNER: refreshing watchlist...
+2026-09-04 16:52:04,107 | SCANNER: excluded 1 leveraged/inverse ETF(s) from 8 candidate(s).
+2026-09-04 16:52:04,859 | SCANNER: candidate OXM -- -17.7% today, $30.16, liquid, 7 recent news item(s)
+2026-09-04 16:52:04,859 | SCANNER: candidate LULU -- -17.5% today, $100.50, liquid, 26 recent news item(s)
+2026-09-04 16:52:04,859 | SCANNER: candidate PATH -- -17.1% today, $15.10, liquid, 22 recent news item(s)
+2026-09-04 16:52:04,859 | SCANNER: candidate FICO -- -16.3% today, $937.02, liquid, 3 recent news item(s)
+2026-09-04 16:52:31,921 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 16:52:31,925 | SCANNER: new watchlist -> OXM, LULU, PATH, FICO, NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 16:52:31,945 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 16:52:33,438 | [AAPL] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $320.84
+2026-09-04 16:52:33,438 | [AAPL] ACTION: No trade.
+2026-09-04 16:52:33,464 | [AVGO] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.37
+2026-09-04 16:52:33,464 | [AVGO] ACTION: No trade.
+2026-09-04 16:52:33,490 | [FICO] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $933.49
+2026-09-04 16:52:33,490 | [FICO] ACTION: No trade.
+2026-09-04 16:52:33,515 | [LULU] trending (ADX 53.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.66
+2026-09-04 16:52:33,515 | [LULU] ACTION: No trade.
+2026-09-04 16:52:33,541 | [META] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $611.70
+2026-09-04 16:52:33,541 | [META] ACTION: No trade.
+2026-09-04 16:52:33,567 | [MSFT] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $501.20
+2026-09-04 16:52:33,567 | [MSFT] ACTION: No trade.
+2026-09-04 16:52:33,593 | [MU] trending (ADX 43.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1003.50
+2026-09-04 16:52:33,593 | [MU] ACTION: No trade.
+2026-09-04 16:52:33,619 | [NVDA] trending (ADX 29.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.59
+2026-09-04 16:52:33,619 | [NVDA] ACTION: No trade.
+2026-09-04 16:52:33,645 | [OXM] trending (ADX 44.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.14
+2026-09-04 16:52:33,645 | [OXM] ACTION: No trade.
+2026-09-04 16:52:33,671 | [PATH] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $15.19
+2026-09-04 16:52:33,671 | [PATH] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-09-04 16:52:33,697 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 0.0 | Last price: $1717.94
+2026-09-04 16:52:33,731 | [SNDK] Buying 2 share(s) (~$3449, flat $ (conviction tier 1/3, breakout -> $5,000, $25,000 left in today's pool) sizing) | stop-loss $1638.24 | take-profit $1896.91 (fixed %)
+2026-09-04 16:52:34,284 | [SNDK] ACTION: BUY (order id 4d8073d4-34d9-45ee-98c8-2d50a658b082, strategy: breakout)
+2026-09-04 16:52:34,312 | [TSLA] trending (ADX 54.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.06
+2026-09-04 16:52:34,312 | [TSLA] ACTION: No trade.
+2026-09-04 17:07:34,420 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 17:07:36,189 | [AAPL] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $321.04
+2026-09-04 17:07:36,189 | [AAPL] ACTION: No trade.
+2026-09-04 17:07:36,216 | [AVGO] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $356.31
+2026-09-04 17:07:36,216 | [AVGO] ACTION: No trade.
+2026-09-04 17:07:36,244 | [FICO] trending (ADX 51.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $940.22
+2026-09-04 17:07:36,244 | [FICO] ACTION: No trade.
+2026-09-04 17:07:36,273 | [LULU] trending (ADX 53.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.49
+2026-09-04 17:07:36,273 | [LULU] ACTION: No trade.
+2026-09-04 17:07:36,302 | [META] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $610.59
+2026-09-04 17:07:36,302 | [META] ACTION: No trade.
+2026-09-04 17:07:36,331 | [MSFT] trending (ADX 35.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.35
+2026-09-04 17:07:36,331 | [MSFT] ACTION: No trade.
+2026-09-04 17:07:36,360 | [MU] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1005.74
+2026-09-04 17:07:36,360 | [MU] ACTION: No trade.
+2026-09-04 17:07:36,388 | [NVDA] trending (ADX 29.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.57
+2026-09-04 17:07:36,388 | [NVDA] ACTION: No trade.
+2026-09-04 17:07:36,416 | [OXM] trending (ADX 45.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.18
+2026-09-04 17:07:36,417 | [OXM] ACTION: No trade.
+2026-09-04 17:07:36,444 | [PATH] stretched below VWAP | Signal: BUY | Shares held: 0.0 | Last price: $15.14
+2026-09-04 17:07:36,444 | [PATH] ACTION: No trade (vwap_reversion volume filter -- entry bar's volume didn't confirm).
+2026-09-04 17:07:36,472 | [SNDK] volume-confirmed breakout above 20-bar high | Signal: BUY | Shares held: 2.0 | Last price: $1734.00
+2026-09-04 17:07:36,472 | [SNDK] ACTION: No trade.
+2026-09-04 17:07:36,500 | [TSLA] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.97
+2026-09-04 17:07:36,500 | [TSLA] ACTION: No trade.
+2026-09-04 17:22:36,567 | SCANNER: refreshing watchlist...
+2026-09-04 17:22:36,660 | SCANNER: excluded 2 leveraged/inverse ETF(s) from 8 candidate(s).
+2026-09-04 17:22:37,035 | SCANNER: candidate PATH -- -17.2% today, $15.08, liquid, 20 recent news item(s)
+2026-09-04 17:22:37,035 | SCANNER: candidate OXM -- -17.2% today, $30.34, liquid, 7 recent news item(s)
+2026-09-04 17:22:37,035 | SCANNER: candidate LULU -- -17.1% today, $100.90, liquid, 29 recent news item(s)
+2026-09-04 17:22:37,035 | SCANNER: candidate FICO -- -15.8% today, $942.21, liquid, 4 recent news item(s)
+2026-09-04 17:23:00,594 | S&P 500 liquidity backstop -> NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 17:23:00,598 | SCANNER: new watchlist -> PATH, OXM, LULU, FICO, NVDA, MU, SNDK, TSLA, AAPL, AVGO, MSFT, META
+2026-09-04 17:23:00,649 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 17:23:02,797 | [AAPL] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $321.21
+2026-09-04 17:23:02,798 | [AAPL] ACTION: No trade.
+2026-09-04 17:23:02,825 | [AVGO] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.50
+2026-09-04 17:23:02,825 | [AVGO] ACTION: No trade.
+2026-09-04 17:23:02,852 | [FICO] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $944.18
+2026-09-04 17:23:02,852 | [FICO] ACTION: No trade.
+2026-09-04 17:23:02,880 | [LULU] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.54
+2026-09-04 17:23:02,880 | [LULU] ACTION: No trade.
+2026-09-04 17:23:02,906 | [META] choppy/sideways (ADX 15.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $610.00
+2026-09-04 17:23:02,906 | [META] ACTION: No trade.
+2026-09-04 17:23:02,934 | [MSFT] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.96
+2026-09-04 17:23:02,934 | [MSFT] ACTION: No trade.
+2026-09-04 17:23:02,962 | [MU] trending (ADX 45.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.25
+2026-09-04 17:23:02,962 | [MU] ACTION: No trade.
+2026-09-04 17:23:02,989 | [NVDA] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.96
+2026-09-04 17:23:02,990 | [NVDA] ACTION: No trade.
+2026-09-04 17:23:03,017 | [OXM] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.30
+2026-09-04 17:23:03,017 | [OXM] ACTION: No trade.
+2026-09-04 17:23:03,045 | [PATH] trending (ADX 50.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.08
+2026-09-04 17:23:03,045 | [PATH] ACTION: No trade.
+2026-09-04 17:23:03,072 | [SNDK] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $1717.64
+2026-09-04 17:23:03,072 | [SNDK] ACTION: No trade.
+2026-09-04 17:23:03,101 | [TSLA] trending (ADX 53.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.03
+2026-09-04 17:23:03,101 | [TSLA] ACTION: No trade.
+2026-09-04 17:38:03,245 | Market is open (closes 2026-09-04 22:00:00 CEST your local time). Checking 12 symbols: AAPL, AVGO, FICO, LULU, META, MSFT, MU, NVDA, OXM, PATH, SNDK, TSLA
+2026-09-04 17:38:06,043 | [AAPL] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $321.69
+2026-09-04 17:38:06,044 | [AAPL] ACTION: No trade.
+2026-09-04 17:38:06,070 | [AVGO] choppy/sideways (ADX 13.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $354.74
+2026-09-04 17:38:06,070 | [AVGO] ACTION: No trade.
+2026-09-04 17:38:06,096 | [FICO] trending (ADX 51.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $940.75
+2026-09-04 17:38:06,096 | [FICO] ACTION: No trade.
+2026-09-04 17:38:06,122 | [LULU] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.90
+2026-09-04 17:38:06,122 | [LULU] ACTION: No trade.
+2026-09-04 17:38:06,148 | [META] choppy/sideways (ADX 15.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $609.50
+2026-09-04 17:38:06,148 | [META] ACTION: No trade.
+2026-09-04 17:38:06,175 | [MSFT] trending (ADX 36.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.90
+2026-09-04 17:38:06,175 | [MSFT] ACTION: No trade.
+2026-09-04 17:38:06,201 | [MU] trending (ADX 44.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $999.35
+2026-09-04 17:38:06,202 | [MU] ACTION: No trade.
+2026-09-04 17:38:06,228 | [NVDA] trending (ADX 27.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.75
+2026-09-04 17:38:06,228 | [NVDA] ACTION: No trade.
+2026-09-04 17:38:06,255 | [OXM] trending (ADX 46.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.34
+2026-09-04 17:38:06,255 | [OXM] ACTION: No trade.
+2026-09-04 17:38:06,281 | [PATH] trending (ADX 51.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.12
+2026-09-04 17:38:06,281 | [PATH] ACTION: No trade.
+2026-09-04 17:38:06,308 | [SNDK] trending (ADX 55.4) -> trend-following strategy | Signal: HOLD | Shares held: 2.0 | Last price: $1715.31
+2026-09-04 17:38:06,308 | [SNDK] ACTION: No trade.
+2026-09-04 17:38:06,335 | [TSLA] trending (ADX 53.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $352.18
+2026-09-04 17:38:06,335 | [TSLA] ACTION: No trade.
+2026-09-04 17:50:09,639 | Duration window finished.
