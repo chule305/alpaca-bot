@@ -45,26 +45,18 @@ something to trust on description alone.
 Every few minutes, for each stock on the watchlist, the bot checks for
 several kinds of opportunity, in this order (first one to fire wins).
 Order was tuned after backtesting (see CLAUDE.md) to put strategies with
-a demonstrated edge ahead of the weaker, high-frequency ones, and three
+a demonstrated edge ahead of the weaker, high-frequency ones, and four
 strategies are currently OFF by default after showing a real, repeated
-loss pattern in backtesting (kept in the code, not deleted, in case more
-data tells a different story — see CLAUDE.md for the numbers behind
-each call):
+loss pattern (kept in the code, not deleted, in case more data tells a
+different story — see CLAUDE.md for the numbers behind each call):
 
-1. **VWAP mean-reversion.** Price is stretched well below the session's
-   volume-weighted average price (a "must already be turning back up"
-   requirement existed here but was removed by default 2026-08-23 after a
-   sensitivity sweep found it costing real profit on both universes with
-   no real safety benefit — `USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=true`
-   restores it). The standout strategy across every backtest so far
-   (63-80% win rate each time).
-2. **Opening Range Breakout (ORB).** Price breaks above the high of
+1. **Opening Range Breakout (ORB).** Price breaks above the high of
    the first 15 minutes of the session, once that range is complete.
-3. **Gap Pattern (Type A).** Stock gapped up meaningfully at the open
+2. **Gap Pattern (Type A).** Stock gapped up meaningfully at the open
    vs. yesterday's close, and price is pushing through the opening
    bar's high rather than filling the gap back down. Still barely
    tested — these 5 symbols rarely gap enough to trigger it.
-4. **A fresh breakout, confirmed by volume.** Price pushed above its
+3. **A fresh breakout, confirmed by volume.** Price pushed above its
    recent range AND trading volume is unusually high (a stricter volume
    threshold than it started with, after backtesting showed the
    original was too loose). "Unusually high" is judged against the
@@ -76,18 +68,34 @@ each call):
    both universes: profit factor, return, and drawdown all improved
    together (see CLAUDE.md for the numbers) — enabled 2026-08-06 on a
    single 90-day window's evidence, sooner than this project's usual
-   longer-track-record convention, by explicit user decision.
-5. **Relative volume (RVOL) spike** *(off by default — `USE_RVOL_SPIKE=false`)*.
+   longer-track-record convention, by explicit user decision. This
+   project's best-evidenced real source of edge (see the 2026-09-06
+   CLAUDE.md entry), alongside the S&P 500 backstop below.
+4. **Relative volume (RVOL) spike** *(off by default — `USE_RVOL_SPIKE=false`)*.
    An unusual volume surge on a green bar that also closes strong (not
    just barely green). Net negative in two straight backtests, the
    second one AFTER a fix attempt aimed specifically at this problem —
    worth knowing that fix didn't work if you re-enable it.
-6. **Smash Day reversal** *(off by default — `USE_SMASH_DAY_PATTERN=false`)*.
+5. **Smash Day reversal** *(off by default — `USE_SMASH_DAY_PATTERN=false`)*.
    A sharp, likely-overdone breakdown that immediately fails and
    reclaims its own high — read as a reversal.
-7. **Ross Hook** *(off by default — `USE_ROSS_HOOK=false`)*.
+6. **Ross Hook** *(off by default — `USE_ROSS_HOOK=false`)*.
    A classic 1-2-3 swing reversal (low, bounce high, higher low)
    confirmed by a break above the "hook" bar's high.
+7. **VWAP mean-reversion** *(off by default — `USE_VWAP_REVERSION=false`,
+   as of 2026-09-06)*. Price is stretched well below the session's
+   volume-weighted average price. Looked like the standout strategy in
+   every backtest run (63-80% win rate each time) and even had a
+   targeted real-evidence fix applied to it (the "must already be
+   turning back up" requirement was removed by default 2026-08-23 after
+   a sensitivity sweep found it costing real profit with no real safety
+   benefit — `USE_VWAP_REVERSION_TURN_UP_CONFIRMATION=true` restores
+   it). None of that changed the real-money verdict: across this
+   account's entire trading history, this is the single worst-performing
+   strategy by a wide margin (25% win rate, profit factor 0.18) and
+   stays negative even excluding its own single worst symbol/day. Three
+   independent real-money looks now, all agreeing backtest performance
+   here just doesn't transfer — see CLAUDE.md's 2026-09-06 entry.
 8. **If none of the above: is this stock trending, or bouncing around
    sideways?** ADX answers that, then picks between **trend-following**
    (fast/slow moving average crossover) or **mean-reversion** (RSI

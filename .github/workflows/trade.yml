@@ -304,7 +304,21 @@ jobs:
           USE_ROSS_HOOK: "false"
           USE_ORB: "false"
           USE_RVOL_SPIKE: "false"
-          USE_VWAP_REVERSION: "true"
+          # Turned OFF 2026-09-06 on real-money evidence, independently
+          # confirmed three separate times now (see CLAUDE.md): this
+          # strategy has never actually made money in real trading despite
+          # looking fine or good in backtests every time it was checked.
+          # Full real history: 16 trades, 25.0% win rate, profit factor
+          # 0.18 (worst of any strategy by a wide margin). Not just one
+          # bad cluster either -- excluding the single worst symbol/window
+          # (VEEE, 2026-07-27, already a known-volatile name) it's STILL
+          # net negative (-$85 across the other 11 trades). This is
+          # exactly the backtest-vs-reality gap this project's whole
+          # validation culture exists to catch -- see the 2026-08-23
+          # entries for the earlier, partial fix (USE_VWAP_REVERSION_
+          # TURN_UP_CONFIRMATION) that helped but evidently wasn't enough
+          # on its own.
+          USE_VWAP_REVERSION: "false"
           ADX_PERIOD: "14"
           ADX_TREND_THRESHOLD: "25"
           STOP_LOSS_PCT: "5"

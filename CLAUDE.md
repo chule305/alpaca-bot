@@ -2653,3 +2653,75 @@ work) was NOT touched by this -- the user only asked to turn off the
 auto-improve pipeline specifically, not the sizing change, and there's
 no cost consideration there (it's the live trading bot's own sizing
 logic, not a separate paid API call).
+
+## 2026-09-06: real-money performance review (whole history) -- vwap_reversion turned OFF, everything else already-explained
+
+User asked for a full analyse-and-improve pass, with an explicit target
+of 70%+ win rate. Reconstructed every real round-trip trade since this
+account's first-ever fill (2026-07-09) from Alpaca's own order history --
+108 trades, 41.7% win rate, profit factor 0.74, total P&L -$626.82 on
+$158,191 deployed (-0.40%). Worth being direct about the 70% target
+before the findings below: this bot's real edge (where it has one) comes
+from asymmetric win/loss SIZE (avg win $39.24 vs avg loss $37.98 on a
+near-even split), not from being right most of the time -- that's a
+normal, healthy profile for a system like this, and pushing win rate
+specifically toward 70% (e.g. by tightening take-profits and loosening
+stops) would very likely destroy that edge even if the win-rate number
+went up. What follows is real improvement work, not an attempt to
+engineer that specific number.
+
+**Applied the same mandatory per-symbol/per-trade outlier check this
+project always uses before trusting an aggregate number:**
+- **UFPT, -$1,206.55, 2026-08-04**: the single biggest loss in this
+  bot's entire history, and it's the EXACT trade from the already-
+  documented risk-based-sizing incident (see that date's entries) --
+  already fixed (reverted to flat sizing that same week, and now also
+  mechanically locked off from ever recurring via auto_improve.py's
+  guardrails). Excluding just this one already-explained trade flips the
+  bot's ENTIRE real history from -$626.82 to **+$679.78 (+0.58%,
+  profit factor 1.68)** across the other 107 trades.
+- **SNXX (-$176.52) and VEEE (-$138.54)**: the next two largest real
+  losers. Both cluster entirely in July, before the 2026-08-23 scanner-
+  quality fixes (extension filter tightened, opening blackout, minimum
+  listing age) that were specifically built to catch exactly this shape
+  of loss (chasing extended/volatile scanner picks). Already addressed;
+  not something a NEW change needs to fix.
+- **DELL (-$121.07, 2026-09-03)**: the newest real loss of any size. Not
+  a bug or an outlier in the same sense as the above -- a normal,
+  structurally unremarkable trade that just didn't work out, sitting in
+  a currently very small post-2026-08-24 sample (only ~10-15 real trades
+  since the root-cause fixes shipped -- nowhere near enough yet to know
+  whether those fixes are working, a direct consequence of the trade.yml
+  scheduling reliability problem being investigated separately today).
+
+**What's left after removing the already-explained outliers is one real,
+repeated, actionable finding: `vwap_reversion`.** By strategy, whole
+history: `vwap_reversion` 16 trades, 25.0% win rate, profit factor
+**0.18** -- worse than every other strategy by a wide margin, and NOT
+just one bad cluster: excluding VEEE (its own single worst symbol/
+window) it is STILL net negative, -$85 across the other 11 trades. This
+is now the THIRD independent time real trading has shown this exact
+strategy losing money despite looking fine (or good) in backtests every
+time it was checked -- see the 2026-08-23 entry where `USE_VWAP_
+REVERSION_TURN_UP_CONFIRMATION` was flipped off on real, broad evidence
+that helped, and evidently still wasn't enough on its own. This is
+precisely the class of gap this project's whole validation culture
+exists to catch.
+
+**Action taken**: `USE_VWAP_REVERSION` set to `false` in `trade.yml`
+(was defaulting true via both the code default and the explicit
+`"true"` that was in trade.yml before today). This is a real-money-
+evidence-driven change, not a backtest-only one -- deliberately, since
+this strategy's backtest numbers were never the problem. Re-evaluate
+if a future backtest AND fresh real trading both independently support
+turning it back on with different conditions; don't re-enable on
+backtest evidence alone given its specific history.
+
+**Honest caveat on all of the above**: with `vwap_reversion` removed,
+the largest remaining strategy is `breakout` (43 trades, 44.2% win rate,
+PF 0.76 raw / PF ~2.3-equivalent excluding UFPT) -- solidly the bot's
+best-evidenced real source of edge, alongside the S&P 500 backstop
+finding from 2026-08-23. Nothing else in this pass (trend_following: 11
+trades, near-breakeven; the "unknown"-strategy bucket, real but small at
+-$10 net; gap_continuation: 1 trade, not a sample) crossed the bar for a
+change today -- too little real data, not enough evidence either way.
