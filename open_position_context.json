@@ -1,1 +1,1 @@
-{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}, "ARCT": {"strategy": "breakout", "invalidation_level": 13.1342}, "SIG": {"strategy": "breakout", "invalidation_level": 98.815}, "PLSE": {"strategy": "breakout", "invalidation_level": 54.1801}, "META": {"strategy": "gap_continuation", "invalidation_level": null}}
+{"NBIS": {"strategy": "breakout", "invalidation_level": 255.5}, "ARCT": {"strategy": "breakout", "invalidation_level": 13.1342}}
