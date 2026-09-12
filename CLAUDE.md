@@ -2725,3 +2725,226 @@ finding from 2026-08-23. Nothing else in this pass (trend_following: 11
 trades, near-breakeven; the "unknown"-strategy bucket, real but small at
 -$10 net; gap_continuation: 1 trade, not a sample) crossed the bar for a
 change today -- too little real data, not enough evidence either way.
+
+## 2026-09-06: trade.yml blackout on 2026-08-27/2026-08-28 -- GitHub's schedule delivery confirmed dead across 3 workflows, plus a real self-dispatch gap closed
+
+**Symptom, confirmed via the Actions API run history, not guessed:**
+2026-08-27 (Thursday) and 2026-08-28 (Friday) -- both ordinary weekdays the
+cron is supposed to cover -- produced almost no runs during the actual
+12:40-21:00 UTC trading window:
+
+- 2026-08-26T22:08:46Z (schedule, success)
+- 2026-08-27T21:23:21Z (schedule, success) -- 23h15m gap before it
+- 2026-08-28T05:35:25Z (schedule, success) -- 8h12m gap before it
+- 2026-08-28T05:35:31Z (workflow_dispatch, success) -- 6 SECONDS after the run above
+- 2026-08-28T21:33:52Z (schedule, success) -- 16h gap before it, spanning the ENTIRE 08-28 trading window
+- 2026-08-29T03:19:38Z (schedule, success) -- 5h45m gap before it
+
+Every one of these five found "Market is closed for the day" and exited in
+seconds (confirmed against logs/2026-08-27.log and logs/2026-08-28.log, 22
+and 88 lines respectively vs. several hundred on a normal trading day).
+21:23 and 22:08 land right at/past that day's close. 05:35:25 and 03:19:38
+are completely outside the cron's declared 12-21 UTC hour range -- something
+a real `*/20 12-21 * * 1-5` tick cannot produce -- yet the API labels both
+`event: "schedule"`.
+
+**Root cause 1 (platform-side): GitHub's `schedule` delivery for this repo
+went dark for ~40 hours and recovered by dumping a backlog across THREE
+unrelated workflow files in the same few-minute window.** Pulled the run
+histories of the other two scheduled workflows in this repo, which nothing
+before now had checked against each other:
+
+- `daily_summary.yml` (`15 21 * * 1-5`): tick due 08-27 21:15, delivered
+  **08-28T05:20:44Z** -- 8h06m late
+- `trade.yml` (`*/20 12-21 * * 1-5`): tick due 08-27 ~21:40, delivered
+  **08-28T05:35:25Z** -- ~7h55m late
+- `auto_improve.yml` (`45 21 * * 1-5`): tick due 08-27 21:45, delivered
+  **08-28T05:49:26Z** -- 8h04m late
+- `daily_summary.yml`: tick due 08-28 21:15, delivered **08-29T03:08:46Z**
+  -- 5h54m late
+- `trade.yml`: tick due 08-28 ~21:40, delivered **08-29T03:19:38Z** --
+  ~5h40m late
+- `auto_improve.yml`: tick due 08-28 21:45, delivered **08-29T03:23:00Z**
+  -- 5h38m late
+
+Three files, three different cron expressions, no shared code, no shared
+concurrency group (`trading-bot` / none / `auto-improve`), and the other two
+have no self-dispatch logic at all -- yet all three had their evening tick
+silently dropped on both nights, and all three had it delivered within a
+29-minute band (08-28) and a 14-minute band (08-29). That can only be
+GitHub's own `schedule` delivery for this repo failing for an extended
+stretch and releasing the backlog in one batch -- nothing in any single
+workflow's code produces three-file lockstep like that. Same chronic
+phenomenon already on record here (2026-07-24, 2026-08-06, 2026-08-23
+entries above), just far more severe: those were partial/occasional drops
+inside an otherwise-live day; this was a ~40-hour near-total outage of
+`schedule` delivery spanning two full trading windows.
+
+Checked and ruled out as a clean fit before landing on the above: the three
+named GitHub status-page incidents spanning this window. The 08-26
+15:11-18:01 UTC "Incident with Actions" (trigger-service database
+saturation) resolved hours before the blackout even started, and a real
+trade.yml run at 22:08:46 UTC that same evening proves the trigger pipeline
+had already recovered. The second 08-26 Actions incident (22:56-00:26)
+resolved before the bulk of the blackout too, and its own text scopes
+impact to pull-request-triggered runs specifically, not schedule. The
+Billing disruption (23:37 08-26 -> 19:44 08-27) has the best time overlap
+but its own updates describe billing-page and Copilot-CLI-session errors
+only, nothing about Actions triggering. None of the three survives a check
+of real resolution timestamps against the real blackout window -- the
+cross-workflow correlation above is the actual evidence, not any one named
+incident.
+
+**Root cause 2 (code-side, real, and the part actually fixable here):** the
+self-dispatch step's weekday/hour gate was `dow 1-5 AND hour<21` -- no lower
+bound. When the phantom tick landed at 05:35:25 on 08-28, it passed that
+gate (hour=5 < 21) and self-dispatched a successor 6 seconds later
+(05:35:31) -- confirmed by pulling that run's own step statuses (all 10
+steps `completed`/`success`, "Queue next run" included, 23s total runtime).
+That successor's OWN 15-minute spacing check then correctly found a
+6-second-old "prior run" and declined to chain a third -- exactly as the
+2026-08-26 fix intended. But the run that satisfied spacing was itself hours
+outside market hours, so extinguishing the chain there left nothing to
+re-arm it once the real trading day opened at 12:00. Nothing fired again
+until the native cron tick at 21:33:52 -- by which point the self-dispatch
+step's own `hour<21` gate had already closed for the day. A bad-but-
+survivable platform day turned into a total blackout of the actual trading
+window specifically because of this gap, not because the spacing fix itself
+regressed: re-traced against the live code, the 21:23:21/22:08:46 runs
+bookending the first gap both fail the hour gate before ever reaching the
+dispatch logic, and `gh workflow run` was never even attempted during either
+gap window.
+
+**Fix, two parts, since nothing in this repo can make GitHub deliver
+`schedule` events more reliably:**
+
+1. `trade.yml`'s self-dispatch step: added a lower bound (`hour>=12`,
+   matching the cron's own range) so an off-window phantom can no longer
+   attempt to chain a successor. The spacing check's `gh run list` lookup
+   now only counts a prior run toward the 15-minute floor if that run's own
+   `createdAt` also falls inside 12-21 UTC, so an off-window run (phantom or
+   otherwise) can never suppress the real dispatch once the window opens.
+   Also widened the lookback from the last 5 runs to the last 10, and fixed
+   a latent bug: an empty/no-match `--jq` result prints the literal string
+   `"null"` (non-empty), which used to slip past the plain `-n` check --
+   now checked for explicitly. Gave the step an `id` and outputs
+   (`decision`, `hour`, `dow`, `spacing_age_minutes`), appended by the
+   commit step to a new `logs/self_dispatch.log`, one line per run. This
+   step's actual decision used to be observable only in the live log,
+   which this investigation could not read (job log downloads return 403
+   "Must have admin rights" even on this public repo, unauthenticated) --
+   durable, always-committed (`if: always()`) metadata closes that blind
+   spot for the next investigation like this one.
+2. New `watchdog.yml`: an independently-scheduled workflow (`cron: "5,35
+   12-21 * * 1-5"`, offset from trade.yml's own ticks so the two never
+   request a trigger in the same wall-clock minute) with no dependency on
+   trade.yml ever having run at all that day. Checks trade.yml's run list
+   and force-dispatches it via `workflow_dispatch` if nothing has run in
+   the last 30 minutes during 12-21 UTC on a weekday. trade.yml's own
+   self-chaining step can only EXTEND a day that already got a first run
+   from cron -- by design -- so it has no way to notice that cron delivered
+   nothing at all. This is that missing piece: a second, independent roll
+   of the dice against the same platform behavior, since a direct
+   `workflow_dispatch` REST call (unlike `schedule`) isn't subject to the
+   same best-effort/droppable behavior.
+
+Also offset trade.yml's own cron minutes from `:00/:20/:40` to `:07/:27/:47`
+-- GitHub's own guidance flags the top of the hour as the highest-load,
+highest-delay-risk moment for schedule delivery, and avoiding it costs
+nothing.
+
+**Verified the shell logic directly, not just eyeballed.** Extracted both
+files' `run:` blocks and executed them under a stubbed `gh`/`jq`/`date`
+harness against 8 constructed scenarios. The literal incident-1 shape (a
+prior in-window run 40s old, mimicking the 2026-08-25 89-runs-in-an-hour
+burst) still correctly hits `skipped_spacing` -- the window filter doesn't
+touch the spacing floor's core comparison, since incident 1's own runs were
+always inside 12-21 UTC. The actual 08-28 scenario (the phantom pair plus
+the true last in-window run from 08-27T21:23:21, evaluated as of window-open
+on 08-28) correctly ignores both phantoms, finds the 21:23:21 run, computes
+age=876 min, and dispatches -- the exact bug this fix targets, confirmed
+fixed. Watchdog scenarios (healthy, stale, outside-window, read-failure,
+dispatch-failure, exact-30-min-boundary) all behaved as designed, including
+a direct replay of the real 08-28 staleness (384 min) correctly triggering a
+force-dispatch. Watchdog's own 30-min cadence is slower than trade.yml's
+15-min spacing floor, so it cannot itself create a fast-repeat loop -- any
+run it causes is still subject to trade.yml's own untouched spacing check.
+YAML re-parses clean on both files (`yaml.safe_load`); every touched `run:`
+block passes `bash -n` after extraction.
+
+**On "re-touch the file to force GitHub to re-index it"** (this file's own
+header comment already documents one such precedent): not relied on here.
+Drops recurred multiple times (07-24, 08-06, and now this incident) after
+that marker was added, so it's not a standing fix, just a folk remedy with
+one old, presumably-stale precedent. Every edit above is a real
+content-changing commit regardless, so if the remedy has any residual
+truth, this gets that effect for free -- it just isn't the mechanism being
+depended on. If a blackout recurs immediately after this deploys, `gh
+workflow disable trade.yml && gh workflow enable trade.yml` (the actual
+documented API lever) is a reasonable thing to try while re-investigating,
+rather than re-touching the file again on faith.
+
+**Scope note**: did not touch `daily_summary.yml` or `auto_improve.yml`,
+which showed the identical drop signature and would benefit from the same
+defensive pattern in principle. `daily_summary.yml`'s failure mode (a missed
+summary email) is much lower-stakes; `auto_improve.yml` is currently
+deliberately `workflow_dispatch`-only per the 2026-08-30 cost decision above
+and unrelated to this incident -- a watchdog for an intentionally-off
+workflow would be wasted scope.
+
+**Not fully verified yet, honestly, as of 2026-09-06.** Today is a Sunday;
+the next trading weekday is Tuesday 2026-09-08 (2026-09-07 is Labor Day, a
+market holiday -- correctly skipped, just mislabeled "Monday" in an earlier
+draft of this entry), and none of this has been observed live yet. Success
+isn't "100% of ticks land" -- this repo's own baseline is chronically
+partial even on good stretches -- it's the absence of another 08-27/08-28-
+style near-total collapse. Plan: check trade.yml's run list around 12:35
+UTC on 09-08 for at least one in-window run; if trade.yml's own cron
+dropped again, check for a watchdog.yml run paired with a trade.yml
+`workflow_dispatch` a few seconds later (the same signature as the already-
+proven 05:35:25 -> 05:35:31 self-dispatch pairing); count end-of-day in-
+window runs and check `logs/self_dispatch.log` for a healthy mix of
+`dispatched`/`skipped_spacing` decisions with no sub-minute clustering (an
+incident-1-style recurrence would show here even without log-text access);
+check again after 2-3 trading days, not just one, given this repo's
+demonstrated baseline flakiness in either direction.
+
+**2026-09-12 update: none of the above ever actually shipped, and the
+blackout kept recurring for six more days -- caught by an adversarial
+verification pass that found this had never been pushed.** The design and
+code above were real and correct, written to disk on 2026-09-06 -- but
+sat uncommitted in the local working tree the whole time. `origin/master`,
+the only thing GitHub Actions ever runs, stayed on the pre-fix code, and
+`watchdog.yml` never existed there at all. Real consequence, confirmed via
+live run history: every single trading day from 09-08 through 09-11 shows
+the same shape this entry describes as the failure mode -- first run of
+the day landing 15:23-15:33 UTC, roughly 3.5 hours after the 12:00 open,
+every day, four days straight. A local diff protects nothing; a fix isn't
+a fix until it's actually deployed where the bot runs.
+
+The same verification pass also found one genuine, executed-and-reproduced
+bug in the design itself (not just the deploy gap): the spacing check's
+fail-open behavior didn't distinguish "the `gh run list` read itself
+failed" from "the read succeeded and genuinely found no in-window prior
+run" -- both left the same empty result, both fell open to dispatch. Under
+a SUSTAINED read failure with `gh workflow run` still working (a real,
+asymmetric partial-outage shape, not hypothetical), every tick would fail
+open and dispatch unconditionally -- reproducing the 2026-08-25 89-runs-
+in-an-hour shape by a different path than the one that incident's own fix
+already closed. Fixed by splitting the two cases: a read/parse failure now
+fails CLOSED (skip dispatching), safe to do now that cron and watchdog.yml
+both independently cover the window too, so self-dispatch no longer has to
+be the last line of defense the way it was when the original fail-open
+choice was made in 2026-08-26. Only a read that genuinely succeeds and
+legitimately finds nothing still fails open. Also fixed the same
+verification pass's smaller finding: `watchdog.yml`'s own staleness check
+wasn't window-aware (took trade.yml's single most recent run regardless of
+what hour it ran in), unlike trade.yml's own check -- a phantom/off-window
+run landing just before the trading window opened could make it defer
+longer than it should have (bounded impact, at most one extra ~30-minute
+wait, but a real inconsistency). Fixed by applying the same window filter.
+
+All of the above is now actually committed and pushed. Verification plan
+unchanged in substance from the 2026-09-06 entry above, just re-anchored
+to today's date: check trade.yml's and watchdog.yml's run history starting
+the next trading day after this push, over 2-3 days, not one.

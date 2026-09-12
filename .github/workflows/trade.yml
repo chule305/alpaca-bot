@@ -12,7 +12,9 @@ name: Trading bot check cycle
 
 on:
   schedule:
-    # Every 20 minutes, weekdays, 12:40-21:00 UTC.
+    # Every 20 minutes, weekdays, 12:00-21:40 UTC (12-21 as an hour range
+    # means :00/:20/:40 within every one of those hours -- see the actual
+    # minute offsets below).
     #
     # IMPORTANT: the cron does NOT set how often the bot checks the market
     # -- trading_bot.py's own --duration-minutes loop does that (every
@@ -28,9 +30,19 @@ on:
     # and hammering it with a high-frequency cron makes that worse, not
     # better. So: fewer, longer-lived jobs that each cover a window, and the
     # schedule only needs to land occasionally for coverage to stay
-    # continuous. Starts before the open (12:40 UTC) so a job is already
-    # alive and waiting when the bell rings, in both EDT and EST.
-    - cron: "*/20 12-21 * * 1-5"
+    # continuous. Starts before the open so a job is already alive and
+    # waiting when the bell rings, in both EDT and EST.
+    #
+    # 2026-09-06: offset from :00/:20/:40 to :07/:27/:47 (still every 20
+    # min) after the 2026-08-27/2026-08-28 blackout investigation (see the
+    # dated comment on the self-chaining step below) turned up GitHub's own
+    # documented advice that the schedule trigger is most likely to be
+    # delayed "at the start of every hour" -- avoiding :00 costs nothing
+    # and is one less way to land in that hotspot. Also gives
+    # watchdog.yml's own independent :05/:35 checks (see that file) a
+    # different wall-clock minute than this cron's own ticks, so the two
+    # workflows' trigger requests never land in the exact same minute.
+    - cron: "7,27,47 12-21 * * 1-5"
   # Lets you trigger a run manually from the Actions tab, e.g. to verify
   # the setup works before waiting for the next scheduled tick.
   workflow_dispatch:
@@ -131,50 +143,177 @@ jobs:
       # a return to today's already-bounded (by hour<21) behavior, not a
       # silent multi-hour gap like the ORIGINAL bug this step was built to
       # fix (see the 2026-07-24/2026-08-23 CLAUDE.md entries).
+      #
+      # 2026-09-06: root-caused the 2026-08-27/2026-08-28 blackout (near-
+      # zero runs during 12:00-21:40 UTC on both days, confirmed via full
+      # run-history pulls and cross-referenced against daily_summary.yml
+      # and auto_improve.yml's OWN run histories -- see CLAUDE.md's
+      # 2026-09-06 entry for the full writeup). Two things, not one:
+      #
+      # (1) GitHub's `schedule` delivery for this repo went dark for most
+      # of both days, not just the usual partial/occasional drop this file
+      # already documents above. Proof this is a GitHub-side delivery
+      # problem, not anything in this step's logic: daily_summary.yml
+      # (cron "15 21 * * 1-5") and auto_improve.yml (cron "45 21 * * 1-5")
+      # -- neither of which has ANY self-dispatch code, share this
+      # workflow's concurrency group, or share any code path with each
+      # other -- show the exact same signature in the exact same window:
+      # each workflow's evening tick silently dropped, then all three
+      # workflows' overdue ticks delivered together, hours late, within a
+      # ~15-30 min span in the pre-dawn hours (05:20:44-05:49:26 UTC on
+      # 08-28, catching up 08-27's drops; 03:08:46-03:23:00 UTC on 08-29,
+      # catching up 08-28's). Three independent cron expressions in three
+      # unrelated files going dark and recovering in lockstep can't be a
+      # trade.yml bug. Nothing in this file can fix GitHub's delivery of
+      # `schedule` events; see watchdog.yml for the mitigation (an
+      # independently-scheduled second workflow that force-starts this one
+      # if nothing has run recently during market hours, so a day doesn't
+      # depend on this workflow's OWN schedule landing even once).
+      #
+      # (2) Separately, a real gap in THIS step's own logic turned "GitHub
+      # drops most of a day's ticks" into "the self-healing chain also
+      # goes dormant for the rest of the day": on 08-28, the one phantom
+      # tick that did land (05:35:25 UTC -- hours before the market
+      # window) passed the old `hour<21` gate (no lower bound existed) and
+      # self-dispatched a successor 6 seconds later (05:35:31). That
+      # successor's OWN spacing check then correctly found a same-second
+      # "prior run" and declined to chain a third one -- exactly as
+      # designed, see the fix above -- but because the run that satisfied
+      # spacing was itself hours outside the trading window, extinguishing
+      # the chain there left nothing to re-arm it once the trading window
+      # actually opened at 12:00. Two fixes, both below: (a) added a lower
+      # bound (`hour>=12`, matching the cron's own range) so an off-window
+      # phantom can no longer even attempt to chain a successor; (b) the
+      # spacing check's `gh run list` lookup now only counts a prior run
+      # toward the 15-minute floor if THAT run's own `createdAt` also
+      # falls inside 12-21 UTC -- an off-window run (phantom or otherwise)
+      # can satisfy nothing and can never suppress the real dispatch once
+      # the window opens. Also widened the lookback from the last 5 runs
+      # to the last 10 (find a real in-window run further back in the list
+      # instead of spuriously fail-opening) and fixed a latent bug Claude
+      # found auditing this: an empty/no-match `--jq` result prints the
+      # literal string "null" (non-empty), which used to slip past the
+      # `-n` check -- now checked for explicitly.
+      #
+      # Also: this step's own decision (dispatched / skipped-for-spacing /
+      # skipped-outside-window / dispatch-failed-after-3-attempts) used to
+      # be observable only in the live log -- which log-download access
+      # (403, even on this public repo, without admin rights) couldn't
+      # read after the fact, the exact blind spot that made this incident
+      # hard to diagnose. Now written as a step output and appended by the
+      # commit step below to logs/self_dispatch.log, which -- like every
+      # other file that step commits -- is durable, always committed (that
+      # step runs `if: always()`), and readable via the plain commits/
+      # contents API with no special access, so the NEXT investigation
+      # like this one doesn't hit the same wall.
+      #
+      # 2026-09-12: two real findings from an adversarial re-check, both
+      # fixed below. (1) THE 2026-09-06 FIX ABOVE SAT UNCOMMITTED FOR SIX
+      # DAYS -- a background investigation designed and wrote it correctly
+      # but was interrupted before pushing, and the exact 08-27/08-28
+      # blackout shape recurred on every real trading day since (09-08
+      # through 09-11: first run of each day landing ~15:23-15:33 UTC,
+      # ~3.5h after the 12:00 open, every single day). Fixed by actually
+      # committing and pushing this time -- a design sitting in a local
+      # working tree has zero effect on a system that only ever runs
+      # GitHub's own copy of the file. (2) A genuine, executed-and-
+      # reproduced bug in the fail-open logic itself: the old code treated
+      # "the gh run list read failed" and "the read succeeded and honestly
+      # found no in-window prior run" as the SAME case (both left
+      # $prior_created_at empty, both fell open to dispatch). Under a
+      # SUSTAINED gh-run-list read failure with gh-workflow-run still
+      # working -- a real, asymmetric partial-outage shape, not a
+      # hypothetical -- every tick would fail open and dispatch
+      # unconditionally, reproducing the 2026-08-25 89-runs-in-an-hour
+      # shape by a different path than the one that incident's own fix
+      # closed. Fixed by making a read failure (or a timestamp that fails
+      # to parse) its own explicit case that fails CLOSED (skip
+      # dispatching) instead -- now safe to do since cron and watchdog.yml
+      # both independently cover this window too, so self-dispatch no
+      # longer has to be the last line of defense the way it was when the
+      # original fail-open choice was made. Only a read that genuinely
+      # succeeds and legitimately finds nothing still fails open.
       - name: Queue next run (self-chaining handoff)
+        id: self_dispatch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           hour=$(date -u +%H)
           dow=$(date -u +%u)   # 1=Mon .. 7=Sun
-          if [ "$dow" -ge 1 ] && [ "$dow" -le 5 ] && [ "$hour" -lt 21 ]; then
+          echo "hour=$hour" >> "$GITHUB_OUTPUT"
+          echo "dow=$dow" >> "$GITHUB_OUTPUT"
+          if [ "$dow" -ge 1 ] && [ "$dow" -le 5 ] && [ "$hour" -ge 12 ] && [ "$hour" -lt 21 ]; then
             min_spacing_minutes=15
-            age_minutes=999999
-            prior_created_at=$(gh run list --workflow=trade.yml --repo "${{ github.repository }}" --limit 5 \
-              --json databaseId,createdAt --jq "[.[] | select(.databaseId != ${{ github.run_id }})][0].createdAt" 2>/dev/null || true)
-            if [ -n "$prior_created_at" ]; then
-              prior_epoch=$(date -u -d "$prior_created_at" +%s 2>/dev/null || true)
-              now_epoch=$(date -u +%s)
-              if [ -n "$prior_epoch" ]; then
-                age_minutes=$(( (now_epoch - prior_epoch) / 60 ))
-              else
-                echo "::warning::Could not parse prior run timestamp '$prior_created_at' -- treating spacing as satisfied (fail open)."
-              fi
+            # 2026-09-12: read failures and "genuinely no prior run" used to
+            # be the same code path (both produced an empty $prior_created_at,
+            # both fell open to dispatch) -- see the dated comment above this
+            # step for why that's a real, reproduced bug: a SUSTAINED `gh run
+            # list` read failure with `gh workflow run` still working makes
+            # every single tick fail open and dispatch unconditionally,
+            # reproducing the 2026-08-25 runaway-loop shape by a different
+            # path. Now kept as two genuinely distinct outcomes: a read/parse
+            # failure fails CLOSED (skip -- the safe direction now that cron
+            # and watchdog.yml are also independently covering this window,
+            # so self-dispatch no longer has to be the last line of defense);
+            # a read that HONESTLY succeeds and finds no in-window prior run
+            # still fails OPEN (dispatch -- that's the legitimate first-run-
+            # of-the-day case, not a failure at all).
+            read_failed=false
+            gh_output=$(gh run list --workflow=trade.yml --repo "${{ github.repository }}" --limit 10 \
+              --json databaseId,createdAt --jq "[.[] | select(.databaseId != ${{ github.run_id }}) | select(.createdAt[11:13] >= \"12\" and .createdAt[11:13] <= \"21\")][0].createdAt" 2>&1)
+            gh_exit=$?
+            if [ $gh_exit -ne 0 ]; then
+              echo "::warning::gh run list failed (exit $gh_exit): $gh_output -- failing CLOSED (skip dispatch), not open. A cron tick or watchdog.yml still covers this window independently."
+              read_failed=true
             else
-              echo "No prior run found (or the spacing check itself failed) -- treating spacing as satisfied (fail open)."
+              prior_created_at="$gh_output"
             fi
 
-            if [ "$age_minutes" -lt "$min_spacing_minutes" ]; then
-              echo "Most recent other run started only ${age_minutes} min ago (< ${min_spacing_minutes} min minimum) -- " \
+            age_minutes=999999
+            if [ "$read_failed" = false ]; then
+              if [ -n "$prior_created_at" ] && [ "$prior_created_at" != "null" ]; then
+                prior_epoch=$(date -u -d "$prior_created_at" +%s 2>/dev/null || true)
+                now_epoch=$(date -u +%s)
+                if [ -n "$prior_epoch" ]; then
+                  age_minutes=$(( (now_epoch - prior_epoch) / 60 ))
+                else
+                  echo "::warning::Could not parse prior run timestamp '$prior_created_at' -- failing CLOSED (skip dispatch), not open, same reasoning as a read failure above."
+                  read_failed=true
+                fi
+              else
+                echo "No recent IN-WINDOW (12-21 UTC) run found among the last 10, and the read itself succeeded -- this is a legitimate first-run-of-the-day case, not a failure, so it stays fail-OPEN (dispatch). An off-window run (e.g. a delayed/phantom GitHub schedule tick -- see 2026-09-06 comment above) deliberately does NOT count toward spacing, so it can never suppress today's real dispatch."
+              fi
+            fi
+
+            if [ "$read_failed" = true ]; then
+              echo "decision=skipped_read_failure" >> "$GITHUB_OUTPUT"
+            elif [ "$age_minutes" -lt "$min_spacing_minutes" ]; then
+              echo "Most recent other IN-WINDOW run started only ${age_minutes} min ago (< ${min_spacing_minutes} min minimum) -- " \
                    "not queuing a successor to avoid a fast-exit re-trigger loop (see 2026-08-26 comment above). " \
-                   "The regular cron tick or a later self-dispatch once spacing has passed will cover this."
+                   "The regular cron tick, the watchdog workflow, or a later self-dispatch once spacing has passed will cover this."
+              echo "decision=skipped_spacing" >> "$GITHUB_OUTPUT"
+              echo "spacing_age_minutes=$age_minutes" >> "$GITHUB_OUTPUT"
             else
               queued=false
               for attempt in 1 2 3; do
                 if gh workflow run trade.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"; then
-                  echo "Queued next run on attempt $attempt (prior run was ${age_minutes} min ago)."
+                  echo "Queued next run on attempt $attempt (prior in-window run was ${age_minutes} min ago)."
                   queued=true
                   break
                 fi
                 echo "workflow_dispatch failed (attempt $attempt) -- retrying."
                 sleep $((attempt * 5))
               done
-              if [ "$queued" = false ]; then
-                echo "::warning::Could not queue the next run after 3 attempts -- relying on a cron tick landing during this job's window instead."
+              if [ "$queued" = true ]; then
+                echo "decision=dispatched" >> "$GITHUB_OUTPUT"
+              else
+                echo "::warning::Could not queue the next run after 3 attempts -- relying on a cron tick or the watchdog workflow landing during this job's window instead."
+                echo "decision=dispatch_failed" >> "$GITHUB_OUTPUT"
               fi
             fi
           else
-            echo "Outside the self-chaining window (dow=$dow hour=$hour UTC) -- not queuing a successor; next weekday's cron tick starts the day."
+            echo "Outside the self-chaining window (dow=$dow hour=$hour UTC) -- not queuing a successor; next weekday's cron tick (or watchdog.yml) starts the day."
+            echo "decision=skipped_window" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v4
@@ -346,6 +485,13 @@ jobs:
         run: |
           git config user.name "trading-bot"
           git config user.email "actions@users.noreply.github.com"
+          # 2026-09-06: durable, always-on record of what the self-chaining
+          # step (above) decided -- see that step's 2026-09-06 comment for
+          # why. One line per run, committed like everything else in logs/,
+          # so it survives even when the live log text doesn't (log
+          # downloads 403 without admin rights, even on this public repo).
+          mkdir -p logs
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) dow=${{ steps.self_dispatch.outputs.dow }} hour=${{ steps.self_dispatch.outputs.hour }} decision=${{ steps.self_dispatch.outputs.decision }} spacing_age_minutes=${{ steps.self_dispatch.outputs.spacing_age_minutes }}" >> logs/self_dispatch.log
           git add watchlist_state.json daily_risk_state.json open_position_context.json
           git add -A logs trades.csv 2>/dev/null || true
           if git diff --cached --quiet; then

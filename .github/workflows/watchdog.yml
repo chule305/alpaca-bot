@@ -1,0 +1,139 @@
+name: Trading bot watchdog (independent restart trigger)
+
+# Added 2026-09-06 in response to the 2026-08-27/2026-08-28 blackout (near-
+# zero trade.yml runs during 12:00-21:40 UTC on both days -- see CLAUDE.md's
+# 2026-09-06 entry and trade.yml's own 2026-09-06 comment for the full
+# writeup). Confirmed NOT a trade.yml code bug and NOT unique to trade.yml's
+# own cron: daily_summary.yml (cron "15 21 * * 1-5") and this repo's
+# auto_improve.yml (cron "45 21 * * 1-5" while it was briefly active) --
+# neither of which has any self-dispatch logic, shares trade.yml's
+# concurrency group, or shares any code with each other -- show the exact
+# same signature in the exact same window: each workflow's own evening tick
+# silently dropped, then all three workflows' overdue ticks delivered
+# together, hours late, within a ~15-30 min span in the pre-dawn hours
+# (05:20:44-05:49:26 UTC on 08-28; 03:08:46-03:23:00 UTC on 08-29). Three
+# independent cron expressions in three unrelated files going dark and
+# recovering in lockstep rules out anything in any one workflow's own code;
+# it's GitHub's `schedule` delivery for this repo failing for an extended
+# stretch -- documented by GitHub itself as best-effort and droppable under
+# load, just far more severely and for far longer than this repo's
+# previously-tolerated baseline (see trade.yml's 2026-07-24/2026-08-06/
+# 2026-08-23 comments).
+#
+# trade.yml's own self-chaining step ("Queue next run") can only EXTEND a
+# trading day that already got a first run from cron -- by design, see that
+# step's comments -- so it has no way to notice that cron delivered nothing
+# AT ALL. This workflow is that missing piece: independently scheduled (its
+# own `schedule:` trigger, not more logic inside trade.yml, since logic
+# inside trade.yml can only run once trade.yml has already been triggered
+# -- exactly the thing that can fail completely for a full day), it checks
+# trade.yml's own run history and force-starts it if nothing has run
+# recently during market hours, regardless of whether trade.yml's own
+# schedule fired even once that day.
+#
+# This does NOT fix GitHub's underlying schedule-delivery problem -- nothing
+# in this repo can. It's a second, independent roll of the dice: if GitHub
+# drops trade.yml's ~28 daily ticks but delivers even ONE of THIS workflow's
+# ticks sometime in the trading window, that's enough to notice the gap and
+# recover the rest of the day via a direct `workflow_dispatch` REST call --
+# which, like trade.yml's own self-dispatch step, is NOT a `schedule` event
+# and so isn't subject to the same best-effort/droppable behavior.
+#
+# Deliberately sparse (every 30 min, not trade.yml's own 20) and offset to
+# different minutes-past-the-hour than trade.yml's :07/:27/:47 ticks -- this
+# repo already learned once (trade.yml's 2026-07-24 comment) that a denser
+# cron makes GitHub's own dropping worse, not better, and two workflows
+# both requesting triggers at the exact same wall-clock minute is one more
+# way to concentrate load right when GitHub's docs warn is highest-risk.
+#
+# 2026-09-12: two fixes from an adversarial re-check (the same pass that
+# found this file had never actually been pushed -- see trade.yml's own
+# 2026-09-12 comment for that). (1) The staleness check below used to take
+# trade.yml's single most recent run regardless of what hour it ran in --
+# unlike trade.yml's OWN spacing check, which already filters to in-window
+# runs only. A phantom/off-window run landing shortly before the trading
+# window opens could make this watchdog defer even though zero legitimate
+# in-window runs had happened yet. Fixed by applying the same window filter
+# trade.yml uses. Impact was always bounded (at most one extra ~30-minute
+# wait, since the next tick re-checks staleness fresh), so this wasn't
+# urgent, but it's a real inconsistency worth closing while in here.
+# (2) Deliberately did NOT flip this step's own read-failure handling to
+# fail-closed the way trade.yml's self-dispatch step's was -- that fix was
+# needed there because a sustained read failure combined with a tight
+# retry chain could reproduce the 2026-08-25 runaway-loop shape. This
+# workflow only fires once per 30 minutes, so even permanent fail-open
+# here can never cause anything faster than one dispatch per 30 min --
+# nowhere near that failure mode -- and failing open is the right choice
+# for what this file's whole JOB is (catching a dead trading day), so it
+# stays as designed.
+
+on:
+  schedule:
+    # Every 30 minutes, weekdays, 12-21 UTC -- :05/:35 so these requests
+    # never land in the same minute as trade.yml's own :07/:27/:47 ticks.
+    - cron: "5,35 12-21 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: trade-watchdog
+  cancel-in-progress: true
+
+permissions:
+  actions: write   # gh run list (read) + gh workflow run (write) on trade.yml
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Force-start trade.yml if nothing has run recently during market hours
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          hour=$(date -u +%H)
+          dow=$(date -u +%u)   # 1=Mon .. 7=Sun
+          if [ "$dow" -lt 1 ] || [ "$dow" -gt 5 ] || [ "$hour" -lt 12 ] || [ "$hour" -ge 21 ]; then
+            echo "Outside trade.yml's trading window (dow=$dow hour=$hour UTC) -- nothing to do."
+            exit 0
+          fi
+
+          stale_after_minutes=30
+          age_minutes=999999
+          # Window-filtered (createdAt[11:13] in 12-21 UTC), same approach
+          # trade.yml's own spacing check uses -- see 2026-09-12 comment
+          # above for why an off-window (phantom) run must not count here.
+          last_created_at=$(gh run list --workflow=trade.yml --repo "${{ github.repository }}" --limit 10 \
+            --json createdAt --jq "[.[] | select(.createdAt[11:13] >= \"12\" and .createdAt[11:13] <= \"21\")][0].createdAt" 2>/dev/null || true)
+
+          if [ -n "$last_created_at" ] && [ "$last_created_at" != "null" ]; then
+            last_epoch=$(date -u -d "$last_created_at" +%s 2>/dev/null || true)
+            now_epoch=$(date -u +%s)
+            if [ -n "$last_epoch" ]; then
+              age_minutes=$(( (now_epoch - last_epoch) / 60 ))
+            else
+              echo "::warning::Could not parse last trade.yml run timestamp '$last_created_at' -- treating it as stale (fail toward dispatching, not toward silence)."
+            fi
+          else
+            echo "::warning::Could not read trade.yml's run list -- treating it as stale (fail toward dispatching, not toward silence)."
+          fi
+
+          if [ "$age_minutes" -lt "$stale_after_minutes" ]; then
+            echo "trade.yml last ran ${age_minutes} min ago (< ${stale_after_minutes} min) -- healthy, nothing to do."
+            exit 0
+          fi
+
+          echo "trade.yml has not run in ${age_minutes} min during the trading window -- force-starting it."
+          queued=false
+          for attempt in 1 2 3; do
+            if gh workflow run trade.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"; then
+              echo "Dispatched trade.yml on attempt $attempt."
+              queued=true
+              break
+            fi
+            echo "workflow_dispatch failed (attempt $attempt) -- retrying."
+            sleep $((attempt * 5))
+          done
+          if [ "$queued" = false ]; then
+            echo "::error::Could not dispatch trade.yml after 3 attempts -- this run's own conclusion will show failure, which is the point: a stuck watchdog should be visible via run-list metadata alone."
+            exit 1
+          fi
