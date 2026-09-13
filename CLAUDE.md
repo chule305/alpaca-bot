@@ -2948,3 +2948,224 @@ All of the above is now actually committed and pushed. Verification plan
 unchanged in substance from the 2026-09-06 entry above, just re-anchored
 to today's date: check trade.yml's and watchdog.yml's run history starting
 the next trading day after this push, over 2-3 days, not one.
+
+## 2026-09-12: reconciling three research angles (scheduling fix verification, real-trade bad-signal mining, entry-selectivity gating) -- one scheduling bug fixed, no trading-logic change met the evidence bar, conviction-gating declined
+
+Direct, human-reviewed synthesis session (not the autonomous pipeline) covering
+three angles run in parallel: (1) adversarial verification of the scheduling
+fix shipped in this same day's earlier entry above, (2) mining real Alpaca
+order history for repeated bad signals/symbols/strategies, (3) whether the
+user's stated preference for fewer, more selective trades is supported by
+real evidence for gating entries on the existing conviction score. Every
+number below was re-pulled and re-derived independently in this session
+(fresh `TradingClient(paper=True).get_orders(...)`, FIFO-matched, same
+methodology as every other entry in this file) rather than trusted from the
+three angle reports as-is -- two of the three angles' headline findings did
+not survive that re-check at face value; see below.
+
+### (a) Scheduling fix: one real bug found and fixed, everything else confirmed clean
+
+The angle's adversarial pass found a genuine, reproduced bug in the very fix
+this file's entry above (same date) describes as "verified by actual
+execution." Independently re-reproduced here before touching anything:
+`bash -c 'set -eo pipefail; x=$(false); echo reached'` prints nothing and
+exits 1 -- confirming that trade.yml's self-dispatch step had exactly one
+unguarded command substitution (`gh_output=$(gh run list ...)` followed by
+`gh_exit=$?` on the next line) that would crash the ENTIRE step under a real
+`gh run list` failure, before ever reaching the "fail CLOSED, skip dispatch"
+branch that fix was written to deliver -- worse than the fail-open bug it
+replaced, since nothing after this step has `if:`/`continue-on-error:`
+except the final `if: always()` commit step, so checkout, dependency
+install, and the actual trading loop would all silently get skipped for
+that run. Confirmed no other instance of this bug class exists in either
+workflow file (grepped every `$(...)` in both files; the other 12 are either
+already `|| true`-guarded, arithmetic expansion, or embedded inside a larger
+`echo "..."` argument, which does not propagate a failing substitution's
+exit status to the enclosing command -- verified empirically:
+`bash -c 'set -eo pipefail; echo "v=$(false) x"; echo reached'` DOES print
+"reached").
+
+**Fixed** in `.github/workflows/trade.yml` (self-dispatch step): changed
+
+```
+gh_output=$(gh run list ... 2>&1)
+gh_exit=$?
+```
+
+to the idiomatic AND-OR form, exempt from `errexit` by the same POSIX rule
+that caused the bug:
+
+```
+gh_output=$(gh run list ... 2>&1) && gh_exit=0 || gh_exit=$?
+```
+
+Verified fixed by direct execution against a stub `gh`/`date` harness (not
+just read): a simulated `gh run list` failure now correctly reaches
+`decision=skipped_read_failure`, script exit 0, no crash; a genuine
+success-with-no-match still correctly reaches `decision=dispatched`
+(fail-open preserved for the legitimate first-run-of-the-day case); a
+genuine successful dispatch still works. `watchdog.yml` needed no change --
+its own `gh run list` already has a `2>/dev/null || true` guard and was
+never subject to this bug; independently confirmed by grep across both
+files. YAML re-parses clean (`yaml.safe_load`) and the extracted step passes
+`bash -n` after the edit.
+
+Everything else the adversarial pass checked (the 2026-08-25 runaway-loop
+shape, the 2026-08-28 phantom-tick shape, spacing/window boundary conditions,
+watchdog's healthy/stale/outside-window/read-failure/dispatch-failure paths,
+the literal reconstructed 08-28 incident replay) was already correct and
+needed no change -- this was one real, narrow, now-fixed bug, not a broader
+redesign.
+
+### (b) Real-trade bad-signal mining: most candidates do not clear this project's evidence bar once decomposed
+
+**Evidence bar applied** (this file's own standing rule, restated precisely
+for this entry): a pattern counts as real only if (i) it is not explained by
+a single trade or single symbol/day -- check by removing the single largest
+trade in the bucket and confirming the conclusion survives, AND (ii) it is
+not simply a restatement of `vwap_reversion`, already turned off earlier
+today -- check by removing every `vwap_reversion` trade from the bucket and
+confirming a real pattern remains among the strategies still live. (ii) is a
+sharpened version of the same "one dominant cause" check, added this session
+because two of the mining angle's "moderate/moderate-strong" candidates
+turned out to fail it on direct re-check, below.
+
+**Re-verified independently, n=115 real round-trip trades, 2026-07-09 to
+2026-09-11** (matches the mining angle's own pull):
+
+- **Entries >=120 min after the open ("midday underperformance")** --
+  mining angle reported this as its best-supported finding (n=19-20,
+  PF 0.27-0.47, "MODERATE-STRONG", "not one-symbol/one-day driven"). Re-ran
+  ex-PLSE (the bucket's single largest trade, already understood as an
+  isolated bad breakout chase, not a timing effect) AND ex-`vwap_reversion`
+  (already off): **n=15, win 46.7%, PF 0.69, P&L -$70.49**. Of the original
+  20 trades, 1 was PLSE and 4 were `vwap_reversion` (VEEE x2, RPD, ALNY) --
+  25% of the bucket was double-counting a cause already fixed. What remains
+  is within noise for n=15 (46.7% win rate is not bad; -$70 across 15 trades
+  is economically trivial). **Verdict: does not clear the bar. No entry
+  blackout window change made.**
+- **ADX 25-30 "borderline trend" dead zone** -- reported as n=16 ex-TRAX,
+  PF 0.44, "MODERATE." Re-ran ex-ALL-`vwap_reversion` (TRAX was one of
+  FOUR `vwap_reversion` trades in this bucket, not the only one -- VCYT and
+  two others were missed by only excluding the single symbol): **n=15, win
+  40.0%, PF 0.58, P&L -$34.19**. Same story as above -- over a quarter of
+  the bucket was already-fixed `vwap_reversion` contamination; what's left
+  is noise-level (~-$2.28/trade average). **Verdict: does not clear the bar.
+  No ADX threshold change made.**
+- **Breakout entries with 1-2.5x volume confirmation ("weak volume
+  zone")** -- reported as n=13, PF 0.07-0.27, "MODERATE," explicitly
+  excluding the 1.5-2.0x sub-band. Re-ran the FULL continuous 1.0-2.5x
+  range (not skipping the middle) ex-`vwap_reversion`: **n=14, P&L
+  -$44.57** -- the 1.5-2.0x sub-band the original cut excluded is itself
+  positive (+$58.33 ex-`vwap_reversion`, one trade -- BHVN +$51.46 --
+  driving nearly all of it), so the "pattern" only appears when that
+  sub-band is specifically carved out, which has no principled boundary
+  behind it. **Also verified against the actual code** (`strategy.py`'s
+  `breakout_at()`, line ~1021): breakout entries already have a HARD volume
+  gate, `volume > avg_volume * BREAKOUT_VOLUME_MULTIPLIER` (2.0x) computed
+  against `breakout_avg_volume`/`breakout_tod_avg_volume`. The "volume
+  ratio" this candidate is built on is a DIFFERENT metric --
+  `bar_volume / rvol_avg_volume` (`trading_bot.py` line ~2383), the
+  conviction-scoring signal, only ever used for position SIZING today, not
+  entry filtering. Trades with this ratio under 2.0 are not violating any
+  existing entry rule; wiring it into entry filtering would be a new
+  mechanism, not a threshold tweak. **Verdict: does not clear the bar
+  (boundary-sensitive, and conflates two different volume metrics). No
+  change made.**
+- **Chase distance >=5-8% above `breakout_recent_high`** -- reported as
+  "LOW-MODERATE, treat as risk rail not edge" because it fails its own
+  win-rate check (the 5 non-outlier trades at this extension net +$7.57,
+  breakeven). Re-verified the bucket (n=7): removing PLSE alone (the
+  single largest trade WITHIN this specific bucket -- UFPT's $1,206.55 size
+  is an artifact of the already-fixed risk-based-sizing bug, not something
+  a price-distance cap addresses, so attributing its magnitude to chase
+  distance is itself confounded) leaves the bucket unresolved either way
+  the outlier is chosen; removing both known outliers (UFPT, PLSE) flips it
+  to breakeven, confirming the mining angle's own honest characterization.
+  **Verdict: fails the mandatory bar as applied to its own bucket. No fill-
+  price cap added -- flagged as a watch item only, not a code change, since
+  it is mechanistically the two worst trades in the whole book but not
+  evidenced as a win-rate or EV effect.**
+- **SNXX (n=6, all pre-2026-07-27 unattributed window), RPD/IBM/SOXS
+  (n=2-3), TSLA (n=9 but -$18.52 total, economically trivial), breakout as a
+  whole strategy (its entire negative track record, whole-history AND
+  since-8/24, is each explained by exactly one non-repeating outlier --
+  UFPT and PLSE respectively)** -- all correctly declined by the mining
+  angle already; re-confirmed here, no change.
+- **`vwap_reversion`** -- already off (this file's own earlier 2026-09-06
+  entry). Re-confirmed a 4th independent time this session (n=15, PF 0.19,
+  survives removing its own biggest trade). No further action; it is also
+  the explanation behind most of what looked like new evidence above.
+
+**Net result of (b): no trading-logic code change made beyond what was
+already shipped today (`vwap_reversion` off).** Every candidate that looked
+supportable on first pass dissolved, wholly or mostly, into either a single
+outlier or the already-fixed `vwap_reversion` problem once decomposed
+properly -- which is exactly the failure mode this file's testing culture
+exists to catch (see the 2026-08-23 and this same day's earlier entries).
+"No defensible change found" is the honest conclusion here, not a failure to
+produce one.
+
+### (c) Entry-selectivity gating (the user's "one great $25k trade over five $5k trades" mandate): not justified by real evidence yet
+
+Re-derived the conviction-score-vs-outcome table directly (78 attributed
+trades, score = ADX>=35 + volume_ratio>=2.5, `HIGH_CONVICTION_STRATEGIES`
+structurally empty so the third point never fires today): score 0 -> n=20,
+win 35.0%, -$178.30; score 1 -> n=40, win 47.5%, -$5.49; score 2 -> n=18,
+win 38.9%, -$471.90. (Corrected 2026-09-13: the score 0/1 counts above were
+originally misreported as n=17/-$117.46 and n=43/-$66.33 -- a ~3-trade
+misattribution, plausibly from the duplicate-same-day-BUY join issue noted
+elsewhere in this entry -- caught by an independent third re-derivation
+during final adversarial verification before push. The score=2 bucket and
+every conclusion below were unaffected either way, confirmed by all three
+independent passes agreeing on those numbers from the start.) Decomposed
+the score=2 bucket two ways: ex-UFPT (its one huge loss, a pre-conviction-
+sizing/sizing-bug trade) flips it to +$734.65, PF 7.00; ex-PLTR instead
+(its one huge WIN, same bucket) makes it -$1,266.03, PF 0.05 -- i.e. the
+bucket's sign is fully determined by which single trade you happen to
+exclude, the textbook outlier trap this project has been burned by twice
+before (UFPT, PLSE). Win rate itself is non-monotonic and never above 48%
+at any score (35.0% -> 47.5% -> 38.9%) -- there is no score level at which
+real trades actually win more often, which is the specific thing an entry
+gate would need to show. The only forward-relevant sample -- real trades since
+conviction sizing itself went live (2026-08-26) -- is 14 trades total, 1 in
+the top bucket. **Verdict: no entry-gating mechanism built.** The evidence
+isn't weak, it's absent, and a hard gate at score>=2 would cut the live
+trade rate by ~93% (per the selectivity angle's own math: ~1 of the last 14
+score>=2-eligible ticks), which would take ~9 months instead of ~2 weeks to
+accumulate even a thin 20-trade validation sample -- actively preventing the
+gate from ever being honestly tested. **What would be needed before
+revisiting:** on the order of 30-40 real trades per score bucket IN THE
+CURRENT regime (`vwap_reversion` off, post-2026-08-24 fixes), ideally with a
+score level that shows a real win-rate lift, not just a dollar lift driven
+by one trade.
+
+This directly answers the user's 2026-09-06 mandate ("I would rather have
+the bot make 1 really good $25k trade... rather to make one good and sure
+rather than to risk"): the intent is reasonable and nothing here argues
+against it in principle, but the SPECIFIC mechanism reached for first (the
+existing ADX+volume conviction score) is not what the real data supports
+using as the selectivity signal yet. Building a gate on it now would be
+shipping an opinion the data doesn't support, the same mistake
+`HIGH_CONVICTION_STRATEGIES`' own empty-by-design comment already commits
+this project to avoiding.
+
+### (d) TRADE_AMOUNT_USD / MAX_DAILY_DEPLOYED_CAPITAL_USD -- untouched
+
+**Neither immutable constant was changed by this session.** No candidate
+above (b) or (c) reached a strength of evidence that would justify touching
+either the $500 floor or the $25,000/day ceiling the user reconfirmed
+2026-09-06; both remain exactly as configured, mechanically locked in
+`auto_improve.py`'s `IMMUTABLE_CONSTANTS` against the autonomous pipeline.
+This paragraph exists only to make the "no change" explicit and unmissable,
+per this file's own standing convention for these two constants.
+
+### Summary of what actually changed this session
+
+- `.github/workflows/trade.yml`: one bug fix (the `errexit`/command-
+  substitution crash described in (a) above). No config/env values changed.
+- `strategy.py`, `trading_bot.py`, `backtest.py`, `.env`: **no changes.**
+  No new toggle, no threshold change, no gating mechanism. Read and
+  verified against, not modified.
+- `README.md`: no changes -- nothing about the bot's user-facing behavior
+  changed.

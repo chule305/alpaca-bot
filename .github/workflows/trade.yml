@@ -233,6 +233,13 @@ jobs:
       # longer has to be the last line of defense the way it was when the
       # original fail-open choice was made. Only a read that genuinely
       # succeeds and legitimately finds nothing still fails open.
+      #
+      # 2026-09-12 (second adversarial pass, later the same day): that
+      # fail-CLOSED fix above had its own real, executed-and-reproduced bug
+      # -- see the dated comment right above the `gh_output=$(...)` line
+      # inside the step below for the full mechanism (an unguarded command
+      # substitution tripping `errexit` and crashing the whole step, rather
+      # than reaching the fail-closed branch at all) and the fix.
       - name: Queue next run (self-chaining handoff)
         id: self_dispatch
         env:
@@ -259,9 +266,42 @@ jobs:
             # still fails OPEN (dispatch -- that's the legitimate first-run-
             # of-the-day case, not a failure at all).
             read_failed=false
+            # 2026-09-12 (second adversarial pass, same day as the fix just
+            # above): that fix shipped with its own bug, caught by actually
+            # EXECUTING this step's real, variable-substituted script under
+            # GitHub Actions' real default run-step shell -- `bash
+            # --noprofile --norc -eo pipefail {0}` -- not just reading it.
+            # The line below used to be a bare `gh_output=$(...)` assignment
+            # with `gh_exit=$?` read on the NEXT line -- the ONLY command
+            # substitution in this file (or watchdog.yml) with no `||`
+            # guard on it anywhere (every `date -u -d ...` call, and
+            # watchdog.yml's own `gh run list`, has one). Under `-e`, a
+            # failing command substitution assigned to a plain variable
+            # trips errexit IMMEDIATELY -- `gh_exit=$?` on the next line
+            # never runs, so the WHOLE STEP aborts right there instead of
+            # reaching the "read_failed=true -> decision=skipped_read_failure"
+            # branch below. Nothing after this step has `if:` or
+            # `continue-on-error:` (only the final commit step does, via
+            # `if: always()`), so by default GitHub Actions skips every
+            # remaining step too -- checkout, dependency install, and
+            # "Run one check cycle" (the actual trading loop) never run.
+            # That is WORSE than the fail-open bug the fix above this one
+            # replaced: a single transient `gh run list` hiccup (rate limit,
+            # 5xx, auth blip -- exactly the "real, asymmetric partial-outage
+            # shape" that fix's own comment cites) now silently skips an
+            # entire trading cycle, not just this step's own dispatch
+            # decision. Directly reproduced: `bash -c 'set -eo pipefail;
+            # x=$(false); echo reached'` prints nothing and exits 1 --
+            # "reached" never runs. Fixed with the idiomatic AND-OR form
+            # below (`cmd && ok=0 || ok=$?`), which IS exempt from errexit,
+            # by the same POSIX rule that caused this bug: a command that is
+            # part of an `&&`/`||` list is not itself subject to `set -e`.
+            # Verified fixed the same way: the AND-OR form reaches
+            # `echo reached` in both the failing- and succeeding-command
+            # case, with `gh_exit` still landing on the correct value either
+            # way (0 on success, the real failing exit code on failure).
             gh_output=$(gh run list --workflow=trade.yml --repo "${{ github.repository }}" --limit 10 \
-              --json databaseId,createdAt --jq "[.[] | select(.databaseId != ${{ github.run_id }}) | select(.createdAt[11:13] >= \"12\" and .createdAt[11:13] <= \"21\")][0].createdAt" 2>&1)
-            gh_exit=$?
+              --json databaseId,createdAt --jq "[.[] | select(.databaseId != ${{ github.run_id }}) | select(.createdAt[11:13] >= \"12\" and .createdAt[11:13] <= \"21\")][0].createdAt" 2>&1) && gh_exit=0 || gh_exit=$?
             if [ $gh_exit -ne 0 ]; then
               echo "::warning::gh run list failed (exit $gh_exit): $gh_output -- failing CLOSED (skip dispatch), not open. A cron tick or watchdog.yml still covers this window independently."
               read_failed=true
