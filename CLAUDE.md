@@ -3169,3 +3169,128 @@ per this file's own standing convention for these two constants.
   verified against, not modified.
 - `README.md`: no changes -- nothing about the bot's user-facing behavior
   changed.
+
+## 2026-09-17: 4-way backtest finds a real, outlier-robust edge in wide-universe scanning + a conviction entry gate -- built and shipped live (paper)
+
+User asked for a direct comparison of four approaches: (1) current logic on
+the current ~12-symbol watchlist, (2) same watchlist gated to fewer/bigger
+conviction trades, (3) current logic scanning the full S&P 500 instead of
+~12 symbols, (4) full S&P 500 combined with the conviction gate. 45-day
+backtest, `simulate()` unmodified (all decision logic reused exactly as
+shipped), run once per universe and post-processed twice (as-is for configs
+1/3, filtered to `conviction_score >= 2` and rescaled to a flat $25,000 for
+configs 2/4 -- P&L scales linearly with position size for the same entry/exit
+prices, so this is an exact rescale, not an approximation).
+
+**Methodology fix found and applied before trusting any result:** the first
+run silently used stale local `.env` values -- `USE_VWAP_REVERSION` was
+missing from `.env` entirely (fell back to the code's own "on" default, even
+though it's been off live since 2026-09-06) and `USE_BREAKOUT_INVALIDATION_
+EXIT` was still `true` locally despite being reverted live on 2026-08-23 (see
+that date's entry above -- an SMCI-outlier artifact). `trade.yml`'s full live
+env block was extracted programmatically (`yaml.safe_load`, not hand-
+transcribed) and diffed against `.env` key-by-key; both mismatches fixed in
+`.env` directly, then the whole 4-way comparison re-run with the corrected
+config before any number below was treated as real.
+
+### Results (45 days, live-config-matched)
+
+| Config | Trades | Win% | PF | P&L |
+|---|---|---|---|---|
+| 1. Current logic, current watchlist (12 symbols) | 82 | 40.2% | 1.19 | +$412 |
+| 2. Same watchlist, gated to score>=2 @ $25k | 7 | 42.9% | 0.85 | -$116 |
+| 3. Current logic, full S&P 500 (503 symbols) | 2,819 | 43.3% | 1.01 | +$371 |
+| 4. Full S&P 500, gated to score>=2 @ $25k | 125 | 49.6% | 1.20 | +$3,932 |
+
+Per this file's standing outlier-check discipline (does removing the single
+largest trade or symbol flip the conclusion):
+- **Config 1**: survives removing its single biggest trade, but its entire
+  edge is one symbol (TSLA, 8 of 82 trades, 111% of total P&L) -- excluding
+  TSLA flips it to -$44.51.
+- **Config 2**: too few trades (7 in 45 days) for the narrow watchlist to
+  ever generate enough score>=2 signals to mean anything -- already
+  negative, and every single-trade exclusion flips its sign.
+- **Config 3**: fails the check -- PF 1.01 is noise. Excluding either the
+  single best trade (ZBRA, +$1,626) or the single best symbol (PLTR, 8
+  trades) flips it negative. Scanning wider with unchanged, ungated logic is
+  not a real edge, just more lottery tickets.
+- **Config 4**: the only one that survives -- still solidly positive after
+  removing its biggest trade (+$2,303) or its biggest symbol (+$2,189).
+
+**What's different from the 2026-09-12 entry above, which declined to build
+this exact gate:** that check used real order history and found the
+conviction score's relationship with win rate non-monotonic, on only 14
+trades since conviction sizing shipped -- far too thin to validate anything,
+and the apparent pattern was itself an outlier artifact. This backtest's much
+larger sample (bucketing all 2,819 full-S&P-500 trades by score, not just the
+125 that cleared the gate) shows the score cleanly monotonic instead: win
+rate 41.2% -> 46.0% -> 49.6%, profit factor 0.70 -> 0.91 -> 1.20 as score
+rises 0 -> 1 -> 2. Backtest evidence, not real-money evidence yet -- this is
+exactly the gap `vwap_reversion` fell into before (looked good in every
+backtest, never profitable live) -- which is why this is being shipped to
+the **paper** account to actually find out, the same validation path every
+other feature in this file has gone through, not treated as proof on its
+own.
+
+### What was built
+
+- `strategy.py`: `USE_CONVICTION_ENTRY_GATE` / `CONVICTION_ENTRY_GATE_MIN_
+  SCORE` (default 2). Until now the conviction score only ever affected
+  position SIZE, never whether a trade happened at all.
+- `trading_bot.py`: `check_symbol`'s existing named `elif` gate chain gets
+  one more entry, computing the score at that level (reusing
+  `compute_conviction_trade_amount` unchanged, discarding the sizing
+  return) and skipping the trade if the gate is on and the score doesn't
+  clear it -- same pattern as every other gate in that chain
+  (`sector_cap_blocks_entry`, `at_position_cap`, etc.), placed before the
+  capacity checks since "not convincing enough" is more informative than
+  "no room" when both would apply. `place_buy_order` itself is unchanged.
+- `trading_bot.py`: the per-symbol "nothing happening" log line is now
+  `log.debug` instead of `log.info` when the signal is HOLD -- with the
+  watchlist now covering ~500 symbols instead of 18, leaving this at INFO
+  would have turned every 15-minute cycle into ~500 committed log lines
+  regardless of whether anything worth reading happened.
+- `trade.yml` / `.env` (kept in sync): `SCANNER_WATCHLIST_SIZE` 18 -> 500,
+  `SP500_MIN_WATCHLIST_SLOTS` 10 -> 490 (leaves ~10 slots for the existing
+  momentum-movers scan, unchanged). Costs no extra API calls --
+  `fetch_sp500_candidates` already fetched bars for essentially the whole
+  S&P 500 every refresh cycle just to rank the old top 10; this only
+  changes how many of those already-ranked names get kept. Verified live
+  against the real Alpaca data API (not just inferred from the batching
+  code): one `get_recent_bars_batch` call across all 503 S&P 500 symbols
+  returned 100% coverage in 18.4s (5-day lookback, matching the ranking
+  call) and 41.2s (`regular_session_only=True`, matching the main per-cycle
+  call) -- both comfortably inside the 30-minute refresh and 15-minute
+  cycle budgets.
+- `MAX_CONCURRENT_POSITIONS` deliberately left at 18, breaking the
+  convention (see the 2026-08-09 entry) of keeping it equal to
+  `SCANNER_WATCHLIST_SIZE`: a single score>=2 trade already claims the full
+  remaining `MAX_DAILY_DEPLOYED_CAPITAL_USD` pool, so the daily $ pool --
+  not position count -- is what will actually bind in practice, which is
+  the right ceiling for "prefer fewer, bigger, more-certain trades."
+- `TRADE_AMOUNT_USD` / `MAX_DAILY_DEPLOYED_CAPITAL_USD`: **untouched**, per
+  this file's standing convention for the two immutable constants.
+- `backtest.py` itself: **not modified** -- this was live paper-trading
+  work, not a new permanent backtesting feature. The 4-way comparison was
+  built as a standalone scratchpad script importing a copy of `backtest.py`,
+  not committed to this repo.
+- Tests: `test_trading_bot.py` gained 3 new tests for the gate (blocks a
+  score-0 BUY when on, allows a score-2 BUY when on, no-ops when off) and
+  one new global override (`tb.USE_CONVICTION_ENTRY_GATE = False`, same
+  layering as the existing `LOG_DIR`/`TRADE_HISTORY_FILE`/
+  `OPEN_POSITION_CONTEXT_FILE` overrides at the top of that file) --
+  without it, ~30 pre-existing BUY-path tests using the plain
+  `make_fake_enriched` frame (which always scores 0) would have been
+  silently blocked by the new gate regardless of what each was actually
+  testing. Caught by running the suite the way its own docstring says to
+  (`py test_trading_bot.py`, not `pytest`) -- a first `pytest` run showed
+  only 1 hard failure, but this file's `check()` helper records soft
+  failures into a `FAILURES` list that only the script's own `__main__`
+  block inspects, so `pytest` was silently swallowing every other one.
+  Full 6-file suite (`test_strategy.py`, `test_trading_bot.py`,
+  `test_backtest.py`, `test_trade_recorder.py`, `test_daily_summary.py`,
+  `test_auto_improve.py`) passes clean after the fix.
+
+**Revert path**: a single flag flip (`USE_CONVICTION_ENTRY_GATE=false`), or
+reverting the two scanner-size numbers, undoes this completely if the paper
+results don't hold up.

@@ -67,7 +67,7 @@ from strategy import (
     USE_VOLATILITY_SCALED_SIZING, VOLATILITY_SCALED_REDUCED_USD,
     USE_CONVICTION_SIZING, HIGH_CONVICTION_STRATEGIES, compute_conviction_trade_amount,
     MAX_DAILY_DEPLOYED_CAPITAL_USD, CONVICTION_ADX_THRESHOLD, CONVICTION_VOLUME_RATIO_THRESHOLD,
-    CONVICTION_TIER1_USD,
+    CONVICTION_TIER1_USD, USE_CONVICTION_ENTRY_GATE, CONVICTION_ENTRY_GATE_MIN_SCORE,
     FAST_MA, SLOW_MA, RSI_PERIOD, RSI_OVERSOLD, RSI_OVERBOUGHT,
     ADX_PERIOD, ADX_TREND_THRESHOLD,
     USE_BREAKOUT, USE_SMASH_DAY_PATTERN, USE_GAP_PATTERN, USE_ROSS_HOOK, USE_ORB,
@@ -2382,7 +2382,17 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         if not pd.isna(avg_volume) and avg_volume > 0 and not pd.isna(bar_volume):
             volume_ratio = bar_volume / avg_volume
 
-    log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
+    # Same score place_buy_order will recompute for sizing -- cheap (pure,
+    # no I/O) so recomputing it here too (rather than threading it through
+    # as an extra return value) is simpler than it looks. Only used for the
+    # entry gate below; sizing itself is untouched.
+    _, conviction_score = compute_conviction_trade_amount(
+        reason_key, adx_value, volume_ratio, remaining_daily_pool_usd)
+
+    if signal == "HOLD":
+        log.debug(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
+    else:
+        log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
     notional_opened = 0.0
     try:
@@ -2411,6 +2421,9 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
+            elif USE_CONVICTION_ENTRY_GATE and USE_CONVICTION_SIZING and conviction_score < CONVICTION_ENTRY_GATE_MIN_SCORE:
+                log.info(f"[{symbol}] ACTION: No trade (conviction score {conviction_score} below "
+                          f"CONVICTION_ENTRY_GATE_MIN_SCORE={CONVICTION_ENTRY_GATE_MIN_SCORE} -- gate is ON).")
             elif at_position_cap:
                 log.info(f"[{symbol}] ACTION: No trade (at MAX_CONCURRENT_POSITIONS={MAX_CONCURRENT_POSITIONS} cap).")
             elif sector_cap_blocks_entry:

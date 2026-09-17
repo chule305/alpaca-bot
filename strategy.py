@@ -625,6 +625,22 @@ if CONVICTION_TIER1_USD > MAX_DAILY_DEPLOYED_CAPITAL_USD:
         f"supposed to bound all of them."
     )
 
+# 2026-09-17: until now, conviction score only ever affected SIZE, never
+# whether a trade happened at all. A 45-day, live-config-matched backtest
+# across the full S&P 500 (2,819 trades) found the score cleanly monotonic
+# with real outcome quality (win rate 41.2% -> 46.0% -> 49.6%, profit
+# factor 0.70 -> 0.91 -> 1.20 as score rises 0 -> 1 -> 2) -- see CLAUDE.md's
+# 2026-09-17 entry for the full 4-way comparison this came from, including
+# the outlier checks that ruled out the other three configurations tested.
+# Requiring score >= CONVICTION_ENTRY_GATE_MIN_SCORE to enter AT ALL (not
+# just to size up) is what that evidence actually supports; gated on
+# USE_CONVICTION_SIZING too by every caller, so this can never block every
+# trade if conviction sizing itself is ever turned off without remembering
+# to flip this off as well.
+USE_CONVICTION_ENTRY_GATE = os.getenv(
+    "USE_CONVICTION_ENTRY_GATE", "false").strip().lower() in ("1", "true", "yes")
+CONVICTION_ENTRY_GATE_MIN_SCORE = int(os.getenv("CONVICTION_ENTRY_GATE_MIN_SCORE", 2))
+
 
 def compute_conviction_trade_amount(reason_key: str, adx_value: float | None, volume_ratio: float | None,
                                      remaining_daily_pool_usd: float) -> tuple[float, int]:

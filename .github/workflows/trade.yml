@@ -417,6 +417,23 @@ jobs:
           # evidence yet; the pool is still fully reachable on ADX +
           # volume alone without this.
           HIGH_CONVICTION_STRATEGIES: ""
+          # 2026-09-17: a 45-day, live-config-matched backtest across the
+          # full S&P 500 found the conviction score cleanly monotonic with
+          # real outcome quality -- see strategy.py's USE_CONVICTION_ENTRY_
+          # GATE comment and CLAUDE.md's 2026-09-17 entry. Requiring
+          # score >= CONVICTION_ENTRY_GATE_MIN_SCORE to enter AT ALL (not
+          # just to size up) is new; everything else about conviction
+          # sizing above is unchanged.
+          USE_CONVICTION_ENTRY_GATE: "true"
+          CONVICTION_ENTRY_GATE_MIN_SCORE: "2"
+          # Deliberately NOT raised to match SCANNER_WATCHLIST_SIZE below
+          # this time (breaking the convention from the 2026-08-09 comment
+          # on this line) -- with the watchlist now covering most of the
+          # S&P 500, a single score>=2 trade already claims the full
+          # remaining MAX_DAILY_DEPLOYED_CAPITAL_USD pool, so the daily $
+          # pool (not position count) is what will actually bind in
+          # practice, which is the right ceiling for "prefer fewer,
+          # bigger, more-certain trades" over "prefer more open positions."
           MAX_CONCURRENT_POSITIONS: "18"
           MAX_PORTFOLIO_RISK_PCT: "5.0"
           MAX_DAILY_LOSS_PCT: "3"
@@ -432,16 +449,24 @@ jobs:
           CHECK_INTERVAL_MINUTES: "15"
           BAR_MINUTES: "15"
           USE_SCANNER: "true"
-          SCANNER_WATCHLIST_SIZE: "18"
+          # Raised 18 -> 500 on 2026-09-17 -- see the CONVICTION_ENTRY_GATE
+          # comments above and CLAUDE.md's 2026-09-17 entry. Costs nothing
+          # extra in API calls: fetch_sp500_candidates already fetched bars
+          # for essentially the whole S&P 500 every refresh cycle before
+          # this change, just to rank the top (old) 10 by liquidity -- this
+          # only changes how many of those already-ranked names get kept.
+          SCANNER_WATCHLIST_SIZE: "500"
           SCANNER_MIN_WATCHLIST_SIZE: "5"
           SCANNER_MIN_PRICE: "10"
           SCANNER_MIN_DOLLAR_VOLUME: "10000000"
           USE_SP500_UNIVERSE: "true"
-          # Raised 6 -> 10 (of 18) on 2026-08-23 -- see trading_bot.py's
-          # SP500_MIN_WATCHLIST_SLOTS comment. Real money AND an honest
-          # (slippage-inclusive) backtest agree the S&P 500 backstop is
-          # currently the bot's only demonstrated source of edge.
-          SP500_MIN_WATCHLIST_SLOTS: "10"
+          # Raised 6 -> 10 (of 18) on 2026-08-23, then 10 -> 490 (of 500) on
+          # 2026-09-17 alongside SCANNER_WATCHLIST_SIZE above -- see
+          # trading_bot.py's SP500_MIN_WATCHLIST_SLOTS comment. Real money
+          # AND an honest (slippage-inclusive) backtest agree the S&P 500
+          # backstop is this bot's only demonstrated source of edge; ~10
+          # slots are still left for the momentum-movers scan, unchanged.
+          SP500_MIN_WATCHLIST_SLOTS: "490"
           # Reverted to false 2026-08-23 -- see trading_bot.py's
           # USE_MULTI_TIMEFRAME_FILTER comment for the full re-test
           # (leave-one-symbol-out, 2 windows, 2 universes including the

@@ -61,6 +61,18 @@ trade_recorder.TRADE_HISTORY_FILE = os.path.join(tempfile.mkdtemp(), "trades.csv
 # same layering as trade_recorder.TRADE_HISTORY_FILE above.
 tb.OPEN_POSITION_CONTEXT_FILE = os.path.join(tempfile.mkdtemp(), "open_position_context.json")
 
+# check_symbol's BUY branch now also gates on conviction score (see
+# USE_CONVICTION_ENTRY_GATE, 2026-09-17) -- almost every existing test
+# below predates this and uses make_fake_enriched's plain frame (no adx/
+# rvol_avg_volume columns), which always scores 0 and would otherwise be
+# silently blocked regardless of what each test is actually trying to
+# exercise. Forced off here, same layering as LOG_DIR/TRADE_HISTORY_FILE/
+# OPEN_POSITION_CONTEXT_FILE above; the tests that specifically exercise
+# the new gate turn it back on locally within their own body (same
+# override-then-restore pattern used throughout this file for
+# USE_CONVICTION_SIZING).
+tb.USE_CONVICTION_ENTRY_GATE = False
+
 FAILURES = []
 
 
@@ -72,10 +84,21 @@ def check(name: str, condition: bool, detail: str = "") -> None:
 
 
 def make_fake_enriched(minutes_since_open: float, close: float = 100.0, atr: float = 1.0,
-                        high_vol_tercile: bool = False) -> pd.DataFrame:
-    """A one-row stand-in for add_indicators()'s output, with just the columns check_symbol reads."""
-    return pd.DataFrame({"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open],
-                          "high_vol_tercile": [high_vol_tercile]})
+                        high_vol_tercile: bool = False, adx: float | None = None,
+                        rvol_avg_volume: float | None = None, volume: float | None = None) -> pd.DataFrame:
+    """A one-row stand-in for add_indicators()'s output, with just the columns check_symbol reads.
+    adx/rvol_avg_volume/volume default to None (the column simply isn't added, same as before these
+    parameters existed) -- only pass them when a test specifically needs check_symbol's conviction-
+    score inputs (adx_value/volume_ratio) to be something other than the None they'd otherwise be."""
+    data = {"close": [close], "atr": [atr], "minutes_since_open": [minutes_since_open],
+             "high_vol_tercile": [high_vol_tercile]}
+    if adx is not None:
+        data["adx"] = [adx]
+    if rvol_avg_volume is not None:
+        data["rvol_avg_volume"] = [rvol_avg_volume]
+    if volume is not None:
+        data["volume"] = [volume]
+    return pd.DataFrame(data)
 
 
 # ---------------------------------------------------------------------------
@@ -600,6 +623,76 @@ def test_check_symbol_gating():
                                     at_position_cap=False, current_qty=5.0, equity=10000.0, portfolio_risk_estimate=0.0)
     check("a SELL signal on a held position calls place_sell_order (and reports 0 notional opened)",
           mock_sell.called and notional == 0.0)
+
+
+def test_check_symbol_conviction_entry_gate_blocks_low_score_buy():
+    """USE_CONVICTION_ENTRY_GATE (2026-09-17): a BUY signal that scores 0
+    (no adx/volume confirmation -- the plain make_fake_enriched frame) must
+    be refused once the gate is on, same elif-chain pattern as every other
+    named blocker in this function."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    original_gate, original_sizing = tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING
+    try:
+        tb.USE_CONVICTION_ENTRY_GATE = True
+        tb.USE_CONVICTION_SIZING = True
+        with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+             patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+             patch.object(tb, "place_buy_order") as mock_buy:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a score-0 BUY signal is refused when the conviction entry gate is on",
+              notional == 0.0 and not mock_buy.called)
+    finally:
+        tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING = original_gate, original_sizing
+
+
+def test_check_symbol_conviction_entry_gate_allows_high_score_buy():
+    """Same gate, opposite side: a BUY signal with both ADX and volume
+    clearing their real (unpatched) conviction thresholds scores 2 and must
+    still be taken when the gate is on."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    high_adx = strat.CONVICTION_ADX_THRESHOLD + 5
+    high_volume_ratio_bars = {"rvol_avg_volume": 100.0, "volume": 100.0 * (strat.CONVICTION_VOLUME_RATIO_THRESHOLD + 0.5)}
+    fake_order = types.SimpleNamespace(id="test-order-id")
+    original_gate, original_sizing = tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING
+    try:
+        tb.USE_CONVICTION_ENTRY_GATE = True
+        tb.USE_CONVICTION_SIZING = True
+        with patch.object(tb, "add_indicators",
+                           return_value=make_fake_enriched(100, adx=high_adx, **high_volume_ratio_bars)), \
+             patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+             patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)) as mock_buy:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a score-2 BUY signal (ADX and volume both confirm) is still taken when the gate is on",
+              mock_buy.called and notional == 500.0)
+    finally:
+        tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING = original_gate, original_sizing
+
+
+def test_check_symbol_conviction_entry_gate_noop_when_toggle_off():
+    """Toggle off means zero behavior change: the same score-0 signal that
+    test_check_symbol_conviction_entry_gate_blocks_low_score_buy refuses is
+    still taken once the gate itself is off -- today's (pre-2026-09-17)
+    behavior, unaffected by whatever conviction score computes to."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    fake_order = types.SimpleNamespace(id="test-order-id")
+    original_gate, original_sizing = tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING
+    try:
+        tb.USE_CONVICTION_ENTRY_GATE = False
+        tb.USE_CONVICTION_SIZING = True
+        with patch.object(tb, "add_indicators", return_value=make_fake_enriched(100)), \
+             patch.object(tb, "decide_signal_at", return_value=("BUY", "breakout", "test buy")), \
+             patch.object(tb, "place_buy_order", return_value=(fake_order, 500.0)) as mock_buy:
+            notional = tb.check_symbol("AAA", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check("a score-0 BUY signal is still taken when the conviction entry gate toggle is off",
+              mock_buy.called and notional == 500.0)
+    finally:
+        tb.USE_CONVICTION_ENTRY_GATE, tb.USE_CONVICTION_SIZING = original_gate, original_sizing
 
 
 def test_check_symbol_propagates_high_vol_tercile_to_place_buy_order():
@@ -2548,6 +2641,9 @@ if __name__ == "__main__":
         test_portfolio_heat_cap_blocks_when_aggregate_open_risk_is_near_the_ceiling,
         test_daily_risk_state_persistence,
         test_check_symbol_gating,
+        test_check_symbol_conviction_entry_gate_blocks_low_score_buy,
+        test_check_symbol_conviction_entry_gate_allows_high_score_buy,
+        test_check_symbol_conviction_entry_gate_noop_when_toggle_off,
         test_check_symbol_propagates_high_vol_tercile_to_place_buy_order,
         test_place_buy_order_conviction_sizing,
         test_place_buy_order_volatility_precedes_conviction,

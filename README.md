@@ -292,6 +292,27 @@ ceiling regardless: it applies to every trade that day, not just
 boosted ones, and once it's spent, new entries size at $0 (skipped)
 until the next trading day resets it.
 
+**Conviction entry gate — score also decides IF a trade happens, not
+just how big:**
+
+```
+USE_CONVICTION_ENTRY_GATE=true
+CONVICTION_ENTRY_GATE_MIN_SCORE=2
+```
+
+Turned on 2026-09-17 on a 45-day, live-config-matched backtest across
+the full S&P 500 (2,819 trades): the score above is cleanly monotonic
+with real outcome quality (win rate 41.2% → 46.0% → 49.6%, profit
+factor 0.70 → 0.91 → 1.20 as score rises 0 → 1 → 2), and the specific
+combination of scanning wider + gating to score ≥ 2 was the only one of
+four configurations tested that survived removing its single biggest
+trade or symbol — see `CLAUDE.md`'s 2026-09-17 entry for the full
+comparison. A BUY signal scoring below `CONVICTION_ENTRY_GATE_MIN_SCORE`
+is now skipped entirely, same gating layer as `MAX_CONCURRENT_POSITIONS`
+or the sector cap. This is backtest evidence being tested on the paper
+account, not something already proven live — a single flag flip reverts
+it if the real results don't hold up.
+
 **Risk-based sizing exists as an option but is off by default, on a
 real lesson learned.** With `USE_RISK_BASED_SIZING=true`, each position
 is sized so a stop-loss hit costs roughly `RISK_PER_TRADE_PCT` of
@@ -522,19 +543,27 @@ a day to place in a top-50 gainers/losers list. But a 90-day backtest
 (2026-07-28, see CLAUDE.md) found this system performs markedly *better*
 on liquid stocks than on its own scanner picks (profit factor 1.52 on
 megacaps vs 1.08 on scanner picks). So when `USE_SP500_UNIVERSE` is on
-(default), at least `SP500_MIN_WATCHLIST_SLOTS` (default **10**, raised
-from 6 on 2026-08-23 — see CLAUDE.md's full-system regression finding:
-real trading and an honest, slippage-inclusive backtest both independently
+(default), at least `SP500_MIN_WATCHLIST_SLOTS` (raised 6 → 10 on
+2026-08-23 — see CLAUDE.md's full-system regression finding: real
+trading and an honest, slippage-inclusive backtest both independently
 confirmed the backstop is this bot's only demonstrated source of edge,
 while the momentum-mover side currently is not, even with 2026-08-23's
-own new scanner-quality filters) of the
+own new scanner-quality filters; raised again, **10 → 490** (of
+`SCANNER_WATCHLIST_SIZE` **18 → 500**), on 2026-09-17 — see CLAUDE.md's
+2026-09-17 entry for the 4-way backtest behind that change) of the
 watchlist are always reserved for S&P 500 names, ranked by trailing
 dollar volume — regardless of whether anything in the index happens to
 be a big mover that day. The constituent list is fetched from a
 community-maintained CSV mirror (`SP500_LIST_URL`) and cached in-process
 for `SP500_REFRESH_HOURS` (default 24 — the index changes only a handful
 of times a year). These reserved slots come out of the existing
-`SCANNER_WATCHLIST_SIZE` budget, not on top of it.
+`SCANNER_WATCHLIST_SIZE` budget, not on top of it. Widening this to
+essentially the whole index costs no extra API calls: the ranking step
+already fetched bars for nearly all 503 names every refresh cycle just to
+keep the old top 10 — it just keeps more of what it was already fetching.
+`MAX_CONCURRENT_POSITIONS` was deliberately NOT raised to match (breaking
+the convention from 2026-08-09, see CLAUDE.md) — the daily conviction
+pool below, not position count, is meant to be the real ceiling now.
 
 **Multi-timeframe confirmation, scanner picks only** *(off by default —
 `USE_MULTI_TIMEFRAME_FILTER=false`, tested and reverted)*. When on, a
