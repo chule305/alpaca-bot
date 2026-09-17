@@ -3294,3 +3294,106 @@ own.
 **Revert path**: a single flag flip (`USE_CONVICTION_ENTRY_GATE=false`), or
 reverting the two scanner-size numbers, undoes this completely if the paper
 results don't hold up.
+
+## 2026-09-17: breakout strategy investigated (why it keeps failing even when confirmed), two candidate timing fixes tested and rejected, turned OFF
+
+Follow-up to the same day's 4-way backtest above: `breakout` was flagged
+there as a net loser (PF 0.85) even on its high-conviction (score >= 2)
+subset (-$2,487 across 66 trades) -- unlike `trend_following`, whose
+low-conviction trades explain almost all of its own weakness, the new
+entry gate doesn't fix `breakout` because its problem isn't concentrated
+at low conviction.
+
+### Diagnosis: not a directional read failure, and not concentrated at the open either
+
+Real symptom: across all 727 breakout trades, only 4 ever exit via
+stop-loss. 88% exit via end-of-day flatten, 11% via an unrelated regime
+sell signal. Win rate is ~46%, average win and average loss are both
+~1% (nowhere near the nominal 10%/5% target/stop), and the median trade
+sits at -0.11% to -0.20% -- trades mostly just stall near breakeven and
+get closed for time, not for being sharply wrong.
+
+High-conviction breakout trades enter disproportionately early (avg 28
+min since open, 77% within the first 45 minutes). Read `breakout_at` in
+strategy.py: `breakout_recent_high` is a rolling max over the raw,
+cross-day bar sequence, so an entry 28 minutes into a session is
+comparing against a level built almost entirely from the PRIOR day(s),
+not today's own range -- a plausible mechanism for why early breakouts
+would be more fakeout-prone (a "gap and fade" pattern).
+
+### Two candidate fixes, both tested, neither held up
+
+Both reduce to the same mechanism (a minimum minutes-since-open threshold
+before a breakout entry), tested via a new `breakout_min_minutes_since_
+open` parameter added to the scratchpad backtest copy only (not shipped
+to `backtest.py`):
+- **Fix B (45 min)**: extend the existing `SCANNER_OPENING_BLACKOUT_
+  MINUTES` blackout to breakout entries on S&P 500 names too (currently
+  exempt).
+- **Fix A (300 min)**: require the level to be built entirely from
+  today's own bars (`BREAKOUT_LOOKBACK * BAR_MINUTES`).
+
+First (most recent 45-day) window: Fix B made breakout WORSE (PF 0.84 ->
+0.64, portfolio pnl -$1,691 -> -$2,134) -- confirmed not an outlier
+artifact (excluding each config's own top-3 trades by magnitude still
+shows Fix B's remainder, PF 0.85, worse than baseline's, PF 0.89). Fix A
+eliminated breakout entirely (0 trades; the 300-min floor plus the
+90-min-before-close cutoff leaves no valid window in a 6.5-hour session).
+
+**Independently re-tested on a second, non-overlapping 45-day window**
+(the OLDER half of a 90-day fetch, discarding the already-tested most
+recent 45 days) per this file's standing leave-one-out discipline. Found
+a real, separate methodology bug along the way: 24 different S&P 500
+symbols all independently landed the full $25,000 conviction-tier size on
+the SAME real date (2026-07-17) in this window, because `backtest.py`
+gives every symbol its own unlimited simulated pool
+(`remaining_daily_pool_usd=inf`) rather than the real shared, exhaustible
+account-wide `MAX_DAILY_DEPLOYED_CAPITAL_USD`/day -- live, only the first
+qualifying symbol or two that day would actually have gotten that size.
+This inflates raw dollar P&L whenever multiple symbols spike together on
+a real date (present in both windows, more severely in this one -- up to
+24 simultaneous claims vs. up to 7 in the first window), so the
+comparison was redone on equal-weighted, percentage-return terms instead,
+which sidesteps it entirely:
+
+| Window | Config | Win% | Equal-weighted PF | Avg return/trade |
+|---|---|---|---|---|
+| 1 (Aug-Sep) | baseline | 46.1% | 0.89 | -0.06% |
+| 1 | Fix B (45min) | 43.3% | 0.71 | -0.16% |
+| 2 (Jun-Aug) | baseline | 41.2% | 0.52 | -0.35% |
+| 2 | Fix B (45min) | 42.2% | 0.66 | -0.20% |
+| Both | Fix A (300min) | -- | -- | 0 trades either window |
+
+Robust across both independent windows: breakout loses money on average
+at baseline AND under Fix B. Not robust: Fix B's direction flips (worse
+in window 1, less-bad-but-still-negative in window 2) -- not a reliable
+fix either way.
+
+**Separate, more far-reaching implication of the pool-sharing bug**: it
+likely also inflates the dollar magnitude of the "+$3,932" Config 4
+figure in the 4-way backtest above, for the same reason. The directional
+conclusion there (conviction score monotonic with win rate/PF) still
+checks out on a percentage basis, but that specific dollar figure
+shouldn't be treated as precise. `backtest.py`'s own module docstring
+already documents that it doesn't simulate the shared daily pool across
+symbols -- this is a concrete instance of that documented limitation
+actually biting, not a new discovery, but worth a note here since it
+wasn't previously known to move a result this much.
+
+### Decision: USE_BREAKOUT turned off
+
+Turned off in `trade.yml`/`.env` at the user's direction, having seen and
+weighed this evidence. **Explicitly weaker evidentiary basis than
+`vwap_reversion`'s removal above**: this is backtest-only, across two
+independent windows, not the real, 16-trade, four-times-independently-
+confirmed trading history that justified turning `vwap_reversion` off.
+Revert is a single flag flip (`USE_BREAKOUT=true`) if real (paper) data
+argues otherwise once there's enough of it to check.
+
+`test_strategy.py`'s `test_decide_signal_entry_points_agree` hardcoded an
+assumption that `USE_BREAKOUT` defaults to its own on-by-default value --
+fixed with the same save/override/restore pattern already used by
+`test_compute_stop_and_target` in the same file, forcing it on locally
+since that test's actual point (live/backtest priority-order agreement)
+is independent of breakout's live on/off state. Full 6-file suite passes
+clean after the fix.

@@ -610,22 +610,32 @@ def test_decide_signal_entry_points_agree():
     # something to compare the confirmation bar's volume spike against --
     # see test_breakout's comment for why a single-session fixture alone
     # reads NaN and fails closed.
-    n = 31
-    seed_ts = ts_range("2024-01-01", "09:30", n)
-    seed_closes = [100.0] * n
-    seed_volumes = [1000] * n
-    ts = ts_range("2024-01-02", "09:30", n)
-    closes = [115.0] * 3 + [100.0] * (n - 5) + [110.0, 114.0]
-    volumes = [1000] * (n - 2) + [3000, 3500]
-    df = flat_bars(seed_ts + ts, seed_closes + closes, seed_volumes + volumes)
+    # Forces USE_BREAKOUT on regardless of the module-level default (off
+    # live since 2026-09-17, see CLAUDE.md) -- this test's actual point is
+    # live/backtest priority-order agreement, which breakout just happens
+    # to be a convenient example of; same save/override/restore pattern as
+    # test_compute_stop_and_target below.
+    original = strat.USE_BREAKOUT
+    try:
+        strat.USE_BREAKOUT = True
+        n = 31
+        seed_ts = ts_range("2024-01-01", "09:30", n)
+        seed_closes = [100.0] * n
+        seed_volumes = [1000] * n
+        ts = ts_range("2024-01-02", "09:30", n)
+        closes = [115.0] * 3 + [100.0] * (n - 5) + [110.0, 114.0]
+        volumes = [1000] * (n - 2) + [3000, 3500]
+        df = flat_bars(seed_ts + ts, seed_closes + closes, seed_volumes + volumes)
 
-    live_signal, live_reason = strat.decide_signal(df)
-    enriched = strat.add_indicators(df)
-    bt_signal, bt_reason_key, bt_reason = strat.decide_signal_at(enriched, len(df) - 1)
+        live_signal, live_reason = strat.decide_signal(df)
+        enriched = strat.add_indicators(df)
+        bt_signal, bt_reason_key, bt_reason = strat.decide_signal_at(enriched, len(df) - 1)
 
-    check("decide_signal (live) and decide_signal_at (backtest) agree on signal", live_signal == bt_signal)
-    check("decide_signal (live) and decide_signal_at (backtest) agree on reason text", live_reason == bt_reason)
-    check("breakout wins priority and reports the right reason_key", bt_reason_key == "breakout")
+        check("decide_signal (live) and decide_signal_at (backtest) agree on signal", live_signal == bt_signal)
+        check("decide_signal (live) and decide_signal_at (backtest) agree on reason text", live_reason == bt_reason)
+        check("breakout wins priority and reports the right reason_key", bt_reason_key == "breakout")
+    finally:
+        strat.USE_BREAKOUT = original
 
 
 # ---------------------------------------------------------------------------

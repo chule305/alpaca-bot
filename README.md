@@ -45,7 +45,7 @@ something to trust on description alone.
 Every few minutes, for each stock on the watchlist, the bot checks for
 several kinds of opportunity, in this order (first one to fire wins).
 Order was tuned after backtesting (see CLAUDE.md) to put strategies with
-a demonstrated edge ahead of the weaker, high-frequency ones, and four
+a demonstrated edge ahead of the weaker, high-frequency ones, and five
 strategies are currently OFF by default after showing a real, repeated
 loss pattern (kept in the code, not deleted, in case more data tells a
 different story — see CLAUDE.md for the numbers behind each call):
@@ -56,21 +56,20 @@ different story — see CLAUDE.md for the numbers behind each call):
    vs. yesterday's close, and price is pushing through the opening
    bar's high rather than filling the gap back down. Still barely
    tested — these 5 symbols rarely gap enough to trigger it.
-3. **A fresh breakout, confirmed by volume.** Price pushed above its
-   recent range AND trading volume is unusually high (a stricter volume
-   threshold than it started with, after backtesting showed the
-   original was too loose). "Unusually high" is judged against the
-   historical average for that SAME time of day (`USE_TIME_OF_DAY_
-   VOLUME_NORM`, on by default), not a flat trailing average — a bar's
-   volume being "unusual" should be judged against what's normal for
-   that time of day, since intraday volume follows a well-documented
-   U-shape (heaviest at the open, thinnest at midday). 90-day backtest,
-   both universes: profit factor, return, and drawdown all improved
-   together (see CLAUDE.md for the numbers) — enabled 2026-08-06 on a
-   single 90-day window's evidence, sooner than this project's usual
-   longer-track-record convention, by explicit user decision. This
-   project's best-evidenced real source of edge (see the 2026-09-06
-   CLAUDE.md entry), alongside the S&P 500 backstop below.
+3. **A fresh breakout, confirmed by volume** *(off by default —
+   `USE_BREAKOUT=false`, as of 2026-09-17)*. Price pushed above its
+   recent range AND trading volume is unusually high. Looked like a real
+   edge in an earlier 90-day backtest (enabled 2026-08-06 on that single
+   window's evidence) but that didn't hold up: a follow-up backtest
+   across two independent, non-overlapping 45-day windows found it
+   net-negative on average in both, including on its own highest-
+   conviction trades. Two candidate timing fixes were tried first
+   (blocking early-session entries, requiring the breakout level be
+   built from only today's own bars) and neither held up — one made
+   results worse, the other just eliminated the strategy rather than
+   fixing it. Unlike VWAP mean-reversion below, this is backtest-only
+   evidence, not yet checked against real trading history — see
+   CLAUDE.md's 2026-09-17 entry for the full investigation.
 4. **Relative volume (RVOL) spike** *(off by default — `USE_RVOL_SPIKE=false`)*.
    An unusual volume surge on a green bar that also closes strong (not
    just barely green). Net negative in two straight backtests, the

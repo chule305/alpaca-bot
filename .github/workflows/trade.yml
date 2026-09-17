@@ -502,7 +502,19 @@ jobs:
           USE_TIME_OF_DAY_VOLUME_NORM: "true"
           TIME_OF_DAY_VOLUME_BUCKET_MINUTES: "30"
           USE_BREAKOUT_INVALIDATION_EXIT: "false"
-          USE_BREAKOUT: "true"
+          # Turned OFF 2026-09-17 on backtest evidence across TWO
+          # independent, non-overlapping 45-day windows (see CLAUDE.md):
+          # net-negative average return per trade in both, even on the
+          # subset that clears the conviction gate above (score >= 2).
+          # Two candidate timing fixes (a 45-min entry blackout and a
+          # 300-min "today's-bars-only" threshold) were tested first and
+          # neither held up -- the 45-min blackout's effect even flipped
+          # direction between windows, and the 300-min threshold just
+          # eliminated the strategy rather than fixing it. Unlike
+          # USE_VWAP_REVERSION below, this is backtest-only evidence, not
+          # yet confirmed against real trading history -- flip back to
+          # true to re-test with more data if that changes.
+          USE_BREAKOUT: "false"
           USE_GAP_PATTERN: "true"
           USE_SMASH_DAY_PATTERN: "false"
           USE_ROSS_HOOK: "false"
