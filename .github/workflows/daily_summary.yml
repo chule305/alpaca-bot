@@ -38,6 +38,15 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          # 2026-09-18: previously unset here, so daily_summary.py's own
+          # `EMAIL_TO = os.getenv("EMAIL_TO") or EMAIL_ADDRESS` fallback
+          # always applied -- every summary was sent from EMAIL_ADDRESS
+          # to that SAME address, not necessarily wherever the user
+          # actually wanted it. Set EMAIL_TO as its own repo secret
+          # (Settings -> Secrets and variables -> Actions) if the
+          # destination should differ from the sending account; leaving
+          # it unset keeps today's self-addressed behavior unchanged.
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
           # iCloud's SMTP server -- EMAIL_ADDRESS should be an
           # @icloud.com (or @me.com/@mac.com) address, with an
           # app-specific password from appleid.apple.com, not Gmail.
