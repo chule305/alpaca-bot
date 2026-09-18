@@ -88,6 +88,7 @@ from strategy import (
     USE_CONVICTION_SIZING, compute_conviction_trade_amount,
     HIGH_CONVICTION_STRATEGIES, CONVICTION_TIER1_USD, MAX_DAILY_DEPLOYED_CAPITAL_USD,
     USE_BREAKOUT_INVALIDATION_EXIT, USE_CLOSE_BEYOND_LEVEL_CONFIRMATION,
+    USE_CONVICTION_ENTRY_GATE, CONVICTION_ENTRY_GATE_MIN_SCORE,
 )
 
 load_dotenv()
@@ -904,6 +905,22 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                     if USE_CONVICTION_SIZING:
                         trade_amount, conviction_score = compute_conviction_trade_amount(
                             reason_key, adx_value, volume_ratio, float("inf"))
+                        # Mirrors trading_bot.py's check_symbol exactly --
+                        # added 2026-09-18 (code review caught this
+                        # backtest had never been updated for the entry
+                        # gate shipped live the day before, unlike
+                        # USE_MEAN_REVERSION_OPENING_BLACKOUT which WAS
+                        # mirrored here from day one). Deliberately inside
+                        # this `if USE_CONVICTION_SIZING:` block, same as
+                        # live: conviction_score is only ever a REAL score
+                        # here, not a hardcoded 0 default, when conviction
+                        # sizing itself is on -- gating outside this block
+                        # would block every trade the moment
+                        # USE_CONVICTION_SIZING is off, same trap
+                        # strategy.py's own USE_CONVICTION_ENTRY_GATE
+                        # comment warns about.
+                        if USE_CONVICTION_ENTRY_GATE and conviction_score < CONVICTION_ENTRY_GATE_MIN_SCORE:
+                            continue
                     qty = int(trade_amount // entry_price)
                 if qty < 1:
                     continue  # not enough simulated capital/risk budget for even 1 share
@@ -1085,6 +1102,10 @@ if __name__ == "__main__":
               f"volatility-based size-down always wins if a trade qualifies for both; NOTE: this "
               f"backtester tests one symbol in isolation and does not simulate the pool being shared "
               f"or exhausted across other symbols -- see this file's module docstring)\n")
+        if USE_CONVICTION_ENTRY_GATE:
+            print(f"Conviction entry gate: ON -- a BUY scoring below "
+                  f"CONVICTION_ENTRY_GATE_MIN_SCORE={CONVICTION_ENTRY_GATE_MIN_SCORE} is skipped "
+                  f"entirely, not just sized smaller\n")
     print("=" * 70)
 
     # Unconditional now, regardless of the toggles below: entry slippage

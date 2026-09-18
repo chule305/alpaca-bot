@@ -3493,3 +3493,90 @@ more data.
 (`USE_MEAN_REVERSION_OPENING_BLACKOUT=false`) fully undoes this.
 Backtest-only evidence, same caveat as `USE_BREAKOUT`'s removal above --
 not yet checked against real trading history.
+
+## 2026-09-18: full code review of everything shipped this week (conviction gate, breakout off, mean_reversion blackout) before pushing -- 4 real issues found and fixed, 3 lower-severity ones documented
+
+At the user's explicit request, before pushing anything further: 8
+independent review angles (3 correctness, 3 cleanup, altitude,
+conventions) across the full diff since before this week's changes,
+followed by adversarial 1-vote verification on each surviving candidate.
+Two issues were caught independently by 2-3 angles each, which is itself
+a useful signal for which findings to trust most.
+
+**Fixed (all CONFIRMED or judged real despite a technical REFUTED):**
+
+1. **The HOLD-signal `log.debug` downgrade (from yesterday's conviction-
+   gate entry) didn't quiet that log line, it deleted it.** The root
+   logger is configured at `level=logging.INFO` with no DEBUG handler
+   anywhere in the file, so `log.debug()` calls for the (now much more
+   common, ~500-symbol watchlist) HOLD case were never written to the
+   log file or console at all -- confirmed via Python's own
+   `isEnabledFor` gating, not a version quirk. Reverted to unconditional
+   `log.info`; the log-volume tradeoff this was trying to solve is left
+   unsolved rather than solved by silently losing the audit trail this
+   project's own debugging has repeatedly depended on.
+2. **The conviction entry gate was missing a `not USE_RISK_BASED_SIZING`
+   guard.** `conviction_score` only actually drives position SIZE under
+   flat-dollar sizing -- `place_buy_order`'s risk-based branch calls
+   `compute_position_size` and never consults it, leaving
+   `conviction_score` hardcoded at 0 there. Without the guard, the gate
+   would keep blocking every score<2 entry on a score with no bearing on
+   sizing the moment `USE_RISK_BASED_SIZING` is ever turned on
+   independently. Currently latent (`USE_RISK_BASED_SIZING=false` live)
+   but real. Added `and not USE_RISK_BASED_SIZING` to the gate condition
+   in `trading_bot.py`, and extended `USE_CONVICTION_ENTRY_GATE`'s
+   comment in `strategy.py` to document it.
+3. **`backtest.py` never got the conviction entry gate mirrored in.** A
+   verifier initially called this REFUTED, citing yesterday's CLAUDE.md
+   entry explicitly documenting `backtest.py` as deliberately untouched
+   for that one-off study -- true, but overridden here: the very next
+   day's `mean_reversion` work established "mirror every live filter
+   into `backtest.py`" as the actual working convention, and the gap is
+   still real and present-tense (any future backtest of this exact gate
+   would silently simulate pre-gate behavior). Mirrored in: new import,
+   a skip-check inside `simulate()`'s existing `if USE_CONVICTION_SIZING:`
+   block (same placement logic as live -- gating outside that block
+   would incorrectly block every trade whenever conviction sizing itself
+   is off), plus a startup-banner print line. Broke one existing test
+   (`test_scanner_pick_entry_slips_by_the_calibrated_scanner_constant`,
+   via the same `IndexError`-crashes-before-later-checks-run pattern
+   already seen twice this week) -- fixed with the same
+   `bt.USE_CONVICTION_ENTRY_GATE = False` global override
+   `test_trading_bot.py` already uses.
+4. **A scanner log line became nonsensical.** `f"top {SCANNER_WATCHLIST_
+   SIZE} movers of {SCANNER_CANDIDATE_POOL} candidates"` rendered as "top
+   500 movers of 50 candidates" once `SCANNER_WATCHLIST_SIZE` passed
+   `SCANNER_CANDIDATE_POOL`'s hard 50-candidate cap (Alpaca's screener
+   API limit) -- self-contradictory, not just imprecise. Reworded to
+   "up to 50 movers + S&P 500 backstop, 500 watchlist slots total."
+5. **A stale comment now contradicts a newer one.** The 2026-08-09
+   comment next to `MAX_CONCURRENT_POSITIONS` still asserted "the
+   position-count cap can no longer block a trade the scanner itself was
+   willing to watch" -- no longer true once `SCANNER_WATCHLIST_SIZE` hit
+   500 while this stayed at 18. Annotated with a correction pointing to
+   the real (different) reason the cap still isn't expected to bind: the
+   daily $ pool exhausts first.
+
+**Documented but deliberately not restructured (real, but lower
+severity, and the fix carries more risk than the problem):**
+
+- `compute_conviction_trade_amount` now runs twice per BUY signal (once
+  in `check_symbol` for the gate, once in `place_buy_order` for sizing)
+  -- found independently by 3 review angles. Confirmed negligible in
+  raw cost by the efficiency angle; the real risk is the two call sites
+  silently disagreeing if a future change ever lets their inputs
+  diverge. Restructuring `place_buy_order` to accept a precomputed score
+  was considered and deliberately deferred -- its sizing branch is
+  delicate, well-tested logic with its own explicit precedence rules,
+  not something to touch incidentally while shipping an unrelated gate
+  under time pressure right before a push. Documented as an explicit
+  INVARIANT comment instead.
+- `USE_MEAN_REVERSION_OPENING_BLACKOUT` is defined independently in both
+  `trading_bot.py` and `backtest.py` rather than once in `strategy.py`
+  and imported -- found independently by 3 review angles. Not a
+  regression: `USE_SCANNER_OPENING_BLACKOUT` already has the exact same
+  pre-existing duplication. Left as-is rather than refactoring a
+  pre-existing pattern beyond this week's actual scope.
+
+Full 6-file suite passes clean after all fixes. `.env`/`trade.yml`
+re-verified in sync.

@@ -637,6 +637,15 @@ if CONVICTION_TIER1_USD > MAX_DAILY_DEPLOYED_CAPITAL_USD:
 # USE_CONVICTION_SIZING too by every caller, so this can never block every
 # trade if conviction sizing itself is ever turned off without remembering
 # to flip this off as well.
+# 2026-09-18 (code review, before this ever ran live): trading_bot.py's
+# caller ALSO gates on `not USE_RISK_BASED_SIZING` -- conviction_score
+# only actually drives position SIZE under flat-dollar sizing
+# (place_buy_order's risk-based branch calls compute_position_size and
+# never consults it), so without that extra guard the gate would keep
+# blocking low-score entries on a score with no bearing on sizing the
+# moment USE_RISK_BASED_SIZING is ever turned on. Same class of drift
+# this comment already warns about for USE_CONVICTION_SIZING, just a
+# second toggle that can silently break the same assumption.
 USE_CONVICTION_ENTRY_GATE = os.getenv(
     "USE_CONVICTION_ENTRY_GATE", "false").strip().lower() in ("1", "true", "yes")
 CONVICTION_ENTRY_GATE_MIN_SCORE = int(os.getenv("CONVICTION_ENTRY_GATE_MIN_SCORE", 2))

@@ -508,6 +508,14 @@ MIN_NEWS_ITEMS = int(os.getenv("MIN_NEWS_ITEMS", 1))
 # the position-count cap can no longer block a trade the scanner itself
 # was willing to watch; the real risk ceiling is MAX_PORTFOLIO_HEAT_USD
 # and MAX_POSITIONS_PER_SECTOR below, not this number.
+# (Correction, 2026-09-18: this 1:1 premise no longer holds -- trade.yml
+# raised SCANNER_WATCHLIST_SIZE to 500 without raising this constant, SO
+# this cap CAN bind again, on any day where more than 18 symbols clear
+# the new conviction entry gate. Left at 18 deliberately anyway; see
+# trade.yml's comment on its own MAX_CONCURRENT_POSITIONS line for why
+# -- a single score>=2 trade already claims the whole remaining daily $
+# pool, so the pool is expected to exhaust before this count does, not
+# because the two numbers still match.)
 MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 18))
 MAX_DAILY_LOSS_PCT = float(os.getenv("MAX_DAILY_LOSS_PCT", 3))
 MAX_PORTFOLIO_RISK_PCT = float(os.getenv("MAX_PORTFOLIO_RISK_PCT", 5.0))
@@ -2410,16 +2418,37 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             volume_ratio = bar_volume / avg_volume
 
     # Same score place_buy_order will recompute for sizing -- cheap (pure,
-    # no I/O) so recomputing it here too (rather than threading it through
-    # as an extra return value) is simpler than it looks. Only used for the
-    # entry gate below; sizing itself is untouched.
+    # no I/O, confirmed negligible even at ~500-symbol watchlist scale by
+    # code review) so recomputing it here too (rather than threading it
+    # through as an extra return value) is simpler than it looks. Only
+    # used for the entry gate below; sizing itself is untouched.
+    # INVARIANT (flagged by code review, not fixed -- see CLAUDE.md's
+    # 2026-09-18 entry): this call and place_buy_order's own call to the
+    # same function MUST be passed the identical reason_key/adx_value/
+    # volume_ratio/remaining_daily_pool_usd. They already are, since both
+    # come from the same values computed once per cycle -- but if a
+    # future change ever lets these two call sites see different inputs,
+    # the entry gate's decision and place_buy_order's sizing decision can
+    # silently disagree about a trade's conviction. Restructuring
+    # place_buy_order to accept a precomputed score was considered and
+    # deliberately deferred -- its sizing branch is delicate, well-tested
+    # logic with its own explicit precedence rules (see its docstring),
+    # not something to restructure incidentally while shipping this gate.
     _, conviction_score = compute_conviction_trade_amount(
         reason_key, adx_value, volume_ratio, remaining_daily_pool_usd)
 
-    if signal == "HOLD":
-        log.debug(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
-    else:
-        log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
+    # 2026-09-18: was briefly downgraded to log.debug for HOLD signals to
+    # cut log volume now that the watchlist covers ~500 symbols instead of
+    # 18 -- reverted the same day. The root logger is configured at
+    # level=logging.INFO (see logging.basicConfig above) with no DEBUG
+    # handler anywhere, so that "downgrade" was actually a silent deletion
+    # of this line for the HOLD case (by far the most common signal),
+    # not a quieter version of it -- caught by code review before ever
+    # shipping. This project's own debugging history (see CLAUDE.md) has
+    # repeatedly depended on a complete per-symbol/per-cycle record, so
+    # unconditional log.info stays, and the log-volume tradeoff is
+    # accepted rather than solved here.
+    log.info(f"[{symbol}] {reason} | Signal: {signal} | Shares held: {current_qty} | Last price: ${last_price:.2f}")
 
     notional_opened = 0.0
     try:
@@ -2452,7 +2481,8 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
-            elif USE_CONVICTION_ENTRY_GATE and USE_CONVICTION_SIZING and conviction_score < CONVICTION_ENTRY_GATE_MIN_SCORE:
+            elif (USE_CONVICTION_ENTRY_GATE and USE_CONVICTION_SIZING and not USE_RISK_BASED_SIZING
+                    and conviction_score < CONVICTION_ENTRY_GATE_MIN_SCORE):
                 log.info(f"[{symbol}] ACTION: No trade (conviction score {conviction_score} below "
                           f"CONVICTION_ENTRY_GATE_MIN_SCORE={CONVICTION_ENTRY_GATE_MIN_SCORE} -- gate is ON).")
             elif at_position_cap:
@@ -3062,7 +3092,16 @@ if __name__ == "__main__":
     log.info("=== Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===")
     if USE_SCANNER:
         log.info(f"Watchlist mode: AUTOMATIC SCANNER (refreshes every {SCANNER_REFRESH_HOURS:.1f}h, "
-                  f"top {SCANNER_WATCHLIST_SIZE} movers of {SCANNER_CANDIDATE_POOL} candidates, "
+                  # 2026-09-18: was "top {SCANNER_WATCHLIST_SIZE} movers of
+                  # {SCANNER_CANDIDATE_POOL} candidates" -- nonsensical once
+                  # SCANNER_WATCHLIST_SIZE (500) exceeded SCANNER_CANDIDATE_
+                  # POOL's hard 50-candidate cap (Alpaca's screener API
+                  # limit). Movers can only ever fill up to
+                  # SCANNER_CANDIDATE_POOL slots; the S&P 500 backstop
+                  # below fills the rest of the SCANNER_WATCHLIST_SIZE
+                  # budget when USE_SP500_UNIVERSE is on.
+                  f"up to {SCANNER_CANDIDATE_POOL} movers + S&P 500 backstop, "
+                  f"{SCANNER_WATCHLIST_SIZE} watchlist slots total, "
                   f"min price ${SCANNER_MIN_PRICE:.0f}, max extension {SCANNER_MAX_EXTENSION_PCT:.0f}%, "
                   f"leveraged ETFs excluded: {EXCLUDE_LEVERAGED_ETFS}, news filter: {USE_NEWS_FILTER}). "
                   f"Fallback list: {', '.join(SYMBOLS)}")

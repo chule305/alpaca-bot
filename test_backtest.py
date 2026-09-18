@@ -20,6 +20,16 @@ from unittest.mock import patch
 
 import backtest as bt
 
+# simulate()'s BUY path now also gates on conviction score (see
+# USE_CONVICTION_ENTRY_GATE, mirrored into backtest.py 2026-09-18) --
+# every existing test below predates this and uses fixtures with no
+# adx/rvol_avg_volume columns, which always score 0 and would otherwise
+# be silently blocked regardless of what each test is actually testing.
+# Forced off here, same layering (and same reason) as test_trading_bot.py's
+# identical override; the conviction-gate-specific tests, if any are
+# added to this file, would turn it back on locally within their own body.
+bt.USE_CONVICTION_ENTRY_GATE = False
+
 FAILURES = []
 
 
