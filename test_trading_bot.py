@@ -2174,6 +2174,78 @@ def test_scanner_opening_blackout_does_not_block_after_the_window():
           mock_buy.called and notional == 500.0)
 
 
+def test_check_symbol_blocks_mean_reversion_opening_blackout_on_sp500_symbol():
+    """
+    See USE_MEAN_REVERSION_OPENING_BLACKOUT (2026-09-18) -- unlike
+    USE_SCANNER_OPENING_BLACKOUT above, this one has NO S&P-500 exemption:
+    backtest evidence across two independent windows was on the full S&P
+    500, not scanner picks, so an S&P 500 symbol is blocked here even
+    though test_check_symbol_blocks_scanner_opening_blackout_on_non_sp500_
+    symbol shows it would NOT be blocked by the scanner-only gate above.
+    """
+    df_input = pd.DataFrame({"close": [100.0]})
+    early_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES / 2
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", False), \
+         patch.object(tb, "USE_MEAN_REVERSION_OPENING_BLACKOUT", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a mean_reversion BUY within the window is refused even on an S&P 500 symbol",
+          not mock_buy.called and notional == 0.0)
+
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", False), \
+         patch.object(tb, "USE_MEAN_REVERSION_OPENING_BLACKOUT", False), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("with the toggle off, the same early mean_reversion entry is taken normally",
+          mock_buy.called and notional == 500.0)
+
+
+def test_mean_reversion_opening_blackout_is_reason_key_scoped():
+    """Unlike the scanner opening blackout (applies to every strategy), this
+    one is deliberately scoped to mean_reversion only -- other strategies'
+    early entries on S&P 500 names are untouched by this specific gate."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    early_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES / 2
+    for reason_key in ("breakout", "trend_following", "vwap_reversion"):
+        with patch.object(tb, "add_indicators", return_value=make_fake_enriched(early_minute)), \
+             patch.object(tb, "decide_signal_at", return_value=("BUY", reason_key, "test buy")), \
+             patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", False), \
+             patch.object(tb, "USE_MEAN_REVERSION_OPENING_BLACKOUT", True), \
+             patch.object(tb, "USE_VWAP_VOLUME_CONFIRMATION", False), \
+             patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+            notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                        at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                        portfolio_risk_estimate=0.0)
+        check(f"the mean_reversion-only blackout does not block a {reason_key} BUY",
+              mock_buy.called and notional == 500.0)
+
+
+def test_mean_reversion_opening_blackout_does_not_block_after_the_window():
+    """Past SCANNER_OPENING_BLACKOUT_MINUTES, a mean_reversion BUY on an
+    S&P 500 symbol proceeds normally."""
+    df_input = pd.DataFrame({"close": [100.0]})
+    late_minute = tb.SCANNER_OPENING_BLACKOUT_MINUTES + 5
+    with patch.object(tb, "add_indicators", return_value=make_fake_enriched(late_minute)), \
+         patch.object(tb, "decide_signal_at", return_value=("BUY", "mean_reversion", "test buy")), \
+         patch.object(tb, "USE_SCANNER_OPENING_BLACKOUT", False), \
+         patch.object(tb, "USE_MEAN_REVERSION_OPENING_BLACKOUT", True), \
+         patch.object(tb, "place_buy_order", return_value=(MagicMock(id="x"), 500.0)) as mock_buy:
+        notional = tb.check_symbol("AAPL", df_input, entries_paused_reason=None,
+                                    at_position_cap=False, current_qty=0.0, equity=10000.0,
+                                    portfolio_risk_estimate=0.0)
+    check("a mean_reversion BUY past the opening blackout window is taken normally",
+          mock_buy.called and notional == 500.0)
+
+
 def test_symbol_cooldown_blocks_immediate_reentry():
     """
     Regression for 2026-07-27, where 7 of 10 trades were rapid re-entries
@@ -2679,6 +2751,9 @@ if __name__ == "__main__":
         test_scanner_opening_blackout_applies_to_every_strategy,
         test_scanner_opening_blackout_noop_when_disabled,
         test_scanner_opening_blackout_does_not_block_after_the_window,
+        test_check_symbol_blocks_mean_reversion_opening_blackout_on_sp500_symbol,
+        test_mean_reversion_opening_blackout_is_reason_key_scoped,
+        test_mean_reversion_opening_blackout_does_not_block_after_the_window,
         test_vwap_volume_filter_exempts_sp500_even_when_volume_is_weak,
         test_vwap_volume_filter_blocks_non_sp500_with_weak_volume,
         test_vwap_volume_filter_allows_non_sp500_with_strong_volume,

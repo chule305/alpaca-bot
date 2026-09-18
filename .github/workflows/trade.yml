@@ -486,6 +486,20 @@ jobs:
           SCANNER_MAX_EXTENSION_PCT: "20"
           USE_SCANNER_OPENING_BLACKOUT: "true"
           SCANNER_OPENING_BLACKOUT_MINUTES: "45"
+          # Turned ON 2026-09-18 on backtest evidence across TWO
+          # independent, non-overlapping 45-day windows (see CLAUDE.md):
+          # blocking mean_reversion entries in this same opening window,
+          # WITHOUT the S&P-500 exemption above, consistently improved
+          # results in both (equal-weighted PF 0.58->0.71 and
+          # 0.81->0.91) -- doesn't make the strategy profitable on its
+          # own, harm reduction not a full fix. A stricter alternative
+          # (require 2 consecutive up-closes instead of 1) was also
+          # tested and rejected -- cut trade frequency to near-nothing
+          # (11 and then 3 trades across the two windows), too thin to
+          # trust either way. Backtest-only evidence, same caveat as
+          # everything else shipped this week -- not yet checked against
+          # real trading history.
+          USE_MEAN_REVERSION_OPENING_BLACKOUT: "true"
           USE_SCANNER_MIN_LISTING_AGE: "true"
           SCANNER_MIN_LISTING_AGE_DAYS: "100"
           USE_NEWS_FILTER: "true"

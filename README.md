@@ -99,7 +99,13 @@ different story — see CLAUDE.md for the numbers behind each call):
    sideways?** ADX answers that, then picks between **trend-following**
    (fast/slow moving average crossover) or **mean-reversion** (RSI
    oversold/overbought, tightened to require price is already turning
-   back up before buying — not just an oversold reading).
+   back up before buying — not just an oversold reading). Mean-reversion
+   entries are also blocked in the first `SCANNER_OPENING_BLACKOUT_
+   MINUTES` (45) of the session, on EVERY symbol including S&P 500 names
+   (`USE_MEAN_REVERSION_OPENING_BLACKOUT=true`, as of 2026-09-18) — a
+   backtest across two independent 45-day windows found this consistently
+   reduced its losses, though it doesn't make the strategy profitable on
+   its own; see CLAUDE.md's 2026-09-18 entry.
 
 This switching is the "adapting to the market" behavior. Exits (selling
 a position already held, if the stop-loss/take-profit hasn't already

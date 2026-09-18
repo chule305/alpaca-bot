@@ -3397,3 +3397,99 @@ fixed with the same save/override/restore pattern already used by
 since that test's actual point (live/backtest priority-order agreement)
 is independent of breakout's live on/off state. Full 6-file suite passes
 clean after the fix.
+
+## 2026-09-18: mean_reversion investigated the same way, one candidate fix (mean_reversion-specific opening blackout) holds up across both windows and ships; the other rejected
+
+Same investigation as breakout's above, applied to `mean_reversion`: same
+failure signature (97% of trades exit via end-of-day flatten, not a stop
+or the RSI-overbought exit; ~42% win rate; symmetric ~1.2% avg win/loss;
+concentrated ~35 min since open). Two candidate fixes tested via the same
+scratchpad-only `backtest_experiment.py` parameter approach, across both
+the same recent 45-day window and the independent, non-overlapping older
+45-day window used for breakout:
+
+- **Fix 1**: extend the opening-range blackout to `mean_reversion`
+  entries too, WITHOUT the S&P-500 exemption `USE_SCANNER_OPENING_
+  BLACKOUT` has (that evidence was scanner-picks-only; this backtest ran
+  the full S&P 500).
+- **Fix 2**: require 2 consecutive up-closes instead of `mean_reversion_
+  at`'s current single-bar "already turning up" confirmation.
+
+### Fix 1 holds up in both windows; Fix 2 doesn't produce enough trades to trust
+
+| Window | Config | n | Win% | $ PF | Equal-wt PF | Avg%/trade |
+|---|---|---|---|---|---|---|
+| 1 (recent) | baseline | 115 | 40.0% | 0.54 | 0.58 | -0.32% |
+| 1 | Fix 1 (blackout) | 43 | 48.8% | 0.24 | 0.71 | -0.15% |
+| 1 | Fix 2 (2-bar turnup) | 11 | 45.5% | 4.74 | 0.89 | -0.08% |
+| 2 (independent) | baseline | 70 | 38.6% | 1.05 | 0.81 | -0.14% |
+| 2 | Fix 1 (blackout) | 30 | 50.0% | 0.65 | 0.91 | -0.05% |
+| 2 | Fix 2 (2-bar turnup) | 3 | 33.3% | 0.01 | 0.02 | -1.07% |
+
+Dollar PF is noisy here (small samples, no relation to the shared-pool
+sizing bug found investigating breakout -- confirmed zero mean_reversion
+trades in either window ever reached conviction-tier ($20k+) sizing, so
+that particular distortion doesn't apply). Equal-weighted (percentage)
+PF is what to trust: **Fix 1 improves both windows, in the same
+direction, consistently** (0.58->0.71 and 0.81->0.91) -- unlike
+breakout's timing fix, which flipped direction between windows. Fix 2
+collapses trade count to 11 then 3, the same "eliminates rather than
+fixes" trap as breakout's 300-min threshold -- not usable evidence
+either way.
+
+**Outlier check on Fix 1** (excluding each window's own top-3 trades by
+magnitude): window 1 improves further (0.71 -> 0.92, robust). Window 2
+softens (0.91 -> 0.68) -- 2 of its top-3 trades were wins, so removing
+them takes away more upside than downside in a 30-trade sample. Real,
+worth flagging: Fix 1's benefit is consistent in direction across both
+windows but the SIZE of the improvement in window 2 is more fragile than
+window 1's, given the small sample there.
+
+**Honest bottom line, given to the user before deciding**: Fix 1 is a
+genuine, cross-window-consistent improvement, but it does not make
+`mean_reversion` profitable on its own -- every config above stays under
+PF 1.0 on a percentage basis. Harm reduction, not a fix. User chose to
+ship it anyway rather than turn the strategy off entirely or wait for
+more data.
+
+### Shipped: USE_MEAN_REVERSION_OPENING_BLACKOUT
+
+- **`trading_bot.py`**: new `USE_MEAN_REVERSION_OPENING_BLACKOUT` toggle
+  (default off in code). New `mean_reversion_opening_blackout_blocks_
+  entry` computed alongside the existing `scanner_opening_blackout_
+  blocks_entry`, with a new named `elif` in `check_symbol`'s gate chain
+  right after it. Deliberately reuses `SCANNER_OPENING_BLACKOUT_MINUTES`
+  (45) as the shared duration rather than adding a second independent
+  constant -- both gates test the same underlying idea (the opening
+  window distorts technical signals), just for different strategies, so
+  tuning one duration moving both together is the right coupling.
+- **`backtest.py`**: mirrored for real (not just the scratchpad copy),
+  same pattern as every other live filter this file already mirrors --
+  a new module-level `USE_MEAN_REVERSION_OPENING_BLACKOUT` read directly
+  inside `simulate()` (not threaded through as a per-call parameter,
+  since unlike `apply_scanner_opening_blackout` it isn't `is_scanner_
+  pick`-dependent), plus a startup-banner print line alongside the
+  scanner blackout's.
+- **`trade.yml`/`.env`** (kept in sync): `USE_MEAN_REVERSION_OPENING_
+  BLACKOUT=true`.
+- **Tests**: 3 new tests in `test_trading_bot.py`, mirroring the existing
+  4-test shape for `USE_SCANNER_OPENING_BLACKOUT` (blocks on an S&P 500
+  symbol within the window -- the new behavior the old gate couldn't
+  produce; doesn't block OTHER strategies' early entries, unlike the
+  scanner gate which applies to every strategy; doesn't block past the
+  window). No existing test broke this time (unlike the conviction gate
+  and `USE_BREAKOUT` episodes above) -- the one existing test that
+  exercises `mean_reversion` inside the opening window
+  (`test_scanner_opening_blackout_applies_to_every_strategy`) uses a
+  non-S&P-500 symbol, where the pre-existing scanner blackout already
+  fires first in the `elif` chain, so the new gate is never even reached
+  for that case. Full 6-file suite passes clean.
+- **Not touched**: `TRADE_AMOUNT_USD`/`MAX_DAILY_DEPLOYED_CAPITAL_USD`
+  (per standing convention); `mean_reversion_at` itself in `strategy.py`
+  (Fix 2, the alternative that would have changed it, was rejected on
+  the evidence above).
+
+**Revert path**: a single flag flip
+(`USE_MEAN_REVERSION_OPENING_BLACKOUT=false`) fully undoes this.
+Backtest-only evidence, same caveat as `USE_BREAKOUT`'s removal above --
+not yet checked against real trading history.

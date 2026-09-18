@@ -197,6 +197,18 @@ USE_SCANNER_OPENING_BLACKOUT = os.getenv("USE_SCANNER_OPENING_BLACKOUT", "true")
 # pattern -- see CLAUDE.md for the full window-size sweep.
 SCANNER_OPENING_BLACKOUT_MINUTES = int(os.getenv("SCANNER_OPENING_BLACKOUT_MINUTES", 45))
 
+# Mirrors trading_bot.py's USE_MEAN_REVERSION_OPENING_BLACKOUT -- unlike
+# USE_SCANNER_OPENING_BLACKOUT above, applies to EVERY mean_reversion BUY
+# regardless of S&P 500 membership (the backtest evidence behind this was
+# across the full S&P 500, not scanner picks). Shares SCANNER_OPENING_
+# BLACKOUT_MINUTES's threshold deliberately -- see trading_bot.py's
+# comment. Not is_scanner_pick-dependent, so unlike apply_scanner_
+# opening_blackout below this isn't threaded through simulate() as a
+# per-call argument; it's read directly, same as ENTRY_BLACKOUT_START/
+# END_MINUTES further down.
+USE_MEAN_REVERSION_OPENING_BLACKOUT = os.getenv(
+    "USE_MEAN_REVERSION_OPENING_BLACKOUT", "false").strip().lower() in ("1", "true", "yes")
+
 # Mirrors trading_bot.py's USE_SCANNER_MIN_LISTING_AGE -- SCANNER PICKS
 # ONLY. Unlike the per-bar filters above, this is a per-SYMBOL, whole-run
 # gate (a symbol's listing age doesn't change bar to bar): checked ONCE
@@ -810,6 +822,14 @@ def simulate(symbol: str, bars: pd.DataFrame, starting_equity: float,
                 # consulted for a mean_reversion entry specifically). See
                 # USE_SECTOR_RELATIVE_MEAN_REVERSION's comment there.
                 continue
+            if (signal == "BUY" and reason_key == "mean_reversion"
+                    and USE_MEAN_REVERSION_OPENING_BLACKOUT
+                    and current_bar["minutes_since_open"] < SCANNER_OPENING_BLACKOUT_MINUTES):
+                # mean_reversion opening-range blackout -- mirrors
+                # trading_bot.py's check_symbol exactly. Deliberately no
+                # S&P-500 exemption, unlike apply_scanner_opening_blackout
+                # above -- see USE_MEAN_REVERSION_OPENING_BLACKOUT's comment.
+                continue
             if signal == "BUY":
                 # A BUY is a real market order, not a perfect fill at the
                 # decision bar's close -- see ENTRY_SLIPPAGE_PCT_SCANNER/
@@ -1086,6 +1106,9 @@ if __name__ == "__main__":
               f"{SCANNER_OPENING_BLACKOUT_MINUTES} min after the open "
               f"(additive to the {ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} "
               f"min lunch-window blackout below)")
+    if USE_MEAN_REVERSION_OPENING_BLACKOUT:
+        print(f"mean_reversion opening-range blackout: ON, ALL symbols (no S&P 500 exemption), "
+              f"first {SCANNER_OPENING_BLACKOUT_MINUTES} min after the open")
     if USE_SCANNER_MIN_LISTING_AGE:
         print(f"Scanner minimum listing age: ON, scanner-picks-only, requires >= "
               f"{SCANNER_MIN_LISTING_AGE_DAYS} trading days of daily bar history "

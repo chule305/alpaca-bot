@@ -246,6 +246,23 @@ SCANNER_MAX_EXTENSION_PCT = float(os.getenv("SCANNER_MAX_EXTENSION_PCT", 20.0))
 USE_SCANNER_OPENING_BLACKOUT = os.getenv("USE_SCANNER_OPENING_BLACKOUT", "true").strip().lower() in ("1", "true", "yes")
 SCANNER_OPENING_BLACKOUT_MINUTES = int(os.getenv("SCANNER_OPENING_BLACKOUT_MINUTES", 45))
 
+# 2026-09-18: a SEPARATE blackout, mean_reversion-specific, that -- unlike
+# the scanner one above -- also applies to S&P 500 names, not just
+# scanner picks. Backtest evidence (45-day, live-config-matched, across
+# TWO independent non-overlapping windows -- see CLAUDE.md's 2026-09-18
+# entry): blocking mean_reversion entries in the same opening window
+# consistently improved results in both windows (equal-weighted profit
+# factor 0.58->0.71 and 0.81->0.91), though it doesn't flip the strategy
+# profitable on its own -- harm reduction, not a full fix. Shares
+# SCANNER_OPENING_BLACKOUT_MINUTES's threshold deliberately: both gates
+# are testing the same underlying idea (the opening window distorts
+# technical signals), just for different strategies/eligible symbols, so
+# tuning one duration should move both. Backtest-only evidence, same
+# caveat as everything else shipped today -- not yet checked against
+# real trading history.
+USE_MEAN_REVERSION_OPENING_BLACKOUT = os.getenv(
+    "USE_MEAN_REVERSION_OPENING_BLACKOUT", "false").strip().lower() in ("1", "true", "yes")
+
 # 2026-08-23 scanner robustness investigation, continued: no listing-age
 # filter existed anywhere, so a genuinely recent, no-track-record listing
 # could reach the live watchlist with zero screening as long as it moved
@@ -2345,6 +2362,16 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
         and symbol not in fetch_sp500_symbols()
     )
 
+    # mean_reversion-specific opening blackout -- see USE_MEAN_REVERSION_
+    # OPENING_BLACKOUT's comment above. Deliberately NO S&P-500 exemption
+    # (unlike scanner_opening_blackout_blocks_entry above): backtest
+    # evidence was across the full S&P 500, not scanner picks, so this
+    # applies to every mean_reversion BUY regardless of symbol.
+    mean_reversion_opening_blackout_blocks_entry = (
+        USE_MEAN_REVERSION_OPENING_BLACKOUT and signal == "BUY" and reason_key == "mean_reversion"
+        and minutes_since_open_now < SCANNER_OPENING_BLACKOUT_MINUTES
+    )
+
     # Breakout invalidation exit -- see USE_BREAKOUT_INVALIDATION_EXIT and
     # breakout_invalidated_at() in strategy.py for the reasoning. Reads the
     # frozen entry-time level from open_position_context (persisted by
@@ -2418,6 +2445,10 @@ def check_symbol(symbol: str, df: pd.DataFrame, entries_paused_reason: str | Non
                 log.info(f"[{symbol}] ACTION: No trade (scanner opening-range blackout -- within "
                           f"{SCANNER_OPENING_BLACKOUT_MINUTES:.0f} min of the open on a non-S&P-500 "
                           f"scanner pick, real-money-confirmed as the most dangerous entry window).")
+            elif mean_reversion_opening_blackout_blocks_entry:
+                log.info(f"[{symbol}] ACTION: No trade (mean_reversion opening-range blackout -- within "
+                          f"{SCANNER_OPENING_BLACKOUT_MINUTES:.0f} min of the open, backtest-confirmed "
+                          f"across two independent windows regardless of S&P 500 membership).")
             elif in_lunch_blackout:
                 log.info(f"[{symbol}] ACTION: No trade (within the historically weak "
                           f"{ENTRY_BLACKOUT_START_MINUTES}-{ENTRY_BLACKOUT_END_MINUTES} min-since-open entry window).")
