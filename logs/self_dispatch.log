@@ -119,3 +119,4 @@
 2026-10-14T20:33:29Z dow=3 hour=20 decision=skipped_spacing spacing_age_minutes=0
 2026-10-14T20:33:05Z dow=3 hour=20 decision=dispatched spacing_age_minutes=
 2026-10-14T23:26:46Z dow=3 hour=23 decision=skipped_window spacing_age_minutes=
+2026-10-15T20:00:02Z dow=4 hour=19 decision=dispatched spacing_age_minutes=
