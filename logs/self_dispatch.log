@@ -128,3 +128,4 @@
 2026-10-16T20:00:02Z dow=5 hour=18 decision=dispatched spacing_age_minutes=
 2026-10-16T18:46:43Z dow=5 hour=16 decision=dispatched spacing_age_minutes=
 2026-10-16T20:00:43Z dow=5 hour=20 decision=dispatched spacing_age_minutes=
+2026-10-16T20:02:06Z dow=5 hour=20 decision=skipped_spacing spacing_age_minutes=1
