@@ -1,0 +1,1013 @@
+2026-11-17 20:36:01,304 | === Adaptive Intraday Trading Bot starting (PAPER TRADING MODE) ===
+2026-11-17 20:36:01,304 | Watchlist mode: AUTOMATIC SCANNER (refreshes every 0.5h, up to 50 movers + S&P 500 backstop, 500 watchlist slots total, min price $10, max extension 20%, leveraged ETFs excluded: True, news filter: True). Fallback list: TSLA, NVDA, COIN, AMD, PLTR
+2026-11-17 20:36:01,304 | Scanner minimum listing age: ON -- requires >= 100 trading days of daily bar history (real cases this catches: ALMR ~80d, EROC ~43d)
+2026-11-17 20:36:01,304 | Bar size: 15min | Check interval while market open: 15min
+2026-11-17 20:36:01,304 | Active strategies: gap_continuation, trend_following, mean_reversion (regime-switched by ADX)
+2026-11-17 20:36:01,304 | Trend strategy: EMA 9/21 crossover | Range strategy: RSI 14 (25.0/75.0) | Switched by ADX 14 (threshold 25.0)
+2026-11-17 20:36:01,304 | No new entries between 210-270 min after the open (historically weak window in backtesting)
+2026-11-17 20:36:01,304 | Scanner opening-range blackout: ON -- no new scanner-pick (non-S&P-500) entries in the first 45 min after the open (real-money-confirmed, additive to the lunch-window blackout above, not a replacement for it)
+2026-11-17 20:36:01,304 | Risk management: fixed stop-loss -5% / take-profit +10% on every buy
+2026-11-17 20:36:01,304 | Position sizing: flat $500 per trade
+2026-11-17 20:36:01,304 | Graduated conviction sizing: ON -- qualifying strategies: none yet (real evidence-gated, see strategy.py). 1 of 3 confirming signals (strategy match / ADX >= 35 / volume >= 2.5x avg) sizes at $5000; 2 or more signals sizes at up to the full remaining $25,000/day pool (volatility-based size-down always wins when a trade qualifies for both)
+2026-11-17 20:36:01,305 | Position limits: max 18 concurrent positions | max 5.0% aggregate portfolio risk | daily loss circuit breaker at -3% (pauses new entries only)
+2026-11-17 20:36:01,305 | Portfolio heat cap: max $2,000 aggregate $-at-risk across all open positions
+2026-11-17 20:36:01,305 | Sector concentration cap: max 2 open positions per sector (new entries only; symbols with no known sector are exempt)
+2026-11-17 20:36:01,305 | End-of-day mode: positions will be auto-closed 10 min before market close.
+2026-11-17 20:36:01,305 | Loaded saved watchlist from previous run: NVDA, AMD, MU, SNDK, MSFT, AAPL, AVGO, TSLA, AMZN, META, GOOGL, INTC, GOOG, MRVL, LLY, GEV, ORCL, BE, LITE, AMAT, BRK.B, STX, PLTR, DELL, V, COST, COHR, LRCX, TXN, TMO, WMT, XOM, MRNA, CSCO, MA, KLAC, JNJ, ADI, CAT, QCOM, JPM, APP, NFLX, WDC, NXPI, CVX, GS, ANET, SO, HD, MPWR, PANW, PG, UNH, SMCI, ABBV, MCD, HUM, CRM, CRWD, DE, ACN, APH, FOXA, GE, SYK, KO, PEP, COF, MS, REGN, ABT, TJX, COP, AKAM, XEL, BA, JCI, NOW, TDG, KDP, AMGN, NEE, DASH, VRT, PM, DHR, SHW, UNP, MRK, TTWO, ABNB, HWM, CVS, RTX, BKNG, EQIX, VLO, MPC, GILD, LIN, HOOD, HLT, CMI, TMUS, ETN, CEG, LOW, KMB, WELL, MCHP, BAC, SCHW, PH, TT, DUK, ICE, EOG, ISRG, MMM, PWR, MCK, UBER, TRV, MAR, C, LYV, CME, INTU, MSI, PSX, DIS, DLR, EXPE, IBM, SNPS, AZO, GLW, FERG, AXP, VRTX, PGR, TER, GWW, SPGI, T, OXY, EW, BLK, MDT, PFE, CLX, HCA, COIN, WFC, ADBE, LMT, CIEN, AEP, DDOG, RCL, CDNS, SYF, TGT, SBUX, HONA, WMB, CI, FIX, PLD, UPS, ADP, BSX, AXON, ELV, VZ, FICO, NEM, CB, EBAY, PSA, GPN, AJG, BMY, ON, URI, COR, NSC, UAL, BDX, YUM, ROST, CRH, HON, MCO, CL, WAT, AME, BKR, FSLR, WM, ADSK, ECL, AMT, KKR, BNY, CBOE, ROK, FCX, ALL, ORLY, IDXX, WEC, CVNA, CAH, NOC, MLM, GD, PNC, ROP, TWLO, CHTR, HSY, CSX, APO, PPL, MRSH, DHI, CTAS, IQV, TRGP, LHX, NKE, VMRK, IR, MO, FISV, FTNT, MDLZ, VST, EMR, RSG, ECHO, ODFL, BX, SRE, TEL, PCAR, DVN, DAL, ILMN, SLB, HPE, CNP, CARR, GM, KEYS, EL, USB, ETR, XYZ, SPG, TPR, MNST, XYL, CMCSA, TFC, WAB, A, NDAQ, NTAP, CMG, ED, MSCI, RDDT, OKTA, ZTS, SWKS, PAYX, EQT, MET, CCI, AWK, DLTR, PTC, FDX, D, ARES, CRL, NUE, EXC, ES, CNC, FANG, OTIS, HPQ, NRG, IBKR, ZBRA, CBRE, STZ, MTD, Q, FLEX, DOV, PYPL, AMP, CMS, EME, DXCM, CASY, AIG, VMC, CDW, BIIB, KR, TYL, BBY, WDAY, RF, ADM, FAST, HIG, ULTA, VEEV, DECK, AON, KMI, EXPD, VTR, BR, STT, APD, ALGN, JBL, TKO, OKE, ITW, LH, EXR, HAS, PHM, F, RMD, DG, FFIV, IFF, CCL, WSM, ZBH, VYLR, CPRT, SYY, FITB, KHC, OMC, TSCO, TSN, DTE, DGX, CTSH, GEHC, RL, STE, VRSN, TDY, FIS, RVTY, CFG, CF, KEY, HAL, P, IRM, DPZ, FDS, PEG, TECH, WYNN, EFX, PNW, HBAN, EXE, DRI, LEN, LVS, LYB, PCG, LUV, EVRG, VRSK, AEE, NI, AFL, HUBB, FE, ROL, KIM, HST, WST, APA, NVR, GNRC, MAS, RJF, LULU, GRMN, O, GIS, VTRS, CHD, LNT, DD, PRU, VLTO, IVZ, LII, DOW, SWK, SBAC, TROW, PPG, NCLH, CPAY, ATO, TXT, GEN, BRO, CHRW, PODD, IT, STLD, FTV, JBHT, NTRS, INCY, SW, MKC, BEN, MOS, AIZ, VICI, MTB, BG, IP, EG, TRMB, ACGL, ALLE, AMCR, HII, DVA, UDR, FDXF, HSIC, REG, MGM, SJM, IEX, JKHY, ALB, ESS, BALL, PKG, WTW, LDOS, EIX, CSGP, GDDY, INVH, MAA, PNR, SNA, COO, NWSA, APTV, TPL, CPT, WRB, PFG, UHS, J, WY, BAX, AOS, DOC, SOLV, GPC, CINF, BXP
+2026-11-17 20:36:01,305 | Restored daily risk state from previous run: day 2026-11-13, breaker tripped: False
+2026-11-17 20:36:01,305 | Restored open-position context for 2 symbol(s) from previous run.
+2026-11-17 20:36:01,305 | Running in --duration-minutes mode: cycling for 150 minutes, then exiting.
+2026-11-17 20:36:01,509 | Daily loss circuit breaker: tracking from starting equity $99,331.58 (limit -3%).
+2026-11-17 20:36:01,509 | Daily conviction-sizing pool reset: $25,000 available today.
+2026-11-17 20:36:01,509 | SCANNER: refreshing watchlist...
+2026-11-17 20:36:01,790 | SCANNER: no candidates survived the price/extension filters.
+2026-11-17 20:36:01,790 | SCANNER: every candidate this cycle was a leveraged/inverse ETF.
+2026-11-17 20:36:01,942 | S&P 500: refreshed constituent list (503 symbols).
+2026-11-17 20:36:11,018 | S&P 500 liquidity backstop -> NVDA, MU, AMD, AAPL, MSFT, TSLA, SNDK, AMZN, AVGO, GOOGL, META, INTC, GOOG, LLY, MRVL, GEV, V, AMAT, COST, GS, SO, ORCL, DELL, BRK.B, PLTR, BE, HD, LITE, LRCX, CSCO, JPM, TMO, XEL, STX, MA, WMT, NFLX, PG, XOM, JNJ, TXN, UNH, KDP, NXPI, UNP, COHR, CRM, KLAC, TJX, QCOM, PANW, SYK, CVX, DIS, ACN, CAT, ABBV, ADI, SCHW, KO, MCD, APP, HOOD, ANET, DHR, MRNA, COP, DASH, WDC, GE, PEP, MRK, NEE, CRWD, COF, MS, DE, SNPS, GILD, LIN, BAC, MCK, LOW, MPC, IBM, ABNB, CVS, SHW, DUK, REGN, C, WELL, ABT, NOW, MAR, WEC, AMGN, MPWR, JCI, BKNG, ELV, CMI, MCHP, ISRG, PM, TT, MMM, TRV, PSX, SMCI, HON, VRT, APH, TDG, RTX, UPS, BLK, BMY, HUM, MDT, AZO, CL, INTU, TMUS, HLT, BA, CME, EQIX, UBER, COIN, NKE, CB, WFC, ADP, T, TTWO, MSI, ED, TGT, DDOG, ETN, VLO, AEP, KMB, HCA, SPGI, MDLZ, WM, CEG, SBUX, PH, NSC, ICE, EOG, SYF, VRTX, HWM, ADBE, CDNS, AXP, ROST, FCX, IQV, PWR, EBAY, COR, VZ, EW, ORLY, HONA, CI, ALL, GWW, LMT, RSG, ADSK, GLW, NOC, MCO, EMR, PGR, LYV, BDX, TWLO, CAH, CIEN, KEYS, ETR, KKR, APO, ROK, MRSH, URI, TEL, BNY, TER, CBOE, BSX, AJG, DVN, CSX, PFE, WMB, ECL, TSCO, CMCSA, LHX, FIX, WDAY, FOXA, NEM, CNP, NDAQ, CHTR, AON, CRH, PSA, FANG, DHI, MSCI, RCL, TPR, PLD, CTAS, GD, FICO, SLB, TRGP, NTAP, FISV, AMT, FERG, AKAM, PYPL, ROP, AXON, ON, GM, FDX, FLEX, EXC, UAL, VRSK, OXY, MNST, MO, IDXX, AME, DLR, EXPE, SRE, MLM, CARR, CVNA, BX, IR, ODFL, HPE, ZBH, A, VST, CNC, KR, OKTA, FTNT, ADM, TSN, MET, HSY, ILMN, FSLR, SPG, PCAR, WSM, AMP, AFL, CCI, PNC, SYY, YUM, USB, FAST, BKR, DXCM, PTC, D, VMRK, TFC, ECHO, RF, WAT, XYZ, WAB, CHRW, DLTR, TKO, EL, FFIV, CMG, AWK, HPQ, ARES, AIG, PPL, RL, TECH, CRL, NI, STZ, CBRE, DAL, CLX, ES, CHD, APD, KEY, ITW, DECK, PAYX, CASY, STT, FITB, VEEV, DG, EQT, KMI, MTD, PRU, DOV, F, ZTS, CMS, VYLR, CCL, PHM, DPZ, EXPD, AEE, ULTA, ZBRA, BIIB, LNT, EME, CDW, SWKS, OKE, LII, KHC, RDDT, RVTY, VTR, OTIS, VLTO, TYL, IVZ, PCG, HAL, JBL, IBKR, LVS, BR, HBAN, BBY, DGX, LH, NUE, PODD, RMD, IT, WST, TDY, STE, DRI, PPG, SWK, O, CPRT, ACGL, P, VRSN, CFG, GPN, CTSH, EFX, XYL, TROW, HIG, RJF, LYB, HAS, JBHT, IFF, PNW, PEG, VMC, Q, GEHC, IRM, FE, GIS, APA, DD, SW, STLD, OMC, ROL, JKHY, EVRG, EIX, DTE, NVR, GEN, LULU, ATO, CF, NRG, GRMN, EG, MTB, HST, HSIC, EXE, SNA, TXT, BRO, VICI, DOW, LUV, ESS, KIM, INCY, BG, ALLE, FIS, NCLH, ALGN, HUBB, SBAC, NTRS, MAS, FDS, SJM, EXR, FTV, LEN, IP, GNRC, WTW, MGM, BEN, REG, BAX, IEX, TRMB, INVH, VTRS, WYNN, AMCR, PNR, FDXF, WRB, CINF, WY, HII, LDOS, APTV, PKG, AIZ, UHS, MKC, CPAY, GDDY, COO, CSGP, ALB, DVA, PFG, NWSA, MAA, J, DOC, TPL, GPC, MOS, AES, HRL, BALL, UDR, AVY, FRT
+2026-11-17 20:36:11,020 | SCANNER: new watchlist -> NVDA, MU, AMD, AAPL, MSFT, TSLA, SNDK, AMZN, AVGO, GOOGL, META, INTC, GOOG, LLY, MRVL, GEV, V, AMAT, COST, GS, SO, ORCL, DELL, BRK.B, PLTR, BE, HD, LITE, LRCX, CSCO, JPM, TMO, XEL, STX, MA, WMT, NFLX, PG, XOM, JNJ, TXN, UNH, KDP, NXPI, UNP, COHR, CRM, KLAC, TJX, QCOM, PANW, SYK, CVX, DIS, ACN, CAT, ABBV, ADI, SCHW, KO, MCD, APP, HOOD, ANET, DHR, MRNA, COP, DASH, WDC, GE, PEP, MRK, NEE, CRWD, COF, MS, DE, SNPS, GILD, LIN, BAC, MCK, LOW, MPC, IBM, ABNB, CVS, SHW, DUK, REGN, C, WELL, ABT, NOW, MAR, WEC, AMGN, MPWR, JCI, BKNG, ELV, CMI, MCHP, ISRG, PM, TT, MMM, TRV, PSX, SMCI, HON, VRT, APH, TDG, RTX, UPS, BLK, BMY, HUM, MDT, AZO, CL, INTU, TMUS, HLT, BA, CME, EQIX, UBER, COIN, NKE, CB, WFC, ADP, T, TTWO, MSI, ED, TGT, DDOG, ETN, VLO, AEP, KMB, HCA, SPGI, MDLZ, WM, CEG, SBUX, PH, NSC, ICE, EOG, SYF, VRTX, HWM, ADBE, CDNS, AXP, ROST, FCX, IQV, PWR, EBAY, COR, VZ, EW, ORLY, HONA, CI, ALL, GWW, LMT, RSG, ADSK, GLW, NOC, MCO, EMR, PGR, LYV, BDX, TWLO, CAH, CIEN, KEYS, ETR, KKR, APO, ROK, MRSH, URI, TEL, BNY, TER, CBOE, BSX, AJG, DVN, CSX, PFE, WMB, ECL, TSCO, CMCSA, LHX, FIX, WDAY, FOXA, NEM, CNP, NDAQ, CHTR, AON, CRH, PSA, FANG, DHI, MSCI, RCL, TPR, PLD, CTAS, GD, FICO, SLB, TRGP, NTAP, FISV, AMT, FERG, AKAM, PYPL, ROP, AXON, ON, GM, FDX, FLEX, EXC, UAL, VRSK, OXY, MNST, MO, IDXX, AME, DLR, EXPE, SRE, MLM, CARR, CVNA, BX, IR, ODFL, HPE, ZBH, A, VST, CNC, KR, OKTA, FTNT, ADM, TSN, MET, HSY, ILMN, FSLR, SPG, PCAR, WSM, AMP, AFL, CCI, PNC, SYY, YUM, USB, FAST, BKR, DXCM, PTC, D, VMRK, TFC, ECHO, RF, WAT, XYZ, WAB, CHRW, DLTR, TKO, EL, FFIV, CMG, AWK, HPQ, ARES, AIG, PPL, RL, TECH, CRL, NI, STZ, CBRE, DAL, CLX, ES, CHD, APD, KEY, ITW, DECK, PAYX, CASY, STT, FITB, VEEV, DG, EQT, KMI, MTD, PRU, DOV, F, ZTS, CMS, VYLR, CCL, PHM, DPZ, EXPD, AEE, ULTA, ZBRA, BIIB, LNT, EME, CDW, SWKS, OKE, LII, KHC, RDDT, RVTY, VTR, OTIS, VLTO, TYL, IVZ, PCG, HAL, JBL, IBKR, LVS, BR, HBAN, BBY, DGX, LH, NUE, PODD, RMD, IT, WST, TDY, STE, DRI, PPG, SWK, O, CPRT, ACGL, P, VRSN, CFG, GPN, CTSH, EFX, XYL, TROW, HIG, RJF, LYB, HAS, JBHT, IFF, PNW, PEG, VMC, Q, GEHC, IRM, FE, GIS, APA, DD, SW, STLD, OMC, ROL, JKHY, EVRG, EIX, DTE, NVR, GEN, LULU, ATO, CF, NRG, GRMN, EG, MTB, HST, HSIC, EXE, SNA, TXT, BRO, VICI, DOW, LUV, ESS, KIM, INCY, BG, ALLE, FIS, NCLH, ALGN, HUBB, SBAC, NTRS, MAS, FDS, SJM, EXR, FTV, LEN, IP, GNRC, WTW, MGM, BEN, REG, BAX, IEX, TRMB, INVH, VTRS, WYNN, AMCR, PNR, FDXF, WRB, CINF, WY, HII, LDOS, APTV, PKG, AIZ, UHS, MKC, CPAY, GDDY, COO, CSGP, ALB, DVA, PFG, NWSA, MAA, J, DOC, TPL, GPC, MOS, AES, HRL, BALL, UDR, AVY, FRT
+2026-11-17 20:36:11,060 | Market is open (closes 2026-11-17 22:00:00 CET your local time). Checking 490 symbols: A, AAPL, ABBV, ABNB, ABT, ACGL, ACN, ADBE, ADI, ADM, ADP, ADSK, AEE, AEP, AES, AFL, AIG, AIZ, AJG, AKAM, ALB, ALGN, ALL, ALLE, AMAT, AMCR, AMD, AME, AMGN, AMP, AMT, AMZN, ANET, AON, APA, APD, APH, APO, APP, APTV, ARES, ATO, AVGO, AVY, AWK, AXON, AXP, AZO, BA, BAC, BALL, BAX, BBY, BDX, BE, BEN, BG, BIIB, BKNG, BKR, BLK, BMY, BNY, BR, BRK.B, BRO, BSX, BX, C, CAH, CARR, CASY, CAT, CB, CBOE, CBRE, CCI, CCL, CDNS, CDW, CEG, CF, CFG, CHD, CHRW, CHTR, CI, CIEN, CINF, CL, CLX, CMCSA, CME, CMG, CMI, CMS, CNC, CNP, COF, COHR, COIN, COO, COP, COR, COST, CPAY, CPRT, CRH, CRL, CRM, CRWD, CSCO, CSGP, CSX, CTAS, CTSH, CVNA, CVS, CVX, D, DAL, DASH, DD, DDOG, DE, DECK, DELL, DG, DGX, DHI, DHR, DIS, DLR, DLTR, DOC, DOV, DOW, DPZ, DRI, DTE, DUK, DVA, DVN, DXCM, EBAY, ECHO, ECL, ED, EFX, EG, EIX, EL, ELV, EME, EMR, EOG, EQIX, EQT, ES, ESS, ETN, ETR, EVRG, EW, EXC, EXE, EXPD, EXPE, EXR, F, FANG, FAST, FCX, FDS, FDX, FDXF, FE, FERG, FFIV, FICO, FIS, FISV, FITB, FIX, FLEX, FOXA, FRT, FSLR, FTNT, FTV, GD, GDDY, GE, GEHC, GEN, GEV, GILD, GIS, GLW, GM, GNRC, GOOG, GOOGL, GPC, GPN, GRMN, GS, GWW, HAL, HAS, HBAN, HCA, HD, HIG, HII, HLT, HON, HONA, HOOD, HPE, HPQ, HRL, HSIC, HST, HSY, HUBB, HUM, HWM, IBKR, IBM, ICE, IDXX, IEX, IFF, ILMN, INCY, INTC, INTU, INVH, IP, IQV, IR, IRM, ISRG, IT, ITW, IVZ, J, JBHT, JBL, JCI, JKHY, JNJ, JPM, KDP, KEY, KEYS, KHC, KIM, KKR, KLAC, KMB, KMI, KO, KR, LDOS, LEN, LH, LHX, LII, LIN, LITE, LLY, LMT, LNT, LOW, LRCX, LULU, LUV, LVS, LYB, LYV, MA, MAA, MAR, MAS, MCD, MCHP, MCK, MCO, MDLZ, MDT, MET, META, MGM, MKC, MLM, MMM, MNST, MO, MOS, MPC, MPWR, MRK, MRNA, MRSH, MRVL, MS, MSCI, MSFT, MSI, MTB, MTD, MU, NCLH, NDAQ, NEE, NEM, NFLX, NI, NKE, NOC, NOW, NRG, NSC, NTAP, NTRS, NUE, NVDA, NVR, NWSA, NXPI, O, ODFL, OKE, OKTA, OMC, ON, ORCL, ORLY, OTIS, OXY, P, PANW, PAYX, PCAR, PCG, PEG, PEP, PFE, PFG, PG, PGR, PH, PHM, PKG, PLD, PLTR, PM, PNC, PNR, PNW, PODD, PPG, PPL, PRU, PSA, PSX, PTC, PWR, PYPL, Q, QCOM, RCL, RDDT, REG, REGN, RF, RJF, RL, RMD, ROK, ROL, ROP, ROST, RSG, RTX, RVTY, SBAC, SBUX, SCHW, SHW, SJM, SLB, SMCI, SNA, SNDK, SNPS, SO, SPG, SPGI, SRE, STE, STLD, STT, STX, STZ, SW, SWK, SWKS, SYF, SYK, SYY, T, TDG, TDY, TECH, TEL, TER, TFC, TGT, TJX, TKO, TMO, TMUS, TPL, TPR, TRGP, TRMB, TROW, TRV, TSCO, TSLA, TSN, TT, TTWO, TWLO, TXN, TXT, TYL, UAL, UBER, UDR, UHS, ULTA, UNH, UNP, UPS, URI, USB, V, VEEV, VICI, VLO, VLTO, VMC, VMRK, VRSK, VRSN, VRT, VRTX, VST, VTR, VTRS, VYLR, VZ, WAB, WAT, WDAY, WDC, WEC, WELL, WFC, WM, WMB, WMT, WRB, WSM, WST, WTW, WY, WYNN, XEL, XOM, XYL, XYZ, YUM, ZBH, ZBRA, ZTS (within 90 min of close -- not enough runway left today for a new position)
+2026-11-17 20:36:30,004 | [A] choppy/sideways (ADX 12.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $171.86
+2026-11-17 20:36:30,004 | [A] ACTION: No trade.
+2026-11-17 20:36:30,016 | [AAPL] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $350.48
+2026-11-17 20:36:30,017 | [AAPL] ACTION: No trade.
+2026-11-17 20:36:30,029 | [ABBV] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $292.36
+2026-11-17 20:36:30,029 | [ABBV] ACTION: No trade.
+2026-11-17 20:36:30,083 | [ABNB] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $181.51
+2026-11-17 20:36:30,083 | [ABNB] ACTION: No trade.
+2026-11-17 20:36:30,096 | [ABT] trending (ADX 48.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.93
+2026-11-17 20:36:30,096 | [ABT] ACTION: No trade.
+2026-11-17 20:36:30,147 | [ACGL] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $109.60
+2026-11-17 20:36:30,147 | [ACGL] ACTION: No trade.
+2026-11-17 20:36:30,199 | [ACN] trending (ADX 41.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $240.18
+2026-11-17 20:36:30,199 | [ACN] ACTION: No trade.
+2026-11-17 20:36:30,211 | [ADBE] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $235.39
+2026-11-17 20:36:30,211 | [ADBE] ACTION: No trade.
+2026-11-17 20:36:30,266 | [ADI] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $379.87
+2026-11-17 20:36:30,266 | [ADI] ACTION: No trade.
+2026-11-17 20:36:30,316 | [ADM] trending (ADX 50.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $69.42
+2026-11-17 20:36:30,316 | [ADM] ACTION: No trade.
+2026-11-17 20:36:30,368 | [ADP] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.44
+2026-11-17 20:36:30,368 | [ADP] ACTION: No trade.
+2026-11-17 20:36:30,419 | [ADSK] trending (ADX 49.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $256.76
+2026-11-17 20:36:30,419 | [ADSK] ACTION: No trade.
+2026-11-17 20:36:30,469 | [AEE] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $112.62
+2026-11-17 20:36:30,470 | [AEE] ACTION: No trade.
+2026-11-17 20:36:30,521 | [AEP] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $126.11
+2026-11-17 20:36:30,521 | [AEP] ACTION: No trade.
+2026-11-17 20:36:30,613 | [AES] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $14.96
+2026-11-17 20:36:30,613 | [AES] ACTION: No trade.
+2026-11-17 20:36:30,664 | [AFL] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.83
+2026-11-17 20:36:30,664 | [AFL] ACTION: No trade.
+2026-11-17 20:36:30,722 | [AIG] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $81.61
+2026-11-17 20:36:30,722 | [AIG] ACTION: No trade.
+2026-11-17 20:36:30,773 | [AIZ] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $323.23
+2026-11-17 20:36:30,773 | [AIZ] ACTION: No trade.
+2026-11-17 20:36:30,825 | [AJG] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $283.25
+2026-11-17 20:36:30,825 | [AJG] ACTION: No trade.
+2026-11-17 20:36:30,877 | [AKAM] choppy/sideways (ADX 20.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $84.45
+2026-11-17 20:36:30,877 | [AKAM] ACTION: No trade.
+2026-11-17 20:36:30,928 | [ALB] choppy/sideways (ADX 18.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $87.71
+2026-11-17 20:36:30,928 | [ALB] ACTION: No trade.
+2026-11-17 20:36:30,980 | [ALGN] trending (ADX 43.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $163.29
+2026-11-17 20:36:30,980 | [ALGN] ACTION: No trade.
+2026-11-17 20:36:31,032 | [ALL] choppy/sideways (ADX 15.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $270.21
+2026-11-17 20:36:31,032 | [ALL] ACTION: No trade.
+2026-11-17 20:36:31,084 | [ALLE] trending (ADX 36.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $187.52
+2026-11-17 20:36:31,084 | [ALLE] ACTION: No trade.
+2026-11-17 20:36:31,096 | [AMAT] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $342.92
+2026-11-17 20:36:31,096 | [AMAT] ACTION: No trade.
+2026-11-17 20:36:31,148 | [AMCR] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.47
+2026-11-17 20:36:31,148 | [AMCR] ACTION: No trade.
+2026-11-17 20:36:31,161 | [AMD] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $490.37
+2026-11-17 20:36:31,161 | [AMD] ACTION: No trade.
+2026-11-17 20:36:31,212 | [AME] trending (ADX 26.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $234.10
+2026-11-17 20:36:31,212 | [AME] ACTION: No trade.
+2026-11-17 20:36:31,263 | [AMGN] trending (ADX 38.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $456.63
+2026-11-17 20:36:31,264 | [AMGN] ACTION: No trade.
+2026-11-17 20:36:31,316 | [AMP] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $510.60
+2026-11-17 20:36:31,316 | [AMP] ACTION: No trade.
+2026-11-17 20:36:31,370 | [AMT] trending (ADX 31.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $186.70
+2026-11-17 20:36:31,370 | [AMT] ACTION: No trade.
+2026-11-17 20:36:31,383 | [AMZN] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $257.17
+2026-11-17 20:36:31,383 | [AMZN] ACTION: No trade.
+2026-11-17 20:36:31,435 | [ANET] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $184.97
+2026-11-17 20:36:31,435 | [ANET] ACTION: No trade.
+2026-11-17 20:36:31,486 | [AON] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $336.15
+2026-11-17 20:36:31,486 | [AON] ACTION: No trade.
+2026-11-17 20:36:31,537 | [APA] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.63
+2026-11-17 20:36:31,538 | [APA] ACTION: No trade.
+2026-11-17 20:36:31,588 | [APD] trending (ADX 57.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $309.40
+2026-11-17 20:36:31,588 | [APD] ACTION: No trade.
+2026-11-17 20:36:31,639 | [APH] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.48
+2026-11-17 20:36:31,639 | [APH] ACTION: No trade.
+2026-11-17 20:36:31,693 | [APO] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $118.21
+2026-11-17 20:36:31,693 | [APO] ACTION: No trade.
+2026-11-17 20:36:31,746 | [APP] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $400.39
+2026-11-17 20:36:31,746 | [APP] ACTION: No trade.
+2026-11-17 20:36:31,797 | [APTV] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $37.87
+2026-11-17 20:36:31,797 | [APTV] ACTION: No trade.
+2026-11-17 20:36:31,848 | [ARES] trending (ADX 26.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.85
+2026-11-17 20:36:31,848 | [ARES] ACTION: No trade.
+2026-11-17 20:36:31,899 | [ATO] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $172.61
+2026-11-17 20:36:31,899 | [ATO] ACTION: No trade.
+2026-11-17 20:36:31,911 | [AVGO] choppy/sideways (ADX 13.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $337.79
+2026-11-17 20:36:31,911 | [AVGO] ACTION: No trade.
+2026-11-17 20:36:31,962 | [AVY] trending (ADX 27.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $185.62
+2026-11-17 20:36:31,962 | [AVY] ACTION: No trade.
+2026-11-17 20:36:32,014 | [AWK] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $149.93
+2026-11-17 20:36:32,014 | [AWK] ACTION: No trade.
+2026-11-17 20:36:32,065 | [AXON] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $300.90
+2026-11-17 20:36:32,065 | [AXON] ACTION: No trade.
+2026-11-17 20:36:32,077 | [AXP] choppy/sideways (ADX 17.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.60
+2026-11-17 20:36:32,077 | [AXP] ACTION: No trade.
+2026-11-17 20:36:32,130 | [AZO] choppy/sideways (ADX 17.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $3276.84
+2026-11-17 20:36:32,130 | [AZO] ACTION: No trade.
+2026-11-17 20:36:32,142 | [BA] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $163.55
+2026-11-17 20:36:32,142 | [BA] ACTION: No trade.
+2026-11-17 20:36:32,154 | [BAC] trending (ADX 29.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $49.48
+2026-11-17 20:36:32,154 | [BAC] ACTION: No trade.
+2026-11-17 20:36:32,206 | [BALL] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $65.05
+2026-11-17 20:36:32,206 | [BALL] ACTION: No trade.
+2026-11-17 20:36:32,257 | [BAX] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.82
+2026-11-17 20:36:32,257 | [BAX] ACTION: No trade.
+2026-11-17 20:36:32,310 | [BBY] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $98.92
+2026-11-17 20:36:32,310 | [BBY] ACTION: No trade.
+2026-11-17 20:36:32,386 | [BDX] trending (ADX 40.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.99
+2026-11-17 20:36:32,386 | [BDX] ACTION: No trade.
+2026-11-17 20:36:32,436 | [BE] choppy/sideways (ADX 22.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $170.22
+2026-11-17 20:36:32,436 | [BE] ACTION: No trade.
+2026-11-17 20:36:32,487 | [BEN] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.38
+2026-11-17 20:36:32,487 | [BEN] ACTION: No trade.
+2026-11-17 20:36:32,537 | [BG] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $95.59
+2026-11-17 20:36:32,537 | [BG] ACTION: No trade.
+2026-11-17 20:36:32,591 | [BIIB] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $249.50
+2026-11-17 20:36:32,591 | [BIIB] ACTION: No trade.
+2026-11-17 20:36:32,603 | [BKNG] trending (ADX 30.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $154.12
+2026-11-17 20:36:32,603 | [BKNG] ACTION: No trade.
+2026-11-17 20:36:32,659 | [BKR] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.49
+2026-11-17 20:36:32,659 | [BKR] ACTION: No trade.
+2026-11-17 20:36:32,710 | [BLK] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1183.92
+2026-11-17 20:36:32,710 | [BLK] ACTION: No trade.
+2026-11-17 20:36:32,769 | [BMY] trending (ADX 45.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $61.12
+2026-11-17 20:36:32,769 | [BMY] ACTION: No trade.
+2026-11-17 20:36:32,820 | [BNY] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $150.11
+2026-11-17 20:36:32,821 | [BNY] ACTION: No trade.
+2026-11-17 20:36:32,872 | [BR] trending (ADX 45.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $189.45
+2026-11-17 20:36:32,872 | [BR] ACTION: No trade.
+2026-11-17 20:36:32,924 | [BRK.B] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $589.86
+2026-11-17 20:36:32,924 | [BRK.B] ACTION: No trade.
+2026-11-17 20:36:32,976 | [BRO] choppy/sideways (ADX 19.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $72.79
+2026-11-17 20:36:32,976 | [BRO] ACTION: No trade.
+2026-11-17 20:36:33,028 | [BSX] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.08
+2026-11-17 20:36:33,028 | [BSX] ACTION: No trade.
+2026-11-17 20:36:33,080 | [BX] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.10
+2026-11-17 20:36:33,080 | [BX] ACTION: No trade.
+2026-11-17 20:36:33,092 | [C] trending (ADX 37.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $119.83
+2026-11-17 20:36:33,092 | [C] ACTION: No trade.
+2026-11-17 20:36:33,149 | [CAH] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $280.99
+2026-11-17 20:36:33,149 | [CAH] ACTION: No trade.
+2026-11-17 20:36:33,201 | [CARR] trending (ADX 46.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.10
+2026-11-17 20:36:33,201 | [CARR] ACTION: No trade.
+2026-11-17 20:36:33,259 | [CASY] choppy/sideways (ADX 15.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $710.60
+2026-11-17 20:36:33,259 | [CASY] ACTION: No trade.
+2026-11-17 20:36:33,271 | [CAT] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $566.96
+2026-11-17 20:36:33,271 | [CAT] ACTION: No trade.
+2026-11-17 20:36:33,322 | [CB] trending (ADX 32.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $375.11
+2026-11-17 20:36:33,322 | [CB] ACTION: No trade.
+2026-11-17 20:36:33,375 | [CBOE] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $370.99
+2026-11-17 20:36:33,375 | [CBOE] ACTION: No trade.
+2026-11-17 20:36:33,426 | [CBRE] trending (ADX 25.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $131.28
+2026-11-17 20:36:33,426 | [CBRE] ACTION: No trade.
+2026-11-17 20:36:33,481 | [CCI] trending (ADX 37.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $86.67
+2026-11-17 20:36:33,481 | [CCI] ACTION: No trade.
+2026-11-17 20:36:33,535 | [CCL] choppy/sideways (ADX 24.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.36
+2026-11-17 20:36:33,535 | [CCL] ACTION: No trade.
+2026-11-17 20:36:33,590 | [CDNS] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $306.26
+2026-11-17 20:36:33,590 | [CDNS] ACTION: No trade.
+2026-11-17 20:36:33,642 | [CDW] trending (ADX 46.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $163.82
+2026-11-17 20:36:33,642 | [CDW] ACTION: No trade.
+2026-11-17 20:36:33,696 | [CEG] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $269.67
+2026-11-17 20:36:33,696 | [CEG] ACTION: No trade.
+2026-11-17 20:36:33,747 | [CF] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $119.04
+2026-11-17 20:36:33,747 | [CF] ACTION: No trade.
+2026-11-17 20:36:33,800 | [CFG] trending (ADX 36.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $63.22
+2026-11-17 20:36:33,800 | [CFG] ACTION: No trade.
+2026-11-17 20:36:33,852 | [CHD] trending (ADX 51.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $112.36
+2026-11-17 20:36:33,852 | [CHD] ACTION: No trade.
+2026-11-17 20:36:33,904 | [CHRW] trending (ADX 31.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.96
+2026-11-17 20:36:33,904 | [CHRW] ACTION: No trade.
+2026-11-17 20:36:33,959 | [CHTR] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.47
+2026-11-17 20:36:33,959 | [CHTR] ACTION: No trade.
+2026-11-17 20:36:34,011 | [CI] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $293.75
+2026-11-17 20:36:34,011 | [CI] ACTION: No trade.
+2026-11-17 20:36:34,064 | [CIEN] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $261.75
+2026-11-17 20:36:34,065 | [CIEN] ACTION: No trade.
+2026-11-17 20:36:34,123 | [CINF] choppy/sideways (ADX 22.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $189.46
+2026-11-17 20:36:34,123 | [CINF] ACTION: No trade.
+2026-11-17 20:36:34,185 | [CL] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $99.69
+2026-11-17 20:36:34,185 | [CL] ACTION: No trade.
+2026-11-17 20:36:34,240 | [CLX] trending (ADX 31.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.68
+2026-11-17 20:36:34,240 | [CLX] ACTION: No trade.
+2026-11-17 20:36:34,292 | [CMCSA] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.51
+2026-11-17 20:36:34,292 | [CMCSA] ACTION: No trade.
+2026-11-17 20:36:34,342 | [CME] trending (ADX 42.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.92
+2026-11-17 20:36:34,342 | [CME] ACTION: No trade.
+2026-11-17 20:36:34,393 | [CMG] trending (ADX 29.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.01
+2026-11-17 20:36:34,393 | [CMG] ACTION: No trade.
+2026-11-17 20:36:34,445 | [CMI] choppy/sideways (ADX 23.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $432.10
+2026-11-17 20:36:34,445 | [CMI] ACTION: No trade.
+2026-11-17 20:36:34,498 | [CMS] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $69.68
+2026-11-17 20:36:34,498 | [CMS] ACTION: No trade.
+2026-11-17 20:36:34,550 | [CNC] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $72.50
+2026-11-17 20:36:34,550 | [CNC] ACTION: No trade.
+2026-11-17 20:36:34,603 | [CNP] trending (ADX 45.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.98
+2026-11-17 20:36:34,603 | [CNP] ACTION: No trade.
+2026-11-17 20:36:34,654 | [COF] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $186.62
+2026-11-17 20:36:34,654 | [COF] ACTION: No trade.
+2026-11-17 20:36:34,706 | [COHR] choppy/sideways (ADX 12.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $208.31
+2026-11-17 20:36:34,706 | [COHR] ACTION: No trade.
+2026-11-17 20:36:34,719 | [COIN] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.42
+2026-11-17 20:36:34,719 | [COIN] ACTION: No trade.
+2026-11-17 20:36:34,770 | [COO] trending (ADX 46.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.89
+2026-11-17 20:36:34,770 | [COO] ACTION: No trade.
+2026-11-17 20:36:34,783 | [COP] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.46
+2026-11-17 20:36:34,783 | [COP] ACTION: No trade.
+2026-11-17 20:36:34,835 | [COR] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $351.81
+2026-11-17 20:36:34,835 | [COR] ACTION: No trade.
+2026-11-17 20:36:34,848 | [COST] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1112.77
+2026-11-17 20:36:34,848 | [COST] ACTION: No trade.
+2026-11-17 20:36:34,899 | [CPAY] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $453.15
+2026-11-17 20:36:34,899 | [CPAY] ACTION: No trade.
+2026-11-17 20:36:34,950 | [CPRT] trending (ADX 38.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.57
+2026-11-17 20:36:34,950 | [CPRT] ACTION: No trade.
+2026-11-17 20:36:35,005 | [CRH] choppy/sideways (ADX 23.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $90.91
+2026-11-17 20:36:35,005 | [CRH] ACTION: No trade.
+2026-11-17 20:36:35,055 | [CRL] choppy/sideways (ADX 21.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $332.34
+2026-11-17 20:36:35,055 | [CRL] ACTION: No trade.
+2026-11-17 20:36:35,067 | [CRM] trending (ADX 47.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.79
+2026-11-17 20:36:35,067 | [CRM] ACTION: No trade.
+2026-11-17 20:36:35,118 | [CRWD] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $218.25
+2026-11-17 20:36:35,118 | [CRWD] ACTION: No trade.
+2026-11-17 20:36:35,131 | [CSCO] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $94.62
+2026-11-17 20:36:35,131 | [CSCO] ACTION: No trade.
+2026-11-17 20:36:35,184 | [CSGP] choppy/sideways (ADX 22.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $30.91
+2026-11-17 20:36:35,184 | [CSGP] ACTION: No trade.
+2026-11-17 20:36:35,235 | [CSX] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $51.30
+2026-11-17 20:36:35,235 | [CSX] ACTION: No trade.
+2026-11-17 20:36:35,296 | [CTAS] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $222.17
+2026-11-17 20:36:35,297 | [CTAS] ACTION: No trade.
+2026-11-17 20:36:35,349 | [CTSH] trending (ADX 41.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.91
+2026-11-17 20:36:35,349 | [CTSH] ACTION: No trade.
+2026-11-17 20:36:35,401 | [CVNA] choppy/sideways (ADX 10.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $70.74
+2026-11-17 20:36:35,402 | [CVNA] ACTION: No trade.
+2026-11-17 20:36:35,455 | [CVS] trending (ADX 31.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $85.66
+2026-11-17 20:36:35,455 | [CVS] ACTION: No trade.
+2026-11-17 20:36:35,467 | [CVX] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $215.73
+2026-11-17 20:36:35,467 | [CVX] ACTION: No trade.
+2026-11-17 20:36:35,524 | [D] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $67.49
+2026-11-17 20:36:35,524 | [D] ACTION: No trade.
+2026-11-17 20:36:35,576 | [DAL] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $84.89
+2026-11-17 20:36:35,576 | [DAL] ACTION: No trade.
+2026-11-17 20:36:35,629 | [DASH] trending (ADX 25.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $164.89
+2026-11-17 20:36:35,630 | [DASH] ACTION: No trade.
+2026-11-17 20:36:35,682 | [DD] choppy/sideways (ADX 16.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $150.07
+2026-11-17 20:36:35,682 | [DD] ACTION: No trade.
+2026-11-17 20:36:35,737 | [DDOG] trending (ADX 37.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $165.49
+2026-11-17 20:36:35,737 | [DDOG] ACTION: No trade.
+2026-11-17 20:36:35,791 | [DE] trending (ADX 38.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $646.57
+2026-11-17 20:36:35,791 | [DE] ACTION: No trade.
+2026-11-17 20:36:35,843 | [DECK] trending (ADX 51.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $81.06
+2026-11-17 20:36:35,843 | [DECK] ACTION: No trade.
+2026-11-17 20:36:35,895 | [DELL] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $317.88
+2026-11-17 20:36:35,895 | [DELL] ACTION: No trade.
+2026-11-17 20:36:35,947 | [DG] choppy/sideways (ADX 15.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $134.03
+2026-11-17 20:36:35,947 | [DG] ACTION: No trade.
+2026-11-17 20:36:35,998 | [DGX] trending (ADX 38.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $256.78
+2026-11-17 20:36:35,998 | [DGX] ACTION: No trade.
+2026-11-17 20:36:36,050 | [DHI] choppy/sideways (ADX 18.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.44
+2026-11-17 20:36:36,050 | [DHI] ACTION: No trade.
+2026-11-17 20:36:36,062 | [DHR] trending (ADX 40.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $225.53
+2026-11-17 20:36:36,062 | [DHR] ACTION: No trade.
+2026-11-17 20:36:36,075 | [DIS] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.26
+2026-11-17 20:36:36,075 | [DIS] ACTION: No trade.
+2026-11-17 20:36:36,127 | [DLR] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $176.59
+2026-11-17 20:36:36,128 | [DLR] ACTION: No trade.
+2026-11-17 20:36:36,179 | [DLTR] choppy/sideways (ADX 13.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $139.34
+2026-11-17 20:36:36,179 | [DLTR] ACTION: No trade.
+2026-11-17 20:36:36,231 | [DOC] trending (ADX 34.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $19.37
+2026-11-17 20:36:36,232 | [DOC] ACTION: No trade.
+2026-11-17 20:36:36,284 | [DOV] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $202.20
+2026-11-17 20:36:36,284 | [DOV] ACTION: No trade.
+2026-11-17 20:36:36,336 | [DOW] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.48
+2026-11-17 20:36:36,336 | [DOW] ACTION: No trade.
+2026-11-17 20:36:36,387 | [DPZ] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $349.12
+2026-11-17 20:36:36,387 | [DPZ] ACTION: No trade.
+2026-11-17 20:36:36,441 | [DRI] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.25
+2026-11-17 20:36:36,441 | [DRI] ACTION: No trade.
+2026-11-17 20:36:36,511 | [DTE] trending (ADX 34.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $137.25
+2026-11-17 20:36:36,511 | [DTE] ACTION: No trade.
+2026-11-17 20:36:36,564 | [DUK] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $130.04
+2026-11-17 20:36:36,564 | [DUK] ACTION: No trade.
+2026-11-17 20:36:36,615 | [DVA] choppy/sideways (ADX 13.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $173.33
+2026-11-17 20:36:36,615 | [DVA] ACTION: No trade.
+2026-11-17 20:36:36,668 | [DVN] trending (ADX 42.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $43.52
+2026-11-17 20:36:36,668 | [DVN] ACTION: No trade.
+2026-11-17 20:36:36,721 | [DXCM] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $81.88
+2026-11-17 20:36:36,722 | [DXCM] ACTION: No trade.
+2026-11-17 20:36:36,776 | [EBAY] trending (ADX 36.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $117.78
+2026-11-17 20:36:36,776 | [EBAY] ACTION: No trade.
+2026-11-17 20:36:36,828 | [ECHO] choppy/sideways (ADX 9.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $99.26
+2026-11-17 20:36:36,828 | [ECHO] ACTION: No trade.
+2026-11-17 20:36:36,880 | [ECL] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.70
+2026-11-17 20:36:36,880 | [ECL] ACTION: No trade.
+2026-11-17 20:36:36,934 | [ED] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $119.94
+2026-11-17 20:36:36,934 | [ED] ACTION: No trade.
+2026-11-17 20:36:36,987 | [EFX] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $182.56
+2026-11-17 20:36:36,987 | [EFX] ACTION: No trade.
+2026-11-17 20:36:37,042 | [EG] choppy/sideways (ADX 21.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $425.56
+2026-11-17 20:36:37,042 | [EG] ACTION: No trade.
+2026-11-17 20:36:37,095 | [EIX] choppy/sideways (ADX 17.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $62.25
+2026-11-17 20:36:37,095 | [EIX] ACTION: No trade.
+2026-11-17 20:36:37,146 | [EL] trending (ADX 46.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.58
+2026-11-17 20:36:37,147 | [EL] ACTION: No trade.
+2026-11-17 20:36:37,197 | [ELV] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $433.68
+2026-11-17 20:36:37,197 | [ELV] ACTION: No trade.
+2026-11-17 20:36:37,253 | [EME] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $642.05
+2026-11-17 20:36:37,253 | [EME] ACTION: No trade.
+2026-11-17 20:36:37,305 | [EMR] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $158.45
+2026-11-17 20:36:37,305 | [EMR] ACTION: No trade.
+2026-11-17 20:36:37,357 | [EOG] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $154.06
+2026-11-17 20:36:37,357 | [EOG] ACTION: No trade.
+2026-11-17 20:36:37,409 | [EQIX] choppy/sideways (ADX 24.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1034.36
+2026-11-17 20:36:37,409 | [EQIX] ACTION: No trade.
+2026-11-17 20:36:37,462 | [EQT] trending (ADX 40.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $50.06
+2026-11-17 20:36:37,462 | [EQT] ACTION: No trade.
+2026-11-17 20:36:37,514 | [ES] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $71.60
+2026-11-17 20:36:37,514 | [ES] ACTION: No trade.
+2026-11-17 20:36:37,565 | [ESS] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $271.34
+2026-11-17 20:36:37,565 | [ESS] ACTION: No trade.
+2026-11-17 20:36:37,618 | [ETN] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $334.67
+2026-11-17 20:36:37,618 | [ETN] ACTION: No trade.
+2026-11-17 20:36:37,671 | [ETR] trending (ADX 51.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $108.16
+2026-11-17 20:36:37,671 | [ETR] ACTION: No trade.
+2026-11-17 20:36:37,728 | [EVRG] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $87.26
+2026-11-17 20:36:37,728 | [EVRG] ACTION: No trade.
+2026-11-17 20:36:37,781 | [EW] trending (ADX 28.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $106.17
+2026-11-17 20:36:37,781 | [EW] ACTION: No trade.
+2026-11-17 20:36:37,832 | [EXC] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.97
+2026-11-17 20:36:37,832 | [EXC] ACTION: No trade.
+2026-11-17 20:36:37,884 | [EXE] trending (ADX 41.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $84.34
+2026-11-17 20:36:37,884 | [EXE] ACTION: No trade.
+2026-11-17 20:36:37,936 | [EXPD] trending (ADX 37.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $191.13
+2026-11-17 20:36:37,936 | [EXPD] ACTION: No trade.
+2026-11-17 20:36:37,988 | [EXPE] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $244.27
+2026-11-17 20:36:37,988 | [EXPE] ACTION: No trade.
+2026-11-17 20:36:38,047 | [EXR] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $157.37
+2026-11-17 20:36:38,047 | [EXR] ACTION: No trade.
+2026-11-17 20:36:38,099 | [F] trending (ADX 50.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $11.33
+2026-11-17 20:36:38,099 | [F] ACTION: No trade.
+2026-11-17 20:36:38,152 | [FANG] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $176.76
+2026-11-17 20:36:38,152 | [FANG] ACTION: No trade.
+2026-11-17 20:36:38,203 | [FAST] trending (ADX 30.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $54.30
+2026-11-17 20:36:38,203 | [FAST] ACTION: No trade.
+2026-11-17 20:36:38,264 | [FCX] choppy/sideways (ADX 24.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $55.00
+2026-11-17 20:36:38,264 | [FCX] ACTION: No trade.
+2026-11-17 20:36:38,316 | [FDS] trending (ADX 51.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $315.52
+2026-11-17 20:36:38,316 | [FDS] ACTION: No trade.
+2026-11-17 20:36:38,368 | [FDX] trending (ADX 40.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $319.76
+2026-11-17 20:36:38,368 | [FDX] ACTION: No trade.
+2026-11-17 20:36:38,420 | [FDXF] choppy/sideways (ADX 16.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $131.91
+2026-11-17 20:36:38,420 | [FDXF] ACTION: No trade.
+2026-11-17 20:36:38,472 | [FE] trending (ADX 27.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $47.10
+2026-11-17 20:36:38,472 | [FE] ACTION: No trade.
+2026-11-17 20:36:38,525 | [FERG] trending (ADX 25.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $249.87
+2026-11-17 20:36:38,525 | [FERG] ACTION: No trade.
+2026-11-17 20:36:38,586 | [FFIV] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $304.24
+2026-11-17 20:36:38,586 | [FFIV] ACTION: No trade.
+2026-11-17 20:36:38,638 | [FICO] trending (ADX 42.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $684.96
+2026-11-17 20:36:38,638 | [FICO] ACTION: No trade.
+2026-11-17 20:36:38,692 | [FIS] trending (ADX 44.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $27.50
+2026-11-17 20:36:38,692 | [FIS] ACTION: No trade.
+2026-11-17 20:36:38,747 | [FISV] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $62.58
+2026-11-17 20:36:38,747 | [FISV] ACTION: No trade.
+2026-11-17 20:36:38,800 | [FITB] trending (ADX 49.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $52.46
+2026-11-17 20:36:38,800 | [FITB] ACTION: No trade.
+2026-11-17 20:36:38,853 | [FIX] choppy/sideways (ADX 13.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1084.08
+2026-11-17 20:36:38,853 | [FIX] ACTION: No trade.
+2026-11-17 20:36:38,905 | [FLEX] trending (ADX 27.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $72.41
+2026-11-17 20:36:38,905 | [FLEX] ACTION: No trade.
+2026-11-17 20:36:38,959 | [FOXA] choppy/sideways (ADX 18.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $66.72
+2026-11-17 20:36:38,959 | [FOXA] ACTION: No trade.
+2026-11-17 20:36:39,046 | [FRT] trending (ADX 26.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $112.69
+2026-11-17 20:36:39,046 | [FRT] ACTION: No trade.
+2026-11-17 20:36:39,099 | [FSLR] trending (ADX 54.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $152.69
+2026-11-17 20:36:39,099 | [FSLR] ACTION: No trade.
+2026-11-17 20:36:39,152 | [FTNT] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $123.84
+2026-11-17 20:36:39,152 | [FTNT] ACTION: No trade.
+2026-11-17 20:36:39,220 | [FTV] trending (ADX 27.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $66.25
+2026-11-17 20:36:39,221 | [FTV] ACTION: No trade.
+2026-11-17 20:36:39,287 | [GD] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $355.07
+2026-11-17 20:36:39,287 | [GD] ACTION: No trade.
+2026-11-17 20:36:39,350 | [GDDY] trending (ADX 48.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.11
+2026-11-17 20:36:39,350 | [GDDY] ACTION: No trade.
+2026-11-17 20:36:39,363 | [GE] trending (ADX 26.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $325.18
+2026-11-17 20:36:39,363 | [GE] ACTION: No trade.
+2026-11-17 20:36:39,415 | [GEHC] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $82.26
+2026-11-17 20:36:39,415 | [GEHC] ACTION: No trade.
+2026-11-17 20:36:39,469 | [GEN] trending (ADX 33.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $29.62
+2026-11-17 20:36:39,469 | [GEN] ACTION: No trade.
+2026-11-17 20:36:39,522 | [GEV] choppy/sideways (ADX 10.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $766.28
+2026-11-17 20:36:39,522 | [GEV] ACTION: No trade.
+2026-11-17 20:36:39,578 | [GILD] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $169.68
+2026-11-17 20:36:39,578 | [GILD] ACTION: No trade.
+2026-11-17 20:36:39,630 | [GIS] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.83
+2026-11-17 20:36:39,630 | [GIS] ACTION: No trade.
+2026-11-17 20:36:39,683 | [GLW] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.18
+2026-11-17 20:36:39,683 | [GLW] ACTION: No trade.
+2026-11-17 20:36:39,735 | [GM] trending (ADX 36.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $83.55
+2026-11-17 20:36:39,735 | [GM] ACTION: No trade.
+2026-11-17 20:36:39,789 | [GNRC] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $184.51
+2026-11-17 20:36:39,789 | [GNRC] ACTION: No trade.
+2026-11-17 20:36:39,802 | [GOOG] trending (ADX 57.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $277.21
+2026-11-17 20:36:39,802 | [GOOG] ACTION: No trade.
+2026-11-17 20:36:39,815 | [GOOGL] trending (ADX 53.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $279.82
+2026-11-17 20:36:39,815 | [GOOGL] ACTION: No trade.
+2026-11-17 20:36:39,868 | [GPC] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $121.30
+2026-11-17 20:36:39,868 | [GPC] ACTION: No trade.
+2026-11-17 20:36:39,921 | [GPN] trending (ADX 53.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $86.41
+2026-11-17 20:36:39,921 | [GPN] ACTION: No trade.
+2026-11-17 20:36:39,975 | [GRMN] trending (ADX 43.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $275.25
+2026-11-17 20:36:39,975 | [GRMN] ACTION: No trade.
+2026-11-17 20:36:39,988 | [GS] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $875.77
+2026-11-17 20:36:39,988 | [GS] ACTION: No trade.
+2026-11-17 20:36:40,041 | [GWW] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1467.68
+2026-11-17 20:36:40,041 | [GWW] ACTION: No trade.
+2026-11-17 20:36:40,094 | [HAL] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $32.03
+2026-11-17 20:36:40,094 | [HAL] ACTION: No trade.
+2026-11-17 20:36:40,155 | [HAS] trending (ADX 28.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $118.98
+2026-11-17 20:36:40,155 | [HAS] ACTION: No trade.
+2026-11-17 20:36:40,210 | [HBAN] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $15.28
+2026-11-17 20:36:40,210 | [HBAN] ACTION: No trade.
+2026-11-17 20:36:40,266 | [HCA] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $500.14
+2026-11-17 20:36:40,266 | [HCA] ACTION: No trade.
+2026-11-17 20:36:40,278 | [HD] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $339.22
+2026-11-17 20:36:40,278 | [HD] ACTION: No trade.
+2026-11-17 20:36:40,333 | [HIG] choppy/sideways (ADX 22.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $136.40
+2026-11-17 20:36:40,333 | [HIG] ACTION: No trade.
+2026-11-17 20:36:40,384 | [HII] choppy/sideways (ADX 24.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $296.00
+2026-11-17 20:36:40,384 | [HII] ACTION: No trade.
+2026-11-17 20:36:40,436 | [HLT] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $370.00
+2026-11-17 20:36:40,436 | [HLT] ACTION: No trade.
+2026-11-17 20:36:40,449 | [HON] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.05
+2026-11-17 20:36:40,449 | [HON] ACTION: No trade.
+2026-11-17 20:36:40,501 | [HONA] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $161.19
+2026-11-17 20:36:40,502 | [HONA] ACTION: No trade.
+2026-11-17 20:36:40,554 | [HOOD] trending (ADX 48.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $68.69
+2026-11-17 20:36:40,554 | [HOOD] ACTION: No trade.
+2026-11-17 20:36:40,607 | [HPE] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.31
+2026-11-17 20:36:40,607 | [HPE] ACTION: No trade.
+2026-11-17 20:36:40,660 | [HPQ] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.66
+2026-11-17 20:36:40,660 | [HPQ] ACTION: No trade.
+2026-11-17 20:36:40,713 | [HRL] choppy/sideways (ADX 23.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $22.62
+2026-11-17 20:36:40,713 | [HRL] ACTION: No trade.
+2026-11-17 20:36:40,767 | [HSIC] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $83.39
+2026-11-17 20:36:40,767 | [HSIC] ACTION: No trade.
+2026-11-17 20:36:40,820 | [HST] choppy/sideways (ADX 8.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.63
+2026-11-17 20:36:40,820 | [HST] ACTION: No trade.
+2026-11-17 20:36:40,876 | [HSY] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $173.12
+2026-11-17 20:36:40,876 | [HSY] ACTION: No trade.
+2026-11-17 20:36:40,927 | [HUBB] choppy/sideways (ADX 18.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $420.79
+2026-11-17 20:36:40,928 | [HUBB] ACTION: No trade.
+2026-11-17 20:36:40,980 | [HUM] trending (ADX 39.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $441.68
+2026-11-17 20:36:40,980 | [HUM] ACTION: No trade.
+2026-11-17 20:36:41,032 | [HWM] choppy/sideways (ADX 12.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $213.73
+2026-11-17 20:36:41,032 | [HWM] ACTION: No trade.
+2026-11-17 20:36:41,087 | [IBKR] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $76.50
+2026-11-17 20:36:41,087 | [IBKR] ACTION: No trade.
+2026-11-17 20:36:41,100 | [IBM] trending (ADX 50.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.17
+2026-11-17 20:36:41,100 | [IBM] ACTION: No trade.
+2026-11-17 20:36:41,152 | [ICE] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $172.96
+2026-11-17 20:36:41,153 | [ICE] ACTION: No trade.
+2026-11-17 20:36:41,205 | [IDXX] trending (ADX 40.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $690.40
+2026-11-17 20:36:41,206 | [IDXX] ACTION: No trade.
+2026-11-17 20:36:41,258 | [IEX] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $232.22
+2026-11-17 20:36:41,259 | [IEX] ACTION: No trade.
+2026-11-17 20:36:41,310 | [IFF] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $80.16
+2026-11-17 20:36:41,311 | [IFF] ACTION: No trade.
+2026-11-17 20:36:41,368 | [ILMN] choppy/sideways (ADX 16.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $202.07
+2026-11-17 20:36:41,368 | [ILMN] ACTION: No trade.
+2026-11-17 20:36:41,421 | [INCY] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $119.69
+2026-11-17 20:36:41,421 | [INCY] ACTION: No trade.
+2026-11-17 20:36:41,434 | [INTC] trending (ADX 32.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $53.67
+2026-11-17 20:36:41,434 | [INTC] ACTION: No trade.
+2026-11-17 20:36:41,487 | [INTU] trending (ADX 47.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $322.31
+2026-11-17 20:36:41,487 | [INTU] ACTION: No trade.
+2026-11-17 20:36:41,537 | [INVH] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.70
+2026-11-17 20:36:41,537 | [INVH] ACTION: No trade.
+2026-11-17 20:36:41,588 | [IP] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $32.41
+2026-11-17 20:36:41,588 | [IP] ACTION: No trade.
+2026-11-17 20:36:41,642 | [IQV] trending (ADX 41.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.94
+2026-11-17 20:36:41,642 | [IQV] ACTION: No trade.
+2026-11-17 20:36:41,697 | [IR] trending (ADX 28.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $82.44
+2026-11-17 20:36:41,697 | [IR] ACTION: No trade.
+2026-11-17 20:36:41,749 | [IRM] choppy/sideways (ADX 16.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $111.07
+2026-11-17 20:36:41,749 | [IRM] ACTION: No trade.
+2026-11-17 20:36:41,800 | [ISRG] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $431.21
+2026-11-17 20:36:41,800 | [ISRG] ACTION: No trade.
+2026-11-17 20:36:41,855 | [IT] trending (ADX 37.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $183.04
+2026-11-17 20:36:41,855 | [IT] ACTION: No trade.
+2026-11-17 20:36:41,906 | [ITW] trending (ADX 31.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $281.75
+2026-11-17 20:36:41,906 | [ITW] ACTION: No trade.
+2026-11-17 20:36:41,957 | [IVZ] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.96
+2026-11-17 20:36:41,957 | [IVZ] ACTION: No trade.
+2026-11-17 20:36:42,008 | [J] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $158.58
+2026-11-17 20:36:42,008 | [J] ACTION: No trade.
+2026-11-17 20:36:42,060 | [JBHT] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.62
+2026-11-17 20:36:42,060 | [JBHT] ACTION: No trade.
+2026-11-17 20:36:42,112 | [JBL] choppy/sideways (ADX 16.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $242.95
+2026-11-17 20:36:42,112 | [JBL] ACTION: No trade.
+2026-11-17 20:36:42,167 | [JCI] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $135.98
+2026-11-17 20:36:42,168 | [JCI] ACTION: No trade.
+2026-11-17 20:36:42,220 | [JKHY] trending (ADX 26.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $176.05
+2026-11-17 20:36:42,220 | [JKHY] ACTION: No trade.
+2026-11-17 20:36:42,233 | [JNJ] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $279.17
+2026-11-17 20:36:42,233 | [JNJ] ACTION: No trade.
+2026-11-17 20:36:42,246 | [JPM] trending (ADX 48.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $329.90
+2026-11-17 20:36:42,246 | [JPM] ACTION: No trade.
+2026-11-17 20:36:42,299 | [KDP] trending (ADX 60.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $34.76
+2026-11-17 20:36:42,299 | [KDP] ACTION: No trade.
+2026-11-17 20:36:42,352 | [KEY] trending (ADX 39.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.82
+2026-11-17 20:36:42,352 | [KEY] ACTION: No trade.
+2026-11-17 20:36:42,414 | [KEYS] choppy/sideways (ADX 12.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $283.27
+2026-11-17 20:36:42,414 | [KEYS] ACTION: No trade.
+2026-11-17 20:36:42,467 | [KHC] choppy/sideways (ADX 14.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.11
+2026-11-17 20:36:42,467 | [KHC] ACTION: No trade.
+2026-11-17 20:36:42,524 | [KIM] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $25.59
+2026-11-17 20:36:42,524 | [KIM] ACTION: No trade.
+2026-11-17 20:36:42,578 | [KKR] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $94.73
+2026-11-17 20:36:42,578 | [KKR] ACTION: No trade.
+2026-11-17 20:36:42,630 | [KLAC] choppy/sideways (ADX 23.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $141.63
+2026-11-17 20:36:42,631 | [KLAC] ACTION: No trade.
+2026-11-17 20:36:42,682 | [KMB] trending (ADX 48.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $108.11
+2026-11-17 20:36:42,682 | [KMB] ACTION: No trade.
+2026-11-17 20:36:42,739 | [KMI] choppy/sideways (ADX 13.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $31.60
+2026-11-17 20:36:42,739 | [KMI] ACTION: No trade.
+2026-11-17 20:36:42,752 | [KO] choppy/sideways (ADX 22.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $99.19
+2026-11-17 20:36:42,752 | [KO] ACTION: No trade.
+2026-11-17 20:36:42,812 | [KR] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $70.50
+2026-11-17 20:36:42,812 | [KR] ACTION: No trade.
+2026-11-17 20:36:42,863 | [LDOS] trending (ADX 27.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $128.18
+2026-11-17 20:36:42,864 | [LDOS] ACTION: No trade.
+2026-11-17 20:36:42,987 | [LEN] choppy/sideways (ADX 20.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $82.52
+2026-11-17 20:36:42,987 | [LEN] ACTION: No trade.
+2026-11-17 20:36:43,039 | [LH] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $369.36
+2026-11-17 20:36:43,039 | [LH] ACTION: No trade.
+2026-11-17 20:36:43,091 | [LHX] trending (ADX 25.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $258.97
+2026-11-17 20:36:43,091 | [LHX] ACTION: No trade.
+2026-11-17 20:36:43,146 | [LII] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $333.01
+2026-11-17 20:36:43,146 | [LII] ACTION: No trade.
+2026-11-17 20:36:43,201 | [LIN] trending (ADX 33.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $518.30
+2026-11-17 20:36:43,201 | [LIN] ACTION: No trade.
+2026-11-17 20:36:43,252 | [LITE] choppy/sideways (ADX 12.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $555.87
+2026-11-17 20:36:43,252 | [LITE] ACTION: No trade.
+2026-11-17 20:36:43,265 | [LLY] trending (ADX 56.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1408.66
+2026-11-17 20:36:43,265 | [LLY] ACTION: No trade.
+2026-11-17 20:36:43,278 | [LMT] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $587.29
+2026-11-17 20:36:43,278 | [LMT] ACTION: No trade.
+2026-11-17 20:36:43,369 | [LNT] trending (ADX 44.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $71.64
+2026-11-17 20:36:43,370 | [LNT] ACTION: No trade.
+2026-11-17 20:36:43,383 | [LOW] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $221.14
+2026-11-17 20:36:43,383 | [LOW] ACTION: No trade.
+2026-11-17 20:36:43,435 | [LRCX] choppy/sideways (ADX 21.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.87
+2026-11-17 20:36:43,435 | [LRCX] ACTION: No trade.
+2026-11-17 20:36:43,489 | [LULU] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $103.48
+2026-11-17 20:36:43,489 | [LULU] ACTION: No trade.
+2026-11-17 20:36:43,541 | [LUV] choppy/sideways (ADX 11.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.95
+2026-11-17 20:36:43,541 | [LUV] ACTION: No trade.
+2026-11-17 20:36:43,599 | [LVS] trending (ADX 29.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $39.38
+2026-11-17 20:36:43,599 | [LVS] ACTION: No trade.
+2026-11-17 20:36:46,691 | [LYB] trending (ADX 30.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $60.84
+2026-11-17 20:36:46,691 | [LYB] ACTION: No trade.
+2026-11-17 20:36:46,743 | [LYV] choppy/sideways (ADX 18.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $176.22
+2026-11-17 20:36:46,743 | [LYV] ACTION: No trade.
+2026-11-17 20:36:46,757 | [MA] trending (ADX 38.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $648.03
+2026-11-17 20:36:46,757 | [MA] ACTION: No trade.
+2026-11-17 20:36:46,809 | [MAA] trending (ADX 25.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.39
+2026-11-17 20:36:46,809 | [MAA] ACTION: No trade.
+2026-11-17 20:36:46,862 | [MAR] choppy/sideways (ADX 20.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $423.45
+2026-11-17 20:36:46,863 | [MAR] ACTION: No trade.
+2026-11-17 20:36:46,915 | [MAS] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $83.41
+2026-11-17 20:36:46,915 | [MAS] ACTION: No trade.
+2026-11-17 20:36:46,928 | [MCD] choppy/sideways (ADX 15.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $275.81
+2026-11-17 20:36:46,928 | [MCD] ACTION: No trade.
+2026-11-17 20:36:46,981 | [MCHP] choppy/sideways (ADX 10.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.28
+2026-11-17 20:36:46,981 | [MCHP] ACTION: No trade.
+2026-11-17 20:36:47,035 | [MCK] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1089.02
+2026-11-17 20:36:47,035 | [MCK] ACTION: No trade.
+2026-11-17 20:36:47,089 | [MCO] trending (ADX 54.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $483.58
+2026-11-17 20:36:47,089 | [MCO] ACTION: No trade.
+2026-11-17 20:36:47,142 | [MDLZ] trending (ADX 35.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $66.92
+2026-11-17 20:36:47,142 | [MDLZ] ACTION: No trade.
+2026-11-17 20:36:47,195 | [MDT] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.56
+2026-11-17 20:36:47,196 | [MDT] ACTION: No trade.
+2026-11-17 20:36:47,262 | [MET] choppy/sideways (ADX 10.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $101.18
+2026-11-17 20:36:47,262 | [MET] ACTION: No trade.
+2026-11-17 20:36:47,275 | [META] trending (ADX 29.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $621.32
+2026-11-17 20:36:47,275 | [META] ACTION: No trade.
+2026-11-17 20:36:47,328 | [MGM] choppy/sideways (ADX 19.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $33.46
+2026-11-17 20:36:47,328 | [MGM] ACTION: No trade.
+2026-11-17 20:36:47,380 | [MKC] trending (ADX 48.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $45.59
+2026-11-17 20:36:47,380 | [MKC] ACTION: No trade.
+2026-11-17 20:36:50,472 | [MLM] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $504.93
+2026-11-17 20:36:50,472 | [MLM] ACTION: No trade.
+2026-11-17 20:36:50,484 | [MMM] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $180.21
+2026-11-17 20:36:50,485 | [MMM] ACTION: No trade.
+2026-11-17 20:36:50,535 | [MNST] trending (ADX 37.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.39
+2026-11-17 20:36:50,535 | [MNST] ACTION: No trade.
+2026-11-17 20:36:50,588 | [MO] trending (ADX 34.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.92
+2026-11-17 20:36:50,588 | [MO] ACTION: No trade.
+2026-11-17 20:36:50,641 | [MOS] trending (ADX 37.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.82
+2026-11-17 20:36:50,641 | [MOS] ACTION: No trade.
+2026-11-17 20:36:50,695 | [MPC] trending (ADX 32.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $393.61
+2026-11-17 20:36:50,695 | [MPC] ACTION: No trade.
+2026-11-17 20:36:50,750 | [MPWR] choppy/sideways (ADX 14.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1305.69
+2026-11-17 20:36:50,750 | [MPWR] ACTION: No trade.
+2026-11-17 20:36:50,763 | [MRK] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.61
+2026-11-17 20:36:50,763 | [MRK] ACTION: No trade.
+2026-11-17 20:36:50,816 | [MRNA] choppy/sideways (ADX 12.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.00
+2026-11-17 20:36:50,816 | [MRNA] ACTION: No trade.
+2026-11-17 20:36:50,868 | [MRSH] trending (ADX 26.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $206.45
+2026-11-17 20:36:50,869 | [MRSH] ACTION: No trade.
+2026-11-17 20:36:50,920 | [MRVL] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $146.02
+2026-11-17 20:36:50,920 | [MRVL] ACTION: No trade.
+2026-11-17 20:36:50,932 | [MS] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $183.44
+2026-11-17 20:36:50,932 | [MS] ACTION: No trade.
+2026-11-17 20:36:50,987 | [MSCI] trending (ADX 45.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $636.91
+2026-11-17 20:36:50,988 | [MSCI] ACTION: No trade.
+2026-11-17 20:36:51,000 | [MSFT] trending (ADX 32.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $505.37
+2026-11-17 20:36:51,000 | [MSFT] ACTION: No trade.
+2026-11-17 20:36:51,053 | [MSI] trending (ADX 39.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $523.41
+2026-11-17 20:36:51,053 | [MSI] ACTION: No trade.
+2026-11-17 20:36:51,105 | [MTB] trending (ADX 34.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $216.01
+2026-11-17 20:36:51,105 | [MTB] ACTION: No trade.
+2026-11-17 20:36:51,158 | [MTD] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1707.47
+2026-11-17 20:36:51,158 | [MTD] ACTION: No trade.
+2026-11-17 20:36:51,171 | [MU] trending (ADX 28.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $698.62
+2026-11-17 20:36:51,171 | [MU] ACTION: No trade.
+2026-11-17 20:36:54,267 | [NCLH] choppy/sideways (ADX 17.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $17.68
+2026-11-17 20:36:54,267 | [NCLH] ACTION: No trade.
+2026-11-17 20:36:54,320 | [NDAQ] trending (ADX 44.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $105.38
+2026-11-17 20:36:54,320 | [NDAQ] ACTION: No trade.
+2026-11-17 20:36:54,375 | [NEE] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $84.72
+2026-11-17 20:36:54,375 | [NEE] ACTION: No trade.
+2026-11-17 20:36:54,427 | [NEM] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $110.62
+2026-11-17 20:36:54,427 | [NEM] ACTION: No trade.
+2026-11-17 20:36:54,439 | [NFLX] trending (ADX 43.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.59
+2026-11-17 20:36:54,439 | [NFLX] ACTION: No trade.
+2026-11-17 20:36:54,489 | [NI] trending (ADX 56.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $44.65
+2026-11-17 20:36:54,489 | [NI] ACTION: No trade.
+2026-11-17 20:36:54,501 | [NKE] trending (ADX 27.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.40
+2026-11-17 20:36:54,501 | [NKE] ACTION: No trade.
+2026-11-17 20:36:54,550 | [NOC] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $552.87
+2026-11-17 20:36:54,550 | [NOC] ACTION: No trade.
+2026-11-17 20:36:54,562 | [NOW] trending (ADX 51.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $92.40
+2026-11-17 20:36:54,562 | [NOW] ACTION: No trade.
+2026-11-17 20:36:54,612 | [NRG] choppy/sideways (ADX 19.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $92.06
+2026-11-17 20:36:54,612 | [NRG] ACTION: No trade.
+2026-11-17 20:36:54,662 | [NSC] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $322.62
+2026-11-17 20:36:54,662 | [NSC] ACTION: No trade.
+2026-11-17 20:36:54,714 | [NTAP] choppy/sideways (ADX 13.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $172.50
+2026-11-17 20:36:54,714 | [NTAP] ACTION: No trade.
+2026-11-17 20:36:54,766 | [NTRS] trending (ADX 43.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $172.11
+2026-11-17 20:36:54,766 | [NTRS] ACTION: No trade.
+2026-11-17 20:36:54,821 | [NUE] choppy/sideways (ADX 14.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $253.03
+2026-11-17 20:36:54,821 | [NUE] ACTION: No trade.
+2026-11-17 20:36:54,833 | [NVDA] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $153.48
+2026-11-17 20:36:54,833 | [NVDA] ACTION: No trade.
+2026-11-17 20:36:54,884 | [NVR] trending (ADX 46.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $5661.76
+2026-11-17 20:36:54,884 | [NVR] ACTION: No trade.
+2026-11-17 20:36:54,938 | [NWSA] choppy/sideways (ADX 21.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $26.41
+2026-11-17 20:36:54,938 | [NWSA] ACTION: No trade.
+2026-11-17 20:36:58,067 | [NXPI] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $250.93
+2026-11-17 20:36:58,067 | [NXPI] ACTION: No trade.
+2026-11-17 20:36:58,119 | [O] trending (ADX 36.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.16
+2026-11-17 20:36:58,119 | [O] ACTION: No trade.
+2026-11-17 20:36:58,169 | [ODFL] choppy/sideways (ADX 22.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $171.42
+2026-11-17 20:36:58,169 | [ODFL] ACTION: No trade.
+2026-11-17 20:36:58,219 | [OKE] choppy/sideways (ADX 15.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $88.37
+2026-11-17 20:36:58,219 | [OKE] ACTION: No trade.
+2026-11-17 20:36:58,269 | [OKTA] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $175.36
+2026-11-17 20:36:58,269 | [OKTA] ACTION: No trade.
+2026-11-17 20:36:58,319 | [OMC] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $87.47
+2026-11-17 20:36:58,319 | [OMC] ACTION: No trade.
+2026-11-17 20:36:58,370 | [ON] choppy/sideways (ADX 22.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $67.06
+2026-11-17 20:36:58,370 | [ON] ACTION: No trade.
+2026-11-17 20:36:58,382 | [ORCL] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $114.72
+2026-11-17 20:36:58,382 | [ORCL] ACTION: No trade.
+2026-11-17 20:36:58,432 | [ORLY] choppy/sideways (ADX 16.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $92.77
+2026-11-17 20:36:58,432 | [ORLY] ACTION: No trade.
+2026-11-17 20:36:58,483 | [OTIS] trending (ADX 35.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.32
+2026-11-17 20:36:58,483 | [OTIS] ACTION: No trade.
+2026-11-17 20:36:58,532 | [OXY] trending (ADX 43.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $56.48
+2026-11-17 20:36:58,532 | [OXY] ACTION: No trade.
+2026-11-17 20:36:58,582 | [P] choppy/sideways (ADX 14.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $100.99
+2026-11-17 20:36:58,582 | [P] ACTION: No trade.
+2026-11-17 20:36:58,595 | [PANW] choppy/sideways (ADX 18.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $308.65
+2026-11-17 20:36:58,595 | [PANW] ACTION: No trade.
+2026-11-17 20:37:01,686 | [PAYX] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $114.49
+2026-11-17 20:37:01,686 | [PAYX] ACTION: No trade.
+2026-11-17 20:37:01,743 | [PCAR] choppy/sideways (ADX 17.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $104.46
+2026-11-17 20:37:01,743 | [PCAR] ACTION: No trade.
+2026-11-17 20:37:01,797 | [PCG] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $13.60
+2026-11-17 20:37:01,798 | [PCG] ACTION: No trade.
+2026-11-17 20:37:01,849 | [PEG] trending (ADX 28.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $74.91
+2026-11-17 20:37:01,849 | [PEG] ACTION: No trade.
+2026-11-17 20:37:01,862 | [PEP] trending (ADX 44.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $141.88
+2026-11-17 20:37:01,862 | [PEP] ACTION: No trade.
+2026-11-17 20:37:01,874 | [PFE] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.43
+2026-11-17 20:37:01,874 | [PFE] ACTION: No trade.
+2026-11-17 20:37:01,926 | [PFG] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $111.84
+2026-11-17 20:37:01,926 | [PFG] ACTION: No trade.
+2026-11-17 20:37:01,938 | [PG] choppy/sideways (ADX 21.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $171.95
+2026-11-17 20:37:01,939 | [PG] ACTION: No trade.
+2026-11-17 20:37:01,991 | [PGR] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $235.10
+2026-11-17 20:37:01,991 | [PGR] ACTION: No trade.
+2026-11-17 20:37:02,042 | [PH] trending (ADX 25.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $925.99
+2026-11-17 20:37:02,042 | [PH] ACTION: No trade.
+2026-11-17 20:37:02,094 | [PHM] choppy/sideways (ADX 24.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $124.42
+2026-11-17 20:37:02,094 | [PHM] ACTION: No trade.
+2026-11-17 20:37:02,145 | [PKG] trending (ADX 25.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $245.87
+2026-11-17 20:37:02,145 | [PKG] ACTION: No trade.
+2026-11-17 20:37:02,196 | [PLD] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $125.66
+2026-11-17 20:37:02,196 | [PLD] ACTION: No trade.
+2026-11-17 20:37:02,208 | [PLTR] trending (ADX 31.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $156.55
+2026-11-17 20:37:02,208 | [PLTR] ACTION: No trade.
+2026-11-17 20:37:02,221 | [PM] choppy/sideways (ADX 23.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.53
+2026-11-17 20:37:02,221 | [PM] ACTION: No trade.
+2026-11-17 20:37:02,273 | [PNC] trending (ADX 42.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.92
+2026-11-17 20:37:02,273 | [PNC] ACTION: No trade.
+2026-11-17 20:37:02,330 | [PNR] trending (ADX 27.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $67.08
+2026-11-17 20:37:02,330 | [PNR] ACTION: No trade.
+2026-11-17 20:37:02,381 | [PNW] trending (ADX 57.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.91
+2026-11-17 20:37:02,381 | [PNW] ACTION: No trade.
+2026-11-17 20:37:05,474 | [PODD] trending (ADX 28.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $145.19
+2026-11-17 20:37:05,474 | [PODD] ACTION: No trade.
+2026-11-17 20:37:05,526 | [PPG] choppy/sideways (ADX 19.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $120.80
+2026-11-17 20:37:05,526 | [PPG] ACTION: No trade.
+2026-11-17 20:37:05,581 | [PPL] trending (ADX 39.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $35.35
+2026-11-17 20:37:05,581 | [PPL] ACTION: No trade.
+2026-11-17 20:37:05,635 | [PRU] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $122.39
+2026-11-17 20:37:05,635 | [PRU] ACTION: No trade.
+2026-11-17 20:37:05,694 | [PSA] choppy/sideways (ADX 21.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $331.81
+2026-11-17 20:37:05,694 | [PSA] ACTION: No trade.
+2026-11-17 20:37:05,754 | [PSX] trending (ADX 43.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $255.38
+2026-11-17 20:37:05,754 | [PSX] ACTION: No trade.
+2026-11-17 20:37:05,805 | [PTC] choppy/sideways (ADX 18.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $195.92
+2026-11-17 20:37:05,805 | [PTC] ACTION: No trade.
+2026-11-17 20:37:05,856 | [PWR] choppy/sideways (ADX 13.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $593.54
+2026-11-17 20:37:05,856 | [PWR] ACTION: No trade.
+2026-11-17 20:37:05,907 | [PYPL] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $58.41
+2026-11-17 20:37:05,907 | [PYPL] ACTION: No trade.
+2026-11-17 20:37:05,960 | [Q] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $113.14
+2026-11-17 20:37:05,961 | [Q] ACTION: No trade.
+2026-11-17 20:37:05,973 | [QCOM] trending (ADX 35.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $165.26
+2026-11-17 20:37:05,973 | [QCOM] ACTION: No trade.
+2026-11-17 20:37:06,024 | [RCL] trending (ADX 30.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $310.15
+2026-11-17 20:37:06,024 | [RCL] ACTION: No trade.
+2026-11-17 20:37:06,075 | [RDDT] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $95.00
+2026-11-17 20:37:06,075 | [RDDT] ACTION: No trade.
+2026-11-17 20:37:06,126 | [REG] choppy/sideways (ADX 16.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $75.86
+2026-11-17 20:37:06,126 | [REG] ACTION: No trade.
+2026-11-17 20:37:09,218 | [REGN] choppy/sideways (ADX 15.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $953.62
+2026-11-17 20:37:09,218 | [REGN] ACTION: No trade.
+2026-11-17 20:37:09,272 | [RF] trending (ADX 28.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $28.25
+2026-11-17 20:37:09,272 | [RF] ACTION: No trade.
+2026-11-17 20:37:09,326 | [RJF] choppy/sideways (ADX 24.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $164.78
+2026-11-17 20:37:09,326 | [RJF] ACTION: No trade.
+2026-11-17 20:37:09,378 | [RL] trending (ADX 42.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $378.55
+2026-11-17 20:37:09,378 | [RL] ACTION: No trade.
+2026-11-17 20:37:09,431 | [RMD] trending (ADX 43.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $238.75
+2026-11-17 20:37:09,431 | [RMD] ACTION: No trade.
+2026-11-17 20:37:09,484 | [ROK] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $389.37
+2026-11-17 20:37:09,484 | [ROK] ACTION: No trade.
+2026-11-17 20:37:09,539 | [ROL] trending (ADX 29.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.40
+2026-11-17 20:37:09,539 | [ROL] ACTION: No trade.
+2026-11-17 20:37:09,591 | [ROP] trending (ADX 32.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $474.25
+2026-11-17 20:37:09,591 | [ROP] ACTION: No trade.
+2026-11-17 20:37:09,645 | [ROST] trending (ADX 39.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $219.21
+2026-11-17 20:37:09,646 | [ROST] ACTION: No trade.
+2026-11-17 20:37:09,699 | [RSG] trending (ADX 28.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $254.41
+2026-11-17 20:37:09,699 | [RSG] ACTION: No trade.
+2026-11-17 20:37:09,712 | [RTX] choppy/sideways (ADX 19.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $197.51
+2026-11-17 20:37:09,712 | [RTX] ACTION: No trade.
+2026-11-17 20:37:09,766 | [RVTY] choppy/sideways (ADX 16.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $147.75
+2026-11-17 20:37:09,767 | [RVTY] ACTION: No trade.
+2026-11-17 20:37:12,859 | [SBAC] trending (ADX 34.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $180.44
+2026-11-17 20:37:12,859 | [SBAC] ACTION: No trade.
+2026-11-17 20:37:12,872 | [SBUX] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.46
+2026-11-17 20:37:12,872 | [SBUX] ACTION: No trade.
+2026-11-17 20:37:12,885 | [SCHW] trending (ADX 35.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $91.98
+2026-11-17 20:37:12,885 | [SCHW] ACTION: No trade.
+2026-11-17 20:37:12,966 | [SHW] trending (ADX 34.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $344.33
+2026-11-17 20:37:12,966 | [SHW] ACTION: No trade.
+2026-11-17 20:37:13,018 | [SJM] choppy/sideways (ADX 18.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $133.98
+2026-11-17 20:37:13,018 | [SJM] ACTION: No trade.
+2026-11-17 20:37:13,031 | [SLB] trending (ADX 40.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $49.02
+2026-11-17 20:37:13,031 | [SLB] ACTION: No trade.
+2026-11-17 20:37:13,043 | [SMCI] trending (ADX 32.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $23.84
+2026-11-17 20:37:13,044 | [SMCI] ACTION: No trade.
+2026-11-17 20:37:13,097 | [SNA] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $360.95
+2026-11-17 20:37:13,097 | [SNA] ACTION: No trade.
+2026-11-17 20:37:13,150 | [SNDK] trending (ADX 25.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $790.84
+2026-11-17 20:37:13,150 | [SNDK] ACTION: No trade.
+2026-11-17 20:37:13,203 | [SNPS] trending (ADX 33.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $434.83
+2026-11-17 20:37:13,203 | [SNPS] ACTION: No trade.
+2026-11-17 20:37:13,256 | [SO] choppy/sideways (ADX 19.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $93.54
+2026-11-17 20:37:13,256 | [SO] ACTION: No trade.
+2026-11-17 20:37:13,308 | [SPG] choppy/sideways (ADX 20.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $230.77
+2026-11-17 20:37:13,308 | [SPG] ACTION: No trade.
+2026-11-17 20:37:13,360 | [SPGI] trending (ADX 46.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $453.45
+2026-11-17 20:37:13,360 | [SPGI] ACTION: No trade.
+2026-11-17 20:37:13,412 | [SRE] trending (ADX 33.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.68
+2026-11-17 20:37:13,412 | [SRE] ACTION: No trade.
+2026-11-17 20:37:13,464 | [STE] trending (ADX 43.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $257.75
+2026-11-17 20:37:13,464 | [STE] ACTION: No trade.
+2026-11-17 20:37:13,517 | [STLD] choppy/sideways (ADX 14.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $224.92
+2026-11-17 20:37:13,517 | [STLD] ACTION: No trade.
+2026-11-17 20:37:13,571 | [STT] trending (ADX 48.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $167.19
+2026-11-17 20:37:13,571 | [STT] ACTION: No trade.
+2026-11-17 20:37:13,623 | [STX] choppy/sideways (ADX 12.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $498.62
+2026-11-17 20:37:13,624 | [STX] ACTION: No trade.
+2026-11-17 20:37:16,716 | [STZ] trending (ADX 32.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $143.58
+2026-11-17 20:37:16,716 | [STZ] ACTION: No trade.
+2026-11-17 20:37:16,769 | [SW] trending (ADX 38.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $40.83
+2026-11-17 20:37:16,769 | [SW] ACTION: No trade.
+2026-11-17 20:37:16,821 | [SWK] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $109.16
+2026-11-17 20:37:16,821 | [SWK] ACTION: No trade.
+2026-11-17 20:37:16,879 | [SWKS] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $86.05
+2026-11-17 20:37:16,879 | [SWKS] ACTION: No trade.
+2026-11-17 20:37:16,931 | [SYF] trending (ADX 36.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $70.39
+2026-11-17 20:37:16,931 | [SYF] ACTION: No trade.
+2026-11-17 20:37:16,984 | [SYK] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $316.65
+2026-11-17 20:37:16,984 | [SYK] ACTION: No trade.
+2026-11-17 20:37:17,041 | [SYY] choppy/sideways (ADX 19.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.89
+2026-11-17 20:37:17,041 | [SYY] ACTION: No trade.
+2026-11-17 20:37:17,054 | [T] choppy/sideways (ADX 23.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $22.41
+2026-11-17 20:37:17,054 | [T] ACTION: No trade.
+2026-11-17 20:37:17,106 | [TDG] trending (ADX 44.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1184.46
+2026-11-17 20:37:17,106 | [TDG] ACTION: No trade.
+2026-11-17 20:37:17,160 | [TDY] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $621.40
+2026-11-17 20:37:17,160 | [TDY] ACTION: No trade.
+2026-11-17 20:37:17,215 | [TECH] trending (ADX 32.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $72.69
+2026-11-17 20:37:17,215 | [TECH] ACTION: No trade.
+2026-11-17 20:37:17,268 | [TEL] choppy/sideways (ADX 23.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $211.04
+2026-11-17 20:37:17,268 | [TEL] ACTION: No trade.
+2026-11-17 20:37:20,363 | [TER] choppy/sideways (ADX 13.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $231.80
+2026-11-17 20:37:20,363 | [TER] ACTION: No trade.
+2026-11-17 20:37:20,414 | [TFC] trending (ADX 41.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $48.49
+2026-11-17 20:37:20,414 | [TFC] ACTION: No trade.
+2026-11-17 20:37:20,466 | [TGT] trending (ADX 34.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $159.23
+2026-11-17 20:37:20,466 | [TGT] ACTION: No trade.
+2026-11-17 20:37:20,516 | [TJX] choppy/sideways (ADX 23.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $129.56
+2026-11-17 20:37:20,516 | [TJX] ACTION: No trade.
+2026-11-17 20:37:20,567 | [TKO] trending (ADX 31.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $186.93
+2026-11-17 20:37:20,567 | [TKO] ACTION: No trade.
+2026-11-17 20:37:20,580 | [TMO] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $687.78
+2026-11-17 20:37:20,580 | [TMO] ACTION: No trade.
+2026-11-17 20:37:20,593 | [TMUS] choppy/sideways (ADX 20.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $169.13
+2026-11-17 20:37:20,593 | [TMUS] ACTION: No trade.
+2026-11-17 20:37:20,643 | [TPL] choppy/sideways (ADX 12.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $289.75
+2026-11-17 20:37:20,643 | [TPL] ACTION: No trade.
+2026-11-17 20:37:20,694 | [TPR] trending (ADX 50.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.72
+2026-11-17 20:37:20,694 | [TPR] ACTION: No trade.
+2026-11-17 20:37:20,745 | [TRGP] choppy/sideways (ADX 13.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $290.87
+2026-11-17 20:37:20,745 | [TRGP] ACTION: No trade.
+2026-11-17 20:37:20,795 | [TRMB] trending (ADX 31.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $53.78
+2026-11-17 20:37:20,796 | [TRMB] ACTION: No trade.
+2026-11-17 20:37:20,846 | [TROW] choppy/sideways (ADX 17.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.32
+2026-11-17 20:37:20,846 | [TROW] ACTION: No trade.
+2026-11-17 20:37:20,899 | [TRV] trending (ADX 25.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $398.17
+2026-11-17 20:37:20,899 | [TRV] ACTION: No trade.
+2026-11-17 20:37:20,950 | [TSCO] choppy/sideways (ADX 15.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $38.20
+2026-11-17 20:37:20,950 | [TSCO] ACTION: No trade.
+2026-11-17 20:37:20,962 | [TSLA] choppy/sideways (ADX 14.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $378.62
+2026-11-17 20:37:20,962 | [TSLA] ACTION: No trade.
+2026-11-17 20:37:21,013 | [TSN] choppy/sideways (ADX 19.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $63.94
+2026-11-17 20:37:21,013 | [TSN] ACTION: No trade.
+2026-11-17 20:37:21,065 | [TT] choppy/sideways (ADX 21.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $404.63
+2026-11-17 20:37:21,065 | [TT] ACTION: No trade.
+2026-11-17 20:37:24,157 | [TTWO] trending (ADX 30.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.96
+2026-11-17 20:37:24,157 | [TTWO] ACTION: No trade.
+2026-11-17 20:37:24,208 | [TWLO] choppy/sideways (ADX 20.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $194.39
+2026-11-17 20:37:24,208 | [TWLO] ACTION: No trade.
+2026-11-17 20:37:24,221 | [TXN] choppy/sideways (ADX 19.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $291.99
+2026-11-17 20:37:24,221 | [TXN] ACTION: No trade.
+2026-11-17 20:37:24,273 | [TXT] choppy/sideways (ADX 23.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $81.92
+2026-11-17 20:37:24,273 | [TXT] ACTION: No trade.
+2026-11-17 20:37:24,325 | [TYL] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $413.76
+2026-11-17 20:37:24,325 | [TYL] ACTION: No trade.
+2026-11-17 20:37:24,376 | [UAL] trending (ADX 35.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $107.14
+2026-11-17 20:37:24,376 | [UAL] ACTION: No trade.
+2026-11-17 20:37:24,428 | [UBER] choppy/sideways (ADX 21.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $68.82
+2026-11-17 20:37:24,428 | [UBER] ACTION: No trade.
+2026-11-17 20:37:24,481 | [UDR] trending (ADX 26.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $36.10
+2026-11-17 20:37:24,481 | [UDR] ACTION: No trade.
+2026-11-17 20:37:24,535 | [UHS] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $193.04
+2026-11-17 20:37:24,535 | [UHS] ACTION: No trade.
+2026-11-17 20:37:24,585 | [ULTA] trending (ADX 33.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $643.43
+2026-11-17 20:37:24,585 | [ULTA] ACTION: No trade.
+2026-11-17 20:37:24,598 | [UNH] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $388.05
+2026-11-17 20:37:24,598 | [UNH] ACTION: No trade.
+2026-11-17 20:37:24,650 | [UNP] trending (ADX 26.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $298.67
+2026-11-17 20:37:24,650 | [UNP] ACTION: No trade.
+2026-11-17 20:37:24,663 | [UPS] choppy/sideways (ADX 19.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $110.32
+2026-11-17 20:37:24,663 | [UPS] ACTION: No trade.
+2026-11-17 20:37:24,714 | [URI] trending (ADX 37.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $1076.48
+2026-11-17 20:37:24,714 | [URI] ACTION: No trade.
+2026-11-17 20:37:27,806 | [USB] trending (ADX 33.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $59.33
+2026-11-17 20:37:27,806 | [USB] ACTION: No trade.
+2026-11-17 20:37:27,817 | [V] trending (ADX 51.8) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $418.19
+2026-11-17 20:37:27,817 | [V] ACTION: No trade.
+2026-11-17 20:37:27,868 | [VEEV] trending (ADX 51.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $290.25
+2026-11-17 20:37:27,868 | [VEEV] ACTION: No trade.
+2026-11-17 20:37:27,919 | [VICI] trending (ADX 32.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $24.59
+2026-11-17 20:37:27,919 | [VICI] ACTION: No trade.
+2026-11-17 20:37:27,969 | [VLO] trending (ADX 37.9) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $362.85
+2026-11-17 20:37:27,969 | [VLO] ACTION: No trade.
+2026-11-17 20:37:28,020 | [VLTO] choppy/sideways (ADX 20.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $118.28
+2026-11-17 20:37:28,020 | [VLTO] ACTION: No trade.
+2026-11-17 20:37:28,071 | [VMC] choppy/sideways (ADX 17.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $275.55
+2026-11-17 20:37:28,071 | [VMC] ACTION: No trade.
+2026-11-17 20:37:28,121 | [VMRK] choppy/sideways (ADX 17.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $64.21
+2026-11-17 20:37:28,121 | [VMRK] ACTION: No trade.
+2026-11-17 20:37:28,171 | [VRSK] trending (ADX 45.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $205.36
+2026-11-17 20:37:28,171 | [VRSK] ACTION: No trade.
+2026-11-17 20:37:28,222 | [VRSN] trending (ADX 28.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $305.65
+2026-11-17 20:37:28,222 | [VRSN] ACTION: No trade.
+2026-11-17 20:37:28,273 | [VRT] choppy/sideways (ADX 16.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $187.62
+2026-11-17 20:37:28,273 | [VRT] ACTION: No trade.
+2026-11-17 20:37:28,326 | [VRTX] choppy/sideways (ADX 19.1) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $532.43
+2026-11-17 20:37:28,326 | [VRTX] ACTION: No trade.
+2026-11-17 20:37:28,380 | [VST] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.52
+2026-11-17 20:37:28,380 | [VST] ACTION: No trade.
+2026-11-17 20:37:28,430 | [VTR] trending (ADX 41.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $88.09
+2026-11-17 20:37:28,430 | [VTR] ACTION: No trade.
+2026-11-17 20:37:31,520 | [VTRS] choppy/sideways (ADX 16.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.50
+2026-11-17 20:37:31,520 | [VTRS] ACTION: No trade.
+2026-11-17 20:37:31,571 | [VYLR] choppy/sideways (ADX 20.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $70.52
+2026-11-17 20:37:31,571 | [VYLR] ACTION: No trade.
+2026-11-17 20:37:31,583 | [VZ] trending (ADX 27.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $46.20
+2026-11-17 20:37:31,583 | [VZ] ACTION: No trade.
+2026-11-17 20:37:31,634 | [WAB] choppy/sideways (ADX 24.9) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $290.26
+2026-11-17 20:37:31,634 | [WAB] ACTION: No trade.
+2026-11-17 20:37:31,686 | [WAT] choppy/sideways (ADX 15.5) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $449.81
+2026-11-17 20:37:31,686 | [WAT] ACTION: No trade.
+2026-11-17 20:37:31,738 | [WDAY] trending (ADX 41.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $182.72
+2026-11-17 20:37:31,738 | [WDAY] ACTION: No trade.
+2026-11-17 20:37:31,788 | [WDC] choppy/sideways (ADX 12.4) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $280.63
+2026-11-17 20:37:31,788 | [WDC] ACTION: No trade.
+2026-11-17 20:37:31,839 | [WEC] choppy/sideways (ADX 10.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $116.62
+2026-11-17 20:37:31,839 | [WEC] ACTION: No trade.
+2026-11-17 20:37:31,892 | [WELL] trending (ADX 30.7) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $245.21
+2026-11-17 20:37:31,892 | [WELL] ACTION: No trade.
+2026-11-17 20:37:31,904 | [WFC] trending (ADX 40.6) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $82.86
+2026-11-17 20:37:31,904 | [WFC] ACTION: No trade.
+2026-11-17 20:37:31,955 | [WM] trending (ADX 35.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $243.16
+2026-11-17 20:37:31,955 | [WM] ACTION: No trade.
+2026-11-17 20:37:32,005 | [WMB] choppy/sideways (ADX 22.6) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $67.19
+2026-11-17 20:37:32,005 | [WMB] ACTION: No trade.
+2026-11-17 20:37:32,017 | [WMT] trending (ADX 28.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $127.41
+2026-11-17 20:37:32,017 | [WMT] ACTION: No trade.
+2026-11-17 20:37:32,070 | [WRB] trending (ADX 44.2) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $77.70
+2026-11-17 20:37:32,070 | [WRB] ACTION: No trade.
+2026-11-17 20:37:32,198 | [WSM] trending (ADX 30.1) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $249.90
+2026-11-17 20:37:32,198 | [WSM] ACTION: No trade.
+2026-11-17 20:37:32,249 | [WST] choppy/sideways (ADX 16.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $413.28
+2026-11-17 20:37:32,249 | [WST] ACTION: No trade.
+2026-11-17 20:37:35,339 | [WTW] choppy/sideways (ADX 25.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $332.85
+2026-11-17 20:37:35,339 | [WTW] ACTION: No trade.
+2026-11-17 20:37:35,397 | [WY] trending (ADX 40.0) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $20.21
+2026-11-17 20:37:35,397 | [WY] ACTION: No trade.
+2026-11-17 20:37:35,449 | [WYNN] choppy/sideways (ADX 12.8) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $81.91
+2026-11-17 20:37:35,449 | [WYNN] ACTION: No trade.
+2026-11-17 20:37:35,543 | [XEL] trending (ADX 39.3) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $80.70
+2026-11-17 20:37:35,543 | [XEL] ACTION: No trade.
+2026-11-17 20:37:35,555 | [XOM] choppy/sideways (ADX 20.0) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $166.40
+2026-11-17 20:37:35,555 | [XOM] ACTION: No trade.
+2026-11-17 20:37:35,607 | [XYL] choppy/sideways (ADX 15.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $94.97
+2026-11-17 20:37:35,607 | [XYL] ACTION: No trade.
+2026-11-17 20:37:35,661 | [XYZ] trending (ADX 46.5) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $79.51
+2026-11-17 20:37:35,661 | [XYZ] ACTION: No trade.
+2026-11-17 20:37:35,712 | [YUM] choppy/sideways (ADX 21.2) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $160.82
+2026-11-17 20:37:35,712 | [YUM] ACTION: No trade.
+2026-11-17 20:37:35,767 | [ZBH] choppy/sideways (ADX 22.3) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $102.85
+2026-11-17 20:37:35,767 | [ZBH] ACTION: No trade.
+2026-11-17 20:37:35,822 | [ZBRA] trending (ADX 35.4) -> trend-following strategy | Signal: HOLD | Shares held: 0.0 | Last price: $311.89
+2026-11-17 20:37:35,822 | [ZBRA] ACTION: No trade.
+2026-11-17 20:37:35,878 | [ZTS] choppy/sideways (ADX 18.7) -> mean-reversion strategy | Signal: HOLD | Shares held: 0.0 | Last price: $83.36
+2026-11-17 20:37:35,878 | [ZTS] ACTION: No trade.
+2026-11-17 20:50:02,178 | Within 10 min of close -- flattening all positions for the day.
+2026-11-17 20:50:02,223 | EOD FLATTEN: no open positions to close.
+2026-11-17 21:00:02,058 | Market is closed. Next open: 2026-11-18 15:30:00 CET (your local time) -- in 17.5 hours.
+2026-11-17 21:00:02,101 | Market is closed for the day -- exiting early instead of idling.
+2026-11-17 21:00:02,101 | Duration window finished.
